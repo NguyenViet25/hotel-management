@@ -21,6 +21,39 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Ensure branch exists and has initial commit if missing
+        run: |
+          set -e
+          BRANCH='${{ matrix.branch }}'
+          git fetch origin || true
+          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
+            echo "Branch $BRANCH exists on remote."
+          else
+            echo "Creating branch $BRANCH from main with bootstrap commit."
+            # Create branch off main (if main exists remotely)
+            if git ls-remote --exit-code --heads origin main >/dev/null 2>&1; then
+              git checkout -B "$BRANCH" origin/main
+            else
+              git checkout -B "$BRANCH"
+            fi
+            mkdir -p daily-commits
+            FILE="daily-commits/$BRANCH.md"
+            touch "$FILE"
+            echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) :: bootstrap" >> "$FILE"
+            git add "$FILE"
+            git commit -m "chore: bootstrap $BRANCH daily commit file"
+            git push -u origin "$BRANCH"
+          fi
+
+      - name: Pre-sync branch with latest main to reduce conflicts
+        run: |
+          set -e
+          BRANCH='${{ matrix.branch }}'
+          git fetch origin main || true
+          git checkout "$BRANCH"
+          git merge --no-edit origin/main || true
+          git push origin "$BRANCH"
+
       - name: Create or find PR for ${{ matrix.branch }} → main
         id: create_pr
         uses: actions/github-script@v7
@@ -28,7 +61,7 @@ jobs:
           script: |
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-            const branch = core.getInput('branch') || '${{ matrix.branch }}';
+            const branch = '${{ matrix.branch }}';
             const base = 'main';
 
             // Verify the branch exists
@@ -76,7 +109,7 @@ jobs:
           script: |
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-            const prNumber = Number(core.getInput('pr_number') || '${{ steps.create_pr.outputs.pr_number }}');
+            const prNumber = Number('${{ steps.create_pr.outputs.pr_number }}');
             try {
               const res = await github.pulls.merge({ owner, repo, pull_number: prNumber, merge_method: 'squash' });
               core.info(`Merged PR #${prNumber}: ${res.status}`);
