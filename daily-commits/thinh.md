@@ -6,3 +6,4 @@
 2025-10-24 - 1 - 18:11:27 UTC :: build: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — kiem tra tuong thich mui gio/tien te (dat tieu chi toi thieu)
 2025-10-24 - 2 - 18:11:30 UTC :: build: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — cap nhat cau hinh va kiem tra bien (dam bao backward-compatible)
 2025-10-24 - 3 - 18:11:32 UTC :: perf: UC-11 Goi gia: bat/tam ngung goi gia dang ap dung. — chinh sua tai lieu & mo ta API (da smoke test)
+2025-10-24 - 4 - 18:11:35 UTC :: feat: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — them log chi tiet phuc vu audit (chuan bi cho tinh nang tiep theo)
