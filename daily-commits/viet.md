@@ -3,3 +3,4 @@
 2025-10-24 - 3 - 17:42:37 UTC :: refactor: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — chinh sua tai lieu & mo ta API (dam bao backward-compatible)
 2025-10-24 - 4 - 17:42:38 UTC :: ci: UC-28 Room charge F&B: ghi hoa don ban an vao folio. — tach chuc nang de de bao tri (da smoke test)
 2025-10-24 - 5 - 17:42:40 UTC :: chore: UC-10 Goi gia: tao rate plan, thoi gian ap dung linh hoat. — bo sung index & toi uu DB (can theo doi them)
+2025-10-24 - 1 - 18:11:26 UTC :: perf: UC-07 Loai phong: dinh nghia tien nghi va gia co ban. — them log chi tiet phuc vu audit (dam bao backward-compatible)
