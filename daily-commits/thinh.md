@@ -4,3 +4,4 @@
 2025-10-24 - 4 - 17:42:38 UTC :: build: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — refactor luong xu ly cho ro rang (can theo doi them)
 2025-10-24 - 5 - 17:42:40 UTC :: perf: UC-22 Minibar/Amenity: ghi tieu hao, post charge vao folio. — don dep code va xoa doan thua (chuan bi cho tinh nang tiep theo)
 2025-10-24 - 1 - 18:11:27 UTC :: build: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — kiem tra tuong thich mui gio/tien te (dat tieu chi toi thieu)
+2025-10-24 - 2 - 18:11:30 UTC :: build: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — cap nhat cau hinh va kiem tra bien (dam bao backward-compatible)
