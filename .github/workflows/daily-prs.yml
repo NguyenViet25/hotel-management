@@ -1,0 +1,98 @@
+name: Daily Auto PRs
+
+on:
+  schedule:
+    - cron: '5 0 * * *' # Runs shortly after daily commits at 00:05 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  pr_and_merge_per_branch:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        branch: [vinh, viet, tung, thinh]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create or find PR for ${{ matrix.branch }} → main
+        id: create_pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const branch = core.getInput('branch') || '${{ matrix.branch }}';
+            const base = 'main';
+
+            // Verify the branch exists
+            let branchExists = true;
+            try {
+              await github.repos.getBranch({ owner, repo, branch });
+            } catch (e) {
+              branchExists = false;
+            }
+            if (!branchExists) {
+              core.info(`Branch ${branch} does not exist on remote. Skipping.`);
+              core.setOutput('skip', 'true');
+              return;
+            }
+
+            // Try to find an existing open PR
+            const { data: openPRs } = await github.pulls.list({ owner, repo, state: 'open', base, per_page: 100 });
+            let pr = openPRs.find(p => p.head && p.head.ref === branch);
+
+            if (!pr) {
+              const today = new Date().toISOString().slice(0, 10);
+              const title = `Daily merge ${branch} → ${base} (${today})`;
+              const body = 'Automated daily PR created by workflow.';
+              try {
+                const created = await github.pulls.create({ owner, repo, title, body, head: branch, base });
+                pr = created.data;
+                core.info(`Created PR #${pr.number} for ${branch}.`);
+              } catch (e) {
+                core.warning(`Failed to create PR for ${branch}: ${e.message}`);
+                core.setOutput('skip', 'true');
+                return;
+              }
+            } else {
+              core.info(`Found existing PR #${pr.number} for ${branch}.`);
+            }
+
+            core.setOutput('skip', 'false');
+            core.setOutput('pr_number', String(pr.number));
+
+      - name: Attempt auto-merge PR
+        id: merge_pr
+        if: steps.create_pr.outputs.skip != 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const prNumber = Number(core.getInput('pr_number') || '${{ steps.create_pr.outputs.pr_number }}');
+            try {
+              const res = await github.pulls.merge({ owner, repo, pull_number: prNumber, merge_method: 'squash' });
+              core.info(`Merged PR #${prNumber}: ${res.status}`);
+              core.setOutput('merged', 'true');
+            } catch (e) {
+              core.warning(`Auto-merge failed for PR #${prNumber}: ${e.message}`);
+              core.setOutput('merged', 'false');
+            }
+
+      - name: Sync branch with latest main after successful merge
+        if: steps.merge_pr.outputs.merged == 'true'
+        run: |
+          set -e
+          BRANCH='${{ matrix.branch }}'
+          git fetch origin main
+          git checkout "$BRANCH"
+          # Merge latest main into the author branch to keep it updated
+          git merge --no-edit origin/main || true
+          git push origin "$BRANCH"
