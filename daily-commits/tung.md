@@ -5,3 +5,4 @@
 2025-10-24 - 5 - 17:42:39 UTC :: chore: UC-36 Duyet ngoai le: duyet/tu choi theo han muc. — cai thien hieu nang render/list (khong doi hanh vi)
 2025-10-24 - 1 - 18:11:29 UTC :: refactor: UC-42 Phan quyen: thiet lap quyen theo co so. — bo sung case canh bien & no-show (da kiem tra lint)
 2025-10-24 - 2 - 18:11:32 UTC :: chore: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — bo sung case canh bien & no-show (da kiem tra lint)
+2025-10-24 - 3 - 18:11:35 UTC :: perf: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — dieu chinh quyen truy cap theo vai tro (khong doi hanh vi)
