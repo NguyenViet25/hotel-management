@@ -2,3 +2,4 @@
 2025-10-24 - 2 - 17:42:35 UTC :: docs: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — cap nhat cau hinh va kiem tra bien (dam bao backward-compatible)
 2025-10-24 - 3 - 17:42:37 UTC :: refactor: UC-39 Xuat Audit Log: xuat CSV/PDF kiem tra tuan thu. — sua validate va bo sung thong bao loi (dong bo voi BE/FE)
 2025-10-24 - 4 - 17:42:38 UTC :: ci: UC-26 Order: tao/chinh sua order, ghi chu, void/discount. — fix race-condition nho trong thao tac (anh huong thap)
+2025-10-24 - 5 - 17:42:41 UTC :: docs: UC-31 Bao cao: len lich gui email/PDF hang ngay/tuan. — fix race-condition nho trong thao tac (dam bao backward-compatible)
