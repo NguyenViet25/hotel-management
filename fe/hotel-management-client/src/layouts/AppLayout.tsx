@@ -41,6 +41,11 @@ import CleaningServicesOutlinedIcon from "@mui/icons-material/CleaningServicesOu
 import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
 import PointOfSaleIcon from "@mui/icons-material/PointOfSale";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
+import HotelIcon from "@mui/icons-material/Hotel";
+import PublicIcon from "@mui/icons-material/Public";
+import DomainIcon from "@mui/icons-material/Domain";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import { Menu } from "@mui/material";
 
 const drawerWidth = 240;
 
@@ -50,6 +55,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { role, setRole, propertyId, setPropertyId } = useAuth();
   const isMobile = useMediaQuery("(max-width:900px)");
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [mobileMenuAnchor, setMobileMenuAnchor] = useState<null | HTMLElement>(null);
+  const mobileMenuOpen = Boolean(mobileMenuAnchor);
 
   const menuItems = useMemo(
     () => [
@@ -210,6 +217,47 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         return null;
     }
   };
+  const getPropertyIconColor = (v: string): string => {
+    switch (v) {
+      case "":
+        return "text.secondary";
+      case "A":
+        return "primary.main";
+      case "B":
+        return "secondary.main";
+      default:
+        return "info.main";
+    }
+  };
+  const getPropertyIcon = (v: string) => {
+    switch (v) {
+      case "":
+        return (
+          <PublicIcon
+            fontSize="small"
+            sx={{ color: getPropertyIconColor(v) }}
+          />
+        );
+      case "A":
+        return (
+          <HotelIcon fontSize="small" sx={{ color: getPropertyIconColor(v) }} />
+        );
+      case "B":
+        return (
+          <ApartmentIcon
+            fontSize="small"
+            sx={{ color: getPropertyIconColor(v) }}
+          />
+        );
+      default:
+        return (
+          <DomainIcon
+            fontSize="small"
+            sx={{ color: getPropertyIconColor(v) }}
+          />
+        );
+    }
+  };
   const getSidebarIconColor = (path: string, active: boolean): string => {
     const key = (
       {
@@ -239,7 +287,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         position="fixed"
         sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
       >
-        <Toolbar sx={{ flexWrap: "wrap" }}>
+        <Toolbar sx={{ flexWrap: "wrap", color: "common.white" }}>
           <IconButton
             color="inherit"
             edge="start"
@@ -251,50 +299,134 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             Hệ thống quản lý khách sạn
           </Typography>
-          <Typography variant="body2" sx={{ mr: { xs: 0.5, sm: 1 } }}>
-            Cơ sở:
-          </Typography>
-          <Select
-            size="small"
-            value={propertyId || ""}
-            onChange={(e) => setPropertyId(e.target.value)}
-            sx={{
-              color: "inherit",
-              mr: { xs: 1, sm: 2 },
-              minWidth: { xs: 100, sm: 140 },
-            }}
-            displayEmpty
-          >
-            <MenuItem value="">Tất cả</MenuItem>
-            <MenuItem value="A">Hotel A</MenuItem>
-            <MenuItem value="B">Hotel B</MenuItem>
-          </Select>
-          <Typography variant="body2" sx={{ mr: { xs: 0.5, sm: 1 } }}>
-            Vai trò:
-          </Typography>
-          <Select
-            size="small"
-            value={role}
-            onChange={(e) => setRole(e.target.value as Role)}
-            sx={{ color: "inherit", minWidth: { xs: 110, sm: 140 } }}
-          >
-            {(
-              [
-                "Admin",
-                "Quản lý cơ sở",
-                "Lễ tân",
-                "HK",
-                "Bếp",
-                "Thu ngân",
-                "Kế toán",
-              ] as Role[]
-            ).map((r) => (
-              <MenuItem key={r} value={r}>
-                {getRoleIcon(r)}
-                <span style={{ marginLeft: 8 }}>{r}</span>
-              </MenuItem>
-            ))}
-          </Select>
+          {!isMobile ? (
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: { xs: 1, sm: 1.5 },
+              }}
+            >
+              <Typography variant="body2" sx={{ color: "common.white", fontWeight: 600 }}>Cơ sở:</Typography>
+              <Select
+                size="small"
+                value={propertyId || ""}
+                onChange={(e) => setPropertyId(e.target.value)}
+                sx={{ color: "common.white", minWidth: { xs: 120, sm: 160 }, "& .MuiSvgIcon-root": { color: "common.white" } }}
+                displayEmpty
+              >
+                <MenuItem value="">
+                  {getPropertyIcon("")}
+                  <span style={{ marginLeft: 8 }}>Tất cả</span>
+                </MenuItem>
+                <MenuItem value="A">
+                  {getPropertyIcon("A")}
+                  <span style={{ marginLeft: 8 }}>Hotel A</span>
+                </MenuItem>
+                <MenuItem value="B">
+                  {getPropertyIcon("B")}
+                  <span style={{ marginLeft: 8 }}>Hotel B</span>
+                </MenuItem>
+              </Select>
+              <Typography variant="body2" sx={{ ml: { xs: 0, sm: 1 }, color: "common.white", fontWeight: 600 }}>
+                Vai trò:
+              </Typography>
+              <Select
+                size="small"
+                value={role}
+                onChange={(e) => setRole(e.target.value as Role)}
+                sx={{ color: "common.white", minWidth: { xs: 120, sm: 160 }, "& .MuiSvgIcon-root": { color: "common.white" } }}
+              >
+                {(
+                  [
+                    "Admin",
+                    "Quản lý cơ sở",
+                    "Lễ tân",
+                    "HK",
+                    "Bếp",
+                    "Thu ngân",
+                    "Kế toán",
+                  ] as Role[]
+                ).map((r) => (
+                  <MenuItem key={r} value={r}>
+                    {getRoleIcon(r)}
+                    <span style={{ marginLeft: 8 }}>{r}</span>
+                  </MenuItem>
+                ))}
+              </Select>
+            </Box>
+          ) : (
+            <>
+              <IconButton
+                color="inherit"
+                aria-label="Mở menu"
+                onClick={(e) => setMobileMenuAnchor(e.currentTarget)}
+              >
+                <MoreVertIcon />
+              </IconButton>
+              <Menu
+                anchorEl={mobileMenuAnchor}
+                open={mobileMenuOpen}
+                onClose={() => setMobileMenuAnchor(null)}
+                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                transformOrigin={{ vertical: "top", horizontal: "right" }}
+              >
+                <Box sx={{ px: 2, py: 1.5, width: 280 }}>
+                  <Typography variant="subtitle2" sx={{ mb: 0.5 }}>Cơ sở</Typography>
+                  <Select
+                    size="small"
+                    value={propertyId || ""}
+                    onChange={(e) => {
+                      setPropertyId(e.target.value);
+                    }}
+                    fullWidth
+                    displayEmpty
+                  >
+                    <MenuItem value="">
+                      {getPropertyIcon("")}
+                      <span style={{ marginLeft: 8 }}>Tất cả</span>
+                    </MenuItem>
+                    <MenuItem value="A">
+                      {getPropertyIcon("A")}
+                      <span style={{ marginLeft: 8 }}>Hotel A</span>
+                    </MenuItem>
+                    <MenuItem value="B">
+                      {getPropertyIcon("B")}
+                      <span style={{ marginLeft: 8 }}>Hotel B</span>
+                    </MenuItem>
+                  </Select>
+
+                  <Typography variant="subtitle2" sx={{ mt: 1.5, mb: 0.5 }}>Vai trò</Typography>
+                  <Select
+                    size="small"
+                    value={role}
+                    onChange={(e) => {
+                      setRole(e.target.value as Role);
+                    }}
+                    fullWidth
+                  >
+                    {(
+                      [
+                        "Admin",
+                        "Quản lý cơ sở",
+                        "Lễ tân",
+                        "HK",
+                        "Bếp",
+                        "Thu ngân",
+                        "Kế toán",
+                      ] as Role[]
+                    ).map((r) => (
+                      <MenuItem key={r} value={r}>
+                        {getRoleIcon(r)}
+                        <span style={{ marginLeft: 8 }}>{r}</span>
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </Box>
+              </Menu>
+            </>
+          )}
         </Toolbar>
       </AppBar>
       {isMobile ? (
