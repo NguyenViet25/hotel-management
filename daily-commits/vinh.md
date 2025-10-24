@@ -4,3 +4,4 @@
 2025-10-24 - 4 - 17:42:38 UTC :: ci: UC-26 Order: tao/chinh sua order, ghi chu, void/discount. — fix race-condition nho trong thao tac (anh huong thap)
 2025-10-24 - 5 - 17:42:41 UTC :: docs: UC-31 Bao cao: len lich gui email/PDF hang ngay/tuan. — fix race-condition nho trong thao tac (dam bao backward-compatible)
 2025-10-24 - 1 - 18:11:29 UTC :: ci: UC-10 Goi gia: tao rate plan, thoi gian ap dung linh hoat. — cai thien hieu nang render/list (chuan bi cho tinh nang tiep theo)
+2025-10-24 - 2 - 18:11:30 UTC :: chore: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — bo sung case canh bien & no-show (khong doi hanh vi)
