@@ -6,3 +6,4 @@
 2025-10-24 - 1 - 18:11:29 UTC :: ci: UC-10 Goi gia: tao rate plan, thoi gian ap dung linh hoat. — cai thien hieu nang render/list (chuan bi cho tinh nang tiep theo)
 2025-10-24 - 2 - 18:11:30 UTC :: chore: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — bo sung case canh bien & no-show (khong doi hanh vi)
 2025-10-24 - 3 - 18:11:31 UTC :: perf: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — chuan hoa ten ham/bien theo convention (chuan bi cho tinh nang tiep theo)
+2025-10-24 - 4 - 18:11:32 UTC :: ci: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — cap nhat cau hinh va kiem tra bien (da review so bo)
