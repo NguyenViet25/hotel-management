@@ -2,3 +2,4 @@
 2025-10-24 - 2 - 17:42:33 UTC :: refactor: UC-47 Dashboard: gioi han xem theo vai tro va co so. — bo sung index & toi uu DB (chuan bi cho tinh nang tiep theo)
 2025-10-24 - 3 - 17:42:34 UTC :: build: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — bo sung unit test muc co ban (can theo doi them)
 2025-10-24 - 4 - 17:42:37 UTC :: build: UC-42 Phan quyen: thiet lap quyen theo co so. — bo sung unit test muc co ban (can theo doi them)
+2025-10-24 - 5 - 17:42:39 UTC :: chore: UC-36 Duyet ngoai le: duyet/tu choi theo han muc. — cai thien hieu nang render/list (khong doi hanh vi)
