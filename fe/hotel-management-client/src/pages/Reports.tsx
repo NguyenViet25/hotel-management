@@ -1,6 +1,7 @@
 import { Paper, Stack, Typography } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import type { GridColDef } from '@mui/x-data-grid';
+import PageHeader from '../components/PageHeader'
 
 const columns: GridColDef[] = [
   { field: 'metric', headerName: 'Chỉ số', flex: 1 },
@@ -16,12 +17,12 @@ const rows = [
 export default function Reports() {
   return (
     <Stack spacing={2}>
-      <Typography variant="h5">Báo cáo</Typography>
+      <PageHeader title="Báo cáo" subtitle="Các chỉ số hiệu suất và doanh thu" />
       <Paper sx={{ p: 2 }}>
-        <div style={{ height: 400 }}>
-          <DataGrid columns={columns} rows={rows} />
+        <div style={{ height: 500 }}>
+          <DataGrid columns={columns} rows={rows} density="comfortable" disableRowSelectionOnClick />
         </div>
       </Paper>
     </Stack>
-  );
+  )
 }

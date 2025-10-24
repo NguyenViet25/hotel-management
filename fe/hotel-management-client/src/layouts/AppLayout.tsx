@@ -1,4 +1,4 @@
-import { useMemo, type JSX } from "react";
+import { useMemo, useState } from "react";
 import {
   AppBar,
   Box,
@@ -15,6 +15,7 @@ import {
   Typography,
   Select,
   MenuItem,
+  useMediaQuery,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import DashboardIcon from "@mui/icons-material/Dashboard";
@@ -33,22 +34,24 @@ import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import type { Role } from "../context/AuthContext";
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
+import SupportAgentIcon from "@mui/icons-material/SupportAgent";
+import CleaningServicesOutlinedIcon from "@mui/icons-material/CleaningServicesOutlined";
+import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
+import PointOfSaleIcon from "@mui/icons-material/PointOfSale";
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 
 const drawerWidth = 240;
-
-interface MenuItemConfig {
-  label: string;
-  path: string;
-  icon: JSX.Element;
-  roles: Role[];
-}
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { role, setRole } = useAuth();
+  const { role, setRole, propertyId, setPropertyId } = useAuth();
+  const isMobile = useMediaQuery("(max-width:900px)");
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const menuItems: MenuItemConfig[] = useMemo(
+  const menuItems = useMemo(
     () => [
       {
         label: "Dashboard",
@@ -131,8 +134,103 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     ],
     []
   );
-
-  const filteredMenu = menuItems.filter((m) => m.roles.includes(role));
+  const filteredMenu = menuItems.filter((m: any) => m.roles.includes(role));
+  const getRoleIconColor = (r: Role): string => {
+    switch (r) {
+      case "Admin":
+        return "error.main";
+      case "Quản lý cơ sở":
+        return "primary.main";
+      case "Lễ tân":
+        return "info.main";
+      case "HK":
+        return "success.main";
+      case "Bếp":
+        return "warning.main";
+      case "Thu ngân":
+        return "secondary.main";
+      case "Kế toán":
+        return "secondary.dark";
+      default:
+        return "text.secondary";
+    }
+  };
+  const getRoleIcon = (r: Role) => {
+    switch (r) {
+      case "Admin":
+        return (
+          <AdminPanelSettingsIcon
+            fontSize="small"
+            sx={{ color: getRoleIconColor(r) }}
+          />
+        );
+      case "Quản lý cơ sở":
+        return (
+          <ManageAccountsIcon
+            fontSize="small"
+            sx={{ color: getRoleIconColor(r) }}
+          />
+        );
+      case "Lễ tân":
+        return (
+          <SupportAgentIcon
+            fontSize="small"
+            sx={{ color: getRoleIconColor(r) }}
+          />
+        );
+      case "HK":
+        return (
+          <CleaningServicesOutlinedIcon
+            fontSize="small"
+            sx={{ color: getRoleIconColor(r) }}
+          />
+        );
+      case "Bếp":
+        return (
+          <RestaurantMenuIcon
+            fontSize="small"
+            sx={{ color: getRoleIconColor(r) }}
+          />
+        );
+      case "Thu ngân":
+        return (
+          <PointOfSaleIcon
+            fontSize="small"
+            sx={{ color: getRoleIconColor(r) }}
+          />
+        );
+      case "Kế toán":
+        return (
+          <AccountBalanceIcon
+            fontSize="small"
+            sx={{ color: getRoleIconColor(r) }}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+  const getSidebarIconColor = (path: string, active: boolean): string => {
+    const key = (
+      {
+        "/": "primary",
+        "/users": "warning",
+        "/properties": "success",
+        "/rooms": "info",
+        "/room-types": "secondary",
+        "/rate-plans": "secondary",
+        "/bookings": "warning",
+        "/housekeeping": "success",
+        "/maintenance": "error",
+        "/restaurant": "warning",
+        "/reports": "secondary",
+        "/audit-log": "error",
+        "/room-calendar": "info",
+      } as Record<string, string>
+    )[path];
+    if (!key) return active ? "text.primary" : "text.secondary";
+    return active ? `${key}.main` : `${key}.light`;
+  };
 
   return (
     <Box sx={{ display: "flex" }}>
@@ -141,21 +239,44 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         position="fixed"
         sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
       >
-        <Toolbar>
-          <IconButton color="inherit" edge="start" sx={{ mr: 2 }}>
+        <Toolbar sx={{ flexWrap: "wrap" }}>
+          <IconButton
+            color="inherit"
+            edge="start"
+            sx={{ mr: 2 }}
+            onClick={() => setDrawerOpen(!drawerOpen)}
+          >
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             Hệ thống quản lý khách sạn
           </Typography>
-          <Typography variant="body2" sx={{ mr: 1 }}>
+          <Typography variant="body2" sx={{ mr: { xs: 0.5, sm: 1 } }}>
+            Cơ sở:
+          </Typography>
+          <Select
+            size="small"
+            value={propertyId || ""}
+            onChange={(e) => setPropertyId(e.target.value)}
+            sx={{
+              color: "inherit",
+              mr: { xs: 1, sm: 2 },
+              minWidth: { xs: 100, sm: 140 },
+            }}
+            displayEmpty
+          >
+            <MenuItem value="">Tất cả</MenuItem>
+            <MenuItem value="A">Hotel A</MenuItem>
+            <MenuItem value="B">Hotel B</MenuItem>
+          </Select>
+          <Typography variant="body2" sx={{ mr: { xs: 0.5, sm: 1 } }}>
             Vai trò:
           </Typography>
           <Select
             size="small"
             value={role}
             onChange={(e) => setRole(e.target.value as Role)}
-            sx={{ color: "inherit" }}
+            sx={{ color: "inherit", minWidth: { xs: 110, sm: 140 } }}
           >
             {(
               [
@@ -169,43 +290,88 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               ] as Role[]
             ).map((r) => (
               <MenuItem key={r} value={r}>
-                {r}
+                {getRoleIcon(r)}
+                <span style={{ marginLeft: 8 }}>{r}</span>
               </MenuItem>
             ))}
           </Select>
         </Toolbar>
       </AppBar>
-      <Drawer
-        variant="permanent"
-        sx={{
-          width: drawerWidth,
-          [`& .MuiDrawer-paper`]: {
+      {isMobile ? (
+        <Drawer
+          variant="temporary"
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          sx={{
+            [`& .MuiDrawer-paper`]: {
+              width: drawerWidth,
+              boxSizing: "border-box",
+            },
+          }}
+        >
+          <Toolbar />
+          <Box sx={{ overflow: "auto" }}>
+            <List>
+              {filteredMenu.map((item: any) => (
+                <ListItem key={item.path} disablePadding>
+                  <ListItemButton
+                    selected={location.pathname === item.path}
+                    onClick={() => {
+                      navigate(item.path);
+                      setDrawerOpen(false);
+                    }}
+                  >
+                    <ListItemIcon>{item.icon}</ListItemIcon>
+                    <ListItemText primary={item.label} />
+                  </ListItemButton>
+                </ListItem>
+              ))}
+            </List>
+            <Divider />
+          </Box>
+        </Drawer>
+      ) : (
+        <Drawer
+          variant="permanent"
+          sx={{
             width: drawerWidth,
-            boxSizing: "border-box",
-          },
-        }}
-      >
+            [`& .MuiDrawer-paper`]: {
+              width: drawerWidth,
+              boxSizing: "border-box",
+            },
+          }}
+        >
+          <Toolbar />
+          <Box sx={{ overflow: "auto" }}>
+            <List>
+              {filteredMenu.map((item: any) => (
+                <ListItem key={item.path} disablePadding>
+                  <ListItemButton
+                    selected={location.pathname === item.path}
+                    onClick={() => navigate(item.path)}
+                  >
+                    <ListItemIcon
+                      sx={{
+                        color: getSidebarIconColor(
+                          item.path,
+                          location.pathname === item.path
+                        ),
+                      }}
+                    >
+                      {item.icon}
+                    </ListItemIcon>
+                    <ListItemText primary={item.label} />
+                  </ListItemButton>
+                </ListItem>
+              ))}
+            </List>
+            <Divider />
+          </Box>
+        </Drawer>
+      )}
+      <Box component="main" sx={{ flexGrow: 1, px: 3, pt: 2, width: "100%" }}>
         <Toolbar />
-        <Box sx={{ overflow: "auto" }}>
-          <List>
-            {filteredMenu.map((item) => (
-              <ListItem key={item.path} disablePadding>
-                <ListItemButton
-                  selected={location.pathname === item.path}
-                  onClick={() => navigate(item.path)}
-                >
-                  <ListItemIcon>{item.icon}</ListItemIcon>
-                  <ListItemText primary={item.label} />
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
-          <Divider />
-        </Box>
-      </Drawer>
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-        <Toolbar />
-        {children}
+        <Box> {children}</Box>
       </Box>
     </Box>
   );

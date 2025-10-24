@@ -1,6 +1,7 @@
 import { Paper, Stack, Typography } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import type { GridColDef } from "@mui/x-data-grid";
+import PageHeader from '../components/PageHeader'
 
 const columns: GridColDef[] = [
   { field: "name", headerName: "Loại phòng", flex: 1 },
@@ -15,12 +16,12 @@ const rows = [
 export default function RoomTypes() {
   return (
     <Stack spacing={2}>
-      <Typography variant="h5">Loại phòng</Typography>
+      <PageHeader title="Loại phòng" subtitle="Định nghĩa các loại phòng và giá cơ bản" />
       <Paper sx={{ p: 2 }}>
-        <div style={{ height: 400 }}>
-          <DataGrid columns={columns} rows={rows} />
+        <div style={{ height: 500 }}>
+          <DataGrid columns={columns} rows={rows} density="comfortable" disableRowSelectionOnClick />
         </div>
       </Paper>
     </Stack>
-  );
+  )
 }
