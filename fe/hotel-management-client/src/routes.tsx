@@ -13,19 +13,24 @@ import Restaurant from "./pages/Restaurant";
 import Reports from "./pages/Reports";
 import AuditLog from "./pages/AuditLog";
 import RequireRole from "./components/RequireRole";
+import RequireAuth from "./components/RequireAuth";
+import Login from "./pages/Login";
+import Profile from "./pages/Profile";
 
 export const routes: RouteObject[] = [
-  { path: "/", element: <RequireRole allowed={["Admin","Quản lý cơ sở"]}><Dashboard /></RequireRole> },
-  { path: "/users", element: <RequireRole allowed={["Admin"]}><UsersRBAC /></RequireRole> },
-  { path: "/properties", element: <RequireRole allowed={["Admin","Quản lý cơ sở"]}><Properties /></RequireRole> },
-  { path: "/rooms", element: <RequireRole allowed={["Admin","Quản lý cơ sở","Lễ tân"]}><Rooms /></RequireRole> },
-  { path: "/room-types", element: <RequireRole allowed={["Admin","Quản lý cơ sở"]}><RoomTypes /></RequireRole> },
-  { path: "/rate-plans", element: <RequireRole allowed={["Admin","Quản lý cơ sở"]}><RatePlans /></RequireRole> },
-  { path: "/bookings", element: <RequireRole allowed={["Lễ tân"]}><Bookings /></RequireRole> },
-  { path: "/housekeeping", element: <RequireRole allowed={["HK","Lễ tân"]}><Housekeeping /></RequireRole> },
-  { path: "/maintenance", element: <RequireRole allowed={["HK","Quản lý cơ sở"]}><Maintenance /></RequireRole> },
-  { path: "/restaurant", element: <RequireRole allowed={["Quản lý cơ sở","Thu ngân","Bếp"]}><Restaurant /></RequireRole> },
-  { path: "/reports", element: <RequireRole allowed={["Admin","Quản lý cơ sở","Kế toán"]}><Reports /></RequireRole> },
-  { path: "/audit-log", element: <RequireRole allowed={["Admin"]}><AuditLog /></RequireRole> },
-  { path: "/room-calendar", element: <RequireRole allowed={["Lễ tân","Quản lý cơ sở"]}><RoomCalendar /></RequireRole> },
+  { path: "/login", element: <Login /> },
+  { path: "/profile", element: <RequireAuth><Profile /></RequireAuth> },
+  { path: "/", element: <RequireAuth><RequireRole allowed={["Admin","Quản lý cơ sở"]}><Dashboard /></RequireRole></RequireAuth> },
+  { path: "/users", element: <RequireAuth><RequireRole allowed={["Admin"]}><UsersRBAC /></RequireRole></RequireAuth> },
+  { path: "/properties", element: <RequireAuth><RequireRole allowed={["Admin","Quản lý cơ sở"]}><Properties /></RequireRole></RequireAuth> },
+  { path: "/rooms", element: <RequireAuth><RequireRole allowed={["Admin","Quản lý cơ sở","Lễ tân"]}><Rooms /></RequireRole></RequireAuth> },
+  { path: "/room-types", element: <RequireAuth><RequireRole allowed={["Admin","Quản lý cơ sở"]}><RoomTypes /></RequireRole></RequireAuth> },
+  { path: "/rate-plans", element: <RequireAuth><RequireRole allowed={["Admin","Quản lý cơ sở"]}><RatePlans /></RequireRole></RequireAuth> },
+  { path: "/bookings", element: <RequireAuth><RequireRole allowed={["Lễ tân"]}><Bookings /></RequireRole></RequireAuth> },
+  { path: "/housekeeping", element: <RequireAuth><RequireRole allowed={["HK","Lễ tân"]}><Housekeeping /></RequireRole></RequireAuth> },
+  { path: "/maintenance", element: <RequireAuth><RequireRole allowed={["HK","Quản lý cơ sở"]}><Maintenance /></RequireRole></RequireAuth> },
+  { path: "/restaurant", element: <RequireAuth><RequireRole allowed={["Quản lý cơ sở","Thu ngân","Bếp"]}><Restaurant /></RequireRole></RequireAuth> },
+  { path: "/reports", element: <RequireAuth><RequireRole allowed={["Admin","Quản lý cơ sở","Kế toán"]}><Reports /></RequireRole></RequireAuth> },
+  { path: "/audit-log", element: <RequireAuth><RequireRole allowed={["Admin"]}><AuditLog /></RequireRole></RequireAuth> },
+  { path: "/room-calendar", element: <RequireAuth><RequireRole allowed={["Lễ tân","Quản lý cơ sở"]}><RoomCalendar /></RequireRole></RequireAuth> },
 ];

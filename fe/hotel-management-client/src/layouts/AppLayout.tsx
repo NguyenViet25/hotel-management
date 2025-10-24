@@ -1,6 +1,31 @@
-import { useMemo, useState } from "react";
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import ApartmentIcon from "@mui/icons-material/Apartment";
+import AssessmentIcon from "@mui/icons-material/Assessment";
+import BookOnlineIcon from "@mui/icons-material/BookOnline";
+import BuildCircleIcon from "@mui/icons-material/BuildCircle";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import CategoryIcon from "@mui/icons-material/Category";
+import CleaningServicesIcon from "@mui/icons-material/CleaningServices";
+import CleaningServicesOutlinedIcon from "@mui/icons-material/CleaningServicesOutlined";
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import DomainIcon from "@mui/icons-material/Domain";
+import FactCheckIcon from "@mui/icons-material/FactCheck";
+import HotelIcon from "@mui/icons-material/Hotel";
+import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
+import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
+import MenuIcon from "@mui/icons-material/Menu";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import PeopleIcon from "@mui/icons-material/People";
+import PointOfSaleIcon from "@mui/icons-material/PointOfSale";
+import PriceChangeIcon from "@mui/icons-material/PriceChange";
+import PublicIcon from "@mui/icons-material/Public";
+import RestaurantIcon from "@mui/icons-material/Restaurant";
+import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
+import SupportAgentIcon from "@mui/icons-material/SupportAgent";
 import {
   AppBar,
+  Avatar,
   Box,
   CssBaseline,
   Divider,
@@ -11,52 +36,33 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Toolbar,
-  Typography,
-  Select,
+  Menu,
   MenuItem,
+  Select,
+  Toolbar,
+  Tooltip,
+  Typography,
   useMediaQuery,
 } from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import PeopleIcon from "@mui/icons-material/People";
-import ApartmentIcon from "@mui/icons-material/Apartment";
-import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
-import CategoryIcon from "@mui/icons-material/Category";
-import PriceChangeIcon from "@mui/icons-material/PriceChange";
-import BookOnlineIcon from "@mui/icons-material/BookOnline";
-import CleaningServicesIcon from "@mui/icons-material/CleaningServices";
-import BuildCircleIcon from "@mui/icons-material/BuildCircle";
-import RestaurantIcon from "@mui/icons-material/Restaurant";
-import AssessmentIcon from "@mui/icons-material/Assessment";
-import FactCheckIcon from "@mui/icons-material/FactCheck";
-import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
-import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import type { Role } from "../context/AuthContext";
-import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
-import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
-import SupportAgentIcon from "@mui/icons-material/SupportAgent";
-import CleaningServicesOutlinedIcon from "@mui/icons-material/CleaningServicesOutlined";
-import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
-import PointOfSaleIcon from "@mui/icons-material/PointOfSale";
-import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
-import HotelIcon from "@mui/icons-material/Hotel";
-import PublicIcon from "@mui/icons-material/Public";
-import DomainIcon from "@mui/icons-material/Domain";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import { Menu } from "@mui/material";
+import { useAuth } from "../context/AuthContext";
 
 const drawerWidth = 240;
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { role, setRole, propertyId, setPropertyId } = useAuth();
+  const { role, setRole, propertyId, setPropertyId, user, logout } = useAuth();
   const isMobile = useMediaQuery("(max-width:900px)");
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [mobileMenuAnchor, setMobileMenuAnchor] = useState<null | HTMLElement>(null);
+  const [mobileMenuAnchor, setMobileMenuAnchor] = useState<null | HTMLElement>(
+    null
+  );
   const mobileMenuOpen = Boolean(mobileMenuAnchor);
+  const [profileAnchor, setProfileAnchor] = useState<null | HTMLElement>(null);
+  const profileOpen = Boolean(profileAnchor);
 
   const menuItems = useMemo(
     () => [
@@ -308,12 +314,21 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 gap: { xs: 1, sm: 1.5 },
               }}
             >
-              <Typography variant="body2" sx={{ color: "common.white", fontWeight: 600 }}>Cơ sở:</Typography>
+              <Typography
+                variant="body2"
+                sx={{ color: "common.white", fontWeight: 600 }}
+              >
+                Cơ sở:
+              </Typography>
               <Select
                 size="small"
                 value={propertyId || ""}
                 onChange={(e) => setPropertyId(e.target.value)}
-                sx={{ color: "common.white", minWidth: { xs: 120, sm: 160 }, "& .MuiSvgIcon-root": { color: "common.white" } }}
+                sx={{
+                  color: "common.white",
+                  minWidth: { xs: 120, sm: 160 },
+                  "& .MuiSvgIcon-root": { color: "common.white" },
+                }}
                 displayEmpty
               >
                 <MenuItem value="">
@@ -329,14 +344,25 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   <span style={{ marginLeft: 8 }}>Hotel B</span>
                 </MenuItem>
               </Select>
-              <Typography variant="body2" sx={{ ml: { xs: 0, sm: 1 }, color: "common.white", fontWeight: 600 }}>
+              <Typography
+                variant="body2"
+                sx={{
+                  ml: { xs: 0, sm: 1 },
+                  color: "common.white",
+                  fontWeight: 600,
+                }}
+              >
                 Vai trò:
               </Typography>
               <Select
                 size="small"
                 value={role}
                 onChange={(e) => setRole(e.target.value as Role)}
-                sx={{ color: "common.white", minWidth: { xs: 120, sm: 160 }, "& .MuiSvgIcon-root": { color: "common.white" } }}
+                sx={{
+                  color: "common.white",
+                  minWidth: { xs: 120, sm: 160 },
+                  "& .MuiSvgIcon-root": { color: "common.white" },
+                }}
               >
                 {(
                   [
@@ -373,7 +399,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 transformOrigin={{ vertical: "top", horizontal: "right" }}
               >
                 <Box sx={{ px: 2, py: 1.5, width: 280 }}>
-                  <Typography variant="subtitle2" sx={{ mb: 0.5 }}>Cơ sở</Typography>
+                  <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
+                    Cơ sở
+                  </Typography>
                   <Select
                     size="small"
                     value={propertyId || ""}
@@ -397,7 +425,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     </MenuItem>
                   </Select>
 
-                  <Typography variant="subtitle2" sx={{ mt: 1.5, mb: 0.5 }}>Vai trò</Typography>
+                  <Typography variant="subtitle2" sx={{ mt: 1.5, mb: 0.5 }}>
+                    Vai trò
+                  </Typography>
                   <Select
                     size="small"
                     value={role}
@@ -424,6 +454,95 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     ))}
                   </Select>
                 </Box>
+              </Menu>
+            </>
+          )}
+          {isMobile ? (
+            <>
+              <IconButton
+                color="inherit"
+                onClick={(e) => setProfileAnchor(e.currentTarget)}
+                sx={{ ml: 0.5 }}
+              >
+                <Avatar sx={{ width: 28, height: 28 }} src={user?.picture}>
+                  {user?.name?.[0] ?? "U"}
+                </Avatar>
+              </IconButton>
+              <Menu
+                anchorEl={profileAnchor}
+                open={profileOpen}
+                onClose={() => setProfileAnchor(null)}
+                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                transformOrigin={{ vertical: "top", horizontal: "right" }}
+              >
+                <MenuItem
+                  onClick={() => {
+                    navigate("/profile");
+                    setProfileAnchor(null);
+                  }}
+                >
+                  <ListItemIcon>
+                    <ManageAccountsIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>Hồ sơ</ListItemText>
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    logout();
+                    navigate("/login");
+                    setProfileAnchor(null);
+                  }}
+                >
+                  <ListItemIcon>
+                    <MeetingRoomIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>Đăng xuất</ListItemText>
+                </MenuItem>
+              </Menu>
+            </>
+          ) : (
+            <>
+              <Tooltip title="Tài khoản">
+                <IconButton
+                  color="inherit"
+                  onClick={(e) => setProfileAnchor(e.currentTarget)}
+                  sx={{ ml: 1 }}
+                >
+                  <Avatar sx={{ width: 32, height: 32 }} src={user?.picture}>
+                    {user?.name?.[0] ?? "U"}
+                  </Avatar>
+                </IconButton>
+              </Tooltip>
+              <Menu
+                anchorEl={profileAnchor}
+                open={profileOpen}
+                onClose={() => setProfileAnchor(null)}
+                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                transformOrigin={{ vertical: "top", horizontal: "right" }}
+              >
+                <MenuItem
+                  onClick={() => {
+                    navigate("/profile");
+                    setProfileAnchor(null);
+                  }}
+                >
+                  <ListItemIcon>
+                    <ManageAccountsIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>Hồ sơ</ListItemText>
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    logout();
+                    navigate("/login");
+                    setProfileAnchor(null);
+                  }}
+                >
+                  <ListItemIcon>
+                    <MeetingRoomIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>Đăng xuất</ListItemText>
+                </MenuItem>
               </Menu>
             </>
           )}

@@ -19,6 +19,7 @@
     "@fullcalendar/timegrid": "^6.1.19",
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
+    "@mui/x-charts": "^8.15.0",
     "@mui/x-data-grid": "^8.15.0",
     "@mui/x-date-pickers": "^8.15.0",
     "dayjs": "^1.11.18",
