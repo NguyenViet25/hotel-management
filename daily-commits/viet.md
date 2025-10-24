@@ -7,3 +7,4 @@
 2025-10-24 - 2 - 18:11:28 UTC :: ci: UC-28 Room charge F&B: ghi hoa don ban an vao folio. — bo sung unit test muc co ban (da smoke test)
 2025-10-24 - 3 - 18:11:29 UTC :: refactor: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — bo sung metrics/telemetry co ban (anh huong thap)
 2025-10-24 - 4 - 18:11:31 UTC :: build: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — bo sung unit test muc co ban (dong bo voi BE/FE)
+2025-10-24 - 5 - 18:11:32 UTC :: fix: UC-28 Room charge F&B: ghi hoa don ban an vao folio. — bo sung unit test muc co ban (da smoke test)
