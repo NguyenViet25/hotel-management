@@ -4,3 +4,4 @@
 2025-10-24 - 4 - 17:42:37 UTC :: build: UC-42 Phan quyen: thiet lap quyen theo co so. — bo sung unit test muc co ban (can theo doi them)
 2025-10-24 - 5 - 17:42:39 UTC :: chore: UC-36 Duyet ngoai le: duyet/tu choi theo han muc. — cai thien hieu nang render/list (khong doi hanh vi)
 2025-10-24 - 1 - 18:11:29 UTC :: refactor: UC-42 Phan quyen: thiet lap quyen theo co so. — bo sung case canh bien & no-show (da kiem tra lint)
+2025-10-24 - 2 - 18:11:32 UTC :: chore: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — bo sung case canh bien & no-show (da kiem tra lint)
