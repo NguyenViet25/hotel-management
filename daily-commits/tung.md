@@ -10,3 +10,4 @@
 2025-10-24 - 5 - 18:11:38 UTC :: perf: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — bo sung case canh bien & no-show (dong bo voi BE/FE)
 2025-10-25 - 1 - 01:39:02 UTC :: chore: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — bo sung case canh bien & no-show (chuan bi cho tinh nang tiep theo)
 2025-10-25 - 2 - 01:39:05 UTC :: fix: UC-23 Bao tri: tao ticket, dinh anh, mo ta loi. — sua validate va bo sung thong bao loi (anh huong thap)
+2025-10-25 - 3 - 01:39:06 UTC :: build: UC-21 Housekeeping: cap nhat Dirty/In-progress/Cleaned/Inspected. — bo sung index & toi uu DB (dam bao backward-compatible)
