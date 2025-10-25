@@ -12,3 +12,4 @@
 2025-10-25 - 2 - 01:39:05 UTC :: fix: UC-23 Bao tri: tao ticket, dinh anh, mo ta loi. — sua validate va bo sung thong bao loi (anh huong thap)
 2025-10-25 - 3 - 01:39:06 UTC :: build: UC-21 Housekeeping: cap nhat Dirty/In-progress/Cleaned/Inspected. — bo sung index & toi uu DB (dam bao backward-compatible)
 2025-10-25 - 4 - 01:39:09 UTC :: ci: UC-31 Bao cao: len lich gui email/PDF hang ngay/tuan. — bo sung metrics/telemetry co ban (dong bo voi BE/FE)
+2025-10-25 - 5 - 01:39:11 UTC :: perf: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — cap nhat cau hinh va kiem tra bien (dat tieu chi toi thieu)
