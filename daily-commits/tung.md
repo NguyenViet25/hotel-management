@@ -8,3 +8,4 @@
 2025-10-24 - 3 - 18:11:35 UTC :: perf: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — dieu chinh quyen truy cap theo vai tro (khong doi hanh vi)
 2025-10-24 - 4 - 18:11:37 UTC :: build: UC-20 Keo-tha: gan/doi phong truc quan, tranh trung. — dieu chinh quyen truy cap theo vai tro (dong bo voi BE/FE)
 2025-10-24 - 5 - 18:11:38 UTC :: perf: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — bo sung case canh bien & no-show (dong bo voi BE/FE)
+2025-10-25 - 1 - 01:39:02 UTC :: chore: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — bo sung case canh bien & no-show (chuan bi cho tinh nang tiep theo)
