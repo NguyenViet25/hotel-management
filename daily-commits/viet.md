@@ -15,3 +15,4 @@
 2025-10-27 - 5 - 16:14:43 UTC :: feat: UC-20 Keo-tha: gan/doi phong truc quan, tranh trung. — bo sung index & toi uu DB (dam bao backward-compatible)
 2025-10-27 - 1 - 16:17:36 UTC :: ci: UC-10 Goi gia: tao rate plan, thoi gian ap dung linh hoat. — chuan hoa ten ham/bien theo convention (khong doi hanh vi)
 2025-10-27 - 2 - 16:17:37 UTC :: perf: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — bo sung case canh bien & no-show (dam bao backward-compatible)
+2025-10-27 - 3 - 16:17:40 UTC :: feat: UC-35 Ngoai le: gui yeu cau mien/giam phi, vuot tran. — cap nhat mock data & seed test (anh huong thap)
