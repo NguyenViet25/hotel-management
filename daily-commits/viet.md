@@ -11,3 +11,4 @@
 2025-10-27 - 1 - 16:14:33 UTC :: feat: UC-36 Duyet ngoai le: duyet/tu choi theo han muc. — them log chi tiet phuc vu audit (dat tieu chi toi thieu)
 2025-10-27 - 2 - 16:14:36 UTC :: perf: UC-37 Night Audit: kiem tra folio chua chot, khoa giao dich. — dieu chinh UI & copy cho ro (can theo doi them)
 2025-10-27 - 3 - 16:14:39 UTC :: refactor: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — cap nhat mock data & seed test (dam bao backward-compatible)
+2025-10-27 - 4 - 16:14:42 UTC :: refactor: UC-33 Phan ca: gan ca, duyet doi ca/ngi phep. — bo sung metrics/telemetry co ban (khong doi hanh vi)
