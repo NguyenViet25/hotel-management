@@ -18,3 +18,4 @@
 2025-10-27 - 3 - 16:14:39 UTC :: fix: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — tach chuc nang de de bao tri (da review so bo)
 2025-10-27 - 4 - 16:14:41 UTC :: ci: UC-38 Audit Log: xem/loc thao tac, hanh dong, thoi gian. — toi uu truy van va bo nho (da kiem tra lint)
 2025-10-27 - 5 - 16:14:42 UTC :: fix: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — kiem tra tuong thich mui gio/tien te (khong doi hanh vi)
+2025-10-27 - 1 - 16:17:36 UTC :: feat: UC-35 Ngoai le: gui yeu cau mien/giam phi, vuot tran. — dieu chinh UI & copy cho ro (can theo doi them)
