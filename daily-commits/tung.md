@@ -21,3 +21,4 @@
 2025-10-27 - 1 - 16:17:36 UTC :: feat: UC-35 Ngoai le: gui yeu cau mien/giam phi, vuot tran. — dieu chinh UI & copy cho ro (can theo doi them)
 2025-10-27 - 2 - 16:17:37 UTC :: test: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — fix race-condition nho trong thao tac (da kiem tra lint)
 2025-10-27 - 3 - 16:17:40 UTC :: ci: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — bo sung metrics/telemetry co ban (da kiem tra lint)
+2025-10-27 - 4 - 16:17:41 UTC :: chore: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — dieu chinh quyen truy cap theo vai tro (dong bo voi BE/FE)
