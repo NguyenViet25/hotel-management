@@ -13,3 +13,4 @@
 2025-10-27 - 3 - 16:14:39 UTC :: refactor: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — cap nhat mock data & seed test (dam bao backward-compatible)
 2025-10-27 - 4 - 16:14:42 UTC :: refactor: UC-33 Phan ca: gan ca, duyet doi ca/ngi phep. — bo sung metrics/telemetry co ban (khong doi hanh vi)
 2025-10-27 - 5 - 16:14:43 UTC :: feat: UC-20 Keo-tha: gan/doi phong truc quan, tranh trung. — bo sung index & toi uu DB (dam bao backward-compatible)
+2025-10-27 - 1 - 16:17:36 UTC :: ci: UC-10 Goi gia: tao rate plan, thoi gian ap dung linh hoat. — chuan hoa ten ham/bien theo convention (khong doi hanh vi)
