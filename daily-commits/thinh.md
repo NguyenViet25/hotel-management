@@ -15,3 +15,4 @@
 2025-10-27 - 5 - 16:14:46 UTC :: test: UC-06 Co so: gan quan ly phu trach va quyen truy cap. — bo sung unit test muc co ban (khong doi hanh vi)
 2025-10-27 - 1 - 16:17:34 UTC :: build: UC-47 Dashboard: gioi han xem theo vai tro va co so. — cap nhat cau hinh va kiem tra bien (chuan bi cho tinh nang tiep theo)
 2025-10-27 - 2 - 16:17:38 UTC :: chore: UC-35 Ngoai le: gui yeu cau mien/giam phi, vuot tran. — them log chi tiet phuc vu audit (dat tieu chi toi thieu)
+2025-10-27 - 3 - 16:17:40 UTC :: chore: UC-39 Xuat Audit Log: xuat CSV/PDF kiem tra tuan thu. — sua validate va bo sung thong bao loi (khong doi hanh vi)
