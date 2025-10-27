@@ -13,3 +13,4 @@
 2025-10-27 - 3 - 16:14:40 UTC :: perf: UC-09 So do: hien thi layout, loc trang thai phong. — kiem tra tuong thich mui gio/tien te (dong bo voi BE/FE)
 2025-10-27 - 4 - 16:14:43 UTC :: perf: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — bo sung case canh bien & no-show (da review so bo)
 2025-10-27 - 5 - 16:14:46 UTC :: test: UC-06 Co so: gan quan ly phu trach va quyen truy cap. — bo sung unit test muc co ban (khong doi hanh vi)
+2025-10-27 - 1 - 16:17:34 UTC :: build: UC-47 Dashboard: gioi han xem theo vai tro va co so. — cap nhat cau hinh va kiem tra bien (chuan bi cho tinh nang tiep theo)
