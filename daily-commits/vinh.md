@@ -17,3 +17,4 @@
 2025-10-27 - 2 - 16:17:39 UTC :: ci: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — dieu chinh quyen truy cap theo vai tro (dat tieu chi toi thieu)
 2025-10-27 - 3 - 16:17:42 UTC :: test: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — bo sung unit test muc co ban (da kiem tra lint)
 2025-10-27 - 4 - 16:17:44 UTC :: ci: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — chuan hoa ten ham/bien theo convention (dam bao backward-compatible)
+2025-10-27 - 5 - 16:17:47 UTC :: perf: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — cap nhat cau hinh va kiem tra bien (anh huong thap)
