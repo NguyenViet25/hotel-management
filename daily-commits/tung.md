@@ -15,3 +15,4 @@
 2025-10-25 - 5 - 01:39:11 UTC :: perf: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — cap nhat cau hinh va kiem tra bien (dat tieu chi toi thieu)
 2025-10-27 - 1 - 16:14:35 UTC :: perf: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — dieu chinh quyen truy cap theo vai tro (dat tieu chi toi thieu)
 2025-10-27 - 2 - 16:14:36 UTC :: build: UC-47 Dashboard: gioi han xem theo vai tro va co so. — tach chuc nang de de bao tri (da review so bo)
+2025-10-27 - 3 - 16:14:39 UTC :: fix: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — tach chuc nang de de bao tri (da review so bo)
