@@ -144,6 +144,7 @@ jobs:
             sdx=$((RANDOM % ${#suffixes[@]}))
             msg="${types[$tdx]}: ${ucs[$udx]} — ${actions[$adx]} (${suffixes[$sdx]})"
             echo "$DAY - ${i} - $(date -u +%H:%M:%S) UTC :: $msg" >> "$FILE"
+            git pull
             git add "$FILE"
             git commit -m "$msg"
             sleep $((RANDOM % 3 + 1))
