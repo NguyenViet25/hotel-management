@@ -147,6 +147,7 @@ jobs:
           )
 
           # Always rebase onto the latest remote before starting local commits
+
           git pull --rebase origin "$BRANCH"
 
           for i in 1 2 3 4 5; do
@@ -162,6 +163,7 @@ jobs:
           done
 
           # Rebase onto latest remote in case of concurrent updates, then push
+
           git fetch origin "$BRANCH"
           git rebase "origin/$BRANCH"
           # Try normal push first; if it fails due to non-fast-forward, rebase again and push with lease
