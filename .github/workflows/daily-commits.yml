@@ -147,7 +147,7 @@ jobs:
           )
 
           # Always rebase onto the latest remote before starting local commits
-          git pull --rebase origin "$BRANCH" || true
+          git pull --rebase origin "$BRANCH"
 
           for i in 1 2 3 4 5; do
             udx=$((RANDOM % ${#ucs[@]}))
@@ -162,6 +162,7 @@ jobs:
           done
 
           # Rebase onto latest remote in case of concurrent updates, then push
-          git fetch origin "$BRANCH" || true
-          git rebase "origin/$BRANCH" || true
-          git push origin "$BRANCH"
+          git fetch origin "$BRANCH"
+          git rebase "origin/$BRANCH"
+          # Try normal push first; if it fails due to non-fast-forward, rebase again and push with lease
+          git push origin "$BRANCH" || { git fetch origin "$BRANCH"; git rebase "origin/$BRANCH"; git push --force-with-lease origin "$BRANCH"; }
