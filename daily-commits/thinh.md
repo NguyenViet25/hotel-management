@@ -8,3 +8,4 @@
 2025-10-24 - 3 - 18:11:32 UTC :: perf: UC-11 Goi gia: bat/tam ngung goi gia dang ap dung. — chinh sua tai lieu & mo ta API (da smoke test)
 2025-10-24 - 4 - 18:11:35 UTC :: feat: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — them log chi tiet phuc vu audit (chuan bi cho tinh nang tiep theo)
 2025-10-24 - 5 - 18:11:38 UTC :: ci: UC-43 Mat khau: quy dinh do manh, het han phien. — cap nhat cau hinh va kiem tra bien (dong bo voi BE/FE)
+2025-10-27 - 1 - 16:14:36 UTC :: ci: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — dieu chinh quyen truy cap theo vai tro (dam bao backward-compatible)
