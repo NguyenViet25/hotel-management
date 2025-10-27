@@ -8,3 +8,4 @@
 2025-10-24 - 3 - 18:11:31 UTC :: perf: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — chuan hoa ten ham/bien theo convention (chuan bi cho tinh nang tiep theo)
 2025-10-24 - 4 - 18:11:32 UTC :: ci: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — cap nhat cau hinh va kiem tra bien (da review so bo)
 2025-10-24 - 5 - 18:11:36 UTC :: docs: UC-42 Phan quyen: thiet lap quyen theo co so. — fix race-condition nho trong thao tac (dong bo voi BE/FE)
+2025-10-27 - 1 - 16:14:35 UTC :: chore: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — refactor luong xu ly cho ro rang (da review so bo)
