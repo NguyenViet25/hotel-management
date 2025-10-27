@@ -11,3 +11,4 @@
 2025-10-27 - 1 - 16:14:36 UTC :: ci: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — dieu chinh quyen truy cap theo vai tro (dam bao backward-compatible)
 2025-10-27 - 2 - 16:14:38 UTC :: test: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — cai thien hieu nang render/list (chuan bi cho tinh nang tiep theo)
 2025-10-27 - 3 - 16:14:40 UTC :: perf: UC-09 So do: hien thi layout, loc trang thai phong. — kiem tra tuong thich mui gio/tien te (dong bo voi BE/FE)
+2025-10-27 - 4 - 16:14:43 UTC :: perf: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — bo sung case canh bien & no-show (da review so bo)
