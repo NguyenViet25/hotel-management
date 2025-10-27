@@ -14,3 +14,4 @@
 2025-10-27 - 4 - 16:14:40 UTC :: test: UC-29 Thanh toan nha hang: thu tien, in hoa don, dong giao dich. — bo sung metrics/telemetry co ban (anh huong thap)
 2025-10-27 - 5 - 16:14:42 UTC :: feat: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — chinh sua tai lieu & mo ta API (da kiem tra lint)
 2025-10-27 - 1 - 16:17:36 UTC :: feat: UC-33 Phan ca: gan ca, duyet doi ca/ngi phep. — chinh sua tai lieu & mo ta API (dat tieu chi toi thieu)
+2025-10-27 - 2 - 16:17:39 UTC :: ci: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — dieu chinh quyen truy cap theo vai tro (dat tieu chi toi thieu)
