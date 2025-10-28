@@ -23,3 +23,4 @@
 2025-10-27 - 3 - 16:17:40 UTC :: ci: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — bo sung metrics/telemetry co ban (da kiem tra lint)
 2025-10-27 - 4 - 16:17:41 UTC :: chore: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — dieu chinh quyen truy cap theo vai tro (dong bo voi BE/FE)
 2025-10-27 - 5 - 16:17:44 UTC :: build: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — refactor luong xu ly cho ro rang (can theo doi them)
+2025-10-28 - 1 - 01:41:22 UTC :: build: UC-43 Mat khau: quy dinh do manh, het han phien. — cai thien hieu nang render/list (anh huong thap)
