@@ -22,3 +22,4 @@
 2025-10-28 - 2 - 01:41:40 UTC :: test: UC-35 Ngoai le: gui yeu cau mien/giam phi, vuot tran. — them log chi tiet phuc vu audit (anh huong thap)
 2025-10-28 - 3 - 01:41:41 UTC :: build: UC-07 Loai phong: dinh nghia tien nghi va gia co ban. — toi uu truy van va bo nho (khong doi hanh vi)
 2025-10-28 - 4 - 01:41:44 UTC :: docs: UC-34 Cham cong: ghi nhan diem danh, ban giao ca. — cap nhat cau hinh va kiem tra bien (da kiem tra lint)
+2025-10-28 - 5 - 01:41:47 UTC :: build: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — cap nhat cau hinh va kiem tra bien (anh huong thap)
