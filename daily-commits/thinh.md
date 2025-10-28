@@ -21,3 +21,4 @@
 2025-10-28 - 1 - 01:41:20 UTC :: feat: UC-34 Cham cong: ghi nhan diem danh, ban giao ca. — cai thien hieu nang render/list (da smoke test)
 2025-10-28 - 2 - 01:41:23 UTC :: perf: UC-19 Lich phong: calendar trang thai phong theo ngay. — cai thien hieu nang render/list (da smoke test)
 2025-10-28 - 3 - 01:41:24 UTC :: docs: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — dieu chinh quyen truy cap theo vai tro (can theo doi them)
+2025-10-28 - 4 - 01:41:25 UTC :: fix: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — kiem tra tuong thich mui gio/tien te (da review so bo)
