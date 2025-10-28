@@ -1,39 +1,38 @@
-using System;
-using System.Collections.Generic;
-using HotelManagement.Domain.Common;
-using HotelManagement.Domain.Enums;
+namespace HotelManagement.Domain;
 
-namespace HotelManagement.Domain.Entities
+public class Booking
 {
-    public class Booking : BaseEntity
-    {
-        public string BookingNumber { get; set; }
-        public Guid GuestId { get; set; }
-        public Guid RoomId { get; set; }
-        public Guid? RatePlanId { get; set; }
-        public Guid HotelPropertyId { get; set; }
-        public DateTime CheckInDate { get; set; }
-        public DateTime CheckOutDate { get; set; }
-        public int Adults { get; set; }
-        public int Children { get; set; }
-        public BookingStatus Status { get; set; }
-        public BookingSource Source { get; set; }
-        public decimal TotalAmount { get; set; }
-        public decimal? DepositAmount { get; set; }
-        public bool DepositPaid { get; set; }
-        public decimal? TaxAmount { get; set; }
-        public string SpecialRequests { get; set; }
-        public DateTime? CancellationDate { get; set; }
-        public string CancellationReason { get; set; }
-        public decimal? CancellationFee { get; set; }
-        public DateTime? ActualCheckInDate { get; set; }
-        public DateTime? ActualCheckOutDate { get; set; }
-        
-        // Navigation properties
-        public virtual Guest Guest { get; set; }
-        public virtual Room Room { get; set; }
-        public virtual RatePlan RatePlan { get; set; }
-        public virtual HotelProperty HotelProperty { get; set; }
-        public virtual ICollection<Payment> Payments { get; set; }
-    }
+    public Guid Id { get; set; }
+    public Guid HotelId { get; set; }
+    public Guid RoomId { get; set; }
+    public Guid? PrimaryGuestId { get; set; }
+    public DateTime StartDate { get; set; }
+    public DateTime EndDate { get; set; }
+    public BookingStatus Status { get; set; } = BookingStatus.Pending;
+    public decimal DepositAmount { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    public Hotel? Hotel { get; set; }
+    public Room? Room { get; set; }
+    public Guest? PrimaryGuest { get; set; }
+    public ICollection<BookingGuest> Guests { get; set; } = new List<BookingGuest>();
+    public ICollection<CallLog> CallLogs { get; set; } = new List<CallLog>();
+}
+
+public class BookingGuest
+{
+    public Guid BookingId { get; set; }
+    public Guid GuestId { get; set; }
+    public Booking? Booking { get; set; }
+    public Guest? Guest { get; set; }
+}
+
+public class CallLog
+{
+    public Guid Id { get; set; }
+    public Guid BookingId { get; set; }
+    public DateTime CallTime { get; set; }
+    public CallResult Result { get; set; }
+    public string? Notes { get; set; }
+    public Guid? StaffUserId { get; set; }
 }

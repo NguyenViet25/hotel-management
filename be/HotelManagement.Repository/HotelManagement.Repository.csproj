@@ -2,7 +2,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\HotelManagement.Domain\HotelManagement.Domain.csproj" />
-    <ProjectReference Include="..\HotelManagement.Repository\HotelManagement.Repository.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
