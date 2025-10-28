@@ -19,3 +19,4 @@
 2025-10-27 - 4 - 16:17:43 UTC :: build: UC-47 Dashboard: gioi han xem theo vai tro va co so. — bo sung index & toi uu DB (can theo doi them)
 2025-10-27 - 5 - 16:17:46 UTC :: test: UC-36 Duyet ngoai le: duyet/tu choi theo han muc. — them kiem soat loi & retry nhe (chuan bi cho tinh nang tiep theo)
 2025-10-28 - 1 - 01:41:20 UTC :: feat: UC-34 Cham cong: ghi nhan diem danh, ban giao ca. — cai thien hieu nang render/list (da smoke test)
+2025-10-28 - 2 - 01:41:23 UTC :: perf: UC-19 Lich phong: calendar trang thai phong theo ngay. — cai thien hieu nang render/list (da smoke test)
