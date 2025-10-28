@@ -22,3 +22,4 @@
 2025-10-28 - 2 - 01:41:21 UTC :: perf: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — fix race-condition nho trong thao tac (dat tieu chi toi thieu)
 2025-10-28 - 3 - 01:41:23 UTC :: ci: UC-40 Thu/chi: doi soat tien mat/the/le phi PG. — dieu chinh quyen truy cap theo vai tro (chuan bi cho tinh nang tiep theo)
 2025-10-28 - 4 - 01:41:25 UTC :: fix: UC-20 Keo-tha: gan/doi phong truc quan, tranh trung. — cap nhat mock data & seed test (da kiem tra lint)
+2025-10-28 - 5 - 01:41:26 UTC :: build: UC-43 Mat khau: quy dinh do manh, het han phien. — fix race-condition nho trong thao tac (dat tieu chi toi thieu)
