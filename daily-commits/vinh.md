@@ -21,3 +21,4 @@
 2025-10-28 - 1 - 01:41:39 UTC :: chore: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — sua validate va bo sung thong bao loi (dong bo voi BE/FE)
 2025-10-28 - 2 - 01:41:40 UTC :: test: UC-35 Ngoai le: gui yeu cau mien/giam phi, vuot tran. — them log chi tiet phuc vu audit (anh huong thap)
 2025-10-28 - 3 - 01:41:41 UTC :: build: UC-07 Loai phong: dinh nghia tien nghi va gia co ban. — toi uu truy van va bo nho (khong doi hanh vi)
+2025-10-28 - 4 - 01:41:44 UTC :: docs: UC-34 Cham cong: ghi nhan diem danh, ban giao ca. — cap nhat cau hinh va kiem tra bien (da kiem tra lint)
