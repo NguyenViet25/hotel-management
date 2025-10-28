@@ -18,3 +18,4 @@
 2025-10-27 - 3 - 16:17:40 UTC :: feat: UC-35 Ngoai le: gui yeu cau mien/giam phi, vuot tran. — cap nhat mock data & seed test (anh huong thap)
 2025-10-27 - 4 - 16:17:43 UTC :: feat: UC-37 Night Audit: kiem tra folio chua chot, khoa giao dich. — toi uu truy van va bo nho (can theo doi them)
 2025-10-27 - 5 - 16:17:45 UTC :: ci: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — bo sung unit test muc co ban (khong doi hanh vi)
+2025-10-28 - 1 - 01:41:19 UTC :: refactor: UC-18 Room Move/Extend: doi phong, gia han dem o. — fix race-condition nho trong thao tac (da review so bo)
