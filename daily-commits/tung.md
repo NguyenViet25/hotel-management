@@ -24,3 +24,4 @@
 2025-10-27 - 4 - 16:17:41 UTC :: chore: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — dieu chinh quyen truy cap theo vai tro (dong bo voi BE/FE)
 2025-10-27 - 5 - 16:17:44 UTC :: build: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — refactor luong xu ly cho ro rang (can theo doi them)
 2025-10-28 - 1 - 01:41:22 UTC :: build: UC-43 Mat khau: quy dinh do manh, het han phien. — cai thien hieu nang render/list (anh huong thap)
+2025-10-28 - 2 - 01:41:23 UTC :: build: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — dieu chinh UI & copy cho ro (dat tieu chi toi thieu)
