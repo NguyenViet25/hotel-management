@@ -20,3 +20,4 @@
 2025-10-27 - 5 - 16:17:45 UTC :: ci: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — bo sung unit test muc co ban (khong doi hanh vi)
 2025-10-28 - 1 - 01:41:19 UTC :: refactor: UC-18 Room Move/Extend: doi phong, gia han dem o. — fix race-condition nho trong thao tac (da review so bo)
 2025-10-28 - 2 - 01:41:21 UTC :: perf: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — fix race-condition nho trong thao tac (dat tieu chi toi thieu)
+2025-10-28 - 3 - 01:41:23 UTC :: ci: UC-40 Thu/chi: doi soat tien mat/the/le phi PG. — dieu chinh quyen truy cap theo vai tro (chuan bi cho tinh nang tiep theo)
