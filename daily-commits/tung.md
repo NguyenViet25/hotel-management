@@ -27,3 +27,4 @@
 2025-10-28 - 2 - 01:41:23 UTC :: build: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — dieu chinh UI & copy cho ro (dat tieu chi toi thieu)
 2025-10-28 - 3 - 01:41:24 UTC :: docs: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — fix race-condition nho trong thao tac (da kiem tra lint)
 2025-10-28 - 4 - 01:41:26 UTC :: docs: UC-37 Night Audit: kiem tra folio chua chot, khoa giao dich. — bo sung metrics/telemetry co ban (khong doi hanh vi)
+2025-10-28 - 5 - 01:41:28 UTC :: fix: UC-38 Audit Log: xem/loc thao tac, hanh dong, thoi gian. — don dep code va xoa doan thua (dong bo voi BE/FE)
