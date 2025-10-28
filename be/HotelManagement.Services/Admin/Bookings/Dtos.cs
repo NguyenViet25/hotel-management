@@ -1,4 +1,5 @@
 using HotelManagement.Domain;
+using HotelManagement.Services.Admin.Pricing.Dtos;
 
 namespace HotelManagement.Services.Admin.Bookings.Dtos;
 
@@ -201,4 +202,55 @@ public class GroupBookingDto
     public int TotalGuests => Bookings.Sum(b => b.TotalGuests);
     public DateTime CreatedAt { get; set; }
     public string? Notes { get; set; }
+}
+
+// UC-36: Check-in & lưu ảnh CCCD
+public class CheckInDto
+{
+    public List<GuestIdCardDto> Guests { get; set; } = new();
+}
+
+public class GuestIdCardDto
+{
+    public Guid GuestId { get; set; }
+    public string? IdCardImageUrl { get; set; }
+}
+
+// UC-37: Đổi phòng
+public class ChangeRoomDto
+{
+    public Guid NewRoomId { get; set; }
+}
+
+// UC-38: Gia hạn thêm đêm
+public class ExtendStayDto
+{
+    public DateTime NewEndDate { get; set; }
+    public string? DiscountCode { get; set; }
+}
+
+public class ExtendStayResultDto
+{
+    public BookingDto Booking { get; set; } = new();
+    public PriceCalculationResultDto Price { get; set; } = new();
+}
+
+// UC-39: Check-out & đối soát
+public class CheckoutRequestDto
+{
+    public bool EarlyCheckIn { get; set; }
+    public bool LateCheckOut { get; set; }
+    public string? DiscountCode { get; set; }
+}
+
+public class CheckoutResultDto
+{
+    public Guid InvoiceId { get; set; }
+    public decimal RoomCharges { get; set; }
+    public decimal FnbCharges { get; set; }
+    public decimal Surcharges { get; set; }
+    public decimal Discounts { get; set; }
+    public decimal TotalAmount { get; set; }
+    public decimal DepositApplied { get; set; }
+    public decimal AmountDue { get; set; }
 }
