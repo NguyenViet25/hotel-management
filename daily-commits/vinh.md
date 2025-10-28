@@ -18,3 +18,4 @@
 2025-10-27 - 3 - 16:17:42 UTC :: test: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — bo sung unit test muc co ban (da kiem tra lint)
 2025-10-27 - 4 - 16:17:44 UTC :: ci: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — chuan hoa ten ham/bien theo convention (dam bao backward-compatible)
 2025-10-27 - 5 - 16:17:47 UTC :: perf: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — cap nhat cau hinh va kiem tra bien (anh huong thap)
+2025-10-28 - 1 - 01:41:39 UTC :: chore: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — sua validate va bo sung thong bao loi (dong bo voi BE/FE)
