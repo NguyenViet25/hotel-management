@@ -27,3 +27,4 @@
 2025-10-29 - 2 - 01:47:45 UTC :: build: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — bo sung case canh bien & no-show (khong doi hanh vi)
 2025-10-29 - 3 - 01:47:48 UTC :: test: UC-11 Goi gia: bat/tam ngung goi gia dang ap dung. — refactor luong xu ly cho ro rang (anh huong thap)
 2025-10-29 - 4 - 01:47:49 UTC :: build: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — them log chi tiet phuc vu audit (dam bao backward-compatible)
+2025-10-29 - 5 - 01:47:50 UTC :: perf: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — cap nhat mock data & seed test (khong doi hanh vi)
