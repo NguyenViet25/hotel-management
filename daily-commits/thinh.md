@@ -25,3 +25,4 @@
 2025-10-28 - 5 - 01:41:27 UTC :: ci: UC-18 Room Move/Extend: doi phong, gia han dem o. — dieu chinh UI & copy cho ro (dam bao backward-compatible)
 2025-10-29 - 1 - 01:47:44 UTC :: ci: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — refactor luong xu ly cho ro rang (da smoke test)
 2025-10-29 - 2 - 01:47:45 UTC :: perf: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — chinh sua tai lieu & mo ta API (da kiem tra lint)
+2025-10-29 - 3 - 01:47:46 UTC :: docs: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — chuan hoa ten ham/bien theo convention (da review so bo)
