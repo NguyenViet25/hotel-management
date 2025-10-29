@@ -24,3 +24,4 @@
 2025-10-28 - 4 - 01:41:25 UTC :: fix: UC-20 Keo-tha: gan/doi phong truc quan, tranh trung. — cap nhat mock data & seed test (da kiem tra lint)
 2025-10-28 - 5 - 01:41:26 UTC :: build: UC-43 Mat khau: quy dinh do manh, het han phien. — fix race-condition nho trong thao tac (dat tieu chi toi thieu)
 2025-10-29 - 1 - 01:47:44 UTC :: build: UC-01 RBAC: tao, sua, khoa tai khoan; gan vai tro. — them log chi tiet phuc vu audit (da smoke test)
+2025-10-29 - 2 - 01:47:45 UTC :: build: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — bo sung case canh bien & no-show (khong doi hanh vi)
