@@ -27,3 +27,4 @@
 2025-10-29 - 2 - 01:47:45 UTC :: perf: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — chinh sua tai lieu & mo ta API (da kiem tra lint)
 2025-10-29 - 3 - 01:47:46 UTC :: docs: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — chuan hoa ten ham/bien theo convention (da review so bo)
 2025-10-29 - 4 - 01:47:49 UTC :: fix: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — chinh sua tai lieu & mo ta API (da smoke test)
+2025-10-29 - 5 - 01:47:52 UTC :: feat: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — them log chi tiet phuc vu audit (khong doi hanh vi)
