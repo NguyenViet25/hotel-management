@@ -23,3 +23,8 @@
 2025-10-28 - 3 - 01:41:24 UTC :: docs: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — dieu chinh quyen truy cap theo vai tro (can theo doi them)
 2025-10-28 - 4 - 01:41:25 UTC :: fix: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — kiem tra tuong thich mui gio/tien te (da review so bo)
 2025-10-28 - 5 - 01:41:27 UTC :: ci: UC-18 Room Move/Extend: doi phong, gia han dem o. — dieu chinh UI & copy cho ro (dam bao backward-compatible)
+2025-10-29 - 1 - 01:47:44 UTC :: ci: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — refactor luong xu ly cho ro rang (da smoke test)
+2025-10-29 - 2 - 01:47:45 UTC :: perf: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — chinh sua tai lieu & mo ta API (da kiem tra lint)
+2025-10-29 - 3 - 01:47:46 UTC :: docs: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — chuan hoa ten ham/bien theo convention (da review so bo)
+2025-10-29 - 4 - 01:47:49 UTC :: fix: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — chinh sua tai lieu & mo ta API (da smoke test)
+2025-10-29 - 5 - 01:47:52 UTC :: feat: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — them log chi tiet phuc vu audit (khong doi hanh vi)
