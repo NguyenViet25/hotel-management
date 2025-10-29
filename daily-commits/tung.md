@@ -32,3 +32,4 @@
 2025-10-29 - 2 - 01:47:48 UTC :: perf: UC-19 Lich phong: calendar trang thai phong theo ngay. — them kiem soat loi & retry nhe (dat tieu chi toi thieu)
 2025-10-29 - 3 - 01:47:49 UTC :: ci: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — dieu chinh quyen truy cap theo vai tro (can theo doi them)
 2025-10-29 - 4 - 01:47:51 UTC :: test: UC-39 Xuat Audit Log: xuat CSV/PDF kiem tra tuan thu. — bo sung metrics/telemetry co ban (dat tieu chi toi thieu)
+2025-10-29 - 5 - 01:47:53 UTC :: ci: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — sua validate va bo sung thong bao loi (da smoke test)
