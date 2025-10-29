@@ -26,3 +26,4 @@
 2025-10-29 - 1 - 01:47:46 UTC :: fix: UC-33 Phan ca: gan ca, duyet doi ca/ngi phep. — them kiem soat loi & retry nhe (da smoke test)
 2025-10-29 - 2 - 01:47:49 UTC :: ci: UC-23 Bao tri: tao ticket, dinh anh, mo ta loi. — chuan hoa ten ham/bien theo convention (khong doi hanh vi)
 2025-10-29 - 3 - 01:47:52 UTC :: docs: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — bo sung metrics/telemetry co ban (da smoke test)
+2025-10-29 - 4 - 01:47:53 UTC :: docs: UC-42 Phan quyen: thiet lap quyen theo co so. — cai thien hieu nang render/list (da kiem tra lint)
