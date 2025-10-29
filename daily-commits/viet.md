@@ -23,3 +23,4 @@
 2025-10-28 - 3 - 01:41:23 UTC :: ci: UC-40 Thu/chi: doi soat tien mat/the/le phi PG. — dieu chinh quyen truy cap theo vai tro (chuan bi cho tinh nang tiep theo)
 2025-10-28 - 4 - 01:41:25 UTC :: fix: UC-20 Keo-tha: gan/doi phong truc quan, tranh trung. — cap nhat mock data & seed test (da kiem tra lint)
 2025-10-28 - 5 - 01:41:26 UTC :: build: UC-43 Mat khau: quy dinh do manh, het han phien. — fix race-condition nho trong thao tac (dat tieu chi toi thieu)
+2025-10-29 - 1 - 01:47:44 UTC :: build: UC-01 RBAC: tao, sua, khoa tai khoan; gan vai tro. — them log chi tiet phuc vu audit (da smoke test)
