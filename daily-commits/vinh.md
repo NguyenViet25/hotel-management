@@ -23,3 +23,8 @@
 2025-10-28 - 3 - 01:41:41 UTC :: build: UC-07 Loai phong: dinh nghia tien nghi va gia co ban. — toi uu truy van va bo nho (khong doi hanh vi)
 2025-10-28 - 4 - 01:41:44 UTC :: docs: UC-34 Cham cong: ghi nhan diem danh, ban giao ca. — cap nhat cau hinh va kiem tra bien (da kiem tra lint)
 2025-10-28 - 5 - 01:41:47 UTC :: build: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — cap nhat cau hinh va kiem tra bien (anh huong thap)
+2025-10-29 - 1 - 01:47:46 UTC :: fix: UC-33 Phan ca: gan ca, duyet doi ca/ngi phep. — them kiem soat loi & retry nhe (da smoke test)
+2025-10-29 - 2 - 01:47:49 UTC :: ci: UC-23 Bao tri: tao ticket, dinh anh, mo ta loi. — chuan hoa ten ham/bien theo convention (khong doi hanh vi)
+2025-10-29 - 3 - 01:47:52 UTC :: docs: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — bo sung metrics/telemetry co ban (da smoke test)
+2025-10-29 - 4 - 01:47:53 UTC :: docs: UC-42 Phan quyen: thiet lap quyen theo co so. — cai thien hieu nang render/list (da kiem tra lint)
+2025-10-29 - 5 - 01:47:56 UTC :: ci: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — tach chuc nang de de bao tri (anh huong thap)
