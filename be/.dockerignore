@@ -1,0 +1,16 @@
+# Ignore build outputs and temporary files
+**/bin/
+**/obj/
+
+# Git and CI
+.git/
+.github/
+
+# Node and frontend cache (if any included in backend)
+**/node_modules/
+**/.vite/
+
+# IDE files
+**/*.user
+**/*.suo
+**/.vs/

@@ -5,11 +5,11 @@ WORKDIR /src
 # Copy the full backend source into the build stage
 COPY . .
 
-# Restore dependencies
-RUN dotnet restore HotelManagement.Api/HotelManagement.API.csproj
+# Restore dependencies (use absolute path to avoid path issues)
+RUN dotnet restore /src/HotelManagement.Api/HotelManagement.API.csproj
 
-# Publish the application
-RUN dotnet publish HotelManagement.Api/HotelManagement.API.csproj -c Release -o /app/publish
+# Publish the application (use absolute path)
+RUN dotnet publish /src/HotelManagement.Api/HotelManagement.API.csproj -c Release -o /app/publish
 
 # Final image with ASP.NET Core runtime
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
