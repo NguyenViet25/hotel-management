@@ -32,3 +32,4 @@
 2025-10-30 - 2 - 01:47:26 UTC :: refactor: UC-40 Thu/chi: doi soat tien mat/the/le phi PG. — tach chuc nang de de bao tri (dat tieu chi toi thieu)
 2025-10-30 - 3 - 01:47:27 UTC :: ci: UC-43 Mat khau: quy dinh do manh, het han phien. — sua validate va bo sung thong bao loi (chuan bi cho tinh nang tiep theo)
 2025-10-30 - 4 - 01:47:29 UTC :: refactor: UC-39 Xuat Audit Log: xuat CSV/PDF kiem tra tuan thu. — sua validate va bo sung thong bao loi (dam bao backward-compatible)
+2025-10-30 - 5 - 01:47:30 UTC :: build: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — kiem tra tuong thich mui gio/tien te (dam bao backward-compatible)
