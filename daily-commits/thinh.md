@@ -28,3 +28,4 @@
 2025-10-29 - 3 - 01:47:46 UTC :: docs: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — chuan hoa ten ham/bien theo convention (da review so bo)
 2025-10-29 - 4 - 01:47:49 UTC :: fix: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — chinh sua tai lieu & mo ta API (da smoke test)
 2025-10-29 - 5 - 01:47:52 UTC :: feat: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — them log chi tiet phuc vu audit (khong doi hanh vi)
+2025-10-30 - 1 - 01:47:24 UTC :: docs: UC-18 Room Move/Extend: doi phong, gia han dem o. — cap nhat mock data & seed test (chuan bi cho tinh nang tiep theo)
