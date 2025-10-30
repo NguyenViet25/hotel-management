@@ -30,3 +30,4 @@
 2025-10-29 - 5 - 01:47:56 UTC :: ci: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — tach chuc nang de de bao tri (anh huong thap)
 2025-10-30 - 1 - 01:47:25 UTC :: perf: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — them log chi tiet phuc vu audit (anh huong thap)
 2025-10-30 - 2 - 01:47:27 UTC :: fix: UC-35 Ngoai le: gui yeu cau mien/giam phi, vuot tran. — bo sung metrics/telemetry co ban (da smoke test)
+2025-10-30 - 3 - 01:47:29 UTC :: test: UC-21 Housekeeping: cap nhat Dirty/In-progress/Cleaned/Inspected. — cap nhat mock data & seed test (dat tieu chi toi thieu)
