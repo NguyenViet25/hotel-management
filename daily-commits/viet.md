@@ -29,3 +29,4 @@
 2025-10-29 - 4 - 01:47:49 UTC :: build: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — them log chi tiet phuc vu audit (dam bao backward-compatible)
 2025-10-29 - 5 - 01:47:50 UTC :: perf: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — cap nhat mock data & seed test (khong doi hanh vi)
 2025-10-30 - 1 - 01:47:24 UTC :: docs: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — sua validate va bo sung thong bao loi (anh huong thap)
+2025-10-30 - 2 - 01:47:26 UTC :: test: UC-22 Minibar/Amenity: ghi tieu hao, post charge vao folio. — toi uu truy van va bo nho (da smoke test)
