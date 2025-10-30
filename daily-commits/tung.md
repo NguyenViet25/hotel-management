@@ -33,3 +33,4 @@
 2025-10-29 - 3 - 01:47:49 UTC :: ci: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — dieu chinh quyen truy cap theo vai tro (can theo doi them)
 2025-10-29 - 4 - 01:47:51 UTC :: test: UC-39 Xuat Audit Log: xuat CSV/PDF kiem tra tuan thu. — bo sung metrics/telemetry co ban (dat tieu chi toi thieu)
 2025-10-29 - 5 - 01:47:53 UTC :: ci: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — sua validate va bo sung thong bao loi (da smoke test)
+2025-10-30 - 1 - 01:47:24 UTC :: perf: UC-33 Phan ca: gan ca, duyet doi ca/ngi phep. — bo sung metrics/telemetry co ban (da kiem tra lint)
