@@ -31,3 +31,4 @@
 2025-10-30 - 1 - 01:47:24 UTC :: docs: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — sua validate va bo sung thong bao loi (anh huong thap)
 2025-10-30 - 2 - 01:47:26 UTC :: test: UC-22 Minibar/Amenity: ghi tieu hao, post charge vao folio. — toi uu truy van va bo nho (da smoke test)
 2025-10-30 - 3 - 01:47:27 UTC :: docs: UC-34 Cham cong: ghi nhan diem danh, ban giao ca. — kiem tra tuong thich mui gio/tien te (dat tieu chi toi thieu)
+2025-10-30 - 4 - 01:47:29 UTC :: docs: UC-37 Night Audit: kiem tra folio chua chot, khoa giao dich. — bo sung unit test muc co ban (khong doi hanh vi)
