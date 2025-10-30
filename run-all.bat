@@ -9,10 +9,11 @@ REM Navigate to script directory (project root)
 cd /d %~dp0
 
 echo Building and starting Docker services...
-docker compose up -d --build
+docker compose up -d 
 if %ERRORLEVEL% NEQ 0 (
   echo.
   echo [ERROR] docker compose failed. Ensure Docker Desktop is running.
+  pause
   exit /b %ERRORLEVEL%
 )
 
@@ -26,4 +27,7 @@ echo.
 echo To view logs: docker compose logs -f
 echo To stop:      docker compose down
 
-endlocal
+echo.
+echo All services started successfully!
+echo Press any key to exit...
+pause >nul
