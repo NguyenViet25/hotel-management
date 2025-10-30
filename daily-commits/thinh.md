@@ -29,3 +29,4 @@
 2025-10-29 - 4 - 01:47:49 UTC :: fix: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — chinh sua tai lieu & mo ta API (da smoke test)
 2025-10-29 - 5 - 01:47:52 UTC :: feat: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — them log chi tiet phuc vu audit (khong doi hanh vi)
 2025-10-30 - 1 - 01:47:24 UTC :: docs: UC-18 Room Move/Extend: doi phong, gia han dem o. — cap nhat mock data & seed test (chuan bi cho tinh nang tiep theo)
+2025-10-30 - 2 - 01:47:26 UTC :: refactor: UC-40 Thu/chi: doi soat tien mat/the/le phi PG. — tach chuc nang de de bao tri (dat tieu chi toi thieu)
