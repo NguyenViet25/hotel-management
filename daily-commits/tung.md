@@ -40,3 +40,4 @@
 2025-10-30 - 5 - 01:47:32 UTC :: feat: UC-36 Duyet ngoai le: duyet/tu choi theo han muc. — bo sung metrics/telemetry co ban (khong doi hanh vi)
 2025-10-31 - 1 - 01:44:10 UTC :: fix: UC-34 Cham cong: ghi nhan diem danh, ban giao ca. — bo sung case canh bien & no-show (khong doi hanh vi)
 2025-10-31 - 2 - 01:44:13 UTC :: docs: UC-09 So do: hien thi layout, loc trang thai phong. — cai thien hieu nang render/list (da kiem tra lint)
+2025-10-31 - 3 - 01:44:14 UTC :: feat: UC-20 Keo-tha: gan/doi phong truc quan, tranh trung. — kiem tra tuong thich mui gio/tien te (khong doi hanh vi)
