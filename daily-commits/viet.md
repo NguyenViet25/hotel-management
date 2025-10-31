@@ -33,3 +33,4 @@
 2025-10-30 - 3 - 01:47:27 UTC :: docs: UC-34 Cham cong: ghi nhan diem danh, ban giao ca. — kiem tra tuong thich mui gio/tien te (dat tieu chi toi thieu)
 2025-10-30 - 4 - 01:47:29 UTC :: docs: UC-37 Night Audit: kiem tra folio chua chot, khoa giao dich. — bo sung unit test muc co ban (khong doi hanh vi)
 2025-10-30 - 5 - 01:47:32 UTC :: feat: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — them log chi tiet phuc vu audit (dam bao backward-compatible)
+2025-10-31 - 1 - 01:44:10 UTC :: fix: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — cap nhat cau hinh va kiem tra bien (da smoke test)
