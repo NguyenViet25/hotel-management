@@ -37,3 +37,4 @@
 2025-10-31 - 2 - 01:44:14 UTC :: ci: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — chinh sua tai lieu & mo ta API (can theo doi them)
 2025-10-31 - 3 - 01:44:15 UTC :: chore: UC-23 Bao tri: tao ticket, dinh anh, mo ta loi. — chinh sua tai lieu & mo ta API (can theo doi them)
 2025-10-31 - 4 - 01:44:18 UTC :: chore: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — tach chuc nang de de bao tri (da kiem tra lint)
+2025-10-31 - 5 - 01:44:20 UTC :: build: UC-02 RBAC: thiet lap quyen thao tac theo vai tro/pham vi. — dieu chinh quyen truy cap theo vai tro (chuan bi cho tinh nang tiep theo)
