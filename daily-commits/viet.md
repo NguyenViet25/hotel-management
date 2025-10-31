@@ -35,3 +35,4 @@
 2025-10-30 - 5 - 01:47:32 UTC :: feat: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — them log chi tiet phuc vu audit (dam bao backward-compatible)
 2025-10-31 - 1 - 01:44:10 UTC :: fix: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — cap nhat cau hinh va kiem tra bien (da smoke test)
 2025-10-31 - 2 - 01:44:13 UTC :: chore: UC-43 Mat khau: quy dinh do manh, het han phien. — chinh sua tai lieu & mo ta API (da smoke test)
+2025-10-31 - 3 - 01:44:16 UTC :: fix: UC-29 Thanh toan nha hang: thu tien, in hoa don, dong giao dich. — bo sung case canh bien & no-show (dat tieu chi toi thieu)
