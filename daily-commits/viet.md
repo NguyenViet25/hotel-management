@@ -36,3 +36,4 @@
 2025-10-31 - 1 - 01:44:10 UTC :: fix: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — cap nhat cau hinh va kiem tra bien (da smoke test)
 2025-10-31 - 2 - 01:44:13 UTC :: chore: UC-43 Mat khau: quy dinh do manh, het han phien. — chinh sua tai lieu & mo ta API (da smoke test)
 2025-10-31 - 3 - 01:44:16 UTC :: fix: UC-29 Thanh toan nha hang: thu tien, in hoa don, dong giao dich. — bo sung case canh bien & no-show (dat tieu chi toi thieu)
+2025-10-31 - 4 - 01:44:17 UTC :: build: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — cai thien hieu nang render/list (anh huong thap)
