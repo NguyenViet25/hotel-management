@@ -37,3 +37,4 @@
 2025-10-31 - 2 - 01:44:11 UTC :: docs: UC-29 Thanh toan nha hang: thu tien, in hoa don, dong giao dich. — bo sung metrics/telemetry co ban (dam bao backward-compatible)
 2025-10-31 - 3 - 01:44:14 UTC :: feat: UC-10 Goi gia: tao rate plan, thoi gian ap dung linh hoat. — bo sung metrics/telemetry co ban (da kiem tra lint)
 2025-10-31 - 4 - 01:44:17 UTC :: chore: UC-18 Room Move/Extend: doi phong, gia han dem o. — cap nhat cau hinh va kiem tra bien (khong doi hanh vi)
+2025-10-31 - 5 - 01:44:19 UTC :: feat: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — toi uu truy van va bo nho (da smoke test)
