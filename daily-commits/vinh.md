@@ -34,3 +34,4 @@
 2025-10-30 - 4 - 01:47:32 UTC :: ci: UC-01 RBAC: tao, sua, khoa tai khoan; gan vai tro. — tach chuc nang de de bao tri (dam bao backward-compatible)
 2025-10-30 - 5 - 01:47:35 UTC :: fix: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — bo sung metrics/telemetry co ban (da smoke test)
 2025-10-31 - 1 - 01:44:12 UTC :: ci: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — them log chi tiet phuc vu audit (da kiem tra lint)
+2025-10-31 - 2 - 01:44:14 UTC :: ci: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — chinh sua tai lieu & mo ta API (can theo doi them)
