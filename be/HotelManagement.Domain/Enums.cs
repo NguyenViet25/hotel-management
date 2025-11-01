@@ -47,6 +47,38 @@ public enum OrderItemStatus
     Voided = 3
 }
 
+public enum InvoiceStatus
+{
+    Draft = 0,
+    Issued = 1,
+    Paid = 2,
+    Cancelled = 3
+}
+
+public enum PaymentStatus
+{
+    Pending = 0,
+    Completed = 1,
+    Refunded = 2,
+    Failed = 3
+}
+
+public enum PaymentMethod
+{
+    Cash = 0,
+    CreditCard = 1,
+    DebitCard = 2,
+    BankTransfer = 3,
+    MobilePayment = 4
+}
+
+public enum PromotionType
+{
+    PercentageDiscount = 0,
+    FixedAmountDiscount = 1,
+    FreeService = 2
+}
+
 public enum PaymentType
 {
     Cash = 0,
