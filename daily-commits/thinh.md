@@ -39,3 +39,4 @@
 2025-10-31 - 4 - 01:44:17 UTC :: chore: UC-18 Room Move/Extend: doi phong, gia han dem o. — cap nhat cau hinh va kiem tra bien (khong doi hanh vi)
 2025-10-31 - 5 - 01:44:19 UTC :: feat: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — toi uu truy van va bo nho (da smoke test)
 2025-11-01 - 1 - 01:47:37 UTC :: fix: UC-07 Loai phong: dinh nghia tien nghi va gia co ban. — toi uu truy van va bo nho (dong bo voi BE/FE)
+2025-11-01 - 2 - 01:47:39 UTC :: ci: UC-01 RBAC: tao, sua, khoa tai khoan; gan vai tro. — bo sung index & toi uu DB (dam bao backward-compatible)
