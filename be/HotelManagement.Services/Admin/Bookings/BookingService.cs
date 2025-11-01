@@ -4,6 +4,7 @@ using HotelManagement.Repository;
 using HotelManagement.Repository.Common;
 using HotelManagement.Services.Admin.Bookings.Dtos;
 using HotelManagement.Services.Admin.Pricing;
+using HotelManagement.Services.Admin.Pricing.Dtos;
 using HotelManagement.Services.Common;
 using Microsoft.EntityFrameworkCore;
 
@@ -541,7 +542,7 @@ public class BookingService : IBookingService
                 Price = priceResponse.Data
             };
 
-            return ApiResponse<ExtendStayResultDto>.Success(result);
+            return ApiResponse<ExtendStayResultDto>.Ok(result);
         }
         catch (Exception ex)
         {
@@ -630,7 +631,7 @@ public class BookingService : IBookingService
                 CheckoutTime = DateTime.UtcNow
             };
 
-            return ApiResponse<CheckoutResultDto>.Success(result);
+            return ApiResponse<CheckoutResultDto>.Ok(result);
         }
         catch (Exception ex)
         {
@@ -1128,5 +1129,10 @@ public class BookingService : IBookingService
         {
             return ApiResponse<List<BookingIntervalDto>>.Fail($"Error retrieving room schedule: {ex.Message}");
         }
+    }
+
+    public Task<ApiResponse<ExtendStayResultDto>> ExtendStayAsync(Guid bookingId, ExtendStayDto dto, Guid staffUserId)
+    {
+        throw new NotImplementedException();
     }
 }

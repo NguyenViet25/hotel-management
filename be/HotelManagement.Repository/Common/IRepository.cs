@@ -7,6 +7,7 @@ public interface IRepository<T> where T : class
     DbSet<T> Set { get; }
     IQueryable<T> Query();
     Task<T?> FindAsync(params object[] keyValues);
+    Task<bool> AnyAsync(params object[] keyValues);
     Task AddAsync(T entity);
     Task UpdateAsync(T entity);
     Task RemoveAsync(T entity);

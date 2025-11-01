@@ -34,4 +34,11 @@ public class EfRepository<T> : IRepository<T> where T : class
     }
 
     public Task<int> SaveChangesAsync(CancellationToken ct = default) => _db.SaveChangesAsync(ct);
+
+    public async Task<bool> AnyAsync(params object[] keyValues)
+    {
+      return await Set.FindAsync(keyValues) is not null; 
+    }
+
+
 }

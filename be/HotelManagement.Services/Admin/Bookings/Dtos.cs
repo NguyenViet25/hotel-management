@@ -241,16 +241,16 @@ public class CheckoutRequestDto
     public bool EarlyCheckIn { get; set; }
     public bool LateCheckOut { get; set; }
     public string? DiscountCode { get; set; }
+    public FinalPayment? FinalPayment {  get; set; }
 }
+
+public record FinalPayment(int Amount, PaymentType Type);
 
 public class CheckoutResultDto
 {
-    public Guid InvoiceId { get; set; }
-    public decimal RoomCharges { get; set; }
-    public decimal FnbCharges { get; set; }
-    public decimal Surcharges { get; set; }
-    public decimal Discounts { get; set; }
-    public decimal TotalAmount { get; set; }
-    public decimal DepositApplied { get; set; }
-    public decimal AmountDue { get; set; }
+   
+    public decimal TotalPaid { get; set; }
+    public BookingDto? Booking { get; set; }
+    public DateTime? CheckoutTime { get; set; }
+   
 }
