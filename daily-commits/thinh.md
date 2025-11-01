@@ -41,3 +41,4 @@
 2025-11-01 - 1 - 01:47:37 UTC :: fix: UC-07 Loai phong: dinh nghia tien nghi va gia co ban. — toi uu truy van va bo nho (dong bo voi BE/FE)
 2025-11-01 - 2 - 01:47:39 UTC :: ci: UC-01 RBAC: tao, sua, khoa tai khoan; gan vai tro. — bo sung index & toi uu DB (dam bao backward-compatible)
 2025-11-01 - 3 - 01:47:41 UTC :: chore: UC-35 Ngoai le: gui yeu cau mien/giam phi, vuot tran. — them log chi tiet phuc vu audit (da smoke test)
+2025-11-01 - 4 - 01:47:43 UTC :: ci: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — don dep code va xoa doan thua (khong doi hanh vi)
