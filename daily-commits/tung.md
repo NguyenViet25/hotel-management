@@ -45,3 +45,4 @@
 2025-10-31 - 5 - 01:44:17 UTC :: fix: UC-22 Minibar/Amenity: ghi tieu hao, post charge vao folio. — bo sung unit test muc co ban (khong doi hanh vi)
 2025-11-01 - 1 - 01:47:35 UTC :: docs: UC-06 Co so: gan quan ly phu trach va quyen truy cap. — dieu chinh UI & copy cho ro (dong bo voi BE/FE)
 2025-11-01 - 2 - 01:47:36 UTC :: ci: UC-02 RBAC: thiet lap quyen thao tac theo vai tro/pham vi. — bo sung unit test muc co ban (chuan bi cho tinh nang tiep theo)
+2025-11-01 - 3 - 01:47:39 UTC :: test: UC-10 Goi gia: tao rate plan, thoi gian ap dung linh hoat. — them kiem soat loi & retry nhe (da review so bo)
