@@ -38,3 +38,4 @@
 2025-10-31 - 3 - 01:44:14 UTC :: feat: UC-10 Goi gia: tao rate plan, thoi gian ap dung linh hoat. — bo sung metrics/telemetry co ban (da kiem tra lint)
 2025-10-31 - 4 - 01:44:17 UTC :: chore: UC-18 Room Move/Extend: doi phong, gia han dem o. — cap nhat cau hinh va kiem tra bien (khong doi hanh vi)
 2025-10-31 - 5 - 01:44:19 UTC :: feat: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — toi uu truy van va bo nho (da smoke test)
+2025-11-01 - 1 - 01:47:37 UTC :: fix: UC-07 Loai phong: dinh nghia tien nghi va gia co ban. — toi uu truy van va bo nho (dong bo voi BE/FE)
