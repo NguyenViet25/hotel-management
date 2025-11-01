@@ -3,6 +3,7 @@ using HotelManagement.Domain.Entities;
 using HotelManagement.Repository;
 using HotelManagement.Repository.Common;
 using HotelManagement.Services.Admin.Bookings.Dtos;
+using HotelManagement.Services.Admin.Pricing;
 using HotelManagement.Services.Common;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,6 +18,8 @@ public class BookingService : IBookingService
     private readonly IRepository<Hotel> _hotelRepository;
     private readonly IRepository<Payment> _paymentRepository;
     private readonly IRepository<CallLog> _callLogRepository;
+    private readonly IRepository<RoomStatusLog> _roomStatusLogRepository;
+    private readonly IPricingService _pricingService;
 
     public BookingService(
         ApplicationDbContext db,
@@ -25,7 +28,9 @@ public class BookingService : IBookingService
         IRepository<Room> roomRepository,
         IRepository<Hotel> hotelRepository,
         IRepository<Payment> paymentRepository,
-        IRepository<CallLog> callLogRepository)
+        IRepository<CallLog> callLogRepository,
+        IRepository<RoomStatusLog> roomStatusLogRepository,
+        IPricingService pricingService)
     {
         _db = db;
         _bookingRepository = bookingRepository;
@@ -34,6 +39,8 @@ public class BookingService : IBookingService
         _hotelRepository = hotelRepository;
         _paymentRepository = paymentRepository;
         _callLogRepository = callLogRepository;
+        _roomStatusLogRepository = roomStatusLogRepository;
+        _pricingService = pricingService;
     }
 
     // UC-31: Create booking with deposit
@@ -283,6 +290,351 @@ public class BookingService : IBookingService
         catch (Exception ex)
         {
             return ApiResponse<BookingDto>.Fail($"Error retrieving booking: {ex.Message}");
+        }
+    }
+
+    // UC-36: Check-in & CCCD/ID image handling
+    public async Task<ApiResponse<BookingDto>> CheckInAsync(Guid bookingId, CheckInDto dto, Guid staffUserId)
+    {
+        try
+        {
+            var booking = await _bookingRepository.Query()
+                .Include(b => b.Room)
+                .FirstOrDefaultAsync(b => b.Id == bookingId);
+
+            if (booking == null)
+            {
+                return ApiResponse<BookingDto>.Fail("Booking not found");
+            }
+
+            if (booking.Status == BookingStatus.Cancelled || booking.Status == BookingStatus.CheckedOut)
+            {
+                return ApiResponse<BookingDto>.Fail("Booking is not eligible for check-in");
+            }
+
+            // Update guest ID card images
+            foreach (var g in dto.Guests)
+            {
+                var guest = await _guestRepository.FindAsync(g.GuestId);
+                if (guest != null)
+                {
+                    guest.IdCardImageUrl = g.IdCardImageUrl ?? guest.IdCardImageUrl;
+                    await _guestRepository.UpdateAsync(guest);
+                }
+            }
+
+            // Update booking status
+            booking.Status = BookingStatus.CheckedIn;
+            await _bookingRepository.UpdateAsync(booking);
+
+            // Update room status and log
+            if (booking.Room != null)
+            {
+                booking.Room.Status = RoomStatus.Occupied;
+                await _roomRepository.UpdateAsync(booking.Room);
+
+                var statusLog = new RoomStatusLog
+                {
+                    Id = Guid.NewGuid(),
+                    HotelId = booking.Room.HotelId,
+                    RoomId = booking.Room.Id,
+                    Status = RoomStatus.Occupied,
+                    Timestamp = DateTime.UtcNow
+                };
+                await _roomStatusLogRepository.AddAsync(statusLog);
+            }
+
+            await _db.SaveChangesAsync();
+
+            return await GetByIdAsync(bookingId);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<BookingDto>.Fail($"Error during check-in: {ex.Message}");
+        }
+    }
+    
+    // UC-37: Change room
+    public async Task<ApiResponse<BookingDto>> ChangeRoomAsync(Guid bookingId, ChangeRoomDto dto, Guid staffUserId)
+    {
+        try
+        {
+            // Get booking with related data
+            var booking = await _bookingRepository.Query()
+                .Include(b => b.Room)
+                .FirstOrDefaultAsync(b => b.Id == bookingId);
+
+            if (booking == null)
+            {
+                return ApiResponse<BookingDto>.Fail("Booking not found");
+            }
+
+            // Validate booking status
+            if (booking.Status != BookingStatus.CheckedIn)
+            {
+                return ApiResponse<BookingDto>.Fail("Can only change room for checked-in bookings");
+            }
+
+            // Get new room
+            var newRoom = await _roomRepository.Query()
+                .Include(r => r.RoomType)
+                .FirstOrDefaultAsync(r => r.Id == dto.NewRoomId && r.HotelId == booking.HotelId);
+
+            if (newRoom == null)
+            {
+                return ApiResponse<BookingDto>.Fail("New room not found or doesn't belong to this hotel");
+            }
+
+            // Validate room is available
+            if (newRoom.Status != RoomStatus.Available)
+            {
+                return ApiResponse<BookingDto>.Fail($"New room is currently {newRoom.Status}");
+            }
+
+            // Check for overlapping bookings on the new room
+            var overlappingBooking = await _bookingRepository.Query()
+                .Where(b => b.RoomId == dto.NewRoomId && 
+                           b.Id != bookingId &&
+                           b.Status != BookingStatus.Cancelled &&
+                           ((booking.StartDate >= b.StartDate && booking.StartDate < b.EndDate) ||
+                            (booking.EndDate > b.StartDate && booking.EndDate <= b.EndDate) ||
+                            (booking.StartDate <= b.StartDate && booking.EndDate >= b.EndDate)))
+                .FirstOrDefaultAsync();
+
+            if (overlappingBooking != null)
+            {
+                return ApiResponse<BookingDto>.Fail("New room is already booked for the selected dates");
+            }
+
+            // Get old room for status update
+            var oldRoomId = booking.RoomId;
+            var oldRoom = booking.Room;
+
+            // Update booking with new room
+            booking.RoomId = dto.NewRoomId;
+            await _bookingRepository.UpdateAsync(booking);
+
+            // Update old room status to Available
+            if (oldRoom != null)
+            {
+                oldRoom.Status = RoomStatus.Available;
+                await _roomRepository.UpdateAsync(oldRoom);
+                
+                // Log old room status change
+                var oldRoomStatusLog = new RoomStatusLog
+                {
+                    Id = Guid.NewGuid(),
+                    HotelId = booking.HotelId,
+                    RoomId = oldRoomId,
+                    Status = RoomStatus.Available,
+                    Timestamp = DateTime.UtcNow
+                };
+                
+                await _roomStatusLogRepository.AddAsync(oldRoomStatusLog);
+            }
+
+            // Update new room status to Occupied
+            newRoom.Status = RoomStatus.Occupied;
+            await _roomRepository.UpdateAsync(newRoom);
+            
+            // Log new room status change
+            var newRoomStatusLog = new RoomStatusLog
+            {
+                Id = Guid.NewGuid(),
+                HotelId = booking.HotelId,
+                RoomId = dto.NewRoomId,
+                Status = RoomStatus.Occupied,
+                Timestamp = DateTime.UtcNow
+            };
+            
+            await _roomStatusLogRepository.AddAsync(newRoomStatusLog);
+
+            await _db.SaveChangesAsync();
+
+            // Return updated booking
+            return await GetByIdAsync(bookingId);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<BookingDto>.Fail($"Error changing room: {ex.Message}");
+        }
+    }
+    
+    // UC-38: Extend stay
+    public async Task<ApiResponse<ExtendStayResultDto>> ExtendStayAsync(Guid bookingId, ExtendStayDto dto)
+    {
+        try
+        {
+            // Get booking with related data
+            var booking = await _bookingRepository.Query()
+                .Include(b => b.Room)
+                    .ThenInclude(r => r.RoomType)
+                .Include(b => b.PrimaryGuest)
+                .Include(b => b.Guests)
+                .FirstOrDefaultAsync(b => b.Id == bookingId);
+
+            if (booking == null)
+            {
+                return ApiResponse<ExtendStayResultDto>.Fail("Booking not found");
+            }
+
+            // Validate booking status
+            if (booking.Status != BookingStatus.CheckedIn)
+            {
+                return ApiResponse<ExtendStayResultDto>.Fail("Can only extend stay for checked-in bookings");
+            }
+
+            // Validate new end date
+            if (dto.NewEndDate <= booking.EndDate)
+            {
+                return ApiResponse<ExtendStayResultDto>.Fail("New end date must be after current end date");
+            }
+
+            // Check for overlapping bookings on the same room
+            var overlappingBooking = await _bookingRepository.Query()
+                .Where(b => b.RoomId == booking.RoomId && 
+                           b.Id != bookingId &&
+                           b.Status != BookingStatus.Cancelled &&
+                           b.StartDate < dto.NewEndDate && 
+                           b.EndDate > booking.EndDate)
+                .FirstOrDefaultAsync();
+
+            if (overlappingBooking != null)
+            {
+                return ApiResponse<ExtendStayResultDto>.Fail("Room is already booked for the extended dates");
+            }
+
+            // Calculate price for extended stay
+            var priceRequest = new PriceCalculationRequestDto
+            {
+                HotelId = booking.HotelId,
+                RoomTypeId = booking.Room!.RoomTypeId,
+                CheckInDate = booking.EndDate, // Start from current end date
+                CheckOutDate = dto.NewEndDate,
+                GuestCount = booking.Guests.Count + (booking.PrimaryGuest != null ? 1 : 0),
+                DiscountCode = dto.DiscountCode
+            };
+
+            var priceResponse = await _pricingService.CalculatePriceAsync(priceRequest);
+            if (!priceResponse.Success)
+            {
+                return ApiResponse<ExtendStayResultDto>.Fail(priceResponse.Message);
+            }
+
+            // Update booking end date
+            var oldEndDate = booking.EndDate;
+            booking.EndDate = dto.NewEndDate;
+            await _bookingRepository.UpdateAsync(booking);
+            await _db.SaveChangesAsync();
+
+            // Get updated booking
+            var updatedBookingResponse = await GetByIdAsync(bookingId);
+            if (!updatedBookingResponse.Success)
+            {
+                return ApiResponse<ExtendStayResultDto>.Fail(updatedBookingResponse.Message);
+            }
+
+            // Return result with updated booking and price calculation
+            var result = new ExtendStayResultDto
+            {
+                Booking = updatedBookingResponse.Data,
+                Price = priceResponse.Data
+            };
+
+            return ApiResponse<ExtendStayResultDto>.Success(result);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<ExtendStayResultDto>.Fail($"Error extending stay: {ex.Message}");
+        }
+    }
+    
+    // UC-39: Check-out
+    public async Task<ApiResponse<CheckoutResultDto>> CheckoutAsync(Guid bookingId, CheckoutRequestDto dto, Guid staffUserId)
+    {
+        try
+        {
+            var booking = await _bookingRepository.Query()
+                .Include(b => b.Room)
+                .FirstOrDefaultAsync(b => b.Id == bookingId);
+
+            if (booking == null)
+            {
+                return ApiResponse<CheckoutResultDto>.Fail("Booking not found");
+            }
+
+            if (booking.Status != BookingStatus.CheckedIn)
+            {
+                return ApiResponse<CheckoutResultDto>.Fail("Only checked-in bookings can be checked out");
+            }
+
+            // Get all payments for this booking
+            var payments = await _paymentRepository.Query()
+                .Where(p => p.BookingId == bookingId)
+                .ToListAsync();
+
+            // Calculate total paid amount
+            decimal totalPaid = payments.Sum(p => p.Amount);
+
+            // Create final payment if needed
+            if (dto.FinalPayment != null && dto.FinalPayment.Amount > 0)
+            {
+                var payment = new Payment
+                {
+                    Id = Guid.NewGuid(),
+                    HotelId = booking.HotelId,
+                    BookingId = bookingId,
+                    Amount = dto.FinalPayment.Amount,
+                    Type = dto.FinalPayment.Type,
+                    Timestamp = DateTime.UtcNow
+                };
+                await _paymentRepository.AddAsync(payment);
+                totalPaid += payment.Amount;
+            }
+
+            // Update booking status
+            booking.Status = BookingStatus.CheckedOut;
+            await _bookingRepository.UpdateAsync(booking);
+
+            // Update room status to Dirty
+            if (booking.Room != null)
+            {
+                booking.Room.Status = RoomStatus.Dirty;
+                await _roomRepository.UpdateAsync(booking.Room);
+
+                // Log room status change
+                var statusLog = new RoomStatusLog
+                {
+                    Id = Guid.NewGuid(),
+                    HotelId = booking.HotelId,
+                    RoomId = booking.Room.Id,
+                    Status = RoomStatus.Dirty,
+                    Timestamp = DateTime.UtcNow
+                };
+                await _roomStatusLogRepository.AddAsync(statusLog);
+            }
+
+            await _db.SaveChangesAsync();
+
+            // Get updated booking details
+            var bookingResponse = await GetByIdAsync(bookingId);
+            if (!bookingResponse.Success)
+            {
+                return ApiResponse<CheckoutResultDto>.Fail(bookingResponse.Message);
+            }
+
+            var result = new CheckoutResultDto
+            {
+                Booking = bookingResponse.Data,
+                TotalPaid = totalPaid,
+                CheckoutTime = DateTime.UtcNow
+            };
+
+            return ApiResponse<CheckoutResultDto>.Success(result);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<CheckoutResultDto>.Fail($"Error during checkout: {ex.Message}");
         }
     }
 

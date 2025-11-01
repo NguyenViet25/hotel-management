@@ -167,7 +167,7 @@ public class BookingsController : ControllerBase
     }
 
     /// <summary>
-    /// UC-33: Cancel booking with refund/deduct handling
+    /// UC-35: Cancel a booking
     /// </summary>
     [HttpPost("{id}/cancel")]
     public async Task<IActionResult> CancelBooking(Guid id, [FromBody] CancelBookingDto dto)
@@ -189,7 +189,115 @@ public class BookingsController : ControllerBase
         {
             return Ok(result);
         }
+        
+        return BadRequest(result);
+    }
 
+    /// <summary>
+    /// UC-36: Check-in a booking
+    /// </summary>
+    [HttpPost("{id}/check-in")]
+    public async Task<IActionResult> CheckIn(Guid id, [FromBody] CheckInDto dto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var staffUserId = GetCurrentUserId();
+        if (staffUserId == Guid.Empty)
+        {
+            return Unauthorized("Invalid user token");
+        }
+
+        var result = await _bookingService.CheckInAsync(id, dto, staffUserId);
+        
+        if (result.Success)
+        {
+            return Ok(result);
+        }
+        
+        return BadRequest(result);
+    }
+
+    /// <summary>
+    /// UC-37: Change room for a booking
+    /// </summary>
+    [HttpPost("{id}/change-room")]
+    public async Task<IActionResult> ChangeRoom(Guid id, [FromBody] ChangeRoomDto dto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var staffUserId = GetCurrentUserId();
+        if (staffUserId == Guid.Empty)
+        {
+            return Unauthorized("Invalid user token");
+        }
+
+        var result = await _bookingService.ChangeRoomAsync(id, dto, staffUserId);
+        
+        if (result.Success)
+        {
+            return Ok(result);
+        }
+        
+        return BadRequest(result);
+    }
+
+    /// <summary>
+    /// UC-38: Extend stay for a booking
+    /// </summary>
+    [HttpPost("{id}/extend-stay")]
+    public async Task<IActionResult> ExtendStay(Guid id, [FromBody] ExtendStayDto dto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var staffUserId = GetCurrentUserId();
+        if (staffUserId == Guid.Empty)
+        {
+            return Unauthorized("Invalid user token");
+        }
+
+        var result = await _bookingService.ExtendStayAsync(id, dto, staffUserId);
+        
+        if (result.Success)
+        {
+            return Ok(result);
+        }
+        
+        return BadRequest(result);
+    }
+
+    /// <summary>
+    /// UC-39: Check-out a booking
+    /// </summary>
+    [HttpPost("{id}/check-out")]
+    public async Task<IActionResult> Checkout(Guid id, [FromBody] CheckoutRequestDto dto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var staffUserId = GetCurrentUserId();
+        if (staffUserId == Guid.Empty)
+        {
+            return Unauthorized("Invalid user token");
+        }
+
+        var result = await _bookingService.CheckoutAsync(id, dto, staffUserId);
+        
+        if (result.Success)
+        {
+            return Ok(result);
+        }
+        
         return BadRequest(result);
     }
 }

@@ -21,4 +21,16 @@ public interface IBookingService
     // UC-34: Room availability
     Task<ApiResponse<List<RoomAvailabilityDto>>> GetRoomAvailabilityAsync(RoomAvailabilityQueryDto query);
     Task<ApiResponse<List<BookingIntervalDto>>> GetRoomScheduleAsync(Guid roomId, DateTime from, DateTime to);
+
+    // UC-36: Check-in & CCCD/ID image handling
+    Task<ApiResponse<BookingDto>> CheckInAsync(Guid bookingId, CheckInDto dto, Guid staffUserId);
+
+    // UC-37: Change room
+    Task<ApiResponse<BookingDto>> ChangeRoomAsync(Guid bookingId, ChangeRoomDto dto, Guid staffUserId);
+
+    // UC-38: Extend stay
+    Task<ApiResponse<ExtendStayResultDto>> ExtendStayAsync(Guid bookingId, ExtendStayDto dto, Guid staffUserId);
+
+    // UC-39: Checkout & reconciliation
+    Task<ApiResponse<CheckoutResultDto>> CheckoutAsync(Guid bookingId, CheckoutRequestDto dto, Guid staffUserId);
 }
