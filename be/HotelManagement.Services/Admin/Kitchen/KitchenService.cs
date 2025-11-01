@@ -1,5 +1,6 @@
 using HotelManagement.Domain;
 using HotelManagement.Repository.Common;
+using HotelManagement.Services.Admin.Users;
 using HotelManagement.Services.Common;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,12 +10,12 @@ public class KitchenService : IKitchenService
 {
     private readonly IRepository<MenuItem> _menuItemRepository;
     private readonly IRepository<MenuItemIngredient> _menuItemIngredientRepository;
-    private readonly IUserService _userService;
+    private readonly IUsersAdminService _userService;
 
     public KitchenService(
         IRepository<MenuItem> menuItemRepository,
         IRepository<MenuItemIngredient> menuItemIngredientRepository,
-        IUserService userService)
+        IUsersAdminService userService)
     {
         _menuItemRepository = menuItemRepository;
         _menuItemIngredientRepository = menuItemIngredientRepository;
@@ -80,7 +81,7 @@ public class KitchenService : IKitchenService
             // In a real implementation, we would store this in a database
             // For now, we'll just return a result based on the input
             
-            var user = await _userService.GetUserByIdAsync(staffUserId);
+            var user = await _userService.GetAsync(staffUserId);
             if (user == null)
             {
                 return ApiResponse<IngredientQualityCheckResultDto>.Fail("User not found");
@@ -111,11 +112,6 @@ public class KitchenService : IKitchenService
     }
 }
 
-// Interface for user service - this would be implemented elsewhere
-public interface IUserService
-{
-    Task<UserDto?> GetUserByIdAsync(Guid userId);
-}
 
 public class UserDto
 {

@@ -1,3 +1,5 @@
+using HotelManagement.Domain;
+using HotelManagement.Domain.Repositories;
 using HotelManagement.Repository.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,6 +12,7 @@ public static class DependencyInjection
     {
         services.AddScoped<DbContext, ApplicationDbContext>();
         services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
         return services;
     }
 }

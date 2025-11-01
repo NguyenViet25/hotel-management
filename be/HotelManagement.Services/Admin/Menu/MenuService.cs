@@ -1,4 +1,5 @@
 using HotelManagement.Domain;
+using HotelManagement.Domain.Repositories;
 using HotelManagement.Repository.Common;
 using HotelManagement.Services.Common;
 using Microsoft.EntityFrameworkCore;
@@ -11,16 +12,18 @@ public class MenuService : IMenuService
     private readonly IRepository<MenuItem> _menuItemRepository;
     private readonly IRepository<MenuGroup> _menuGroupRepository;
     private readonly IRepository<MenuItemIngredient> _menuItemIngredientRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
     public MenuService(
         IRepository<MenuItem> menuItemRepository,
         IRepository<MenuGroup> menuGroupRepository,
         IRepository<MenuItemIngredient> menuItemIngredientRepository,
-     )
+        IUnitOfWork unitOfWork)
     {
         _menuItemRepository = menuItemRepository;
         _menuGroupRepository = menuGroupRepository;
         _menuItemIngredientRepository = menuItemIngredientRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<ApiResponse<List<MenuItemDto>>> GetMenuItemsAsync(MenuQueryDto query)
