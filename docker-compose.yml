@@ -4,7 +4,7 @@ services:
     container_name: sqlserver
     environment:
       - ACCEPT_EULA=Y
-      - SA_PASSWORD=Your_password123
+      - SA_PASSWORD=55555
     ports:
       - "1433:1433"
     volumes:
@@ -17,7 +17,7 @@ services:
     container_name: hotelmanagement-api
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=HotelManagement;User Id=sa;Password=Your_password123;TrustServerCertificate=True
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=HotelManagement;User Id=sa;Password=55555;TrustServerCertificate=True
       - Jwt__Key=dev-secret-key-change-me
       - Jwt__Issuer=HotelManagement
       - Jwt__Audience=HotelManagementAudience

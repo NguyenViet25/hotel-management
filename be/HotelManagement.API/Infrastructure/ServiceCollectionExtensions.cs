@@ -15,7 +15,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration config)
     {
         var connectionString = config.GetConnectionString("DefaultConnection")
-                              ?? "Server=localhost;Database=HotelManagementDb;Trusted_Connection=True;TrustServerCertificate=True";
+                              ?? "Server=sqlserver;Database=HotelManagement;User Id=sa;Password=55555;TrustServerCertificate=True";
         // Ensure DbContextOptions is Singleton so the factory (singleton) can consume it
         services.AddDbContext<ApplicationDbContext>(
             options => options.UseSqlServer(connectionString),

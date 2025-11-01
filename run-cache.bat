@@ -21,7 +21,7 @@ echo.
 echo Services are starting. Access them here:
 echo - API:       http://localhost:5000
 echo - Frontend:  http://localhost:8080
-echo - SQLServer: localhost,1433 (user: sa, pass: Your_password123)
+echo - SQLServer: localhost,1433 (user: sa, pass: 55555)
 
 echo.
 echo To view logs: docker compose logs -f

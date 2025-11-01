@@ -31,4 +31,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// Initialize the database (apply migrations)
+app.InitializeDatabase();
+
 app.Run();
