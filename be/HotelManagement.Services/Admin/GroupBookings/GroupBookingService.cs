@@ -11,14 +11,14 @@ public class GroupBookingService : IGroupBookingService
     private readonly IRepository<Booking> _bookingRepository;
     private readonly IRepository<BookingGuest> _bookingGuestRepository;
     private readonly IRepository<Guest> _guestRepository;
-    private readonly IRepository<Room> _roomRepository;
+    private readonly IRepository<HotelRoom> _roomRepository;
     private readonly IRepository<Payment> _paymentRepository;
 
     public GroupBookingService(
         IRepository<Booking> bookingRepository,
         IRepository<BookingGuest> bookingGuestRepository,
         IRepository<Guest> guestRepository,
-        IRepository<Room> roomRepository,
+        IRepository<HotelRoom> roomRepository,
         IRepository<Payment> paymentRepository)
     {
         _bookingRepository = bookingRepository;

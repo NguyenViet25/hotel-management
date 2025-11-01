@@ -1,4 +1,5 @@
 using HotelManagement.Domain;
+using HotelManagement.Domain.Repositories;
 using HotelManagement.Repository.Common;
 using HotelManagement.Services.Admin.Room.Dtos;
 using HotelManagement.Services.Common;
@@ -19,12 +20,12 @@ public interface IMinibarService
 public class MinibarService : IMinibarService
 {
     private readonly IRepository<MinibarItem> _minibarItemRepository;
-    private readonly IRepository<Domain.Room> _roomRepository;
+    private readonly IRepository<Domain.HotelRoom> _roomRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public MinibarService(
         IRepository<MinibarItem> minibarItemRepository,
-        IRepository<Domain.Room> roomRepository,
+        IRepository<Domain.HotelRoom> roomRepository,
         IUnitOfWork unitOfWork)
     {
         _minibarItemRepository = minibarItemRepository;

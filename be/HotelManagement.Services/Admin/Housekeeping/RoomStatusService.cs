@@ -1,4 +1,5 @@
 using HotelManagement.Domain;
+using HotelManagement.Domain.Repositories;
 using HotelManagement.Repository.Common;
 using HotelManagement.Services.Admin.Housekeeping.Dtos;
 using HotelManagement.Services.Common;
@@ -16,12 +17,12 @@ public interface IRoomStatusService
 
 public class RoomStatusService : IRoomStatusService
 {
-    private readonly IRepository<Room> _roomRepository;
+    private readonly IRepository<HotelRoom> _roomRepository;
     private readonly IRepository<RoomStatusLog> _roomStatusLogRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public RoomStatusService(
-        IRepository<Room> roomRepository,
+        IRepository<HotelRoom> roomRepository,
         IRepository<RoomStatusLog> roomStatusLogRepository,
         IUnitOfWork unitOfWork)
     {

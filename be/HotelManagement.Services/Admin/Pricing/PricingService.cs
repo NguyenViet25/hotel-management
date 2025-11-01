@@ -969,7 +969,7 @@ public class PricingService : IPricingService
             if (!string.IsNullOrEmpty(request.DiscountCode))
             {
                 var discountValidation = await ValidateDiscountCodeAsync(request.HotelId, request.DiscountCode);
-                if (discountValidation.Success && discountValidation.Data != null)
+                if (discountValidation.IsSuccess && discountValidation.Data != null)
                 {
                     var discount = discountValidation.Data;
                     result.DiscountCode = discount.Code;

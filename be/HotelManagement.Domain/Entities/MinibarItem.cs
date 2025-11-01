@@ -17,6 +17,6 @@ public class MinibarItem
     
     // Navigation properties
     public Hotel Hotel { get; set; } = null!;
-    public Room Room { get; set; } = null!;
+    public HotelRoom Room { get; set; } = null!;
     public Booking? Booking { get; set; }
 }

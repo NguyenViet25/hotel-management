@@ -28,7 +28,7 @@ public class ServiceRequestController : ControllerBase
     public async Task<IActionResult> UpdateRequest(Guid id, [FromBody] UpdateServiceRequestRequest request)
     {
         var response = await _serviceRequestService.UpdateRequestAsync(id, request);
-        if (!response.Success)
+        if (!response.IsSuccess)
         {
             return NotFound(response);
         }
@@ -39,7 +39,7 @@ public class ServiceRequestController : ControllerBase
     public async Task<IActionResult> GetRequest(Guid id)
     {
         var response = await _serviceRequestService.GetRequestAsync(id);
-        if (!response.Success)
+        if (!response.IsSuccess)
         {
             return NotFound(response);
         }
@@ -60,7 +60,7 @@ public class ServiceRequestController : ControllerBase
     public async Task<IActionResult> CompleteRequest(Guid id)
     {
         var response = await _serviceRequestService.CompleteRequestAsync(id);
-        if (!response.Success)
+        if (!response.IsSuccess)
         {
             return NotFound(response);
         }

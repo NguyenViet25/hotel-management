@@ -17,7 +17,9 @@ public enum RoomStatus
     Occupied = 1,
     Cleaning = 2,
     OutOfService = 3,
-    Dirty = 4
+    Dirty = 4,
+    Clean = 5,
+    Maintenance = 6,
 }
 
 public enum BookingStatus

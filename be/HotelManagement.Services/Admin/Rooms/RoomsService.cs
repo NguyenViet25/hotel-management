@@ -8,14 +8,14 @@ namespace HotelManagement.Services.Admin.Rooms;
 
 public class RoomsService : IRoomsService
 {
-    private readonly IRepository<Room> _roomRepository;
+    private readonly IRepository<HotelRoom> _roomRepository;
     private readonly IRepository<RoomType> _roomTypeRepository;
     private readonly IRepository<Hotel> _hotelRepository;
     private readonly IRepository<Booking> _bookingRepository;
     private readonly IRepository<RoomStatusLog> _roomStatusLogRepository;
 
     public RoomsService(
-        IRepository<Room> roomRepository,
+        IRepository<HotelRoom> roomRepository,
         IRepository<RoomType> roomTypeRepository,
         IRepository<Hotel> hotelRepository,
         IRepository<Booking> bookingRepository,
@@ -102,7 +102,7 @@ public class RoomsService : IRoomsService
                 .AnyAsync(r => r.HotelId == dto.HotelId && r.Number == dto.Number);
             if (existing) return ApiResponse<RoomSummaryDto>.Fail("Room number already exists in this hotel");
 
-            var room = new Room
+            var room = new HotelRoom
             {
                 Id = Guid.NewGuid(),
                 HotelId = dto.HotelId,

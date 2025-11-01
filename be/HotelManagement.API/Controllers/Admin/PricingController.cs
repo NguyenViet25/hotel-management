@@ -33,7 +33,7 @@ public class PricingController : ControllerBase
 
         var result = await _pricingService.SetBasePriceAsync(dto);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }
@@ -49,7 +49,7 @@ public class PricingController : ControllerBase
     {
         var result = await _pricingService.GetBasePriceAsync(hotelId, roomTypeId);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }
@@ -65,7 +65,7 @@ public class PricingController : ControllerBase
     {
         var result = await _pricingService.GetBasePricesByHotelAsync(hotelId);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }
@@ -91,7 +91,7 @@ public class PricingController : ControllerBase
 
         var result = await _pricingService.SetDayOfWeekPriceAsync(dto);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }
@@ -112,7 +112,7 @@ public class PricingController : ControllerBase
 
         var result = await _pricingService.SetBulkDayOfWeekPricesAsync(dto);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }
@@ -128,7 +128,7 @@ public class PricingController : ControllerBase
     {
         var result = await _pricingService.GetDayOfWeekPricesAsync(hotelId, roomTypeId);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }
@@ -144,7 +144,7 @@ public class PricingController : ControllerBase
     {
         var result = await _pricingService.RemoveDayOfWeekPriceAsync(hotelId, roomTypeId, dayOfWeek);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }
@@ -170,7 +170,7 @@ public class PricingController : ControllerBase
 
         var result = await _pricingService.CreateDateRangePriceAsync(dto);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return CreatedAtAction(nameof(GetDateRangePriceById), new { id = result.Data!.Id }, result);
         }
@@ -191,7 +191,7 @@ public class PricingController : ControllerBase
 
         var result = await _pricingService.UpdateDateRangePriceAsync(id, dto);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }
@@ -207,7 +207,7 @@ public class PricingController : ControllerBase
     {
         var result = await _pricingService.DeleteDateRangePriceAsync(id);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }
@@ -223,7 +223,7 @@ public class PricingController : ControllerBase
     {
         var result = await _pricingService.GetDateRangePriceByIdAsync(id);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }
@@ -239,7 +239,7 @@ public class PricingController : ControllerBase
     {
         var result = await _pricingService.GetDateRangePricesAsync(query);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }
@@ -265,7 +265,7 @@ public class PricingController : ControllerBase
 
         var result = await _pricingService.CreateSurchargeRuleAsync(dto);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return CreatedAtAction(nameof(GetSurchargeRulesByHotel), new { hotelId = dto.HotelId }, result);
         }
@@ -286,7 +286,7 @@ public class PricingController : ControllerBase
 
         var result = await _pricingService.UpdateSurchargeRuleAsync(id, dto);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }
@@ -302,7 +302,7 @@ public class PricingController : ControllerBase
     {
         var result = await _pricingService.DeleteSurchargeRuleAsync(id);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }
@@ -318,7 +318,7 @@ public class PricingController : ControllerBase
     {
         var result = await _pricingService.GetSurchargeRulesByHotelAsync(hotelId);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }
@@ -344,7 +344,7 @@ public class PricingController : ControllerBase
 
         var result = await _pricingService.CreateDiscountRuleAsync(dto);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return CreatedAtAction(nameof(GetDiscountRuleById), new { id = result.Data!.Id }, result);
         }
@@ -365,7 +365,7 @@ public class PricingController : ControllerBase
 
         var result = await _pricingService.UpdateDiscountRuleAsync(id, dto);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }
@@ -381,7 +381,7 @@ public class PricingController : ControllerBase
     {
         var result = await _pricingService.DeleteDiscountRuleAsync(id);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }
@@ -397,7 +397,7 @@ public class PricingController : ControllerBase
     {
         var result = await _pricingService.GetDiscountRuleByIdAsync(id);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }
@@ -413,7 +413,7 @@ public class PricingController : ControllerBase
     {
         var result = await _pricingService.GetDiscountRulesAsync(query);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }
@@ -434,7 +434,7 @@ public class PricingController : ControllerBase
 
         var result = await _pricingService.ValidateDiscountCodeAsync(hotelId, code);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }
@@ -454,7 +454,7 @@ public class PricingController : ControllerBase
     {
         var result = await _pricingService.GetPricingOverviewAsync(hotelId, roomTypeId);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }
@@ -475,7 +475,7 @@ public class PricingController : ControllerBase
 
         var result = await _pricingService.CalculatePriceAsync(request);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }

@@ -13,7 +13,7 @@ public class Booking
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public Hotel? Hotel { get; set; }
-    public Room? Room { get; set; }
+    public HotelRoom? Room { get; set; }
     public Guest? PrimaryGuest { get; set; }
     public ICollection<BookingGuest> Guests { get; set; } = new List<BookingGuest>();
     public ICollection<CallLog> CallLogs { get; set; } = new List<CallLog>();

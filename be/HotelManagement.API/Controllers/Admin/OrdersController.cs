@@ -30,7 +30,7 @@ public class OrdersController : ControllerBase
     public async Task<ActionResult<ApiResponse<OrderDetailsDto>>> Get(Guid id)
     {
         var result = await _ordersService.GetByIdAsync(id);
-        if (!result.Success) return NotFound(result);
+        if (!result.IsSuccess) return NotFound(result);
         return Ok(result);
     }
 
@@ -39,7 +39,7 @@ public class OrdersController : ControllerBase
     public async Task<ActionResult<ApiResponse<OrderDetailsDto>>> CreateWalkIn([FromBody] CreateWalkInOrderDto dto)
     {
         var result = await _ordersService.CreateWalkInAsync(dto);
-        if (!result.Success) return BadRequest(result);
+        if (!result.IsSuccess) return BadRequest(result);
         return Ok(result);
     }
 
@@ -48,7 +48,7 @@ public class OrdersController : ControllerBase
     public async Task<ActionResult<ApiResponse<OrderDetailsDto>>> CreateForBooking([FromBody] CreateBookingOrderDto dto)
     {
         var result = await _ordersService.CreateForBookingAsync(dto);
-        if (!result.Success) return BadRequest(result);
+        if (!result.IsSuccess) return BadRequest(result);
         return Ok(result);
     }
 
@@ -57,7 +57,7 @@ public class OrdersController : ControllerBase
     public async Task<ActionResult<ApiResponse<OrderDetailsDto>>> Update(Guid id, [FromBody] UpdateOrderDto dto)
     {
         var result = await _ordersService.UpdateAsync(id, dto);
-        if (!result.Success) return BadRequest(result);
+        if (!result.IsSuccess) return BadRequest(result);
         return Ok(result);
     }
 
@@ -66,7 +66,7 @@ public class OrdersController : ControllerBase
     public async Task<ActionResult<ApiResponse<OrderDetailsDto>>> AddItem(Guid orderId, [FromBody] AddOrderItemDto dto)
     {
         var result = await _ordersService.AddItemAsync(orderId, dto);
-        if (!result.Success) return BadRequest(result);
+        if (!result.IsSuccess) return BadRequest(result);
         return Ok(result);
     }
 
@@ -74,7 +74,7 @@ public class OrdersController : ControllerBase
     public async Task<ActionResult<ApiResponse<OrderDetailsDto>>> UpdateItem(Guid orderId, Guid itemId, [FromBody] UpdateOrderItemDto dto)
     {
         var result = await _ordersService.UpdateItemAsync(orderId, itemId, dto);
-        if (!result.Success) return BadRequest(result);
+        if (!result.IsSuccess) return BadRequest(result);
         return Ok(result);
     }
 
@@ -82,7 +82,7 @@ public class OrdersController : ControllerBase
     public async Task<ActionResult<ApiResponse<OrderDetailsDto>>> RemoveItem(Guid orderId, Guid itemId)
     {
         var result = await _ordersService.RemoveItemAsync(orderId, itemId);
-        if (!result.Success) return BadRequest(result);
+        if (!result.IsSuccess) return BadRequest(result);
         return Ok(result);
     }
 
@@ -91,7 +91,7 @@ public class OrdersController : ControllerBase
     public async Task<ActionResult<ApiResponse<decimal>>> ApplyDiscount(Guid orderId, [FromBody] ApplyDiscountDto dto)
     {
         var result = await _ordersService.ApplyDiscountAsync(orderId, dto);
-        if (!result.Success) return BadRequest(result);
+        if (!result.IsSuccess) return BadRequest(result);
         return Ok(result);
     }
 }

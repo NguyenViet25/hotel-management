@@ -1,4 +1,6 @@
 using HotelManagement.Domain;
+using HotelManagement.Domain.Entities;
+using HotelManagement.Domain.Repositories;
 using HotelManagement.Repository.Common;
 using HotelManagement.Services.Admin.Dining.Dtos;
 using HotelManagement.Services.Common;
@@ -142,7 +144,7 @@ public class ServiceRequestService : IServiceRequestService
         if (serviceRequest.AssignedToUserId.HasValue)
         {
             var user = await _userRepository.FindAsync(serviceRequest.AssignedToUserId.Value);
-            assignedToName = user?.FullName;
+            assignedToName = user?.Fullname;
         }
 
         return new ServiceRequestDto

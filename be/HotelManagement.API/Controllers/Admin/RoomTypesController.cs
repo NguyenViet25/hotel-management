@@ -31,7 +31,7 @@ public class RoomTypesController : ControllerBase
 
         var result = await _roomTypeService.CreateAsync(dto);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return CreatedAtAction(nameof(GetRoomTypeById), new { id = result.Data!.Id }, result);
         }
@@ -53,7 +53,7 @@ public class RoomTypesController : ControllerBase
 
         var result = await _roomTypeService.UpdateAsync(id, dto);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }
@@ -70,7 +70,7 @@ public class RoomTypesController : ControllerBase
     {
         var result = await _roomTypeService.DeleteAsync(id);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }
@@ -86,7 +86,7 @@ public class RoomTypesController : ControllerBase
     {
         var result = await _roomTypeService.GetByIdAsync(id);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }
@@ -102,7 +102,7 @@ public class RoomTypesController : ControllerBase
     {
         var result = await _roomTypeService.GetDetailByIdAsync(id);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }
@@ -119,7 +119,7 @@ public class RoomTypesController : ControllerBase
     {
         var result = await _roomTypeService.GetAllAsync(query);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }
@@ -135,7 +135,7 @@ public class RoomTypesController : ControllerBase
     {
         var result = await _roomTypeService.GetByHotelIdAsync(hotelId);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }
@@ -151,7 +151,7 @@ public class RoomTypesController : ControllerBase
     {
         var result = await _roomTypeService.ValidateDeleteAsync(id);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }

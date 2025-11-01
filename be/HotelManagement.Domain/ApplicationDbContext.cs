@@ -16,7 +16,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
     public DbSet<RoomType> RoomTypes => Set<RoomType>();
     public DbSet<Amenity> Amenities => Set<Amenity>();
     public DbSet<RoomTypeAmenity> RoomTypeAmenities => Set<RoomTypeAmenity>();
-    public DbSet<Room> Rooms => Set<Room>();
+    public DbSet<HotelRoom> Rooms => Set<HotelRoom>();
     public DbSet<RoomBasePrice> RoomBasePrices => Set<RoomBasePrice>();
     public DbSet<RoomDayOfWeekPrice> RoomDayOfWeekPrices => Set<RoomDayOfWeekPrice>();
     public DbSet<RoomDateRangePrice> RoomDateRangePrices => Set<RoomDateRangePrice>();
@@ -48,15 +48,15 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
         builder.Entity<BookingGuest>().HasKey(x => new { x.BookingId, x.GuestId });
 
         builder.Entity<Hotel>().HasIndex(h => h.Code).IsUnique();
-        builder.Entity<Room>().HasIndex(r => new { r.HotelId, r.Number }).IsUnique();
+        builder.Entity<HotelRoom>().HasIndex(r => new { r.HotelId, r.Number }).IsUnique();
 
-        builder.Entity<Room>()
+        builder.Entity<HotelRoom>()
             .HasOne(r => r.RoomType)
             .WithMany(rt => rt.Rooms)
             .HasForeignKey(r => r.RoomTypeId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.Entity<Room>()
+        builder.Entity<HotelRoom>()
             .HasOne(r => r.Hotel)
             .WithMany(h => h.Rooms)
             .HasForeignKey(r => r.HotelId)
@@ -141,7 +141,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.Entity<Booking>()
-            .HasOne<Room>()
+            .HasOne<HotelRoom>()
             .WithMany()
             .HasForeignKey(b => b.RoomId)
             .OnDelete(DeleteBehavior.Restrict);
@@ -178,7 +178,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.Entity<HousekeepingTask>()
-            .HasOne<Room>()
+            .HasOne<HotelRoom>()
             .WithMany()
             .HasForeignKey(hk => hk.RoomId)
             .OnDelete(DeleteBehavior.Restrict);
@@ -190,7 +190,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.Entity<RoomStatusLog>()
-            .HasOne<Room>()
+            .HasOne<HotelRoom>()
             .WithMany(r => r.StatusLogs)
             .HasForeignKey(rsl => rsl.RoomId)
             .OnDelete(DeleteBehavior.Restrict);

@@ -19,4 +19,5 @@ public class RoomStatusLog
     public Guid RoomId { get; set; }
     public RoomStatus Status { get; set; }
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    public string? Notes { get; set; }
 }

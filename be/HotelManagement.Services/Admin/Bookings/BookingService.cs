@@ -15,7 +15,7 @@ public class BookingService : IBookingService
     private readonly ApplicationDbContext _db;
     private readonly IRepository<Booking> _bookingRepository;
     private readonly IRepository<Guest> _guestRepository;
-    private readonly IRepository<Room> _roomRepository;
+    private readonly IRepository<HotelRoom> _roomRepository;
     private readonly IRepository<Hotel> _hotelRepository;
     private readonly IRepository<Payment> _paymentRepository;
     private readonly IRepository<CallLog> _callLogRepository;
@@ -26,7 +26,7 @@ public class BookingService : IBookingService
         ApplicationDbContext db,
         IRepository<Booking> bookingRepository,
         IRepository<Guest> guestRepository,
-        IRepository<Room> roomRepository,
+        IRepository<HotelRoom> roomRepository,
         IRepository<Hotel> hotelRepository,
         IRepository<Payment> paymentRepository,
         IRepository<CallLog> callLogRepository,
@@ -517,7 +517,7 @@ public class BookingService : IBookingService
             };
 
             var priceResponse = await _pricingService.CalculatePriceAsync(priceRequest);
-            if (!priceResponse.Success)
+            if (!priceResponse.IsSuccess)
             {
                 return ApiResponse<ExtendStayResultDto>.Fail(priceResponse.Message);
             }
@@ -530,7 +530,7 @@ public class BookingService : IBookingService
 
             // Get updated booking
             var updatedBookingResponse = await GetByIdAsync(bookingId);
-            if (!updatedBookingResponse.Success)
+            if (!updatedBookingResponse.IsSuccess)
             {
                 return ApiResponse<ExtendStayResultDto>.Fail(updatedBookingResponse.Message);
             }
@@ -619,7 +619,7 @@ public class BookingService : IBookingService
 
             // Get updated booking details
             var bookingResponse = await GetByIdAsync(bookingId);
-            if (!bookingResponse.Success)
+            if (!bookingResponse.IsSuccess)
             {
                 return ApiResponse<CheckoutResultDto>.Fail(bookingResponse.Message);
             }

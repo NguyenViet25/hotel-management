@@ -21,21 +21,21 @@ public class TableController : ControllerBase
     public async Task<IActionResult> CreateTable([FromBody] CreateTableRequest request)
     {
         var response = await _tableService.CreateTableAsync(request);
-        return response.Success ? Ok(response) : BadRequest(response);
+        return response.IsSuccess ? Ok(response) : BadRequest(response);
     }
 
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateTable(Guid id, [FromBody] UpdateTableRequest request)
     {
         var response = await _tableService.UpdateTableAsync(id, request);
-        return response.Success ? Ok(response) : BadRequest(response);
+        return response.IsSuccess ? Ok(response) : BadRequest(response);
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetTable(Guid id)
     {
         var response = await _tableService.GetTableAsync(id);
-        return response.Success ? Ok(response) : NotFound(response);
+        return response.IsSuccess ? Ok(response) : NotFound(response);
     }
 
     [HttpGet("hotel/{hotelId}")]
@@ -49,20 +49,20 @@ public class TableController : ControllerBase
     public async Task<IActionResult> MergeTables([FromBody] MergeTablesRequest request)
     {
         var response = await _tableService.MergeTablesAsync(request);
-        return response.Success ? Ok(response) : BadRequest(response);
+        return response.IsSuccess ? Ok(response) : BadRequest(response);
     }
 
     [HttpPost("split")]
     public async Task<IActionResult> SplitTable([FromBody] SplitTableRequest request)
     {
         var response = await _tableService.SplitTableAsync(request);
-        return response.Success ? Ok(response) : BadRequest(response);
+        return response.IsSuccess ? Ok(response) : BadRequest(response);
     }
 
     [HttpPost("move-session")]
     public async Task<IActionResult> MoveSession([FromBody] MoveSessionRequest request)
     {
         var response = await _tableService.MoveSessionAsync(request);
-        return response.Success ? Ok(response) : BadRequest(response);
+        return response.IsSuccess ? Ok(response) : BadRequest(response);
     }
 }

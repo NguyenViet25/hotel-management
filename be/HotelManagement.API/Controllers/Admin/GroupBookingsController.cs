@@ -30,7 +30,7 @@ public class GroupBookingsController : ControllerBase
 
         var result = await _groupBookingService.CreateAsync(dto);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return CreatedAtAction(nameof(GetGroupBooking), new { id = result.Data?.Bookings?.FirstOrDefault()?.Id }, result);
         }
@@ -46,7 +46,7 @@ public class GroupBookingsController : ControllerBase
     {
         var result = await _groupBookingService.GetByIdAsync(id);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }

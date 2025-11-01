@@ -21,7 +21,7 @@ public class OrderItemStatusController : ControllerBase
     public async Task<IActionResult> UpdateOrderItemStatus(Guid id, [FromBody] UpdateOrderItemStatusRequest request)
     {
         var response = await _orderItemStatusService.UpdateOrderItemStatusAsync(id, request);
-        if (!response.Success)
+        if (!response.IsSuccess)
         {
             return BadRequest(response);
         }
@@ -46,7 +46,7 @@ public class OrderItemStatusController : ControllerBase
         [FromQuery] int pageSize = 10)
     {
         var response = await _orderItemStatusService.GetOrderItemsByStatusAsync(hotelId, status, page, pageSize);
-        if (!response.Success)
+        if (!response.IsSuccess)
         {
             return BadRequest(response);
         }

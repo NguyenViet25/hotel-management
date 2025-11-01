@@ -34,7 +34,7 @@ public class RoomsController : ControllerBase
     public async Task<ActionResult<ApiResponse<RoomSummaryDto>>> Get(Guid id)
     {
         var result = await _roomsService.GetByIdAsync(id);
-        if (!result.Success) return NotFound(result);
+        if (!result.IsSuccess) return NotFound(result);
         return Ok(result);
     }
 
@@ -43,7 +43,7 @@ public class RoomsController : ControllerBase
     public async Task<ActionResult<ApiResponse<RoomSummaryDto>>> Create([FromBody] CreateRoomDto dto)
     {
         var result = await _roomsService.CreateAsync(dto);
-        if (!result.Success) return BadRequest(result);
+        if (!result.IsSuccess) return BadRequest(result);
         return Ok(result);
     }
 
@@ -52,7 +52,7 @@ public class RoomsController : ControllerBase
     public async Task<ActionResult<ApiResponse<RoomSummaryDto>>> Update(Guid id, [FromBody] UpdateRoomDto dto)
     {
         var result = await _roomsService.UpdateAsync(id, dto);
-        if (!result.Success) return BadRequest(result);
+        if (!result.IsSuccess) return BadRequest(result);
         return Ok(result);
     }
 
@@ -61,7 +61,7 @@ public class RoomsController : ControllerBase
     public async Task<ActionResult<ApiResponse>> Delete(Guid id)
     {
         var result = await _roomsService.DeleteAsync(id);
-        if (!result.Success) return BadRequest(result);
+        if (!result.IsSuccess) return BadRequest(result);
         return Ok(result);
     }
 
@@ -70,7 +70,7 @@ public class RoomsController : ControllerBase
     public async Task<ActionResult<ApiResponse<RoomSummaryDto>>> SetOutOfService(Guid id, [FromBody] SetOutOfServiceDto dto)
     {
         var result = await _roomsService.SetOutOfServiceAsync(id, dto);
-        if (!result.Success) return BadRequest(result);
+        if (!result.IsSuccess) return BadRequest(result);
         return Ok(result);
     }
 
@@ -99,7 +99,7 @@ public class RoomsController : ControllerBase
 
         var result = await _bookingService.GetRoomAvailabilityAsync(query);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }
@@ -130,7 +130,7 @@ public class RoomsController : ControllerBase
 
         var result = await _bookingService.GetRoomScheduleAsync(roomId, from, to);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }

@@ -1,6 +1,6 @@
 namespace HotelManagement.Domain;
 
-public class Room
+public class HotelRoom
 {
     public Guid Id { get; set; }
     public Guid HotelId { get; set; }

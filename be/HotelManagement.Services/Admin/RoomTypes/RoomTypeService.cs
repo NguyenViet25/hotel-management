@@ -14,7 +14,7 @@ public class RoomTypeService : IRoomTypeService
     private readonly IRepository<Hotel> _hotelRepository;
     private readonly IRepository<Amenity> _amenityRepository;
     private readonly IRepository<RoomTypeAmenity> _roomTypeAmenityRepository;
-    private readonly IRepository<Room> _roomRepository;
+    private readonly IRepository<HotelRoom> _roomRepository;
     private readonly IRepository<Booking> _bookingRepository;
     private readonly IRepository<RoomBasePrice> _basePriceRepository;
 
@@ -23,7 +23,7 @@ public class RoomTypeService : IRoomTypeService
         IRepository<Hotel> hotelRepository,
         IRepository<Amenity> amenityRepository,
         IRepository<RoomTypeAmenity> roomTypeAmenityRepository,
-        IRepository<Room> roomRepository,
+        IRepository<HotelRoom> roomRepository,
         IRepository<Booking> bookingRepository,
         IRepository<RoomBasePrice> basePriceRepository)
     {
@@ -195,7 +195,7 @@ public class RoomTypeService : IRoomTypeService
 
             // Check if room type can be deleted (no active bookings)
             var canDelete = await ValidateDeleteAsync(id);
-            if (!canDelete.Success)
+            if (!canDelete.IsSuccess)
             {
                 return canDelete;
             }

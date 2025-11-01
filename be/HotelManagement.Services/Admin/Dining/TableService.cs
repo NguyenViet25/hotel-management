@@ -1,4 +1,5 @@
 using HotelManagement.Domain;
+using HotelManagement.Domain.Repositories;
 using HotelManagement.Repository.Common;
 using HotelManagement.Services.Admin.Dining.Dtos;
 using HotelManagement.Services.Common;

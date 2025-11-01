@@ -21,41 +21,41 @@ public class MinibarController : ControllerBase
     public async Task<IActionResult> CreateMinibarItem([FromBody] CreateMinibarItemRequest request)
     {
         var response = await _minibarService.CreateMinibarItemAsync(request);
-        return response.Success ? Ok(response) : BadRequest(response);
+        return response.IsSuccess ? Ok(response) : BadRequest(response);
     }
 
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateMinibarItem(Guid id, [FromBody] UpdateMinibarItemRequest request)
     {
         var response = await _minibarService.UpdateMinibarItemAsync(id, request);
-        return response.Success ? Ok(response) : BadRequest(response);
+        return response.IsSuccess ? Ok(response) : BadRequest(response);
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetMinibarItem(Guid id)
     {
         var response = await _minibarService.GetMinibarItemAsync(id);
-        return response.Success ? Ok(response) : NotFound(response);
+        return response.IsSuccess ? Ok(response) : NotFound(response);
     }
 
     [HttpGet("room/{roomId}")]
     public async Task<IActionResult> GetMinibarItemsByRoom(Guid roomId)
     {
         var response = await _minibarService.GetMinibarItemsByRoomAsync(roomId);
-        return response.Success ? Ok(response) : NotFound(response);
+        return response.IsSuccess ? Ok(response) : NotFound(response);
     }
 
     [HttpPost("consumption")]
     public async Task<IActionResult> RecordConsumption([FromBody] RecordConsumptionRequest request)
     {
         var response = await _minibarService.RecordConsumptionAsync(request);
-        return response.Success ? Ok(response) : BadRequest(response);
+        return response.IsSuccess ? Ok(response) : BadRequest(response);
     }
 
     [HttpPost("restock")]
     public async Task<IActionResult> RestockMinibar([FromBody] RestockMinibarRequest request)
     {
         var response = await _minibarService.RestockMinibarAsync(request);
-        return response.Success ? Ok(response) : BadRequest(response);
+        return response.IsSuccess ? Ok(response) : BadRequest(response);
     }
 }

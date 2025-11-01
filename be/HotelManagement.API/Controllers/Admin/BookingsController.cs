@@ -43,7 +43,7 @@ public class BookingsController : ControllerBase
 
         var result = await _bookingService.CreateAsync(dto, staffUserId);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return CreatedAtAction(nameof(GetBooking), new { id = result.Data.Id }, result);
         }
@@ -59,7 +59,7 @@ public class BookingsController : ControllerBase
     {
         var result = await _bookingService.GetByIdAsync(id);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }
@@ -75,11 +75,11 @@ public class BookingsController : ControllerBase
     {
         var result = await _bookingService.ListAsync(query);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             var response = new
             {
-                Success = result.Success,
+                Success = result.IsSuccess,
                 Message = result.Message,
                 Data = result.Data.Items,
                 Meta = new
@@ -115,7 +115,7 @@ public class BookingsController : ControllerBase
 
         var result = await _bookingService.CreateCallLogAsync(id, dto, staffUserId);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return CreatedAtAction(nameof(GetCallLogs), new { id }, result);
         }
@@ -131,7 +131,7 @@ public class BookingsController : ControllerBase
     {
         var result = await _bookingService.GetCallLogsAsync(id);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }
@@ -158,7 +158,7 @@ public class BookingsController : ControllerBase
 
         var result = await _bookingService.UpdateAsync(id, dto, staffUserId);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }
@@ -185,7 +185,7 @@ public class BookingsController : ControllerBase
 
         var result = await _bookingService.CancelAsync(id, dto, staffUserId);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }
@@ -212,7 +212,7 @@ public class BookingsController : ControllerBase
 
         var result = await _bookingService.CheckInAsync(id, dto, staffUserId);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }
@@ -239,7 +239,7 @@ public class BookingsController : ControllerBase
 
         var result = await _bookingService.ChangeRoomAsync(id, dto, staffUserId);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }
@@ -266,7 +266,7 @@ public class BookingsController : ControllerBase
 
         var result = await _bookingService.ExtendStayAsync(id, dto, staffUserId);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }
@@ -293,7 +293,7 @@ public class BookingsController : ControllerBase
 
         var result = await _bookingService.CheckoutAsync(id, dto, staffUserId);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
             return Ok(result);
         }

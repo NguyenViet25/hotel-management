@@ -8,6 +8,6 @@ public class RoomType
     public string Description { get; set; } = string.Empty;
 
     public Hotel? Hotel { get; set; }
-    public ICollection<Room> Rooms { get; set; } = new List<Room>();
+    public ICollection<HotelRoom> Rooms { get; set; } = new List<HotelRoom>();
     public ICollection<RoomTypeAmenity> RoomTypeAmenities { get; set; } = new List<RoomTypeAmenity>();
 }

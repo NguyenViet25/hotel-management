@@ -1,4 +1,6 @@
 using HotelManagement.Domain;
+using HotelManagement.Domain.Entities;
+using HotelManagement.Domain.Repositories;
 using HotelManagement.Repository.Common;
 using HotelManagement.Services.Admin.Dining.Dtos;
 using HotelManagement.Services.Common;
@@ -199,7 +201,7 @@ public class DiningSessionService : IDiningSessionService
         if (session.WaiterUserId.HasValue)
         {
             var waiter = await _userRepository.FindAsync(session.WaiterUserId.Value);
-            waiterName = waiter?.FullName;
+            waiterName = waiter?.Fullname;
         }
 
         return new DiningSessionDto

@@ -22,14 +22,14 @@ public class RoomStatusController : ControllerBase
     public async Task<IActionResult> UpdateRoomStatus([FromBody] UpdateRoomStatusRequest request)
     {
         var response = await _roomStatusService.UpdateRoomStatusAsync(request);
-        return response.Success ? Ok(response) : BadRequest(response);
+        return response.IsSuccess ? Ok(response) : BadRequest(response);
     }
 
     [HttpGet("history/{roomId}")]
     public async Task<IActionResult> GetRoomStatusHistory(Guid roomId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
         var response = await _roomStatusService.GetRoomStatusHistoryAsync(roomId, page, pageSize);
-        return response.Success ? Ok(response) : NotFound(response);
+        return response.IsSuccess ? Ok(response) : NotFound(response);
     }
 
     [HttpGet("hotel/{hotelId}")]

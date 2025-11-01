@@ -21,7 +21,7 @@ public class DiningSessionController : ControllerBase
     public async Task<IActionResult> CreateSession([FromBody] CreateDiningSessionRequest request)
     {
         var response = await _diningSessionService.CreateSessionAsync(request);
-        if (!response.Success)
+        if (!response.IsSuccess)
         {
             return BadRequest(response);
         }
@@ -32,7 +32,7 @@ public class DiningSessionController : ControllerBase
     public async Task<IActionResult> GetSession(Guid id)
     {
         var response = await _diningSessionService.GetSessionAsync(id);
-        if (!response.Success)
+        if (!response.IsSuccess)
         {
             return NotFound(response);
         }
@@ -54,7 +54,7 @@ public class DiningSessionController : ControllerBase
     public async Task<IActionResult> UpdateSession(Guid id, [FromBody] UpdateDiningSessionRequest request)
     {
         var response = await _diningSessionService.UpdateSessionAsync(id, request);
-        if (!response.Success)
+        if (!response.IsSuccess)
         {
             return NotFound(response);
         }
@@ -65,7 +65,7 @@ public class DiningSessionController : ControllerBase
     public async Task<IActionResult> EndSession(Guid id)
     {
         var response = await _diningSessionService.EndSessionAsync(id);
-        if (!response.Success)
+        if (!response.IsSuccess)
         {
             return NotFound(response);
         }
@@ -76,7 +76,7 @@ public class DiningSessionController : ControllerBase
     public async Task<IActionResult> AssignOrderToSession(Guid sessionId, Guid orderId)
     {
         var response = await _diningSessionService.AssignOrderToSessionAsync(sessionId, orderId);
-        if (!response.Success)
+        if (!response.IsSuccess)
         {
             return BadRequest(response);
         }
