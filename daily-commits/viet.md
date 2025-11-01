@@ -41,3 +41,4 @@
 2025-11-01 - 1 - 01:47:40 UTC :: docs: UC-40 Thu/chi: doi soat tien mat/the/le phi PG. — dieu chinh UI & copy cho ro (da review so bo)
 2025-11-01 - 2 - 01:47:41 UTC :: build: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — them kiem soat loi & retry nhe (da review so bo)
 2025-11-01 - 3 - 01:47:43 UTC :: build: UC-21 Housekeeping: cap nhat Dirty/In-progress/Cleaned/Inspected. — toi uu truy van va bo nho (khong doi hanh vi)
+2025-11-01 - 4 - 01:47:44 UTC :: docs: UC-01 RBAC: tao, sua, khoa tai khoan; gan vai tro. — dieu chinh quyen truy cap theo vai tro (da review so bo)
