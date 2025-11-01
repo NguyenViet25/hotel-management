@@ -47,3 +47,4 @@
 2025-11-01 - 2 - 01:47:36 UTC :: ci: UC-02 RBAC: thiet lap quyen thao tac theo vai tro/pham vi. — bo sung unit test muc co ban (chuan bi cho tinh nang tiep theo)
 2025-11-01 - 3 - 01:47:39 UTC :: test: UC-10 Goi gia: tao rate plan, thoi gian ap dung linh hoat. — them kiem soat loi & retry nhe (da review so bo)
 2025-11-01 - 4 - 01:47:42 UTC :: perf: UC-42 Phan quyen: thiet lap quyen theo co so. — toi uu truy van va bo nho (can theo doi them)
+2025-11-01 - 5 - 01:47:44 UTC :: ci: UC-40 Thu/chi: doi soat tien mat/the/le phi PG. — toi uu truy van va bo nho (can theo doi them)
