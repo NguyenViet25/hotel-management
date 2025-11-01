@@ -39,3 +39,4 @@
 2025-10-31 - 4 - 01:44:17 UTC :: build: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — cai thien hieu nang render/list (anh huong thap)
 2025-10-31 - 5 - 01:44:19 UTC :: chore: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — refactor luong xu ly cho ro rang (dat tieu chi toi thieu)
 2025-11-01 - 1 - 01:47:40 UTC :: docs: UC-40 Thu/chi: doi soat tien mat/the/le phi PG. — dieu chinh UI & copy cho ro (da review so bo)
+2025-11-01 - 2 - 01:47:41 UTC :: build: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — them kiem soat loi & retry nhe (da review so bo)
