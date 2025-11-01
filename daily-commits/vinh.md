@@ -41,3 +41,4 @@
 2025-11-01 - 1 - 01:47:36 UTC :: ci: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — them log chi tiet phuc vu audit (khong doi hanh vi)
 2025-11-01 - 2 - 01:47:38 UTC :: build: UC-02 RBAC: thiet lap quyen thao tac theo vai tro/pham vi. — cai thien hieu nang render/list (dong bo voi BE/FE)
 2025-11-01 - 3 - 01:47:39 UTC :: perf: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — dieu chinh UI & copy cho ro (da kiem tra lint)
+2025-11-01 - 4 - 01:47:41 UTC :: refactor: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — cap nhat mock data & seed test (da smoke test)
