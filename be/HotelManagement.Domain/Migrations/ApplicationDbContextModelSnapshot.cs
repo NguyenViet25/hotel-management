@@ -257,6 +257,9 @@ namespace HotelManagement.Domain.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<string>("Fullname")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
 
@@ -358,6 +361,38 @@ namespace HotelManagement.Domain.Migrations
                         .IsUnique();
 
                     b.ToTable("Hotels");
+                });
+
+            modelBuilder.Entity("HotelManagement.Domain.HotelRoom", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Floor")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("HotelId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<Guid>("RoomTypeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoomTypeId");
+
+                    b.HasIndex("HotelId", "Number")
+                        .IsUnique();
+
+                    b.ToTable("Rooms");
                 });
 
             modelBuilder.Entity("HotelManagement.Domain.HousekeepingTask", b =>
@@ -492,8 +527,16 @@ namespace HotelManagement.Domain.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<Guid>("HotelId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -505,6 +548,13 @@ namespace HotelManagement.Domain.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("PortionSize")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("UnitPrice")
                         .HasColumnType("decimal(18,2)");
 
@@ -515,6 +565,34 @@ namespace HotelManagement.Domain.Migrations
                     b.HasIndex("MenuGroupId");
 
                     b.ToTable("MenuItems");
+                });
+
+            modelBuilder.Entity("HotelManagement.Domain.MenuItemIngredient", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("MenuItemId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Quantity")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MenuItemId");
+
+                    b.ToTable("MenuItemIngredient");
                 });
 
             modelBuilder.Entity("HotelManagement.Domain.Order", b =>
@@ -634,38 +712,6 @@ namespace HotelManagement.Domain.Migrations
                     b.ToTable("Payments");
                 });
 
-            modelBuilder.Entity("HotelManagement.Domain.Room", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Floor")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("HotelId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Number")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<Guid>("RoomTypeId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RoomTypeId");
-
-                    b.HasIndex("HotelId", "Number")
-                        .IsUnique();
-
-                    b.ToTable("Rooms");
-                });
-
             modelBuilder.Entity("HotelManagement.Domain.RoomBasePrice", b =>
                 {
                     b.Property<Guid>("Id")
@@ -755,6 +801,9 @@ namespace HotelManagement.Domain.Migrations
 
                     b.Property<Guid>("HotelId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("RoomId")
                         .HasColumnType("uniqueidentifier");
@@ -1060,13 +1109,13 @@ namespace HotelManagement.Domain.Migrations
                         .HasForeignKey("PrimaryGuestId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("HotelManagement.Domain.Room", null)
+                    b.HasOne("HotelManagement.Domain.HotelRoom", null)
                         .WithMany()
                         .HasForeignKey("RoomId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("HotelManagement.Domain.Room", "Room")
+                    b.HasOne("HotelManagement.Domain.HotelRoom", "Room")
                         .WithMany()
                         .HasForeignKey("RoomId1");
 
@@ -1134,6 +1183,25 @@ namespace HotelManagement.Domain.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("HotelManagement.Domain.HotelRoom", b =>
+                {
+                    b.HasOne("HotelManagement.Domain.Hotel", "Hotel")
+                        .WithMany("Rooms")
+                        .HasForeignKey("HotelId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HotelManagement.Domain.RoomType", "RoomType")
+                        .WithMany("Rooms")
+                        .HasForeignKey("RoomTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Hotel");
+
+                    b.Navigation("RoomType");
+                });
+
             modelBuilder.Entity("HotelManagement.Domain.HousekeepingTask", b =>
                 {
                     b.HasOne("HotelManagement.Domain.Hotel", null)
@@ -1142,7 +1210,7 @@ namespace HotelManagement.Domain.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("HotelManagement.Domain.Room", null)
+                    b.HasOne("HotelManagement.Domain.HotelRoom", null)
                         .WithMany()
                         .HasForeignKey("RoomId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1199,6 +1267,17 @@ namespace HotelManagement.Domain.Migrations
                         .HasForeignKey("MenuGroupId");
 
                     b.Navigation("Group");
+                });
+
+            modelBuilder.Entity("HotelManagement.Domain.MenuItemIngredient", b =>
+                {
+                    b.HasOne("HotelManagement.Domain.MenuItem", "MenuItem")
+                        .WithMany("Ingredients")
+                        .HasForeignKey("MenuItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MenuItem");
                 });
 
             modelBuilder.Entity("HotelManagement.Domain.Order", b =>
@@ -1259,25 +1338,6 @@ namespace HotelManagement.Domain.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
                 });
 
-            modelBuilder.Entity("HotelManagement.Domain.Room", b =>
-                {
-                    b.HasOne("HotelManagement.Domain.Hotel", "Hotel")
-                        .WithMany("Rooms")
-                        .HasForeignKey("HotelId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("HotelManagement.Domain.RoomType", "RoomType")
-                        .WithMany("Rooms")
-                        .HasForeignKey("RoomTypeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Hotel");
-
-                    b.Navigation("RoomType");
-                });
-
             modelBuilder.Entity("HotelManagement.Domain.RoomBasePrice", b =>
                 {
                     b.HasOne("HotelManagement.Domain.Hotel", null)
@@ -1331,7 +1391,7 @@ namespace HotelManagement.Domain.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("HotelManagement.Domain.Room", null)
+                    b.HasOne("HotelManagement.Domain.HotelRoom", null)
                         .WithMany("StatusLogs")
                         .HasForeignKey("RoomId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1471,6 +1531,11 @@ namespace HotelManagement.Domain.Migrations
                     b.Navigation("Rooms");
                 });
 
+            modelBuilder.Entity("HotelManagement.Domain.HotelRoom", b =>
+                {
+                    b.Navigation("StatusLogs");
+                });
+
             modelBuilder.Entity("HotelManagement.Domain.Invoice", b =>
                 {
                     b.Navigation("Lines");
@@ -1481,14 +1546,14 @@ namespace HotelManagement.Domain.Migrations
                     b.Navigation("Items");
                 });
 
+            modelBuilder.Entity("HotelManagement.Domain.MenuItem", b =>
+                {
+                    b.Navigation("Ingredients");
+                });
+
             modelBuilder.Entity("HotelManagement.Domain.Order", b =>
                 {
                     b.Navigation("Items");
-                });
-
-            modelBuilder.Entity("HotelManagement.Domain.Room", b =>
-                {
-                    b.Navigation("StatusLogs");
                 });
 
             modelBuilder.Entity("HotelManagement.Domain.RoomType", b =>

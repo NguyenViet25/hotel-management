@@ -30,6 +30,7 @@ namespace HotelManagement.Domain.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Fullname = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -374,8 +375,12 @@ namespace HotelManagement.Domain.Migrations
                     HotelId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     MenuGroupId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false)
+                    PortionSize = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -562,6 +567,27 @@ namespace HotelManagement.Domain.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "MenuItemIngredient",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    MenuItemId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Quantity = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Unit = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MenuItemIngredient", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_MenuItemIngredient_MenuItems_MenuItemId",
+                        column: x => x.MenuItemId,
+                        principalTable: "MenuItems",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Bookings",
                 columns: table => new
                 {
@@ -648,7 +674,8 @@ namespace HotelManagement.Domain.Migrations
                     HotelId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     RoomId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
-                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -1031,6 +1058,11 @@ namespace HotelManagement.Domain.Migrations
                 column: "HotelId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_MenuItemIngredient_MenuItemId",
+                table: "MenuItemIngredient",
+                column: "MenuItemId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_MenuItems_HotelId",
                 table: "MenuItems",
                 column: "HotelId");
@@ -1202,6 +1234,9 @@ namespace HotelManagement.Domain.Migrations
 
             migrationBuilder.DropTable(
                 name: "InvoiceLines");
+
+            migrationBuilder.DropTable(
+                name: "MenuItemIngredient");
 
             migrationBuilder.DropTable(
                 name: "OrderItems");
