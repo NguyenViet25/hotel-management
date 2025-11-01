@@ -23,6 +23,7 @@ if %ERRORLEVEL% NEQ 0 (
 )
 
 echo Building and starting Docker services with fresh images...
+docker compose build --no-cache
 docker compose up -d
 if %ERRORLEVEL% NEQ 0 (
   echo.
