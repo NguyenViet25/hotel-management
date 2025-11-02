@@ -30,7 +30,7 @@ export interface Column<T> {
   label: string;
   minWidth?: number;
   align?: "right" | "left" | "center";
-  format?: (value: any) => string;
+  format?: (value: any) => string | React.ReactNode;
   sortable?: boolean;
 }
 

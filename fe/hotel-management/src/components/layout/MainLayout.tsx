@@ -158,7 +158,7 @@ const MainLayout = ({ menuItems }: MainLayoutProps) => {
         open={open}
         onClose={isMobile ? handleDrawerClose : undefined}
         sx={{
-          width: drawerWidth,
+          width: open ? drawerWidth : (theme) => theme.spacing(9),
           flexShrink: 0,
           "& .MuiDrawer-paper": {
             boxSizing: "border-box",

@@ -376,11 +376,9 @@ const UserManagement: React.FC = () => {
 
   return (
     <Box>
-      <Box>
-        <Typography variant="h6" component="h1" gutterBottom>
-          Quản lý người dùng
-        </Typography>
-      </Box>
+      <Typography variant="h6" component="h1" gutterBottom>
+        Quản lý người dùng
+      </Typography>
 
       <DataTable<User>
         columns={columns}
