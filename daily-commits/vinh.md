@@ -47,3 +47,4 @@
 2025-11-02 - 2 - 01:49:24 UTC :: perf: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — chinh sua tai lieu & mo ta API (chuan bi cho tinh nang tiep theo)
 2025-11-02 - 3 - 01:49:27 UTC :: feat: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — chinh sua tai lieu & mo ta API (dat tieu chi toi thieu)
 2025-11-02 - 4 - 01:49:30 UTC :: feat: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — toi uu truy van va bo nho (can theo doi them)
+2025-11-02 - 5 - 01:49:32 UTC :: test: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — cai thien hieu nang render/list (dat tieu chi toi thieu)
