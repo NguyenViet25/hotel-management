@@ -3,6 +3,7 @@ import {
   Logout as LogoutIcon,
   Menu as MenuIcon,
   Person as PersonIcon,
+  Search as SearchIcon,
   Settings as SettingsIcon,
 } from "@mui/icons-material";
 import {
@@ -13,6 +14,7 @@ import {
   Divider,
   Drawer,
   IconButton,
+  InputBase,
   List,
   ListItem,
   ListItemButton,
@@ -22,12 +24,53 @@ import {
   MenuItem,
   Toolbar,
   Typography,
+  alpha,
+  styled,
 } from "@mui/material";
 import { useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import theme from "../../theme";
 
 const drawerWidth = 240;
+
+// Styled search component
+const Search = styled("div")(({ theme }) => ({
+  position: "relative",
+  borderRadius: theme.shape.borderRadius,
+  backgroundColor: alpha(theme.palette.common.white, 0.15),
+  "&:hover": {
+    backgroundColor: alpha(theme.palette.common.white, 0.25),
+  },
+  marginRight: theme.spacing(2),
+  marginLeft: 0,
+  width: "100%",
+  [theme.breakpoints.up("sm")]: {
+    marginLeft: theme.spacing(3),
+    width: "50%",
+  },
+}));
+
+const SearchIconWrapper = styled("div")(({ theme }) => ({
+  padding: theme.spacing(0, 2),
+  height: "100%",
+  position: "absolute",
+  pointerEvents: "none",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+}));
+
+const StyledInputBase = styled(InputBase)(({ theme }) => ({
+  color: "inherit",
+  "& .MuiInputBase-input": {
+    padding: theme.spacing(1, 1, 1, 0),
+    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
+    transition: theme.transitions.create("width"),
+    width: "100%",
+  },
+  border: "1px solid #ccc",
+  borderRadius: theme.shape.borderRadius,
+}));
 
 interface MainLayoutProps {
   title: string;
@@ -71,6 +114,8 @@ const MainLayout = ({ title, menuItems }: MainLayoutProps) => {
       <AppBar
         position="fixed"
         sx={{
+          boxShadow: "none",
+          borderBottom: "1px solid #ccc",
           zIndex: (theme) => theme.zIndex.drawer + 1,
           transition: (theme) =>
             theme.transitions.create(["width", "margin"], {
@@ -86,6 +131,8 @@ const MainLayout = ({ title, menuItems }: MainLayoutProps) => {
                 duration: theme.transitions.duration.enteringScreen,
               }),
           }),
+          backgroundColor: "white",
+          color: "black",
         }}
       >
         <Toolbar>
@@ -95,14 +142,25 @@ const MainLayout = ({ title, menuItems }: MainLayoutProps) => {
             onClick={handleDrawerOpen}
             edge="start"
             sx={{
-              marginRight: 5,
               ...(open && { display: "none" }),
             }}
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            {title}
+
+          <Search sx={{ width: "100%" }}>
+            <SearchIconWrapper>
+              <SearchIcon />
+            </SearchIconWrapper>
+            <StyledInputBase
+              placeholder="Tìm kiếm phòng/khách/đơn..."
+              inputProps={{ "aria-label": "search" }}
+              sx={{ width: "100%" }}
+            />
+          </Search>
+          <Box sx={{ flexGrow: 1 }} />
+          <Typography variant="body2" sx={{ mr: 2 }}>
+            Cơ sở: Hà Nội - Cầu Giấy
           </Typography>
           <IconButton
             onClick={handleProfileMenuOpen}
@@ -190,13 +248,13 @@ const MainLayout = ({ title, menuItems }: MainLayoutProps) => {
             component="div"
             sx={{ flexGrow: 1, ml: 2 }}
           >
-            Hotel MS
+            QL Cơ Sở
           </Typography>
           <IconButton onClick={handleDrawerClose}>
             <ChevronLeftIcon />
           </IconButton>
         </Toolbar>
-        <Divider />
+
         <List>
           {menuItems.map((item) => (
             <ListItem key={item.title} disablePadding sx={{ display: "block" }}>
@@ -231,8 +289,6 @@ const MainLayout = ({ title, menuItems }: MainLayoutProps) => {
         sx={{
           flexGrow: 1,
           p: 3,
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-          mt: 8,
         }}
       >
         <Outlet />
