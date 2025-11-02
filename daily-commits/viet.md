@@ -45,3 +45,4 @@
 2025-11-01 - 5 - 01:47:47 UTC :: chore: UC-43 Mat khau: quy dinh do manh, het han phien. — refactor luong xu ly cho ro rang (dong bo voi BE/FE)
 2025-11-02 - 1 - 01:49:22 UTC :: feat: UC-18 Room Move/Extend: doi phong, gia han dem o. — kiem tra tuong thich mui gio/tien te (dat tieu chi toi thieu)
 2025-11-02 - 2 - 01:49:23 UTC :: chore: UC-22 Minibar/Amenity: ghi tieu hao, post charge vao folio. — refactor luong xu ly cho ro rang (khong doi hanh vi)
+2025-11-02 - 3 - 01:49:24 UTC :: docs: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — bo sung metrics/telemetry co ban (dam bao backward-compatible)
