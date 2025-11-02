@@ -1,4 +1,4 @@
-import { Box, Typography, Grid, Paper } from '@mui/material';
+import { Box, Typography, Grid, Paper } from "@mui/material";
 
 const WaiterDashboard = () => {
   return (
@@ -12,12 +12,14 @@ const WaiterDashboard = () => {
             elevation={3}
             sx={{
               p: 3,
-              display: 'flex',
-              flexDirection: 'column',
+              display: "flex",
+              flexDirection: "column",
               height: 140,
             }}
           >
-            <Typography variant="h6" color="primary">Active Tables</Typography>
+            <Typography variant="h6" color="primary">
+              Active Tables
+            </Typography>
             <Typography variant="h3" component="div" sx={{ mt: 2 }}>
               8
             </Typography>
@@ -28,12 +30,14 @@ const WaiterDashboard = () => {
             elevation={3}
             sx={{
               p: 3,
-              display: 'flex',
-              flexDirection: 'column',
+              display: "flex",
+              flexDirection: "column",
               height: 140,
             }}
           >
-            <Typography variant="h6" color="primary">Pending Orders</Typography>
+            <Typography variant="h6" color="primary">
+              Pending Orders
+            </Typography>
             <Typography variant="h3" component="div" sx={{ mt: 2 }}>
               12
             </Typography>
