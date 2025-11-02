@@ -1,6 +1,10 @@
-# hotel-management-system
+# Hotel Management System
 
-Hotel Management System – A capstone project that manages hotel operations.
+**Project Overview:**  
+This is a capstone project designed to manage hotel operations efficiently. It includes features for handling bookings, rooms, customers, and other hotel management tasks.
 
-Accessing the APIs: https://hm-web-api.azurewebsites.net/swagger/index.html
-Accessing the client: https://hotel-management-five-zeta.vercel.app/
+**Access the APIs:**  
+[Swagger API Documentation](https://hm-web-api.azurewebsites.net/swagger/index.html)
+
+**Access the Client Application:**  
+[Hotel Management Client](https://hotel-management-five-zeta.vercel.app/)
