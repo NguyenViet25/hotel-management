@@ -50,3 +50,4 @@
 2025-11-01 - 5 - 01:47:44 UTC :: ci: UC-40 Thu/chi: doi soat tien mat/the/le phi PG. — toi uu truy van va bo nho (can theo doi them)
 2025-11-02 - 1 - 01:49:21 UTC :: test: UC-40 Thu/chi: doi soat tien mat/the/le phi PG. — refactor luong xu ly cho ro rang (anh huong thap)
 2025-11-02 - 2 - 01:49:22 UTC :: feat: UC-28 Room charge F&B: ghi hoa don ban an vao folio. — bo sung index & toi uu DB (can theo doi them)
+2025-11-02 - 3 - 01:49:25 UTC :: test: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — don dep code va xoa doan thua (dam bao backward-compatible)
