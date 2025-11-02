@@ -315,8 +315,8 @@ const MainLayout = ({ menuItems }: MainLayoutProps) => {
         sx={{
           flexGrow: 1,
           p: { xs: 2, sm: 3 },
-
           overflow: "auto",
+          height: "100vh",
           bgcolor: "#ffffff",
         }}
       >
