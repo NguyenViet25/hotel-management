@@ -44,3 +44,4 @@
 2025-11-01 - 4 - 01:47:43 UTC :: ci: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — don dep code va xoa doan thua (khong doi hanh vi)
 2025-11-01 - 5 - 01:47:44 UTC :: docs: UC-39 Xuat Audit Log: xuat CSV/PDF kiem tra tuan thu. — them log chi tiet phuc vu audit (can theo doi them)
 2025-11-02 - 1 - 01:49:21 UTC :: build: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — cai thien hieu nang render/list (can theo doi them)
+2025-11-02 - 2 - 01:49:24 UTC :: fix: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — bo sung case canh bien & no-show (khong doi hanh vi)
