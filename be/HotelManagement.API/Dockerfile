@@ -22,8 +22,8 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 
-# Configure Kestrel to listen on port 5000
-ENV ASPNETCORE_URLS=http://+:5000
-EXPOSE 5000
+# Configure Kestrel to listen on port 5283
+ENV ASPNETCORE_URLS=http://+:5283
+EXPOSE 5283
 
 ENTRYPOINT ["dotnet", "HotelManagement.API.dll"]

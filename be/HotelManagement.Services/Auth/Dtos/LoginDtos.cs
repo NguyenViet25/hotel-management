@@ -1,8 +1,10 @@
+using HotelManagement.Domain.Entities;
+
 namespace HotelManagement.Services.Auth.Dtos;
 
 public record LoginRequestDto(string Username, string Password, string? TwoFactorProvider = null, string? TwoFactorCode = null);
 
-public record LoginResponseDto(bool RequiresTwoFactor, string? AccessToken = null, DateTimeOffset? ExpiresAt = null);
+public record LoginResponseDto(bool RequiresTwoFactor, string? AccessToken = null,  DateTimeOffset? ExpiresAt = null, dynamic? user = null);
 
 public record TwoFactorVerifyDto(string Username, string Provider, string Code);
 
