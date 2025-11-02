@@ -1,25 +1,15 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import { lazy, Suspense, type JSX } from "react";
 import { CircularProgress, Box } from "@mui/material";
-import {
-  Dashboard as DashboardIcon,
-  Hotel as HotelIcon,
-  Person as PersonIcon,
-  Restaurant as RestaurantIcon,
-  Room as RoomIcon,
-  Receipt as ReceiptIcon,
-  Settings as SettingsIcon,
-  Payments as PaymentsIcon,
-  LocalDining as DiningIcon,
-  AccountBalance as AccountBalanceIcon,
-} from "@mui/icons-material";
 
 // Layouts
 import MainLayout from "../components/layout/MainLayout";
+import AdminDashboardPage from "../pages/dashboard/admin";
+import { menuItems } from "./menu-items";
 
 // Pages
-const LoginPage = lazy(() => import("../pages/login"));
 const NotFoundPage = lazy(() => import("../pages/not-found"));
+const LoginPage = lazy(() => import("../pages/login"));
 
 // Loading component
 const LoadingFallback = () => (
@@ -35,82 +25,7 @@ const LoadingFallback = () => (
   </Box>
 );
 
-// Role-based menu items
-const menuItems = {
-  admin: [
-    { title: "Tổng quan", path: "/admin/dashboard", icon: <DashboardIcon /> },
-    { title: "Quản lý người dùng", path: "/admin/users", icon: <PersonIcon /> },
-    { title: "Quản lý cơ sở", path: "/admin/facilities", icon: <HotelIcon /> },
-    { title: "Nhật ký hoạt động", path: "/admin/audit", icon: <ReceiptIcon /> },
-  ],
-  facilityManager: [
-    { title: "Tổng quan", path: "/manager/dashboard", icon: <DashboardIcon /> },
-    { title: "Room Status", path: "/manager/rooms", icon: <RoomIcon /> },
-    { title: "Revenue", path: "/manager/revenue", icon: <PaymentsIcon /> },
-    {
-      title: "Maintenance",
-      path: "/manager/maintenance",
-      icon: <SettingsIcon />,
-    },
-    { title: "Staff", path: "/manager/staff", icon: <PersonIcon /> },
-    { title: "Reports", path: "/manager/reports", icon: <ReceiptIcon /> },
-  ],
-  frontDesk: [
-    {
-      title: "Tổng quan",
-      path: "/frontdesk/dashboard",
-      icon: <DashboardIcon />,
-    },
-    { title: "Bookings", path: "/frontdesk/bookings", icon: <HotelIcon /> },
-    { title: "Check-in/out", path: "/frontdesk/checkin", icon: <PersonIcon /> },
-    { title: "Room Status", path: "/frontdesk/rooms", icon: <RoomIcon /> },
-    { title: "Charges", path: "/frontdesk/charges", icon: <PaymentsIcon /> },
-    { title: "Calendar", path: "/frontdesk/calendar", icon: <ReceiptIcon /> },
-  ],
-  kitchen: [
-    { title: "Tổng quan", path: "/kitchen/dashboard", icon: <DashboardIcon /> },
-    { title: "Orders", path: "/kitchen/orders", icon: <RestaurantIcon /> },
-    { title: "Menu", path: "/kitchen/menu", icon: <DiningIcon /> },
-  ],
-  waiter: [
-    { title: "Tổng quan", path: "/waiter/dashboard", icon: <DashboardIcon /> },
-    { title: "Tables", path: "/waiter/tables", icon: <RestaurantIcon /> },
-    { title: "Orders", path: "/waiter/orders", icon: <DiningIcon /> },
-    { title: "Charges", path: "/waiter/charges", icon: <PaymentsIcon /> },
-  ],
-  cashier: [
-    { title: "Dashboard", path: "/cashier/dashboard", icon: <DashboardIcon /> },
-    { title: "Payments", path: "/cashier/payments", icon: <PaymentsIcon /> },
-    { title: "Invoices", path: "/cashier/invoices", icon: <ReceiptIcon /> },
-  ],
-  accountant: [
-    {
-      title: "Dashboard",
-      path: "/accountant/dashboard",
-      icon: <DashboardIcon />,
-    },
-    { title: "Folios", path: "/accountant/folios", icon: <ReceiptIcon /> },
-    { title: "Revenue", path: "/accountant/revenue", icon: <PaymentsIcon /> },
-    { title: "Invoices", path: "/accountant/invoices", icon: <ReceiptIcon /> },
-    {
-      title: "Reports",
-      path: "/accountant/reports",
-      icon: <AccountBalanceIcon />,
-    },
-  ],
-  housekeeper: [
-    {
-      title: "Dashboard",
-      path: "/housekeeper/dashboard",
-      icon: <DashboardIcon />,
-    },
-    { title: "Room Status", path: "/housekeeper/rooms", icon: <RoomIcon /> },
-    { title: "Tasks", path: "/housekeeper/tasks", icon: <SettingsIcon /> },
-  ],
-};
-
-// Placeholder components for each role's dashboard
-const AdminDashboard = () => <div>Admin Dashboard</div>;
+const AdminDashboard = () => <AdminDashboardPage />;
 const ManagerDashboard = () => <div>Facility Manager Dashboard</div>;
 const FrontDeskDashboard = () => <div>Front Desk Dashboard</div>;
 const KitchenDashboard = () => <div>Kitchen Dashboard</div>;

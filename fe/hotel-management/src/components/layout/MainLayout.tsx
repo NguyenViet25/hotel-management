@@ -272,12 +272,10 @@ const MainLayout = ({ menuItems }: MainLayoutProps) => {
                     px: 1.5,
                     mb: 1,
                     borderRadius: "10px",
-                    bgcolor: isActive ? "rgba(0, 0, 0, 1)" : "transparent",
+                    bgcolor: isActive ? "#6E8CFB" : "transparent",
                     color: isActive ? "white" : "black",
                     "&:hover": {
-                      bgcolor: isActive
-                        ? "rgba(0, 0, 0, 1)"
-                        : "rgba(0, 0, 0, 0.04)",
+                      bgcolor: isActive ? "#6E8CFB" : "rgba(0, 0, 0, 0.04)",
                     },
                   }}
                   onClick={() => navigate(item.path)}

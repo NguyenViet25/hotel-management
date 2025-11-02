@@ -1,36 +1,40 @@
-import { useState } from "react";
+import { Google as GoogleIcon, Hotel as HotelIcon } from "@mui/icons-material";
 import {
   Box,
   Button,
   Container,
-  Paper,
+  Divider,
   TextField,
   Typography,
-  Divider,
   useTheme,
+  useMediaQuery,
 } from "@mui/material";
-import { Google as GoogleIcon } from "@mui/icons-material";
-import { toast } from "react-toastify";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import axiosInstance from "../../api/axios";
-import { useAuth } from "../../context/AuthContext";
+import { localStorageHelper } from "../../utils/local-storage-helper";
+
+export interface LoginResponseDto {
+  data: {
+    requiresTwoFactor: boolean;
+    accessToken?: string | null;
+    expiresAt?: string | Date | null;
+    user?: any | null;
+  };
+}
 
 const LoginPage = () => {
-  const theme = useTheme();
   const navigate = useNavigate();
-  const { loginWithCredentials } = useAuth();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // breakpoint for mobile
+
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    username: "",
-    password: "",
-  });
+  const [formData, setFormData] = useState({ username: "", password: "" });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -38,150 +42,137 @@ const LoginPage = () => {
     setLoading(true);
 
     try {
-      // First check for admin credentials
-      const { username, password } = formData;
-      const isAdminLogin = await loginWithCredentials(username, password);
-
-      if (isAdminLogin) {
-        toast.success("Admin login successful!");
-        navigate("/admin/dashboard");
-        return;
-      }
-
-      // If not admin, try regular API login
-      try {
-        const response = await axiosInstance.post("/auth/login", formData);
-        const { token, user } = response.data;
-
-        // Store token and user data
-        localStorage.setItem("token", token);
-        localStorage.setItem("user", JSON.stringify(user));
-
-        // Redirect based on role
-        const role = user.role;
-        let redirectPath = "/dashboard";
-
-        // Determine redirect path based on role
-        switch (role) {
-          case "admin":
-            redirectPath = "/admin/dashboard";
-            break;
-          case "facilityManager":
-            redirectPath = "/manager/dashboard";
-            break;
-          case "frontDesk":
-            redirectPath = "/frontdesk/dashboard";
-            break;
-          // Add other roles as needed
-        }
-
-        toast.success("Login successful!");
-        navigate(redirectPath);
-      } catch (error) {
-        console.error("API login failed:", error);
-        toast.error("Login failed. Please check your credentials.");
-      }
+      const response = await axiosInstance.post<LoginResponseDto>(
+        "/auth/login",
+        formData
+      );
+      const { accessToken, user } = response.data.data;
+      localStorageHelper.setAuthData(accessToken!, user);
+      navigateToCorrectPage(user);
     } catch (error) {
-      console.error("Login failed:", error);
-      toast.error("Login failed. Please check your credentials.");
+      console.error(error);
+      toast.error("Đăng nhập thất bại. Vui lòng kiểm tra thông tin đăng nhập.");
     } finally {
       setLoading(false);
     }
   };
 
+  const navigateToCorrectPage = (user: any) => {
+    const role = user.role.toLowerCase();
+    let path = "/dashboard";
+    switch (role) {
+      case "admin":
+        path = "/admin/dashboard";
+        break;
+      case "facilityManager":
+        path = "/manager/dashboard";
+        break;
+      case "frontDesk":
+        path = "/frontdesk/dashboard";
+        break;
+    }
+    toast.success("Đăng nhập thành công!");
+    navigate(path);
+  };
+
   const handleGoogleLogin = () => {
-    // Implement Google login functionality
-    toast.info("Google login will be implemented");
+    toast.info("Chức năng đăng nhập Google sẽ được triển khai sớm.");
   };
 
   return (
     <Box
       sx={{
-        display: "flex",
         minHeight: "100vh",
+        display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: theme.palette.background.default,
-        backgroundImage: "url(/hotel-background.jpg)",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
+        backgroundColor: "#f5f5f5",
       }}
     >
-      <Container maxWidth="sm">
-        <Paper
-          elevation={6}
+      <Container maxWidth="md">
+        <Box
           sx={{
-            p: 4,
+            backgroundColor: "#fff",
+            borderRadius: 3,
+            boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
+            p: isMobile ? 2 : 6,
             display: "flex",
-            flexDirection: "column",
+            flexDirection: isMobile ? "column" : "row",
             alignItems: "center",
-            backgroundColor: "rgba(255, 255, 255, 0.9)",
+            justifyContent: "space-between",
+            textAlign: isMobile ? "center" : "left",
           }}
         >
-          <Typography component="h1" variant="h4" gutterBottom>
-            Hotel Management System
-          </Typography>
-          <Typography variant="subtitle1" color="text.secondary" mb={3}>
-            Sign in to your account
-          </Typography>
-
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            noValidate
-            sx={{ mt: 1, width: "100%" }}
-          >
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="username"
-              label="Username"
-              name="username"
-              autoComplete="username"
-              autoFocus
-              value={formData.username}
-              onChange={handleChange}
-            />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              name="password"
-              label="Password"
-              type="password"
-              id="password"
-              autoComplete="current-password"
-              value={formData.password}
-              onChange={handleChange}
-            />
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 2 }}
-              disabled={loading}
+          {/* Left: Icon + Description */}
+          <Box sx={{ flex: 1, pr: isMobile ? 0 : 4, mb: isMobile ? 4 : 0 }}>
+            <HotelIcon sx={{ fontSize: 80, color: "#5563DE", mb: 2 }} />
+            <Typography
+              component="h1"
+              variant="h4"
+              sx={{ fontWeight: 700, mb: 1 }}
             >
-              {loading ? "Signing in..." : "Sign In"}
-            </Button>
+              Quản lý Khách sạn
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              Chào mừng trở lại! Vui lòng đăng nhập để quản lý đặt phòng, phòng
+              và khách hàng hiệu quả.
+            </Typography>
           </Box>
 
-          <Divider sx={{ width: "100%", my: 2 }}>
-            <Typography variant="body2" color="text.secondary">
-              OR
-            </Typography>
-          </Divider>
+          {/* Right: Form */}
+          <Box sx={{ flex: 1, maxWidth: 400 }}>
+            <Box component="form" onSubmit={handleSubmit} sx={{ mb: 2 }}>
+              <TextField
+                fullWidth
+                label="Tên đăng nhập"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                margin="normal"
+                variant="outlined"
+                autoFocus
+              />
+              <TextField
+                fullWidth
+                label="Mật khẩu"
+                name="password"
+                type="password"
+                value={formData.password}
+                onChange={handleChange}
+                margin="normal"
+                variant="outlined"
+              />
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                sx={{
+                  mt: 3,
+                  py: 1.5,
+                  fontWeight: 600,
+                  borderRadius: 3,
+                  backgroundColor: "#5563DE",
+                  "&:hover": { backgroundColor: "#3b4ac0" },
+                }}
+                disabled={loading}
+              >
+                {loading ? "Đang đăng nhập..." : "Đăng nhập"}
+              </Button>
+            </Box>
 
-          <Button
-            fullWidth
-            variant="outlined"
-            startIcon={<GoogleIcon />}
-            onClick={handleGoogleLogin}
-            sx={{ mt: 1, mb: 2 }}
-          >
-            Sign in with Google
-          </Button>
-        </Paper>
+            <Divider sx={{ my: 2 }}>HOẶC</Divider>
+
+            <Button
+              fullWidth
+              variant="outlined"
+              startIcon={<GoogleIcon />}
+              onClick={handleGoogleLogin}
+              sx={{ py: 1.5, borderRadius: 3, textTransform: "none" }}
+            >
+              Đăng nhập với Google
+            </Button>
+          </Box>
+        </Box>
       </Container>
     </Box>
   );

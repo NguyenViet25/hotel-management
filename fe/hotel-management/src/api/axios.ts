@@ -1,18 +1,58 @@
-import axios from 'axios';
+import axios from "axios";
+import { toast } from "react-toastify";
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5283/api";
 
 const axiosInstance = axios.create({
   baseURL: API_URL,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
-// Request interceptor for adding auth token
+// ✅ Helper: navigate user based on their role
+const navigateToCorrectPage = (user: any) => {
+  if (!user) return;
+
+  const role = user.role?.toLowerCase() ?? "";
+  let redirectPath = "/dashboard";
+
+  switch (role) {
+    case "admin":
+      redirectPath = "/admin/dashboard";
+      break;
+    case "facilitymanager":
+      redirectPath = "/manager/dashboard";
+      break;
+    case "frontdesk":
+      redirectPath = "/frontdesk/dashboard";
+      break;
+    default:
+      redirectPath = "/dashboard";
+      break;
+  }
+
+  toast.success("Welcome back!");
+  window.location.href = redirectPath;
+};
+
+// ✅ Check if already logged in (when app or axios initializes)
+const token = localStorage.getItem("token");
+const userJson = localStorage.getItem("user");
+if (token && userJson) {
+  try {
+    const user = JSON.parse(userJson);
+    navigateToCorrectPage(user);
+  } catch {
+    // if parsing fails, clear invalid data
+    localStorage.removeItem("user");
+  }
+}
+
+// ✅ Request interceptor for adding auth token
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -21,14 +61,15 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor for handling errors
+// ✅ Response interceptor for handling errors
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     // Handle 401 Unauthorized errors
     if (error.response && error.response.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      window.location.href = "/login";
     }
     return Promise.reject(error);
   }
