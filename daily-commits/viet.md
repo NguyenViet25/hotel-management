@@ -43,3 +43,4 @@
 2025-11-01 - 3 - 01:47:43 UTC :: build: UC-21 Housekeeping: cap nhat Dirty/In-progress/Cleaned/Inspected. — toi uu truy van va bo nho (khong doi hanh vi)
 2025-11-01 - 4 - 01:47:44 UTC :: docs: UC-01 RBAC: tao, sua, khoa tai khoan; gan vai tro. — dieu chinh quyen truy cap theo vai tro (da review so bo)
 2025-11-01 - 5 - 01:47:47 UTC :: chore: UC-43 Mat khau: quy dinh do manh, het han phien. — refactor luong xu ly cho ro rang (dong bo voi BE/FE)
+2025-11-02 - 1 - 01:49:22 UTC :: feat: UC-18 Room Move/Extend: doi phong, gia han dem o. — kiem tra tuong thich mui gio/tien te (dat tieu chi toi thieu)
