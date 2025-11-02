@@ -13,6 +13,9 @@ const LoginPage = lazy(() => import("../pages/login"));
 const UserManagementPage = lazy(
   () => import("../pages/dashboard/admin/user-management")
 );
+const AuditLogsPage = lazy(
+  () => import("../pages/dashboard/admin/audit-logs")
+);
 const HotelsListPage = lazy(
   () => import("../features/hotels/pages/HotelsListPage")
 );
@@ -92,6 +95,14 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<div>Loading...</div>}>
             <HotelsListPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "audit-logs",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <AuditLogsPage />
           </Suspense>
         ),
       },

@@ -97,7 +97,7 @@ const DataTable = <T extends object>({
     <Paper sx={{ width: "100%", overflow: "hidden", borderRadius: 2 }}>
       <Stack
         sx={{
-          p: 2,
+          p: onSearch || onAdd ? 2 : 0,
           display: "flex",
           justifyContent: "space-between",
           borderBottom: "1px solid rgba(224, 224, 224, 1)",
@@ -105,22 +105,24 @@ const DataTable = <T extends object>({
         gap={1}
         direction={{ xs: "column", lg: "row" }}
       >
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          <TextField
-            placeholder="Tìm kiếm..."
-            size="small"
-            value={searchText}
-            onChange={handleSearch}
-            sx={{ width: 320 }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon fontSize="small" />
-                </InputAdornment>
-              ),
-            }}
-          />
-        </Box>
+        {onSearch && (
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <TextField
+              placeholder="Tìm kiếm..."
+              size="small"
+              value={searchText}
+              onChange={handleSearch}
+              sx={{ width: 320 }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon fontSize="small" />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Box>
+        )}
         {onAdd && (
           <Button
             variant="contained"

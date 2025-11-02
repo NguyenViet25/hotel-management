@@ -98,6 +98,7 @@ const HotelsListPage: React.FC = () => {
         onLock={handleOpenStatusModal}
         getRowId={(row) => row.id}
         onSort={handleSort}
+        onSearch={() => {}}
       />
       <HotelFormModal
         visible={isCreateModalVisible}

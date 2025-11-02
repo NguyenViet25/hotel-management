@@ -14,13 +14,12 @@ import {
 export const menuItems = {
   admin: [
     { title: "Tổng quan", path: "/admin/dashboard", icon: <DashboardIcon /> },
-    {
-      title: "Quản lý người dùng",
+    { title: "Quản lý người dùng",
       path: "/admin/user-management",
       icon: <PersonIcon />,
     },
     { title: "Quản lý cơ sở", path: "/admin/hotels", icon: <HotelIcon /> },
-    { title: "Nhật ký hoạt động", path: "/admin/audit", icon: <ReceiptIcon /> },
+    { title: "Nhật ký hoạt động", path: "/admin/audit-logs", icon: <ReceiptIcon /> },
   ],
   facilityManager: [
     { title: "Tổng quan", path: "/manager/dashboard", icon: <DashboardIcon /> },

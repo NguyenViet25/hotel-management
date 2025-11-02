@@ -399,6 +399,7 @@ const UserManagement: React.FC = () => {
         onSort={handleSort}
         sortBy={sortBy}
         sortDirection={sortDirection}
+        onSearch={() => {}}
       />
 
       {/* Create User Dialog */}
