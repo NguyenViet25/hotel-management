@@ -26,12 +26,14 @@ import {
   Typography,
   alpha,
   styled,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
-import { useState } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import theme from "../../theme";
 
-const drawerWidth = 240;
+const drawerWidth = 280;
 
 // Styled search component
 const Search = styled("div")(({ theme }) => ({
@@ -81,13 +83,22 @@ interface MainLayoutProps {
   }[];
 }
 
-const MainLayout = ({ title, menuItems }: MainLayoutProps) => {
+const MainLayout = ({ menuItems }: MainLayoutProps) => {
   const navigate = useNavigate();
-  const [open, setOpen] = useState(true);
+  const location = useLocation();
+  const muiTheme = useTheme();
+  const isMobile = useMediaQuery(muiTheme.breakpoints.down("sm"));
+
+  const [open, setOpen] = useState(!isMobile);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
+  // Update drawer state when screen size changes
+  useEffect(() => {
+    setOpen(!isMobile);
+  }, [isMobile]);
+
   const handleDrawerOpen = () => {
-    setOpen(true);
+    setOpen(!open);
   };
 
   const handleDrawerClose = () => {
@@ -109,28 +120,29 @@ const MainLayout = ({ title, menuItems }: MainLayoutProps) => {
   };
 
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box sx={{ display: "flex", bgcolor: "#ffffff" }}>
       <CssBaseline />
       <AppBar
         position="fixed"
         sx={{
-          boxShadow: "none",
-          borderBottom: "1px solid #ccc",
           zIndex: (theme) => theme.zIndex.drawer + 1,
           transition: (theme) =>
             theme.transitions.create(["width", "margin"], {
               easing: theme.transitions.easing.sharp,
               duration: theme.transitions.duration.leavingScreen,
             }),
-          ...(open && {
-            marginLeft: drawerWidth,
-            width: `calc(100% - ${drawerWidth}px)`,
-            transition: (theme) =>
-              theme.transitions.create(["width", "margin"], {
-                easing: theme.transitions.easing.sharp,
-                duration: theme.transitions.duration.enteringScreen,
-              }),
-          }),
+          ...(open &&
+            !isMobile && {
+              marginLeft: drawerWidth,
+              width: `calc(100% - ${drawerWidth}px)`,
+              transition: (theme) =>
+                theme.transitions.create(["width", "margin"], {
+                  easing: theme.transitions.easing.sharp,
+                  duration: theme.transitions.duration.enteringScreen,
+                }),
+            }),
+          boxShadow: "none",
+          borderBottom: "1px solid #ccc",
           backgroundColor: "white",
           color: "black",
         }}
@@ -141,9 +153,6 @@ const MainLayout = ({ title, menuItems }: MainLayoutProps) => {
             aria-label="open drawer"
             onClick={handleDrawerOpen}
             edge="start"
-            sx={{
-              ...(open && { display: "none" }),
-            }}
           >
             <MenuIcon />
           </IconButton>
@@ -179,38 +188,34 @@ const MainLayout = ({ title, menuItems }: MainLayoutProps) => {
             transformOrigin={{ horizontal: "right", vertical: "top" }}
             anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
           >
-            <MenuItem onClick={() => navigate("/profile")}>
+            <MenuItem onClick={() => navigate("/profile")} sx={{ width: 220 }}>
               <ListItemIcon>
                 <PersonIcon fontSize="small" />
               </ListItemIcon>
-              Profile
+              Thông tin cá nhân
             </MenuItem>
-            <MenuItem onClick={() => navigate("/settings")}>
-              <ListItemIcon>
-                <SettingsIcon fontSize="small" />
-              </ListItemIcon>
-              Settings
-            </MenuItem>
+
             <Divider />
             <MenuItem onClick={handleLogout}>
               <ListItemIcon>
                 <LogoutIcon fontSize="small" />
               </ListItemIcon>
-              Logout
+              Đăng xuất
             </MenuItem>
           </Menu>
         </Toolbar>
       </AppBar>
       <Drawer
-        variant="permanent"
+        variant={isMobile ? "temporary" : "permanent"}
         open={open}
+        onClose={isMobile ? handleDrawerClose : undefined}
         sx={{
           width: drawerWidth,
           flexShrink: 0,
           "& .MuiDrawer-paper": {
-            width: drawerWidth,
             boxSizing: "border-box",
-            ...(open
+            bgcolor: "#ffffff",
+            ...(open && !isMobile
               ? {
                   overflowX: "hidden",
                   transition: (theme) =>
@@ -231,6 +236,7 @@ const MainLayout = ({ title, menuItems }: MainLayoutProps) => {
                     width: (theme) => theme.spacing(9),
                   },
                 }),
+            width: drawerWidth,
           },
         }}
       >
@@ -248,49 +254,73 @@ const MainLayout = ({ title, menuItems }: MainLayoutProps) => {
             component="div"
             sx={{ flexGrow: 1, ml: 2 }}
           >
-            QL Cơ Sở
+            Role name
           </Typography>
-          <IconButton onClick={handleDrawerClose}>
-            <ChevronLeftIcon />
-          </IconButton>
         </Toolbar>
 
-        <List>
-          {menuItems.map((item) => (
-            <ListItem key={item.title} disablePadding sx={{ display: "block" }}>
-              <ListItemButton
-                sx={{
-                  minHeight: 48,
-                  justifyContent: open ? "initial" : "center",
-                  px: 2.5,
-                }}
-                onClick={() => navigate(item.path)}
-              >
-                <ListItemIcon
+        <List sx={{ overflowY: "auto", mt: 2 }}>
+          {menuItems.map((item) => {
+            const isActive =
+              location.pathname === item.path ||
+              location.pathname.startsWith(`${item.path}/`);
+            return (
+              <ListItem key={item.title} disablePadding>
+                <ListItemButton
                   sx={{
-                    minWidth: 0,
-                    mr: open ? 3 : "auto",
-                    justifyContent: "center",
+                    mx: 2,
+                    justifyContent: open ? "initial" : "center",
+                    px: 1.5,
+                    mb: 1,
+                    borderRadius: "10px",
+                    bgcolor: isActive ? "rgba(0, 0, 0, 1)" : "transparent",
+                    color: isActive ? "white" : "black",
+                    "&:hover": {
+                      bgcolor: isActive
+                        ? "rgba(0, 0, 0, 1)"
+                        : "rgba(0, 0, 0, 0.04)",
+                    },
                   }}
+                  onClick={() => navigate(item.path)}
                 >
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText
-                  primary={item.title}
-                  sx={{ opacity: open ? 1 : 0 }}
-                />
-              </ListItemButton>
-            </ListItem>
-          ))}
+                  <ListItemIcon
+                    sx={{
+                      minWidth: 0,
+                      mr: open ? 1.5 : "auto",
+                      justifyContent: "center",
+                      color: isActive ? "white" : "inherit",
+                    }}
+                  >
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={item.title}
+                    sx={{
+                      opacity: open ? 1 : 0,
+                      display: open ? "block" : "none",
+                      color: isActive ? "white" : "inherit",
+                      fontWeight: isActive ? "bold" : "normal",
+                    }}
+                    primaryTypographyProps={{
+                      fontWeight: isActive ? "bold" : "normal",
+                    }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            );
+          })}
         </List>
       </Drawer>
       <Box
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
+          p: { xs: 2, sm: 3 },
+
+          overflow: "auto",
+          bgcolor: "#ffffff",
         }}
       >
+        <Toolbar /> {/* Spacer to prevent content from hiding under AppBar */}
         <Outlet />
       </Box>
     </Box>

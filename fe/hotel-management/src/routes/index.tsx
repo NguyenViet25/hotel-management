@@ -38,16 +38,13 @@ const LoadingFallback = () => (
 // Role-based menu items
 const menuItems = {
   admin: [
-    { title: "Dashboard", path: "/admin/dashboard", icon: <DashboardIcon /> },
-    { title: "User Management", path: "/admin/users", icon: <PersonIcon /> },
-    { title: "Facilities", path: "/admin/facilities", icon: <HotelIcon /> },
-    { title: "Pricing", path: "/admin/pricing", icon: <PaymentsIcon /> },
-    { title: "Audit Logs", path: "/admin/audit", icon: <ReceiptIcon /> },
-    { title: "Reports", path: "/admin/reports", icon: <ReceiptIcon /> },
-    { title: "Settings", path: "/admin/settings", icon: <SettingsIcon /> },
+    { title: "Tổng quan", path: "/admin/dashboard", icon: <DashboardIcon /> },
+    { title: "Quản lý người dùng", path: "/admin/users", icon: <PersonIcon /> },
+    { title: "Quản lý cơ sở", path: "/admin/facilities", icon: <HotelIcon /> },
+    { title: "Nhật ký hoạt động", path: "/admin/audit", icon: <ReceiptIcon /> },
   ],
   facilityManager: [
-    { title: "Dashboard", path: "/manager/dashboard", icon: <DashboardIcon /> },
+    { title: "Tổng quan", path: "/manager/dashboard", icon: <DashboardIcon /> },
     { title: "Room Status", path: "/manager/rooms", icon: <RoomIcon /> },
     { title: "Revenue", path: "/manager/revenue", icon: <PaymentsIcon /> },
     {
@@ -60,7 +57,7 @@ const menuItems = {
   ],
   frontDesk: [
     {
-      title: "Dashboard",
+      title: "Tổng quan",
       path: "/frontdesk/dashboard",
       icon: <DashboardIcon />,
     },
@@ -71,12 +68,12 @@ const menuItems = {
     { title: "Calendar", path: "/frontdesk/calendar", icon: <ReceiptIcon /> },
   ],
   kitchen: [
-    { title: "Dashboard", path: "/kitchen/dashboard", icon: <DashboardIcon /> },
+    { title: "Tổng quan", path: "/kitchen/dashboard", icon: <DashboardIcon /> },
     { title: "Orders", path: "/kitchen/orders", icon: <RestaurantIcon /> },
     { title: "Menu", path: "/kitchen/menu", icon: <DiningIcon /> },
   ],
   waiter: [
-    { title: "Dashboard", path: "/waiter/dashboard", icon: <DashboardIcon /> },
+    { title: "Tổng quan", path: "/waiter/dashboard", icon: <DashboardIcon /> },
     { title: "Tables", path: "/waiter/tables", icon: <RestaurantIcon /> },
     { title: "Orders", path: "/waiter/orders", icon: <DiningIcon /> },
     { title: "Charges", path: "/waiter/charges", icon: <PaymentsIcon /> },
