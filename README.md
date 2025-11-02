@@ -2,4 +2,5 @@
 
 Hotel Management System – A capstone project that manages hotel operations.
 
-Accessing the system: https://hotel-management-woad-five.vercel.app/
+Accessing the APIs: https://hm-web-api.azurewebsites.net/swagger/index.html
+Accessing the client: https://hotel-management-five-zeta.vercel.app/

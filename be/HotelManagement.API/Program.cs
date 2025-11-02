@@ -23,20 +23,15 @@ builder.Services.AddCors(options =>
     });
 });
 
-var app = builder.Build(); 
+var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Hotel Management API v1");
-        c.DocumentTitle = "Hotel Management API Docs";
-        c.DefaultModelsExpandDepth(-1);
-    });
-}
-
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Hotel Management API v1");
+    c.DocumentTitle = "Hotel Management API Docs";
+    c.DefaultModelsExpandDepth(-1);
+});
 
 app.UseCors("AllowAll");
 app.UseAuthentication();
