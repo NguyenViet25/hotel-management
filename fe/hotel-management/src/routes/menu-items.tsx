@@ -14,7 +14,7 @@ import {
 export const menuItems = {
   admin: [
     { title: "Tổng quan", path: "/admin/dashboard", icon: <DashboardIcon /> },
-    { title: "Quản lý người dùng", path: "/admin/users", icon: <PersonIcon /> },
+    { title: "Quản lý người dùng", path: "/admin/user-management", icon: <PersonIcon /> },
     { title: "Quản lý cơ sở", path: "/admin/facilities", icon: <HotelIcon /> },
     { title: "Nhật ký hoạt động", path: "/admin/audit", icon: <ReceiptIcon /> },
   ],

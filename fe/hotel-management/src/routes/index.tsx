@@ -10,7 +10,9 @@ import { menuItems } from "./menu-items";
 // Pages
 const NotFoundPage = lazy(() => import("../pages/not-found"));
 const LoginPage = lazy(() => import("../pages/login"));
-
+const UserManagementPage = lazy(
+  () => import("../pages/dashboard/admin/user-management")
+);
 // Loading component
 const LoadingFallback = () => (
   <Box
@@ -73,6 +75,14 @@ const router = createBrowserRouter([
       {
         path: "dashboard",
         element: <AdminDashboard />,
+      },
+      {
+        path: "user-management",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <UserManagementPage />
+          </Suspense>
+        ),
       },
       // Add other admin routes here
     ],

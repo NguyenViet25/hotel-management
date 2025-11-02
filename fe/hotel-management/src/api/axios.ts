@@ -10,7 +10,7 @@ const axiosInstance = axios.create({
   },
 });
 
-// ✅ Helper: navigate user based on their role
+// ✅ Helper: navigate user based on role
 const navigateToCorrectPage = (user: any) => {
   if (!user) return;
 
@@ -27,27 +27,27 @@ const navigateToCorrectPage = (user: any) => {
     case "frontdesk":
       redirectPath = "/frontdesk/dashboard";
       break;
-    default:
-      redirectPath = "/dashboard";
-      break;
   }
 
   toast.success("Welcome back!");
-  window.location.href = redirectPath;
+  window.location.href = redirectPath; // simple redirect
 };
 
-// ✅ Check if already logged in (when app or axios initializes)
-const token = localStorage.getItem("token");
-const userJson = localStorage.getItem("user");
-if (token && userJson) {
-  try {
-    const user = JSON.parse(userJson);
-    navigateToCorrectPage(user);
-  } catch {
-    // if parsing fails, clear invalid data
-    localStorage.removeItem("user");
+// ✅ Safe login check
+export const checkAlreadyLoggedIn = () => {
+  if (window.location.pathname === "/login") {
+    const token = localStorage.getItem("token");
+    const userJson = localStorage.getItem("user");
+    if (token && userJson) {
+      try {
+        const user = JSON.parse(userJson);
+        navigateToCorrectPage(user);
+      } catch {
+        localStorage.removeItem("user");
+      }
+    }
   }
-}
+};
 
 // ✅ Request interceptor for adding auth token
 axiosInstance.interceptors.request.use(
@@ -65,7 +65,6 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Handle 401 Unauthorized errors
     if (error.response && error.response.status === 401) {
       localStorage.removeItem("token");
       localStorage.removeItem("user");

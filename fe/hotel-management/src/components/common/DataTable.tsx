@@ -1,0 +1,290 @@
+import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import KeyIcon from "@mui/icons-material/Key";
+import LockIcon from "@mui/icons-material/Lock";
+import LockOpenIcon from "@mui/icons-material/LockOpen";
+import SearchIcon from "@mui/icons-material/Search";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  IconButton,
+  InputAdornment,
+  Pagination,
+  Paper,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TableSortLabel,
+  TextField,
+} from "@mui/material";
+import React, { useState } from "react";
+
+export interface Column<T> {
+  id: string;
+  label: string;
+  minWidth?: number;
+  align?: "right" | "left" | "center";
+  format?: (value: any) => string;
+  sortable?: boolean;
+}
+
+export interface DataTableProps<T> {
+  columns: Column<T>[];
+  data: T[];
+  title?: string;
+  loading?: boolean;
+  pagination?: {
+    page: number;
+    pageSize: number;
+    total: number;
+    onPageChange: (page: number) => void;
+    onPageSizeChange?: (pageSize: number) => void;
+  };
+  onAdd?: () => void;
+  onEdit?: (record: T) => void;
+  onDelete?: (record: T) => void;
+  onLock?: (record: T) => void;
+  onResetPassword?: (record: T) => void;
+  actionColumn?: boolean;
+  getRowId: (row: T) => string | number;
+  onSort?: (property: string) => void;
+  sortBy?: string;
+  sortDirection?: "asc" | "desc";
+  onSearch?: (searchText: string) => void;
+}
+
+const DataTable = <T extends object>({
+  columns,
+  data,
+  title,
+  loading = false,
+  pagination,
+  onAdd,
+  onEdit,
+  onDelete,
+  onLock,
+  onResetPassword,
+  actionColumn = true,
+  getRowId,
+  onSort,
+  sortBy,
+  onSearch,
+  sortDirection = "asc",
+}: DataTableProps<T>) => {
+  const handleSort = (property: string) => {
+    if (onSort) {
+      onSort(property);
+    }
+  };
+
+  const [searchText, setSearchText] = useState("");
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchText(value);
+    if (onSearch) {
+      onSearch?.(value);
+    }
+  };
+
+  return (
+    <Paper sx={{ width: "100%", overflow: "hidden", borderRadius: 2 }}>
+      <Stack
+        sx={{
+          p: 2,
+          display: "flex",
+          justifyContent: "space-between",
+          borderBottom: "1px solid rgba(224, 224, 224, 1)",
+        }}
+        gap={1}
+        direction={{ xs: "column", lg: "row" }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          <TextField
+            placeholder="Tìm kiếm..."
+            size="small"
+            value={searchText}
+            onChange={handleSearch}
+            sx={{ width: 320 }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon fontSize="small" />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Box>
+        {onAdd && (
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<AddIcon />}
+            onClick={onAdd}
+          >
+            Thêm mới
+          </Button>
+        )}
+      </Stack>
+
+      <TableContainer sx={{ maxHeight: 440 }}>
+        <Table stickyHeader aria-label="sticky table">
+          <TableHead>
+            <TableRow>
+              {columns.map((column) => (
+                <TableCell
+                  key={column.id}
+                  align={column.align || "left"}
+                  style={{
+                    minWidth: column.minWidth || 100,
+                    fontWeight: "bold",
+                  }}
+                >
+                  {column.sortable && onSort ? (
+                    <TableSortLabel
+                      active={sortBy === column.id}
+                      direction={sortBy === column.id ? sortDirection : "asc"}
+                      onClick={() => handleSort(column.id)}
+                    >
+                      {column.label}
+                    </TableSortLabel>
+                  ) : (
+                    column.label
+                  )}
+                </TableCell>
+              ))}
+              {actionColumn &&
+                (onEdit || onDelete || onLock || onResetPassword) && (
+                  <TableCell
+                    align="center"
+                    style={{ minWidth: 150, fontWeight: "bold" }}
+                  >
+                    Hành động
+                  </TableCell>
+                )}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length + (actionColumn ? 1 : 0)}
+                  align="center"
+                >
+                  <CircularProgress size={40} />
+                </TableCell>
+              </TableRow>
+            ) : data.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length + (actionColumn ? 1 : 0)}
+                  align="center"
+                >
+                  Không có dữ liệu
+                </TableCell>
+              </TableRow>
+            ) : (
+              data.map((row) => {
+                return (
+                  <TableRow
+                    hover
+                    role="checkbox"
+                    tabIndex={-1}
+                    key={getRowId(row)}
+                  >
+                    {columns.map((column) => {
+                      const value = row[column.id as keyof T];
+                      return (
+                        <TableCell key={column.id} align={column.align}>
+                          {column.format
+                            ? column.format(value)
+                            : (value as React.ReactNode)}
+                        </TableCell>
+                      );
+                    })}
+                    {actionColumn &&
+                      (onEdit || onDelete || onLock || onResetPassword) && (
+                        <TableCell align="center">
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            justifyContent="center"
+                          >
+                            {onEdit && (
+                              <IconButton
+                                size="small"
+                                color="primary"
+                                onClick={() => onEdit(row)}
+                                aria-label="edit"
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                            )}
+                            {onDelete && (
+                              <IconButton
+                                size="small"
+                                color="error"
+                                onClick={() => onDelete(row)}
+                                aria-label="delete"
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            )}
+                            {onLock && (
+                              <IconButton
+                                size="small"
+                                color="warning"
+                                onClick={() => onLock(row)}
+                                aria-label="lock"
+                              >
+                                {(row as any).status === "Locked" ? (
+                                  <LockOpenIcon fontSize="small" />
+                                ) : (
+                                  <LockIcon fontSize="small" />
+                                )}
+                              </IconButton>
+                            )}
+                            {onResetPassword && (
+                              <IconButton
+                                size="small"
+                                color="info"
+                                onClick={() => onResetPassword(row)}
+                                aria-label="reset password"
+                              >
+                                <KeyIcon fontSize="small" />
+                              </IconButton>
+                            )}
+                          </Stack>
+                        </TableCell>
+                      )}
+                  </TableRow>
+                );
+              })
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {pagination && (
+        <Box sx={{ p: 2, display: "flex", justifyContent: "flex-end" }}>
+          <Pagination
+            count={Math.ceil(pagination.total / pagination.pageSize)}
+            page={pagination.page}
+            onChange={(_, page) => pagination.onPageChange(page)}
+            color="primary"
+            showFirstButton
+            showLastButton
+          />
+        </Box>
+      )}
+    </Paper>
+  );
+};
+
+export default DataTable;

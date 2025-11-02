@@ -1,10 +1,7 @@
 import {
-  ChevronLeft as ChevronLeftIcon,
   Logout as LogoutIcon,
   Menu as MenuIcon,
   Person as PersonIcon,
-  Search as SearchIcon,
-  Settings as SettingsIcon,
 } from "@mui/icons-material";
 import {
   AppBar,
@@ -14,7 +11,6 @@ import {
   Divider,
   Drawer,
   IconButton,
-  InputBase,
   List,
   ListItem,
   ListItemButton,
@@ -22,57 +18,19 @@ import {
   ListItemText,
   Menu,
   MenuItem,
+  Stack,
   Toolbar,
   Typography,
-  alpha,
-  styled,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useStore, type StoreState } from "../../hooks/useStore";
 import theme from "../../theme";
+import { getRoleInfo } from "../../utils/role-mapper";
 
 const drawerWidth = 280;
-
-// Styled search component
-const Search = styled("div")(({ theme }) => ({
-  position: "relative",
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: alpha(theme.palette.common.white, 0.15),
-  "&:hover": {
-    backgroundColor: alpha(theme.palette.common.white, 0.25),
-  },
-  marginRight: theme.spacing(2),
-  marginLeft: 0,
-  width: "100%",
-  [theme.breakpoints.up("sm")]: {
-    marginLeft: theme.spacing(3),
-    width: "50%",
-  },
-}));
-
-const SearchIconWrapper = styled("div")(({ theme }) => ({
-  padding: theme.spacing(0, 2),
-  height: "100%",
-  position: "absolute",
-  pointerEvents: "none",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-}));
-
-const StyledInputBase = styled(InputBase)(({ theme }) => ({
-  color: "inherit",
-  "& .MuiInputBase-input": {
-    padding: theme.spacing(1, 1, 1, 0),
-    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-    transition: theme.transitions.create("width"),
-    width: "100%",
-  },
-  border: "1px solid #ccc",
-  borderRadius: theme.shape.borderRadius,
-}));
 
 interface MainLayoutProps {
   title: string;
@@ -88,7 +46,8 @@ const MainLayout = ({ menuItems }: MainLayoutProps) => {
   const location = useLocation();
   const muiTheme = useTheme();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down("sm"));
-
+  const { user } = useStore<StoreState>((state) => state);
+  console.log(user);
   const [open, setOpen] = useState(!isMobile);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -157,27 +116,16 @@ const MainLayout = ({ menuItems }: MainLayoutProps) => {
             <MenuIcon />
           </IconButton>
 
-          <Search sx={{ width: "100%" }}>
-            <SearchIconWrapper>
-              <SearchIcon />
-            </SearchIconWrapper>
-            <StyledInputBase
-              placeholder="Tìm kiếm phòng/khách/đơn..."
-              inputProps={{ "aria-label": "search" }}
-              sx={{ width: "100%" }}
-            />
-          </Search>
           <Box sx={{ flexGrow: 1 }} />
-          <Typography variant="body2" sx={{ mr: 2 }}>
-            Cơ sở: Hà Nội - Cầu Giấy
-          </Typography>
-          <IconButton
-            onClick={handleProfileMenuOpen}
-            size="large"
-            edge="end"
-            color="inherit"
-          >
-            <Avatar sx={{ width: 32, height: 32 }}>
+          <Stack>
+            <Typography variant="body1">{user?.fullname}</Typography>
+            <Typography variant="body2" fontStyle={"italic"} fontWeight={600}>
+              {getRoleInfo(user?.roles[0])?.label}
+            </Typography>
+          </Stack>
+
+          <IconButton onClick={handleProfileMenuOpen} size="large" edge="end">
+            <Avatar sx={{ width: 38, height: 38 }}>
               <PersonIcon />
             </Avatar>
           </IconButton>
@@ -248,14 +196,16 @@ const MainLayout = ({ menuItems }: MainLayoutProps) => {
             px: [1],
           }}
         >
-          <Typography
-            variant="h6"
-            noWrap
-            component="div"
-            sx={{ flexGrow: 1, ml: 2 }}
-          >
-            Role name
-          </Typography>
+          {user && (
+            <Typography
+              variant="h6"
+              noWrap
+              component="div"
+              sx={{ flexGrow: 1, ml: 2 }}
+            >
+              logo_placeholder
+            </Typography>
+          )}
         </Toolbar>
 
         <List sx={{ overflowY: "auto", mt: 2 }}>

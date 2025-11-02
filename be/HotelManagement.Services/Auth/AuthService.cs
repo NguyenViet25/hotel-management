@@ -44,7 +44,7 @@ public class AuthService : IAuthService
             new Claim("twoFactor", (await _userManager.GetTwoFactorEnabledAsync(user)).ToString())
         });
 
-        return new LoginResponseDto(false, token, DateTimeOffset.UtcNow.AddHours(1), new { role =roles[0] });
+        return new LoginResponseDto(false, token, DateTimeOffset.UtcNow.AddHours(1), UserMapper.MapToResponseAsync(user, roles.ToList()));
     }
 
     public async Task<LoginResponseDto> VerifyTwoFactorAsync(TwoFactorVerifyDto request)
@@ -57,7 +57,7 @@ public class AuthService : IAuthService
 
         var roles = await _userManager.GetRolesAsync(user);
         var token = _tokenService.CreateAccessToken(user.Id, user.UserName!, roles);
-        return new LoginResponseDto(false, token, DateTimeOffset.UtcNow.AddHours(1), new { role = roles[0] });
+        return new LoginResponseDto(false, token, DateTimeOffset.UtcNow.AddHours(1), UserMapper.MapToResponseAsync(user, roles.ToList()));
     }
 
     public Task LogoutAsync(string userName)

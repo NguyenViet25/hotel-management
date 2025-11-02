@@ -11,6 +11,7 @@ public record UserSummaryDto(
     string? UserName,
     string? Email,
     string? PhoneNumber,
+    string? Fullname,
     bool EmailConfirmed,
     DateTimeOffset? LockedUntil,
     IEnumerable<string> Roles

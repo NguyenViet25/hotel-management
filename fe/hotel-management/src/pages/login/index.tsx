@@ -14,13 +14,15 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import axiosInstance from "../../api/axios";
 import { localStorageHelper } from "../../utils/local-storage-helper";
+import { useStore, type StoreState } from "../../hooks/useStore";
+import type { User } from "../../api/userService";
 
 export interface LoginResponseDto {
   data: {
     requiresTwoFactor: boolean;
     accessToken?: string | null;
     expiresAt?: string | Date | null;
-    user?: any | null;
+    user?: User | null;
   };
 }
 
@@ -28,6 +30,7 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // breakpoint for mobile
+  const { setUser } = useStore<StoreState>((state) => state);
 
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({ username: "", password: "" });
@@ -47,6 +50,9 @@ const LoginPage = () => {
         formData
       );
       const { accessToken, user } = response.data.data;
+      if (!user) throw new Error();
+      console.log(user);
+      setUser(user);
       localStorageHelper.setAuthData(accessToken!, user);
       navigateToCorrectPage(user);
     } catch (error) {
@@ -57,8 +63,8 @@ const LoginPage = () => {
     }
   };
 
-  const navigateToCorrectPage = (user: any) => {
-    const role = user.role.toLowerCase();
+  const navigateToCorrectPage = (user: User) => {
+    const role = user?.roles[0]?.toLowerCase();
     let path = "/dashboard";
     switch (role) {
       case "admin":

@@ -73,6 +73,7 @@ public class UsersAdminService : IUsersAdminService
             u.UserName,
             u.Email,
             u.PhoneNumber,
+            u.Fullname,
             u.EmailConfirmed,
             u.LockoutEnd,
             rolesByUser.TryGetValue(u.Id, out var r) ? r : Array.Empty<string>()
