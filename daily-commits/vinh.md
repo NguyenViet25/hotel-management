@@ -43,3 +43,4 @@
 2025-11-01 - 3 - 01:47:39 UTC :: perf: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — dieu chinh UI & copy cho ro (da kiem tra lint)
 2025-11-01 - 4 - 01:47:41 UTC :: refactor: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — cap nhat mock data & seed test (da smoke test)
 2025-11-01 - 5 - 01:47:42 UTC :: docs: UC-29 Thanh toan nha hang: thu tien, in hoa don, dong giao dich. — bo sung index & toi uu DB (da kiem tra lint)
+2025-11-02 - 1 - 01:49:21 UTC :: feat: UC-20 Keo-tha: gan/doi phong truc quan, tranh trung. — bo sung unit test muc co ban (chuan bi cho tinh nang tiep theo)
