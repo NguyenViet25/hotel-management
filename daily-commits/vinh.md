@@ -49,3 +49,4 @@
 2025-11-02 - 4 - 01:49:30 UTC :: feat: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — toi uu truy van va bo nho (can theo doi them)
 2025-11-02 - 5 - 01:49:32 UTC :: test: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — cai thien hieu nang render/list (dat tieu chi toi thieu)
 2025-11-03 - 1 - 01:49:06 UTC :: test: UC-26 Order: tao/chinh sua order, ghi chu, void/discount. — dieu chinh quyen truy cap theo vai tro (da kiem tra lint)
+2025-11-03 - 2 - 01:49:07 UTC :: test: UC-35 Ngoai le: gui yeu cau mien/giam phi, vuot tran. — kiem tra tuong thich mui gio/tien te (can theo doi them)
