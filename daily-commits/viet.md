@@ -51,3 +51,4 @@
 2025-11-03 - 1 - 01:49:05 UTC :: chore: UC-29 Thanh toan nha hang: thu tien, in hoa don, dong giao dich. — bo sung unit test muc co ban (khong doi hanh vi)
 2025-11-03 - 2 - 01:49:08 UTC :: refactor: UC-39 Xuat Audit Log: xuat CSV/PDF kiem tra tuan thu. — tach chuc nang de de bao tri (anh huong thap)
 2025-11-03 - 3 - 01:49:09 UTC :: feat: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — don dep code va xoa doan thua (da kiem tra lint)
+2025-11-03 - 4 - 01:49:10 UTC :: perf: UC-47 Dashboard: gioi han xem theo vai tro va co so. — bo sung unit test muc co ban (can theo doi them)
