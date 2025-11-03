@@ -56,3 +56,4 @@
 2025-11-03 - 1 - 01:49:07 UTC :: refactor: UC-43 Mat khau: quy dinh do manh, het han phien. — dieu chinh UI & copy cho ro (anh huong thap)
 2025-11-03 - 2 - 01:49:08 UTC :: chore: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — bo sung unit test muc co ban (dong bo voi BE/FE)
 2025-11-03 - 3 - 01:49:10 UTC :: perf: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — kiem tra tuong thich mui gio/tien te (da review so bo)
+2025-11-03 - 4 - 01:49:11 UTC :: feat: UC-40 Thu/chi: doi soat tien mat/the/le phi PG. — bo sung metrics/telemetry co ban (chuan bi cho tinh nang tiep theo)
