@@ -19,9 +19,9 @@ if %ERRORLEVEL% NEQ 0 (
 
 echo.
 echo Services are starting. Access them here:
-echo - API:       http://localhost:5000
+echo - API:       http://localhost:5283
 echo - Frontend:  http://localhost:8080
-echo - SQLServer: localhost,1433 (user: sa, pass: 55555)
+echo - SQLServer: localhost,11433 (user: sa, pass: Password1@)
 
 echo.
 echo To view logs: docker compose logs -f
