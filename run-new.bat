@@ -16,7 +16,7 @@ if %ERRORLEVEL% NEQ 0 (
 )
 
 echo Removing existing images...
-docker rmi hotelmanagement-api hotelmanagement-frontend --force
+docker rmi hotel-management-api hotel-management-frontend --force
 if %ERRORLEVEL% NEQ 0 (
   echo.
   echo [WARNING] Failed to remove images. They may not exist or are in use.
