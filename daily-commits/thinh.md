@@ -49,3 +49,4 @@
 2025-11-02 - 4 - 01:49:28 UTC :: build: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — bo sung metrics/telemetry co ban (da review so bo)
 2025-11-02 - 5 - 01:49:30 UTC :: ci: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — bo sung index & toi uu DB (can theo doi them)
 2025-11-03 - 1 - 01:49:07 UTC :: perf: UC-23 Bao tri: tao ticket, dinh anh, mo ta loi. — cai thien hieu nang render/list (khong doi hanh vi)
+2025-11-03 - 2 - 01:49:09 UTC :: refactor: UC-29 Thanh toan nha hang: thu tien, in hoa don, dong giao dich. — bo sung metrics/telemetry co ban (can theo doi them)
