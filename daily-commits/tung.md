@@ -53,3 +53,4 @@
 2025-11-02 - 3 - 01:49:25 UTC :: test: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — don dep code va xoa doan thua (dam bao backward-compatible)
 2025-11-02 - 4 - 01:49:26 UTC :: perf: UC-43 Mat khau: quy dinh do manh, het han phien. — bo sung case canh bien & no-show (da review so bo)
 2025-11-02 - 5 - 01:49:27 UTC :: build: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — bo sung metrics/telemetry co ban (chuan bi cho tinh nang tiep theo)
+2025-11-03 - 1 - 01:49:07 UTC :: refactor: UC-43 Mat khau: quy dinh do manh, het han phien. — dieu chinh UI & copy cho ro (anh huong thap)
