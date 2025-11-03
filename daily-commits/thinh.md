@@ -52,3 +52,4 @@
 2025-11-03 - 2 - 01:49:09 UTC :: refactor: UC-29 Thanh toan nha hang: thu tien, in hoa don, dong giao dich. — bo sung metrics/telemetry co ban (can theo doi them)
 2025-11-03 - 3 - 01:49:10 UTC :: perf: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — cai thien hieu nang render/list (khong doi hanh vi)
 2025-11-03 - 4 - 01:49:11 UTC :: feat: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — chinh sua tai lieu & mo ta API (anh huong thap)
+2025-11-03 - 5 - 01:49:12 UTC :: refactor: UC-42 Phan quyen: thiet lap quyen theo co so. — bo sung case canh bien & no-show (anh huong thap)
