@@ -9,10 +9,17 @@ REM Navigate to script directory (project root)
 cd /d %~dp0
 
 echo Stopping and removing existing containers...
-docker compose down
+docker compose down --volumes --remove-orphans
 if %ERRORLEVEL% NEQ 0 (
   echo.
   echo [WARNING] Failed to stop containers. They may not exist or Docker is not running.
+)
+
+echo Removing SQL data volume (if exists)...
+docker volume rm hotel-management_mssql-data
+if %ERRORLEVEL% NEQ 0 (
+  echo.
+  echo [INFO] SQL volume not found or already removed. Skipping.
 )
 
 echo Removing existing images...
@@ -41,6 +48,7 @@ echo - SQLServer: localhost,11433 (user: sa, pass: Password1@)
 echo.
 echo To view logs: docker compose logs -f
 echo To stop:      docker compose down
+echo To stop and remove volumes: docker compose down --volumes
 
 echo.
 echo All services started successfully!
