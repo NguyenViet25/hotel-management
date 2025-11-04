@@ -53,3 +53,4 @@
 2025-11-03 - 3 - 01:49:09 UTC :: feat: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — don dep code va xoa doan thua (da kiem tra lint)
 2025-11-03 - 4 - 01:49:10 UTC :: perf: UC-47 Dashboard: gioi han xem theo vai tro va co so. — bo sung unit test muc co ban (can theo doi them)
 2025-11-03 - 5 - 01:49:13 UTC :: fix: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — bo sung index & toi uu DB (can theo doi them)
+2025-11-04 - 1 - 01:44:56 UTC :: test: UC-07 Loai phong: dinh nghia tien nghi va gia co ban. — fix race-condition nho trong thao tac (khong doi hanh vi)
