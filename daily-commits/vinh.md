@@ -54,3 +54,4 @@
 2025-11-03 - 4 - 01:49:10 UTC :: perf: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — sua validate va bo sung thong bao loi (dat tieu chi toi thieu)
 2025-11-03 - 5 - 01:49:12 UTC :: refactor: UC-28 Room charge F&B: ghi hoa don ban an vao folio. — bo sung index & toi uu DB (dam bao backward-compatible)
 2025-11-04 - 1 - 01:44:55 UTC :: test: UC-40 Thu/chi: doi soat tien mat/the/le phi PG. — cai thien hieu nang render/list (da smoke test)
+2025-11-04 - 2 - 01:44:56 UTC :: build: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — bo sung unit test muc co ban (dat tieu chi toi thieu)
