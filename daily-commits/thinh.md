@@ -57,3 +57,4 @@
 2025-11-04 - 2 - 01:44:57 UTC :: feat: UC-43 Mat khau: quy dinh do manh, het han phien. — bo sung case canh bien & no-show (anh huong thap)
 2025-11-04 - 3 - 01:45:00 UTC :: ci: UC-37 Night Audit: kiem tra folio chua chot, khoa giao dich. — chuan hoa ten ham/bien theo convention (dam bao backward-compatible)
 2025-11-04 - 4 - 01:45:01 UTC :: docs: UC-36 Duyet ngoai le: duyet/tu choi theo han muc. — cai thien hieu nang render/list (can theo doi them)
+2025-11-04 - 5 - 01:45:03 UTC :: refactor: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — fix race-condition nho trong thao tac (dat tieu chi toi thieu)
