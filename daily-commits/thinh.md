@@ -55,3 +55,4 @@
 2025-11-03 - 5 - 01:49:12 UTC :: refactor: UC-42 Phan quyen: thiet lap quyen theo co so. — bo sung case canh bien & no-show (anh huong thap)
 2025-11-04 - 1 - 01:44:56 UTC :: docs: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — cap nhat cau hinh va kiem tra bien (dam bao backward-compatible)
 2025-11-04 - 2 - 01:44:57 UTC :: feat: UC-43 Mat khau: quy dinh do manh, het han phien. — bo sung case canh bien & no-show (anh huong thap)
+2025-11-04 - 3 - 01:45:00 UTC :: ci: UC-37 Night Audit: kiem tra folio chua chot, khoa giao dich. — chuan hoa ten ham/bien theo convention (dam bao backward-compatible)
