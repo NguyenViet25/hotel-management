@@ -53,3 +53,4 @@
 2025-11-03 - 3 - 01:49:10 UTC :: perf: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — cai thien hieu nang render/list (khong doi hanh vi)
 2025-11-03 - 4 - 01:49:11 UTC :: feat: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — chinh sua tai lieu & mo ta API (anh huong thap)
 2025-11-03 - 5 - 01:49:12 UTC :: refactor: UC-42 Phan quyen: thiet lap quyen theo co so. — bo sung case canh bien & no-show (anh huong thap)
+2025-11-04 - 1 - 01:44:56 UTC :: docs: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — cap nhat cau hinh va kiem tra bien (dam bao backward-compatible)
