@@ -53,3 +53,4 @@
 2025-11-03 - 3 - 01:49:08 UTC :: test: UC-38 Audit Log: xem/loc thao tac, hanh dong, thoi gian. — bo sung metrics/telemetry co ban (can theo doi them)
 2025-11-03 - 4 - 01:49:10 UTC :: perf: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — sua validate va bo sung thong bao loi (dat tieu chi toi thieu)
 2025-11-03 - 5 - 01:49:12 UTC :: refactor: UC-28 Room charge F&B: ghi hoa don ban an vao folio. — bo sung index & toi uu DB (dam bao backward-compatible)
+2025-11-04 - 1 - 01:44:55 UTC :: test: UC-40 Thu/chi: doi soat tien mat/the/le phi PG. — cai thien hieu nang render/list (da smoke test)
