@@ -60,3 +60,4 @@
 2025-11-03 - 5 - 01:49:13 UTC :: fix: UC-42 Phan quyen: thiet lap quyen theo co so. — chinh sua tai lieu & mo ta API (can theo doi them)
 2025-11-04 - 1 - 01:44:56 UTC :: ci: UC-23 Bao tri: tao ticket, dinh anh, mo ta loi. — chinh sua tai lieu & mo ta API (anh huong thap)
 2025-11-04 - 2 - 01:44:59 UTC :: docs: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — chuan hoa ten ham/bien theo convention (khong doi hanh vi)
+2025-11-04 - 3 - 01:45:02 UTC :: chore: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — sua validate va bo sung thong bao loi (can theo doi them)
