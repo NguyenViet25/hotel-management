@@ -61,3 +61,4 @@
 2025-11-04 - 1 - 01:44:56 UTC :: ci: UC-23 Bao tri: tao ticket, dinh anh, mo ta loi. — chinh sua tai lieu & mo ta API (anh huong thap)
 2025-11-04 - 2 - 01:44:59 UTC :: docs: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — chuan hoa ten ham/bien theo convention (khong doi hanh vi)
 2025-11-04 - 3 - 01:45:02 UTC :: chore: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — sua validate va bo sung thong bao loi (can theo doi them)
+2025-11-04 - 4 - 01:45:03 UTC :: refactor: UC-40 Thu/chi: doi soat tien mat/the/le phi PG. — fix race-condition nho trong thao tac (da smoke test)
