@@ -55,3 +55,4 @@
 2025-11-03 - 5 - 01:49:13 UTC :: fix: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — bo sung index & toi uu DB (can theo doi them)
 2025-11-04 - 1 - 01:44:56 UTC :: test: UC-07 Loai phong: dinh nghia tien nghi va gia co ban. — fix race-condition nho trong thao tac (khong doi hanh vi)
 2025-11-04 - 2 - 01:44:57 UTC :: build: UC-38 Audit Log: xem/loc thao tac, hanh dong, thoi gian. — kiem tra tuong thich mui gio/tien te (dam bao backward-compatible)
+2025-11-04 - 3 - 01:44:59 UTC :: docs: UC-10 Goi gia: tao rate plan, thoi gian ap dung linh hoat. — bo sung case canh bien & no-show (can theo doi them)
