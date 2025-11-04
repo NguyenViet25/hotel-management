@@ -59,3 +59,4 @@
 2025-11-03 - 4 - 01:49:11 UTC :: feat: UC-40 Thu/chi: doi soat tien mat/the/le phi PG. — bo sung metrics/telemetry co ban (chuan bi cho tinh nang tiep theo)
 2025-11-03 - 5 - 01:49:13 UTC :: fix: UC-42 Phan quyen: thiet lap quyen theo co so. — chinh sua tai lieu & mo ta API (can theo doi them)
 2025-11-04 - 1 - 01:44:56 UTC :: ci: UC-23 Bao tri: tao ticket, dinh anh, mo ta loi. — chinh sua tai lieu & mo ta API (anh huong thap)
+2025-11-04 - 2 - 01:44:59 UTC :: docs: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — chuan hoa ten ham/bien theo convention (khong doi hanh vi)
