@@ -56,3 +56,4 @@
 2025-11-04 - 1 - 01:44:56 UTC :: test: UC-07 Loai phong: dinh nghia tien nghi va gia co ban. — fix race-condition nho trong thao tac (khong doi hanh vi)
 2025-11-04 - 2 - 01:44:57 UTC :: build: UC-38 Audit Log: xem/loc thao tac, hanh dong, thoi gian. — kiem tra tuong thich mui gio/tien te (dam bao backward-compatible)
 2025-11-04 - 3 - 01:44:59 UTC :: docs: UC-10 Goi gia: tao rate plan, thoi gian ap dung linh hoat. — bo sung case canh bien & no-show (can theo doi them)
+2025-11-04 - 4 - 01:45:00 UTC :: refactor: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — toi uu truy van va bo nho (dat tieu chi toi thieu)
