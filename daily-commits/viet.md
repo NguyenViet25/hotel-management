@@ -59,3 +59,4 @@
 2025-11-04 - 4 - 01:45:00 UTC :: refactor: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — toi uu truy van va bo nho (dat tieu chi toi thieu)
 2025-11-04 - 5 - 01:45:03 UTC :: perf: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — bo sung case canh bien & no-show (anh huong thap)
 2025-11-05 - 1 - 01:46:03 UTC :: refactor: UC-01 RBAC: tao, sua, khoa tai khoan; gan vai tro. — tach chuc nang de de bao tri (dat tieu chi toi thieu)
+2025-11-05 - 2 - 01:46:07 UTC :: docs: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — sua validate va bo sung thong bao loi (dong bo voi BE/FE)
