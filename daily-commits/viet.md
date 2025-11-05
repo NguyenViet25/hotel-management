@@ -62,3 +62,4 @@
 2025-11-05 - 2 - 01:46:07 UTC :: docs: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — sua validate va bo sung thong bao loi (dong bo voi BE/FE)
 2025-11-05 - 3 - 01:46:09 UTC :: fix: UC-01 RBAC: tao, sua, khoa tai khoan; gan vai tro. — don dep code va xoa doan thua (chuan bi cho tinh nang tiep theo)
 2025-11-05 - 4 - 01:46:11 UTC :: docs: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — refactor luong xu ly cho ro rang (khong doi hanh vi)
+2025-11-05 - 5 - 01:46:13 UTC :: docs: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — bo sung unit test muc co ban (da kiem tra lint)
