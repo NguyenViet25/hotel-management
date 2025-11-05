@@ -65,3 +65,4 @@
 2025-11-04 - 5 - 01:45:05 UTC :: docs: UC-39 Xuat Audit Log: xuat CSV/PDF kiem tra tuan thu. — cap nhat cau hinh va kiem tra bien (dong bo voi BE/FE)
 2025-11-05 - 1 - 01:46:03 UTC :: fix: UC-35 Ngoai le: gui yeu cau mien/giam phi, vuot tran. — dieu chinh UI & copy cho ro (dam bao backward-compatible)
 2025-11-05 - 2 - 01:46:05 UTC :: build: UC-20 Keo-tha: gan/doi phong truc quan, tranh trung. — cap nhat mock data & seed test (da kiem tra lint)
+2025-11-05 - 3 - 01:46:08 UTC :: perf: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — cap nhat mock data & seed test (anh huong thap)
