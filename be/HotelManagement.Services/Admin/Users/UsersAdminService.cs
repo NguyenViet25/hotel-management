@@ -95,12 +95,13 @@ public class UsersAdminService : IUsersAdminService
     {
         var user = new AppUser
         {
+            Fullname = dto.Fullname,
             UserName = dto.UserName,
             Email = dto.Email,
             PhoneNumber = dto.PhoneNumber,
             EmailConfirmed = false
         };
-        var result = await _users.CreateAsync(user, dto.Password);
+        var result = await _users.CreateAsync(user, "Password1@");
         if (!result.Succeeded)
         {
             var msg = string.Join("; ", result.Errors.Select(e => e.Description));
@@ -147,6 +148,8 @@ public class UsersAdminService : IUsersAdminService
 
         if (dto.Email != null) user.Email = dto.Email;
         if (dto.PhoneNumber != null) user.PhoneNumber = dto.PhoneNumber;
+        if (dto.FullName != null) user.Fullname = dto.FullName;
+
         var updateRes = await _users.UpdateAsync(user);
         if (!updateRes.Succeeded)
         {
@@ -195,7 +198,15 @@ public class UsersAdminService : IUsersAdminService
     {
         var user = await _users.FindByIdAsync(id.ToString());
         if (user == null) return false;
-        var res = await _users.SetLockoutEndDateAsync(user, dto.LockedUntil);
+        var res = await _users.SetLockoutEndDateAsync(user, DateTime.Now.AddMonths(3));
+        return res.Succeeded;
+    }
+
+    public async Task<bool> UnLockAsync(Guid id, LockUserDto dto)
+    {
+        var user = await _users.FindByIdAsync(id.ToString());
+        if (user == null) return false;
+        var res = await _users.SetLockoutEndDateAsync(user, DateTime.Now.AddMonths(-1));
         return res.Succeeded;
     }
 

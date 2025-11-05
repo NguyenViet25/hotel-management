@@ -31,13 +31,14 @@ public record UserDetailsDto(
 public record CreateUserDto(
     string UserName,
     string Email,
+    string Fullname,
     string? PhoneNumber,
-    string Password,
     IEnumerable<string>? Roles,
     IEnumerable<AssignPropertyRoleDto>? PropertyRoles
 );
 
 public record UpdateUserDto(
+    string? FullName,
     string? Email,
     string? PhoneNumber,
     IEnumerable<string>? Roles,

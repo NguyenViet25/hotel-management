@@ -68,6 +68,15 @@ public class UsersAdminController : ControllerBase
         return Ok(ApiResponse.Ok(msg));
     }
 
+    [HttpPost("{id:guid}/unlock")]
+    public async Task<ActionResult<ApiResponse>> UnLock(Guid id, [FromBody] LockUserDto request)
+    {
+        var ok = await _svc.UnLockAsync(id, request);
+        if (!ok) return NotFound(ApiResponse.Fail("User not found or lock failed"));
+        var msg = request.LockedUntil.HasValue ? $"Locked until {request.LockedUntil.Value:O}" : "Unlocked";
+        return Ok(ApiResponse.Ok(msg));
+    }
+
     [HttpPost("{id:guid}/reset-password")]
     public async Task<ActionResult<ApiResponse>> ResetPassword(Guid id, [FromBody] ResetPasswordAdminDto request)
     {

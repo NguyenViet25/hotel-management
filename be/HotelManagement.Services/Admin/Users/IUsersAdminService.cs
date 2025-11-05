@@ -9,6 +9,7 @@ public interface IUsersAdminService
     Task<UserDetailsDto> CreateAsync(CreateUserDto dto);
     Task<UserDetailsDto?> UpdateAsync(Guid id, UpdateUserDto dto);
     Task<bool> LockAsync(Guid id, LockUserDto dto);
+    Task<bool> UnLockAsync(Guid id, LockUserDto dto);
     Task<bool> ResetPasswordAsync(Guid id, ResetPasswordAdminDto dto);
     Task<UserPropertyRoleDto?> AssignPropertyRoleAsync(Guid id, AssignPropertyRoleDto dto);
     Task<bool> RemovePropertyRoleAsync(Guid id, Guid propertyRoleId);
