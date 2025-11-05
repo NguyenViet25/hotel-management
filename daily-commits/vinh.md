@@ -62,3 +62,4 @@
 2025-11-05 - 2 - 01:46:03 UTC :: refactor: UC-02 RBAC: thiet lap quyen thao tac theo vai tro/pham vi. — dieu chinh UI & copy cho ro (dong bo voi BE/FE)
 2025-11-05 - 3 - 01:46:05 UTC :: chore: UC-37 Night Audit: kiem tra folio chua chot, khoa giao dich. — dieu chinh UI & copy cho ro (chuan bi cho tinh nang tiep theo)
 2025-11-05 - 4 - 01:46:07 UTC :: test: UC-28 Room charge F&B: ghi hoa don ban an vao folio. — bo sung unit test muc co ban (da kiem tra lint)
+2025-11-05 - 5 - 01:46:09 UTC :: perf: UC-34 Cham cong: ghi nhan diem danh, ban giao ca. — them log chi tiet phuc vu audit (khong doi hanh vi)
