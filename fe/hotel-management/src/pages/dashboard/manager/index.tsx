@@ -1,13 +1,12 @@
-import { Box, Typography, Grid, Paper } from "@mui/material";
-
-const ManagerDashboard = () => {
+import { Box, Typography } from "@mui/material";
+const ManagerDashboardPage = () => {
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom>
+    <Box>
+      <Typography variant="h6" gutterBottom>
         Manager Dashboard
       </Typography>
     </Box>
   );
 };
 
-export default ManagerDashboard;
+export default ManagerDashboardPage;

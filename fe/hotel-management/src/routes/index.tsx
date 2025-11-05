@@ -6,6 +6,7 @@ import { CircularProgress, Box } from "@mui/material";
 import MainLayout from "../components/layout/MainLayout";
 import AdminDashboardPage from "../pages/dashboard/admin";
 import { menuItems } from "./menu-items";
+import ManagerDashboardPage from "../pages/dashboard/manager";
 
 // Pages
 const NotFoundPage = lazy(() => import("../pages/not-found"));
@@ -13,9 +14,7 @@ const LoginPage = lazy(() => import("../pages/login"));
 const UserManagementPage = lazy(
   () => import("../pages/dashboard/admin/user-management")
 );
-const AuditLogsPage = lazy(
-  () => import("../pages/dashboard/admin/audit-logs")
-);
+const AuditLogsPage = lazy(() => import("../pages/dashboard/admin/audit-logs"));
 const HotelsListPage = lazy(
   () => import("../features/hotels/pages/HotelsListPage")
 );
@@ -34,7 +33,7 @@ const LoadingFallback = () => (
 );
 
 const AdminDashboard = () => <AdminDashboardPage />;
-const ManagerDashboard = () => <div>Facility Manager Dashboard</div>;
+const ManagerDashboard = () => <ManagerDashboardPage />;
 const FrontDeskDashboard = () => <div>Front Desk Dashboard</div>;
 const KitchenDashboard = () => <div>Kitchen Dashboard</div>;
 const WaiterDashboard = () => <div>Waiter Dashboard</div>;

@@ -9,6 +9,9 @@ import {
   Payments as PaymentsIcon,
   LocalDining as DiningIcon,
   AccountBalance as AccountBalanceIcon,
+  Home,
+  Category,
+  Bed,
 } from "@mui/icons-material";
 
 export const menuItems = {
@@ -28,8 +31,8 @@ export const menuItems = {
   ],
   facilityManager: [
     { title: "Tổng quan", path: "/manager/dashboard", icon: <DashboardIcon /> },
-    { title: "Loại phòng", path: "/manager/rooms", icon: <RoomIcon /> },
-    { title: "Phòng", path: "/manager/revenue", icon: <PaymentsIcon /> },
+    { title: "Loại phòng", path: "/manager/rooms", icon: <Category /> },
+    { title: "Phòng", path: "/manager/revenue", icon: <Bed /> },
   ],
   frontDesk: [
     {

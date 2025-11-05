@@ -29,6 +29,7 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useStore, type StoreState } from "../../hooks/useStore";
 import theme from "../../theme";
 import { getRoleInfo } from "../../utils/role-mapper";
+import Logo from "../common/Logo";
 
 const drawerWidth = 280;
 
@@ -192,19 +193,25 @@ const MainLayout = ({ menuItems }: MainLayoutProps) => {
           sx={{
             display: "flex",
             alignItems: "center",
-            justifyContent: "flex-end",
-            px: [1],
+            justifyContent: "flex-start",
+            pt: 1,
+            width: "100%",
           }}
         >
           {user && (
-            <Typography
-              variant="h6"
-              noWrap
-              component="div"
-              sx={{ flexGrow: 1, ml: 2 }}
-            >
-              logo_placeholder
-            </Typography>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <Logo />
+              <Stack>
+                <Typography
+                  variant="subtitle2"
+                  fontWeight={600}
+                  noWrap
+                  component="div"
+                >
+                  Tân Trường Sơn Legacy
+                </Typography>
+              </Stack>
+            </Stack>
           )}
         </Toolbar>
 
