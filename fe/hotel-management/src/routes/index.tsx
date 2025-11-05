@@ -7,10 +7,46 @@ import MainLayout from "../components/layout/MainLayout";
 import AdminDashboardPage from "../pages/dashboard/admin";
 import { menuItems } from "./menu-items";
 import ManagerDashboardPage from "../pages/dashboard/manager";
+import { useStore, type StoreState } from "../hooks/useStore";
+
+// Role-aware layout wrapper for standalone pages like /profile
+const RoleAwareLayout = () => {
+  const { user } = useStore<StoreState>((s) => s);
+  const role = user?.roles?.[0] || user?.roles || "";
+  let items = menuItems.admin;
+  switch (role) {
+    case "Admin":
+      items = menuItems.admin;
+      break;
+    case "Manager":
+      items = menuItems.facilityManager;
+      break;
+    case "FrontDesk":
+      items = menuItems.frontDesk;
+      break;
+    case "Kitchen":
+      items = menuItems.kitchen;
+      break;
+    case "Waiter":
+      items = menuItems.waiter;
+      break;
+    case "Cashier":
+      items = menuItems.cashier;
+      break;
+    case "Accountant":
+      items = menuItems.accountant;
+      break;
+    case "Housekeeper":
+      items = menuItems.housekeeper;
+      break;
+  }
+  return <MainLayout title="Profile" menuItems={items} />;
+};
 
 // Pages
 const NotFoundPage = lazy(() => import("../pages/not-found"));
 const LoginPage = lazy(() => import("../pages/login"));
+const ProfilePage = lazy(() => import("../pages/profile/ProfilePage"));
 const UserManagementPage = lazy(
   () => import("../pages/dashboard/admin/user-management")
 );
@@ -66,6 +102,24 @@ const router = createBrowserRouter([
         <LoginPage />
       </Suspense>
     ),
+  },
+  {
+    path: "/profile",
+    element: (
+      <RequireAuth>
+        <RoleAwareLayout />
+      </RequireAuth>
+    ),
+    children: [
+      {
+        path: "",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <ProfilePage />
+          </Suspense>
+        ),
+      },
+    ],
   },
   // Admin routes
   {
