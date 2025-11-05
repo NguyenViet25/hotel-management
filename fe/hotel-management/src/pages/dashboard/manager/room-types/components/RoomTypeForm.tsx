@@ -13,16 +13,32 @@ import {
   Tab,
   Typography,
   Alert,
+  Tooltip,
+  InputAdornment,
+  Divider,
+  Box,
 } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import type { RoomType, CreateRoomTypeRequest, UpdateRoomTypeRequest } from "../../../../../api/roomTypesApi";
+import type {
+  RoomType,
+  CreateRoomTypeRequest,
+  UpdateRoomTypeRequest,
+} from "../../../../../api/roomTypesApi";
 import roomTypesApi from "../../../../../api/roomTypesApi";
-import pricingApi, { type DayOfWeekPriceDto } from "../../../../../api/pricingApi";
+import pricingApi, {
+  type DayOfWeekPriceDto,
+} from "../../../../../api/pricingApi";
 import RoomTypeFormSectionBase from "./RoomTypeFormSectionBase";
 import RoomTypeFormSectionWeekday from "./RoomTypeFormSectionWeekday";
 import RoomTypeFormSectionDateRange from "./RoomTypeFormSectionDateRange";
+import HomeWorkIcon from "@mui/icons-material/HomeWork";
+import DescriptionIcon from "@mui/icons-material/Description";
+import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
+import ImageIcon from "@mui/icons-material/Image";
+import SaveIcon from "@mui/icons-material/Save";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 
 export interface RoomTypeFormProps {
   open: boolean;
@@ -34,11 +50,20 @@ export interface RoomTypeFormProps {
 
 const weekdayArraySchema = yup
   .array()
-  .of(yup.number().transform((val) => (isNaN(val as any) ? 0 : Number(val))).min(0).required())
+  .of(
+    yup
+      .number()
+      .transform((val) => (isNaN(val as any) ? 0 : Number(val)))
+      .min(0)
+      .required()
+  )
   .length(7, "Cần đủ 7 giá theo thứ");
 
 const dateRangeSchema = yup.object({
-  startDate: yup.date().typeError("Ngày bắt đầu không hợp lệ").required("Chọn ngày bắt đầu"),
+  startDate: yup
+    .date()
+    .typeError("Ngày bắt đầu không hợp lệ")
+    .required("Chọn ngày bắt đầu"),
   endDate: yup
     .date()
     .typeError("Ngày kết thúc không hợp lệ")
@@ -72,7 +97,13 @@ const schema = yup.object({
 
 type FormValues = yup.InferType<typeof schema>;
 
-const RoomTypeForm: React.FC<RoomTypeFormProps> = ({ open, onClose, initialData, hotelId, onCreated }) => {
+const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
+  open,
+  onClose,
+  initialData,
+  hotelId,
+  onCreated,
+}) => {
   const isEdit = !!initialData;
   const [tabIndex, setTabIndex] = useState(0);
 
@@ -116,7 +147,6 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({ open, onClose, initialData,
         hotelId: values.hotelId || hotelId || "",
         name: values.name,
         description: values.description ?? "",
-        images: (values.images || []).filter(Boolean),
         amenityIds: [],
       };
       const created = await roomTypesApi.createRoomType(createPayload);
@@ -125,7 +155,11 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({ open, onClose, initialData,
 
       // Base price
       if (values.basePrice >= 0) {
-        await pricingApi.setBasePrice({ hotelId: hotelIdToUse, roomTypeId, price: values.basePrice });
+        await pricingApi.setBasePrice({
+          hotelId: hotelIdToUse,
+          roomTypeId,
+          price: values.basePrice,
+        });
       }
 
       // Weekday prices: only send non-zero entries
@@ -133,15 +167,23 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({ open, onClose, initialData,
         .map((price, idx) => ({ dayOfWeek: idx, price }))
         .filter((p) => p.price > 0);
       if (weekdayPrices.length > 0) {
-        await pricingApi.setBulkDayOfWeekPrices(hotelIdToUse, roomTypeId, weekdayPrices);
+        await pricingApi.setBulkDayOfWeekPrices(
+          hotelIdToUse,
+          roomTypeId,
+          weekdayPrices
+        );
       }
 
       // Date-range prices
       if (values.dateRanges && values.dateRanges.length > 0) {
         for (const dr of values.dateRanges) {
           if (dr.price > 0 && dr.startDate && dr.endDate) {
-            const startIso = new Date(dr.startDate as any).toISOString().slice(0, 10);
-            const endIso = new Date(dr.endDate as any).toISOString().slice(0, 10);
+            const startIso = new Date(dr.startDate as any)
+              .toISOString()
+              .slice(0, 10);
+            const endIso = new Date(dr.endDate as any)
+              .toISOString()
+              .slice(0, 10);
             await pricingApi.createDateRangePrice({
               hotelId: hotelIdToUse,
               roomTypeId,
@@ -157,88 +199,83 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({ open, onClose, initialData,
       onClose();
       reset();
     } catch (err: any) {
-      setError("root", { message: err?.message || "Có lỗi khi tạo loại phòng hoặc thiết lập giá" });
+      setError("root", {
+        message: err?.message || "Có lỗi khi tạo loại phòng hoặc thiết lập giá",
+      });
     }
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
-      <DialogTitle>{isEdit ? "Chỉnh sửa loại phòng" : "Thêm loại phòng & Giá"}</DialogTitle>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
+      <DialogTitle fontWeight={600}>
+        {isEdit ? "Chỉnh sửa loại phòng" : "Thêm loại phòng & Giá"}
+      </DialogTitle>
       <DialogContent>
         <Typography variant="body2" sx={{ color: "text.secondary", mb: 2 }}>
           Thiết lập base/weekday/date-range cho loại phòng
         </Typography>
 
         {/* Common fields */}
-        <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-          <Grid container spacing={2}>
-            {!isEdit && !hotelId && (
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label="Hotel ID"
-                  fullWidth
-                  {...register("hotelId")}
-                  error={!!errors.hotelId}
-                  helperText={errors.hotelId?.message}
-                />
-              </Grid>
-            )}
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label="Tên"
-                fullWidth
-                {...register("name")}
-                error={!!errors.name}
-                helperText={errors.name?.message}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Controller
-                name="guests"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label="Sức chứa"
-                    type="number"
-                    fullWidth
-                    error={!!errors.guests}
-                    helperText={errors.guests?.message}
-                    inputProps={{ min: 1 }}
-                  />
-                )}
-              />
-            </Grid>
-          <Grid item xs={12}>
+        <Stack
+          direction={{ xs: "column", lg: "row" }}
+          sx={{ mb: 2, borderRadius: 2 }}
+          gap={2}
+        >
+          <Tooltip title="Nhập tên loại phòng hiển thị cho khách">
             <TextField
-              label="Mô tả"
+              label="Tên"
               fullWidth
-              multiline
-              minRows={3}
-              {...register("description")}
+              margin="normal"
+              {...register("name")}
+              error={!!errors.name}
+              placeholder="Nhập tên loại phòng"
+              helperText={errors.name?.message}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <HomeWorkIcon fontSize="small" />
+                  </InputAdornment>
+                ),
+              }}
             />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <Controller
-              name="images[0]"
-              control={control}
-              render={({ field }) => (
+          </Tooltip>
+          <Controller
+            name="guests"
+            control={control}
+            render={({ field }) => (
+              <Tooltip title="Số khách tối đa của loại phòng">
                 <TextField
                   {...field}
-                  label="Ảnh (URL, tùy chọn)"
+                  label="Sức chứa"
+                  type="number"
                   fullWidth
-                  error={!!errors.images?.[0]}
-                  helperText={(errors.images?.[0] as any)?.message}
+                  margin="normal"
+                  error={!!errors.guests}
+                  helperText={errors.guests?.message}
+                  inputProps={{ min: 1 }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <PeopleAltIcon fontSize="small" />
+                      </InputAdornment>
+                    ),
+                  }}
                 />
-              )}
-            />
-          </Grid>
-        </Grid>
-      </Paper>
+              </Tooltip>
+            )}
+          />
+        </Stack>
 
         {/* Tabs for pricing sections */}
-        <Paper variant="outlined" sx={{ bgcolor: "grey.100", mb: 2 }}>
-          <Tabs value={tabIndex} onChange={(_, v) => setTabIndex(v)} variant="fullWidth">
+        <Paper
+          variant="outlined"
+          sx={{ bgcolor: "grey.100", mb: 2, borderRadius: 2 }}
+        >
+          <Tabs
+            value={tabIndex}
+            onChange={(_, v) => setTabIndex(v)}
+            variant="fullWidth"
+          >
             <Tab label="Giá base" />
             <Tab label="Giá theo thứ" />
             <Tab label="Giá theo ngày" />
@@ -246,18 +283,39 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({ open, onClose, initialData,
         </Paper>
 
         <Stack spacing={2}>
-          {tabIndex === 0 && <RoomTypeFormSectionBase control={control} errors={errors as any} />}
-          {tabIndex === 1 && <RoomTypeFormSectionWeekday control={control} errors={errors as any} />}
-          {tabIndex === 2 && <RoomTypeFormSectionDateRange control={control} errors={errors as any} />}
+          {tabIndex === 0 && (
+            <RoomTypeFormSectionBase control={control} errors={errors as any} />
+          )}
+          {tabIndex === 1 && (
+            <RoomTypeFormSectionWeekday
+              control={control}
+              errors={errors as any}
+            />
+          )}
+          {tabIndex === 2 && (
+            <RoomTypeFormSectionDateRange
+              control={control}
+              errors={errors as any}
+            />
+          )}
         </Stack>
 
         {errors.root?.message && (
-          <Alert severity="error" sx={{ mt: 2 }}>{errors.root.message}</Alert>
+          <Alert severity="error" sx={{ mt: 2 }}>
+            {errors.root.message}
+          </Alert>
         )}
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} color="inherit">Hủy</Button>
-        <Button onClick={handleSubmit(submitHandler)} variant="contained" disabled={isSubmitting}>
+      <DialogActions sx={{ px: 3, py: 2 }}>
+        <Button onClick={onClose} color="inherit">
+          Hủy
+        </Button>
+        <Button
+          onClick={handleSubmit(submitHandler)}
+          startIcon={<SaveIcon />}
+          variant="contained"
+          disabled={isSubmitting}
+        >
           {isEdit ? "Lưu" : "Tạo"}
         </Button>
       </DialogActions>

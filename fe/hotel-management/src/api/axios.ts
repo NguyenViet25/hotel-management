@@ -35,6 +35,7 @@ const navigateToCorrectPage = (user: any) => {
 
 // ✅ Safe login check
 export const checkAlreadyLoggedIn = () => {
+  console.log(window.location);
   if (window.location.pathname === "/login") {
     const token = localStorage.getItem("token");
     const userJson = localStorage.getItem("user");
@@ -70,6 +71,7 @@ axiosInstance.interceptors.response.use(
       localStorage.removeItem("user");
       window.location.href = "/login";
     }
+
     return Promise.reject(error);
   }
 );

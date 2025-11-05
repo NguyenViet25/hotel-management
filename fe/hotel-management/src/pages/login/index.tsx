@@ -9,7 +9,7 @@ import {
   useTheme,
   useMediaQuery,
 } from "@mui/material";
-import { useState } from "react";
+import { useLayoutEffect, useState, useTransition } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import axiosInstance from "../../api/axios";
@@ -30,7 +30,13 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // breakpoint for mobile
-  const { setUser } = useStore<StoreState>((state) => state);
+  const { setUser, user } = useStore<StoreState>((state) => state);
+
+  useLayoutEffect(() => {
+    if (user) {
+      navigateToCorrectPage(user);
+    }
+  }, [user]);
 
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({ username: "", password: "" });
@@ -77,7 +83,7 @@ const LoginPage = () => {
         path = "/frontdesk/dashboard";
         break;
     }
-    toast.success("Đăng nhập thành công!");
+    toast.success("Đăng nhập thành công!", { toastId: "welcome-back" });
     navigate(path);
   };
 
