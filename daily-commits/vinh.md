@@ -58,3 +58,4 @@
 2025-11-04 - 3 - 01:44:58 UTC :: build: UC-29 Thanh toan nha hang: thu tien, in hoa don, dong giao dich. — dieu chinh quyen truy cap theo vai tro (da kiem tra lint)
 2025-11-04 - 4 - 01:45:01 UTC :: docs: UC-09 So do: hien thi layout, loc trang thai phong. — bo sung metrics/telemetry co ban (dong bo voi BE/FE)
 2025-11-04 - 5 - 01:45:04 UTC :: fix: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — them log chi tiet phuc vu audit (da review so bo)
+2025-11-05 - 1 - 01:46:01 UTC :: feat: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — cai thien hieu nang render/list (chuan bi cho tinh nang tiep theo)
