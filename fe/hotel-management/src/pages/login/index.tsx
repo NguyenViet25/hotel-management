@@ -70,7 +70,7 @@ const LoginPage = () => {
       case "admin":
         path = "/admin/dashboard";
         break;
-      case "facilityManager":
+      case "manager":
         path = "/manager/dashboard";
         break;
       case "frontDesk":

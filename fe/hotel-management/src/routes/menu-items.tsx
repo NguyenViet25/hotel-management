@@ -14,24 +14,22 @@ import {
 export const menuItems = {
   admin: [
     { title: "Tổng quan", path: "/admin/dashboard", icon: <DashboardIcon /> },
-    { title: "Quản lý người dùng",
+    {
+      title: "Quản lý người dùng",
       path: "/admin/user-management",
       icon: <PersonIcon />,
     },
     { title: "Quản lý cơ sở", path: "/admin/hotels", icon: <HotelIcon /> },
-    { title: "Nhật ký hoạt động", path: "/admin/audit-logs", icon: <ReceiptIcon /> },
+    {
+      title: "Nhật ký hoạt động",
+      path: "/admin/audit-logs",
+      icon: <ReceiptIcon />,
+    },
   ],
   facilityManager: [
     { title: "Tổng quan", path: "/manager/dashboard", icon: <DashboardIcon /> },
-    { title: "Room Status", path: "/manager/rooms", icon: <RoomIcon /> },
-    { title: "Revenue", path: "/manager/revenue", icon: <PaymentsIcon /> },
-    {
-      title: "Maintenance",
-      path: "/manager/maintenance",
-      icon: <SettingsIcon />,
-    },
-    { title: "Staff", path: "/manager/staff", icon: <PersonIcon /> },
-    { title: "Reports", path: "/manager/reports", icon: <ReceiptIcon /> },
+    { title: "Loại phòng", path: "/manager/rooms", icon: <RoomIcon /> },
+    { title: "Phòng", path: "/manager/revenue", icon: <PaymentsIcon /> },
   ],
   frontDesk: [
     {
