@@ -59,3 +59,4 @@
 2025-11-04 - 4 - 01:45:01 UTC :: docs: UC-36 Duyet ngoai le: duyet/tu choi theo han muc. — cai thien hieu nang render/list (can theo doi them)
 2025-11-04 - 5 - 01:45:03 UTC :: refactor: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — fix race-condition nho trong thao tac (dat tieu chi toi thieu)
 2025-11-05 - 1 - 01:46:02 UTC :: docs: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — dieu chinh quyen truy cap theo vai tro (dam bao backward-compatible)
+2025-11-05 - 2 - 01:46:04 UTC :: feat: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — refactor luong xu ly cho ro rang (da review so bo)
