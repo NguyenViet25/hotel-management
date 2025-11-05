@@ -1,5 +1,7 @@
 import React from "react";
-import DataTable, { type Column } from "../../../../../components/common/DataTable";
+import DataTable, {
+  type Column,
+} from "../../../../../components/common/DataTable";
 import type { RoomType } from "../../../../../api/roomTypesApi";
 import { roomTypeColumns } from "./RoomTypeColumns";
 
@@ -13,6 +15,7 @@ export interface RoomTypeTableProps {
   onAdd: () => void;
   onEdit: (rt: RoomType) => void;
   onDelete: (rt: RoomType) => void;
+  onSearch: (query: string) => void;
 }
 
 const RoomTypeTable: React.FC<RoomTypeTableProps> = ({
@@ -25,6 +28,7 @@ const RoomTypeTable: React.FC<RoomTypeTableProps> = ({
   onAdd,
   onEdit,
   onDelete,
+  onSearch,
 }) => {
   const columns: Column<RoomType>[] = roomTypeColumns;
 
@@ -39,6 +43,7 @@ const RoomTypeTable: React.FC<RoomTypeTableProps> = ({
       onEdit={onEdit}
       onDelete={onDelete}
       getRowId={(row) => row.id}
+      onSearch={onSearch}
     />
   );
 };

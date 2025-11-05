@@ -13,6 +13,7 @@ import EditUserDialog from "./dialogs/EditUserDialog";
 import LockUserDialog from "./dialogs/LockUserDialog";
 import ResetPasswordDialog from "./dialogs/ResetPasswordDialog";
 import { getRoleInfo } from "../../../../utils/role-mapper";
+import PageTitle from "../../../../components/common/PageTitle";
 
 const UserManagement: React.FC = () => {
   // State for user list
@@ -376,9 +377,10 @@ const UserManagement: React.FC = () => {
 
   return (
     <Box>
-      <Typography variant="h6" component="h1" gutterBottom>
-        Quản lý người dùng
-      </Typography>
+      <PageTitle
+        title="Quản lý người dùng"
+        subtitle="Thêm, sửa, xóa và quản lý quyền truy cập của người dùng"
+      />
 
       <DataTable<User>
         columns={columns}

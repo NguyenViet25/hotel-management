@@ -1,11 +1,13 @@
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
+import PageTitle from "../../../components/common/PageTitle";
 
 const AdminDashboardPage = () => {
   return (
     <Box>
-      <Typography variant="h5" gutterBottom>
-        Trang chủ
-      </Typography>
+      <PageTitle
+        title="Tổng quan"
+        subtitle="Xem thống kê, cơ sở, người dùng và hoạt động hệ thống"
+      />
     </Box>
   );
 };

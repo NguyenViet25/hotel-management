@@ -12,6 +12,7 @@ export const useStore = create<StoreState>()(
     (set) => ({
       user: null,
       setUser: (user) => set({ user }),
+      removeUser: () => set({ user: null }),
     }),
     {
       name: "app-storage",

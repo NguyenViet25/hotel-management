@@ -5,6 +5,7 @@ import DataTable, { type Column } from "../../../components/common/DataTable";
 import ChangeStatusModal from "../components/ChangeStatusModal";
 import HotelFormModal from "../components/HotelFormModal";
 import { useHotels } from "../hooks/useHotels";
+import PageTitle from "../../../components/common/PageTitle";
 
 const HotelsListPage: React.FC = () => {
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
@@ -79,9 +80,10 @@ const HotelsListPage: React.FC = () => {
 
   return (
     <Box>
-      <Typography variant="h6" component="h1" gutterBottom>
-        Quản lý cơ sở
-      </Typography>
+      <PageTitle
+        title="Quản lý cơ sở"
+        subtitle="Thêm, sửa và quản lý các cơ sở nhà nghỉ"
+      />
       <DataTable<Hotel>
         columns={columns}
         data={hotels}

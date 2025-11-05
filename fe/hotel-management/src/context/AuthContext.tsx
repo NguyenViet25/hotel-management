@@ -5,22 +5,12 @@ import {
   useEffect,
   type ReactNode,
 } from "react";
-
-interface User {
-  id: string;
-  username: string;
-  role: string;
-  name: string;
-}
+import type { User } from "../api/userService";
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   login: (token: string, userData: User) => void;
-  loginWithCredentials: (
-    username: string,
-    password: string
-  ) => Promise<boolean>;
   logout: () => void;
 }
 
@@ -55,30 +45,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsAuthenticated(true);
   };
 
-  const loginWithCredentials = async (
-    username: string,
-    password: string
-  ): Promise<boolean> => {
-    // Check for default admin credentials
-    if (username === "admin" && password === "admin") {
-      // Create a token for admin (in a real app, this would come from the backend)
-      const adminToken = "admin-token-" + Date.now();
-      const adminUser: User = {
-        id: "admin-1",
-        username: "admin",
-        role: "admin",
-        name: "Administrator",
-      };
-
-      login(adminToken, adminUser);
-      return true;
-    }
-
-    // For other credentials, you would typically call your API here
-    // For now, return false for any non-admin credentials
-    return false;
-  };
-
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -87,9 +53,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider
-      value={{ user, isAuthenticated, login, loginWithCredentials, logout }}
-    >
+    <AuthContext.Provider value={{ user, isAuthenticated, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

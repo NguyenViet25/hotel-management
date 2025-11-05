@@ -94,7 +94,10 @@ const DataTable = <T extends object>({
   };
 
   return (
-    <Paper sx={{ width: "100%", overflow: "hidden", borderRadius: 2 }}>
+    <Paper
+      variant="outlined"
+      sx={{ width: "100%", overflow: "hidden", borderRadius: 2 }}
+    >
       <Stack
         sx={{
           p: onSearch || onAdd ? 2 : 0,

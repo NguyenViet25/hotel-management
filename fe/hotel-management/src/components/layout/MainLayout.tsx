@@ -47,7 +47,7 @@ const MainLayout = ({ menuItems }: MainLayoutProps) => {
   const location = useLocation();
   const muiTheme = useTheme();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down("sm"));
-  const { user } = useStore<StoreState>((state) => state);
+  const { user, removeUser } = useStore<StoreState>((state) => state);
   console.log(user);
   const [open, setOpen] = useState(!isMobile);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -76,6 +76,7 @@ const MainLayout = ({ menuItems }: MainLayoutProps) => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    removeUser();
     navigate("/login");
   };
 
@@ -270,6 +271,7 @@ const MainLayout = ({ menuItems }: MainLayoutProps) => {
         sx={{
           flexGrow: 1,
           p: { xs: 2, sm: 3 },
+          pt: { xs: 2, sm: 2 },
           overflow: "auto",
           height: "100vh",
           bgcolor: "#ffffff",

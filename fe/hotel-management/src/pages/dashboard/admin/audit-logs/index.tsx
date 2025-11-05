@@ -21,6 +21,7 @@ import auditService, {
 import DataTable, {
   type Column,
 } from "../../../../components/common/DataTable";
+import PageTitle from "../../../../components/common/PageTitle";
 
 const AuditLogs: React.FC = () => {
   const [logs, setLogs] = useState<AuditLogDto[]>([]);
@@ -240,9 +241,10 @@ const AuditLogs: React.FC = () => {
           alignItems: "center",
         }}
       >
-        <Typography variant="h6" component="h1" gutterBottom>
-          Nhật ký hoạt động
-        </Typography>
+        <PageTitle
+          title="Nhật ký hoạt động"
+          subtitle="Xem lịch sử thao tác, hành động người dùng và các sự kiện hệ thống"
+        />
       </Box>
 
       {/* Bộ lọc */}

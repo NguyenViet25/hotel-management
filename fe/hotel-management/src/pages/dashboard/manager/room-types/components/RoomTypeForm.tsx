@@ -119,7 +119,7 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
   } = useForm<FormValues>({
     resolver: yupResolver(schema),
     defaultValues: {
-      hotelId: hotelId ?? "",
+      hotelId: hotelId ?? "2cd64918-c7f5-4051-a629-a96594096087",
       name: initialData?.name ?? "",
       description: initialData?.description ?? "",
       guests: 2,
