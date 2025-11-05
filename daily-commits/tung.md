@@ -66,3 +66,4 @@
 2025-11-05 - 1 - 01:46:03 UTC :: fix: UC-35 Ngoai le: gui yeu cau mien/giam phi, vuot tran. — dieu chinh UI & copy cho ro (dam bao backward-compatible)
 2025-11-05 - 2 - 01:46:05 UTC :: build: UC-20 Keo-tha: gan/doi phong truc quan, tranh trung. — cap nhat mock data & seed test (da kiem tra lint)
 2025-11-05 - 3 - 01:46:08 UTC :: perf: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — cap nhat mock data & seed test (anh huong thap)
+2025-11-05 - 4 - 01:46:09 UTC :: test: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — refactor luong xu ly cho ro rang (can theo doi them)
