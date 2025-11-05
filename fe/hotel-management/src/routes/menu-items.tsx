@@ -31,7 +31,7 @@ export const menuItems = {
   ],
   facilityManager: [
     { title: "Tổng quan", path: "/manager/dashboard", icon: <DashboardIcon /> },
-    { title: "Loại phòng", path: "/manager/rooms", icon: <Category /> },
+    { title: "Loại phòng", path: "/manager/room-types", icon: <Category /> },
     { title: "Phòng", path: "/manager/revenue", icon: <Bed /> },
   ],
   frontDesk: [

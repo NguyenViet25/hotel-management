@@ -18,6 +18,9 @@ const AuditLogsPage = lazy(() => import("../pages/dashboard/admin/audit-logs"));
 const HotelsListPage = lazy(
   () => import("../features/hotels/pages/HotelsListPage")
 );
+const ManagerRoomTypesPage = lazy(
+  () => import("../pages/dashboard/manager/room-types")
+);
 // Loading component
 const LoadingFallback = () => (
   <Box
@@ -127,6 +130,14 @@ const router = createBrowserRouter([
       {
         path: "dashboard",
         element: <ManagerDashboard />,
+      },
+      {
+        path: "room-types",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <ManagerRoomTypesPage />
+          </Suspense>
+        ),
       },
       // Add other manager routes here
     ],
