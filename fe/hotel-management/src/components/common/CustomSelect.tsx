@@ -19,6 +19,7 @@ interface CustomSelectProps {
   onChange: (event: any) => void;
   startIcon?: React.ReactNode;
   options?: Option[];
+  placeholder?: string;
 }
 
 const CustomSelect: React.FC<CustomSelectProps> = ({
@@ -28,6 +29,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   onChange,
   startIcon,
   options = [],
+  placeholder,
 }) => {
   return (
     <FormControl fullWidth variant="outlined">

@@ -111,7 +111,7 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
               ),
             }}
           />
-          <RoleSelect value={formData.role} onChange={handleInputChange} />
+          <RoleSelect value={formData.roles[0]} onChange={handleInputChange} />
 
           <Stack direction={"row"} justifyContent={"right"} gap={1}>
             <Button onClick={onClose}>Hủy</Button>

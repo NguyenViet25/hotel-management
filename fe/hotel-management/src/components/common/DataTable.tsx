@@ -138,7 +138,7 @@ const DataTable = <T extends object>({
         )}
       </Stack>
 
-      <TableContainer sx={{ maxHeight: 440 }}>
+      <TableContainer sx={{ maxHeight: 410 }}>
         <Table stickyHeader aria-label="sticky table">
           <TableHead>
             <TableRow>

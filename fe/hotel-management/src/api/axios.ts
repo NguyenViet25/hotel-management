@@ -67,9 +67,10 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
+      toast.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-      window.location.href = "/login";
+      window.location.href = "/login?expired=true";
     }
 
     return Promise.reject(error);

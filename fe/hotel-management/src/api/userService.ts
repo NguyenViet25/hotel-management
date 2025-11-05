@@ -4,12 +4,12 @@ export interface User {
   id: string;
   userName: string;
   email: string;
-  roles: string;
+  roles: string[];
   status: string;
   fullname?: string;
   phoneNumber?: string;
   propertyRoles?: PropertyRole[];
-  isLocked: boolean;
+  lockedUntil?: string | null;
 }
 
 export interface PropertyRole {
@@ -38,17 +38,16 @@ export interface UserResponse {
 export interface CreateUserRequest {
   username?: string;
   email: string;
-  password: string;
   fullName: string;
   phoneNumber: string;
-  role: string;
+  roles: string[];
 }
 
 export interface UpdateUserRequest {
   email: string;
   fullName: string;
   phoneNumber: string;
-  role: string;
+  roles: string[];
 }
 
 export interface LockUserRequest {
@@ -69,10 +68,11 @@ export interface PropertyRoleResponse {
 const userService = {
   getUsers: async (
     page: number = 1,
-    pageSize: number = 10
+    pageSize: number = 10,
+    search?: string
   ): Promise<UserListResponse> => {
     const response = await axios.get(
-      `/admin/users?page=${page}&pageSize=${pageSize}`
+      `/admin/users?page=${page}&pageSize=${pageSize}&search=${search || ""}`
     );
     return response.data;
   },
@@ -96,10 +96,15 @@ const userService = {
   },
 
   lockUser: async (
-    id: string,
-    lockRequest: LockUserRequest
+    id: string
   ): Promise<{ isSuccess: boolean; message: string }> => {
-    const response = await axios.post(`/admin/users/${id}/lock`, lockRequest);
+    const response = await axios.post(`/admin/users/${id}/lock`, {});
+    return response.data;
+  },
+  unlockUser: async (
+    id: string
+  ): Promise<{ isSuccess: boolean; message: string }> => {
+    const response = await axios.post(`/admin/users/${id}/unlock`, {});
     return response.data;
   },
 

@@ -70,6 +70,7 @@ const RoleSelect: React.FC<RoleSelectProps> = ({ value, onChange, name }) => {
       label="Vai trò"
       startIcon={<AssignmentIndIcon />}
       options={options}
+      placeholder="Chọn vai trò cho người dùng"
     />
   );
 };

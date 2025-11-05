@@ -1,16 +1,15 @@
-import React from "react";
+import { AssignmentInd, Lock, LockOpen } from "@mui/icons-material";
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
-  DialogActions,
-  Button,
-  Typography,
+  DialogTitle,
   Stack,
+  Typography,
 } from "@mui/material";
+import React from "react";
 import type { User } from "../../../../../api/userService";
 import FormActionButtons from "../../../../../components/common/FormActionButtons";
-import { AssignmentInd, Lock, LockOpen } from "@mui/icons-material";
+import { isLocked } from "../../../../../utils/is-locked";
 
 interface LockUserDialogProps {
   open: boolean;
@@ -27,15 +26,17 @@ const LockUserDialog: React.FC<LockUserDialogProps> = ({
   handleSubmit,
   isSubmitting,
 }) => {
+  const isLocking = isLocked(selectedUser?.lockedUntil) ?? false;
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle fontWeight={"bold"}>
-        {selectedUser?.isLocked ? "Mở khóa tài khoản" : "Khóa tài khoản"}
+        {isLocking ? "Mở khóa tài khoản" : "Khóa tài khoản"}
       </DialogTitle>
       <DialogContent>
         <Stack direction={"column"} gap={2}>
           <Typography>
-            {selectedUser?.isLocked
+            {isLocking
               ? `Bạn có chắc chắn muốn mở khóa tài khoản ${selectedUser?.userName}?`
               : `Bạn có chắc chắn muốn khóa tài khoản ${selectedUser?.userName}?`}
           </Typography>
@@ -44,9 +45,9 @@ const LockUserDialog: React.FC<LockUserDialogProps> = ({
             cancelLabel="Hủy"
             cancelIcon={<AssignmentInd />}
             onSubmit={handleSubmit}
-            submitLabel={selectedUser?.isLocked ? "Mở khóa" : "Khóa"}
-            submitColor={selectedUser?.isLocked ? "success" : "error"}
-            submitIcon={selectedUser?.isLocked ? <LockOpen /> : <Lock />}
+            submitLabel={isLocking ? "Mở khóa" : "Khóa"}
+            submitColor={isLocking ? "success" : "error"}
+            submitIcon={isLocking ? <LockOpen /> : <Lock />}
             isSubmitting={isSubmitting}
           />
         </Stack>

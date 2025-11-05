@@ -33,10 +33,12 @@ const LoginPage = () => {
   const { setUser, user } = useStore<StoreState>((state) => state);
 
   useLayoutEffect(() => {
-    if (user) {
+    const params = new URLSearchParams(window.location.search);
+    const expiredParam = params.get("expired"); // get ?expired=value
+    if (expiredParam === "true" && user) {
       navigateToCorrectPage(user);
     }
-  }, [user]);
+  }, []);
 
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({ username: "", password: "" });

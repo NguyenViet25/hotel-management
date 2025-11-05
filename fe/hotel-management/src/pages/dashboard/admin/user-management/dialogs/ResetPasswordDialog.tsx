@@ -1,16 +1,14 @@
-import React from "react";
+import { AssignmentInd, Refresh } from "@mui/icons-material";
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
-  DialogActions,
-  Button,
-  Typography,
+  DialogTitle,
   Stack,
+  Typography,
 } from "@mui/material";
+import React from "react";
 import type { User } from "../../../../../api/userService";
 import FormActionButtons from "../../../../../components/common/FormActionButtons";
-import { AssignmentInd, Lock, LockOpen, Refresh } from "@mui/icons-material";
 
 interface LockUserDialogProps {
   open: boolean;
