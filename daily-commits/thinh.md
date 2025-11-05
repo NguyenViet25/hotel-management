@@ -60,3 +60,4 @@
 2025-11-04 - 5 - 01:45:03 UTC :: refactor: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — fix race-condition nho trong thao tac (dat tieu chi toi thieu)
 2025-11-05 - 1 - 01:46:02 UTC :: docs: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — dieu chinh quyen truy cap theo vai tro (dam bao backward-compatible)
 2025-11-05 - 2 - 01:46:04 UTC :: feat: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — refactor luong xu ly cho ro rang (da review so bo)
+2025-11-05 - 3 - 01:46:07 UTC :: build: UC-47 Dashboard: gioi han xem theo vai tro va co so. — cap nhat cau hinh va kiem tra bien (da kiem tra lint)
