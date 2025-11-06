@@ -67,3 +67,4 @@
 2025-11-06 - 2 - 01:45:57 UTC :: perf: UC-43 Mat khau: quy dinh do manh, het han phien. — them kiem soat loi & retry nhe (chuan bi cho tinh nang tiep theo)
 2025-11-06 - 3 - 01:45:59 UTC :: build: UC-23 Bao tri: tao ticket, dinh anh, mo ta loi. — dieu chinh quyen truy cap theo vai tro (dat tieu chi toi thieu)
 2025-11-06 - 4 - 01:46:00 UTC :: fix: UC-21 Housekeeping: cap nhat Dirty/In-progress/Cleaned/Inspected. — cap nhat cau hinh va kiem tra bien (da kiem tra lint)
+2025-11-06 - 5 - 01:46:02 UTC :: test: UC-01 RBAC: tao, sua, khoa tai khoan; gan vai tro. — bo sung case canh bien & no-show (khong doi hanh vi)
