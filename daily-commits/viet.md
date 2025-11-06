@@ -66,3 +66,4 @@
 2025-11-06 - 1 - 01:45:52 UTC :: build: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — bo sung metrics/telemetry co ban (dat tieu chi toi thieu)
 2025-11-06 - 2 - 01:45:53 UTC :: build: UC-28 Room charge F&B: ghi hoa don ban an vao folio. — cai thien hieu nang render/list (da review so bo)
 2025-11-06 - 3 - 01:45:56 UTC :: refactor: UC-11 Goi gia: bat/tam ngung goi gia dang ap dung. — kiem tra tuong thich mui gio/tien te (dat tieu chi toi thieu)
+2025-11-06 - 4 - 01:45:57 UTC :: fix: UC-09 So do: hien thi layout, loc trang thai phong. — sua validate va bo sung thong bao loi (da review so bo)
