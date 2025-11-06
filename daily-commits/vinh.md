@@ -64,3 +64,4 @@
 2025-11-05 - 4 - 01:46:07 UTC :: test: UC-28 Room charge F&B: ghi hoa don ban an vao folio. — bo sung unit test muc co ban (da kiem tra lint)
 2025-11-05 - 5 - 01:46:09 UTC :: perf: UC-34 Cham cong: ghi nhan diem danh, ban giao ca. — them log chi tiet phuc vu audit (khong doi hanh vi)
 2025-11-06 - 1 - 01:45:54 UTC :: feat: UC-21 Housekeeping: cap nhat Dirty/In-progress/Cleaned/Inspected. — fix race-condition nho trong thao tac (da review so bo)
+2025-11-06 - 2 - 01:45:57 UTC :: perf: UC-43 Mat khau: quy dinh do manh, het han phien. — them kiem soat loi & retry nhe (chuan bi cho tinh nang tiep theo)
