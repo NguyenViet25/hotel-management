@@ -72,3 +72,4 @@
 2025-11-06 - 2 - 01:45:55 UTC :: docs: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — cap nhat mock data & seed test (can theo doi them)
 2025-11-06 - 3 - 01:45:57 UTC :: test: UC-02 RBAC: thiet lap quyen thao tac theo vai tro/pham vi. — kiem tra tuong thich mui gio/tien te (da review so bo)
 2025-11-06 - 4 - 01:45:58 UTC :: refactor: UC-47 Dashboard: gioi han xem theo vai tro va co so. — dieu chinh quyen truy cap theo vai tro (dat tieu chi toi thieu)
+2025-11-06 - 5 - 01:46:01 UTC :: docs: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — bo sung case canh bien & no-show (da kiem tra lint)
