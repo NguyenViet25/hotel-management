@@ -65,3 +65,4 @@
 2025-11-05 - 5 - 01:46:12 UTC :: chore: UC-38 Audit Log: xem/loc thao tac, hanh dong, thoi gian. — kiem tra tuong thich mui gio/tien te (dam bao backward-compatible)
 2025-11-06 - 1 - 01:45:54 UTC :: docs: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — bo sung case canh bien & no-show (dong bo voi BE/FE)
 2025-11-06 - 2 - 01:45:57 UTC :: fix: UC-02 RBAC: thiet lap quyen thao tac theo vai tro/pham vi. — bo sung index & toi uu DB (da kiem tra lint)
+2025-11-06 - 3 - 01:45:58 UTC :: fix: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — bo sung unit test muc co ban (dong bo voi BE/FE)
