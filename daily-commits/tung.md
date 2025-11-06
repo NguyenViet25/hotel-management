@@ -70,3 +70,4 @@
 2025-11-05 - 5 - 01:46:10 UTC :: feat: UC-11 Goi gia: bat/tam ngung goi gia dang ap dung. — fix race-condition nho trong thao tac (can theo doi them)
 2025-11-06 - 1 - 01:45:54 UTC :: test: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — cai thien hieu nang render/list (chuan bi cho tinh nang tiep theo)
 2025-11-06 - 2 - 01:45:55 UTC :: docs: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — cap nhat mock data & seed test (can theo doi them)
+2025-11-06 - 3 - 01:45:57 UTC :: test: UC-02 RBAC: thiet lap quyen thao tac theo vai tro/pham vi. — kiem tra tuong thich mui gio/tien te (da review so bo)
