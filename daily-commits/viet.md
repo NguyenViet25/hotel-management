@@ -63,3 +63,4 @@
 2025-11-05 - 3 - 01:46:09 UTC :: fix: UC-01 RBAC: tao, sua, khoa tai khoan; gan vai tro. — don dep code va xoa doan thua (chuan bi cho tinh nang tiep theo)
 2025-11-05 - 4 - 01:46:11 UTC :: docs: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — refactor luong xu ly cho ro rang (khong doi hanh vi)
 2025-11-05 - 5 - 01:46:13 UTC :: docs: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — bo sung unit test muc co ban (da kiem tra lint)
+2025-11-06 - 1 - 01:45:52 UTC :: build: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — bo sung metrics/telemetry co ban (dat tieu chi toi thieu)
