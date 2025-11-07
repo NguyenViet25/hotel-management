@@ -69,3 +69,4 @@
 2025-11-06 - 4 - 01:46:01 UTC :: test: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — kiem tra tuong thich mui gio/tien te (da review so bo)
 2025-11-06 - 5 - 01:46:02 UTC :: test: UC-06 Co so: gan quan ly phu trach va quyen truy cap. — bo sung index & toi uu DB (dong bo voi BE/FE)
 2025-11-07 - 1 - 01:44:45 UTC :: ci: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — cap nhat cau hinh va kiem tra bien (khong doi hanh vi)
+2025-11-07 - 2 - 01:44:46 UTC :: feat: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — cai thien hieu nang render/list (dong bo voi BE/FE)
