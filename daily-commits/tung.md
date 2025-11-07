@@ -76,3 +76,4 @@
 2025-11-07 - 1 - 01:44:45 UTC :: build: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — chinh sua tai lieu & mo ta API (can theo doi them)
 2025-11-07 - 2 - 01:44:47 UTC :: fix: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — tach chuc nang de de bao tri (da smoke test)
 2025-11-07 - 3 - 01:44:49 UTC :: test: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — refactor luong xu ly cho ro rang (dam bao backward-compatible)
+2025-11-07 - 4 - 01:44:50 UTC :: ci: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — bo sung index & toi uu DB (da smoke test)
