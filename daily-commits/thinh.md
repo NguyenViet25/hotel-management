@@ -71,3 +71,4 @@
 2025-11-07 - 1 - 01:44:45 UTC :: ci: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — cap nhat cau hinh va kiem tra bien (khong doi hanh vi)
 2025-11-07 - 2 - 01:44:46 UTC :: feat: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — cai thien hieu nang render/list (dong bo voi BE/FE)
 2025-11-07 - 3 - 01:44:49 UTC :: chore: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — toi uu truy van va bo nho (da kiem tra lint)
+2025-11-07 - 4 - 01:44:52 UTC :: build: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — chinh sua tai lieu & mo ta API (can theo doi them)
