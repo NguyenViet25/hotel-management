@@ -68,3 +68,4 @@
 2025-11-06 - 3 - 01:45:59 UTC :: build: UC-23 Bao tri: tao ticket, dinh anh, mo ta loi. — dieu chinh quyen truy cap theo vai tro (dat tieu chi toi thieu)
 2025-11-06 - 4 - 01:46:00 UTC :: fix: UC-21 Housekeeping: cap nhat Dirty/In-progress/Cleaned/Inspected. — cap nhat cau hinh va kiem tra bien (da kiem tra lint)
 2025-11-06 - 5 - 01:46:02 UTC :: test: UC-01 RBAC: tao, sua, khoa tai khoan; gan vai tro. — bo sung case canh bien & no-show (khong doi hanh vi)
+2025-11-07 - 1 - 01:44:44 UTC :: chore: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — cap nhat mock data & seed test (da kiem tra lint)
