@@ -70,3 +70,4 @@
 2025-11-06 - 5 - 01:45:58 UTC :: chore: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — dieu chinh UI & copy cho ro (anh huong thap)
 2025-11-07 - 1 - 01:44:45 UTC :: perf: UC-02 RBAC: thiet lap quyen thao tac theo vai tro/pham vi. — cap nhat mock data & seed test (dong bo voi BE/FE)
 2025-11-07 - 2 - 01:44:46 UTC :: fix: UC-28 Room charge F&B: ghi hoa don ban an vao folio. — cai thien hieu nang render/list (dong bo voi BE/FE)
+2025-11-07 - 3 - 01:44:48 UTC :: feat: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — cai thien hieu nang render/list (dat tieu chi toi thieu)
