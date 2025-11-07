@@ -69,3 +69,4 @@
 2025-11-06 - 4 - 01:46:00 UTC :: fix: UC-21 Housekeeping: cap nhat Dirty/In-progress/Cleaned/Inspected. — cap nhat cau hinh va kiem tra bien (da kiem tra lint)
 2025-11-06 - 5 - 01:46:02 UTC :: test: UC-01 RBAC: tao, sua, khoa tai khoan; gan vai tro. — bo sung case canh bien & no-show (khong doi hanh vi)
 2025-11-07 - 1 - 01:44:44 UTC :: chore: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — cap nhat mock data & seed test (da kiem tra lint)
+2025-11-07 - 2 - 01:44:47 UTC :: perf: UC-34 Cham cong: ghi nhan diem danh, ban giao ca. — sua validate va bo sung thong bao loi (da kiem tra lint)
