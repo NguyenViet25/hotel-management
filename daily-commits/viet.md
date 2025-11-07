@@ -72,3 +72,4 @@
 2025-11-07 - 2 - 01:44:46 UTC :: fix: UC-28 Room charge F&B: ghi hoa don ban an vao folio. — cai thien hieu nang render/list (dong bo voi BE/FE)
 2025-11-07 - 3 - 01:44:48 UTC :: feat: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — cai thien hieu nang render/list (dat tieu chi toi thieu)
 2025-11-07 - 4 - 01:44:51 UTC :: ci: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — chuan hoa ten ham/bien theo convention (dat tieu chi toi thieu)
+2025-11-07 - 5 - 01:44:52 UTC :: feat: UC-38 Audit Log: xem/loc thao tac, hanh dong, thoi gian. — them log chi tiet phuc vu audit (anh huong thap)
