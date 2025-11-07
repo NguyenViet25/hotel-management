@@ -75,3 +75,4 @@
 2025-11-06 - 5 - 01:46:01 UTC :: docs: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — bo sung case canh bien & no-show (da kiem tra lint)
 2025-11-07 - 1 - 01:44:45 UTC :: build: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — chinh sua tai lieu & mo ta API (can theo doi them)
 2025-11-07 - 2 - 01:44:47 UTC :: fix: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — tach chuc nang de de bao tri (da smoke test)
+2025-11-07 - 3 - 01:44:49 UTC :: test: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — refactor luong xu ly cho ro rang (dam bao backward-compatible)
