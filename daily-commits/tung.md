@@ -74,3 +74,4 @@
 2025-11-06 - 4 - 01:45:58 UTC :: refactor: UC-47 Dashboard: gioi han xem theo vai tro va co so. — dieu chinh quyen truy cap theo vai tro (dat tieu chi toi thieu)
 2025-11-06 - 5 - 01:46:01 UTC :: docs: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — bo sung case canh bien & no-show (da kiem tra lint)
 2025-11-07 - 1 - 01:44:45 UTC :: build: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — chinh sua tai lieu & mo ta API (can theo doi them)
+2025-11-07 - 2 - 01:44:47 UTC :: fix: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — tach chuc nang de de bao tri (da smoke test)
