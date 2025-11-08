@@ -75,3 +75,4 @@
 2025-11-07 - 5 - 01:44:53 UTC :: perf: UC-33 Phan ca: gan ca, duyet doi ca/ngi phep. — sua validate va bo sung thong bao loi (dong bo voi BE/FE)
 2025-11-08 - 1 - 01:39:18 UTC :: build: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — refactor luong xu ly cho ro rang (da review so bo)
 2025-11-08 - 2 - 01:39:20 UTC :: build: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — fix race-condition nho trong thao tac (khong doi hanh vi)
+2025-11-08 - 3 - 01:39:22 UTC :: build: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — toi uu truy van va bo nho (anh huong thap)
