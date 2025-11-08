@@ -78,3 +78,4 @@
 2025-11-07 - 3 - 01:44:49 UTC :: test: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — refactor luong xu ly cho ro rang (dam bao backward-compatible)
 2025-11-07 - 4 - 01:44:50 UTC :: ci: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — bo sung index & toi uu DB (da smoke test)
 2025-11-07 - 5 - 01:44:52 UTC :: build: UC-36 Duyet ngoai le: duyet/tu choi theo han muc. — dieu chinh quyen truy cap theo vai tro (can theo doi them)
+2025-11-08 - 1 - 01:39:18 UTC :: chore: UC-20 Keo-tha: gan/doi phong truc quan, tranh trung. — toi uu truy van va bo nho (da review so bo)
