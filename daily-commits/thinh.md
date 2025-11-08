@@ -73,3 +73,4 @@
 2025-11-07 - 3 - 01:44:49 UTC :: chore: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — toi uu truy van va bo nho (da kiem tra lint)
 2025-11-07 - 4 - 01:44:52 UTC :: build: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — chinh sua tai lieu & mo ta API (can theo doi them)
 2025-11-07 - 5 - 01:44:53 UTC :: perf: UC-33 Phan ca: gan ca, duyet doi ca/ngi phep. — sua validate va bo sung thong bao loi (dong bo voi BE/FE)
+2025-11-08 - 1 - 01:39:18 UTC :: build: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — refactor luong xu ly cho ro rang (da review so bo)
