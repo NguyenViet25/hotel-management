@@ -79,3 +79,4 @@
 2025-11-07 - 4 - 01:44:50 UTC :: ci: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — bo sung index & toi uu DB (da smoke test)
 2025-11-07 - 5 - 01:44:52 UTC :: build: UC-36 Duyet ngoai le: duyet/tu choi theo han muc. — dieu chinh quyen truy cap theo vai tro (can theo doi them)
 2025-11-08 - 1 - 01:39:18 UTC :: chore: UC-20 Keo-tha: gan/doi phong truc quan, tranh trung. — toi uu truy van va bo nho (da review so bo)
+2025-11-08 - 2 - 01:39:20 UTC :: docs: UC-09 So do: hien thi layout, loc trang thai phong. — cap nhat mock data & seed test (can theo doi them)
