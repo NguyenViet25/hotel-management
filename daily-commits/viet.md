@@ -74,3 +74,4 @@
 2025-11-07 - 4 - 01:44:51 UTC :: ci: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — chuan hoa ten ham/bien theo convention (dat tieu chi toi thieu)
 2025-11-07 - 5 - 01:44:52 UTC :: feat: UC-38 Audit Log: xem/loc thao tac, hanh dong, thoi gian. — them log chi tiet phuc vu audit (anh huong thap)
 2025-11-08 - 1 - 01:39:20 UTC :: test: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — chinh sua tai lieu & mo ta API (khong doi hanh vi)
+2025-11-08 - 2 - 01:39:21 UTC :: fix: UC-33 Phan ca: gan ca, duyet doi ca/ngi phep. — them kiem soat loi & retry nhe (khong doi hanh vi)
