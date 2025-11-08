@@ -2,25 +2,14 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Box,
-  Chip,
-  Grid,
-  MenuItem,
   Snackbar,
-  Stack,
-  TextField,
   Typography,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   Button,
-  FormControl,
-  InputLabel,
-  Select,
 } from "@mui/material";
-import DataTable, {
-  type Column,
-} from "../../../../components/common/DataTable";
 import PageTitle from "../../../../components/common/PageTitle";
 import roomsApi, {
   type RoomDto,
@@ -29,25 +18,12 @@ import roomsApi, {
 } from "../../../../api/roomsApi";
 import roomTypesApi, { type RoomType } from "../../../../api/roomTypesApi";
 import type { SelectChangeEvent } from "@mui/material/Select";
+import RoomFilters from "./components/RoomFilters";
+import RoomTable from "./components/RoomTable";
+import RoomFormModal from "./components/RoomFormModal";
+import ChangeRoomStatusModal from "./components/ChangeRoomStatusModal";
 
-// Status options aligned with UC-27
-const ROOM_STATUS_OPTIONS: { value: RoomDto["status"]; label: string }[] = [
-  { value: "Available", label: "Sẵn sàng" },
-  { value: "UnderMaintenance", label: "Bảo trì" },
-  { value: "OutOfService", label: "Ngừng phục vụ" },
-  { value: "TemporarilyUnavailable", label: "Tạm ngưng" },
-];
-
-const statusChip = (status: RoomDto["status"]) => {
-  const map = {
-    Available: { color: "success", label: "Sẵn sàng" },
-    UnderMaintenance: { color: "warning", label: "Bảo trì" },
-    OutOfService: { color: "error", label: "Ngừng phục vụ" },
-    TemporarilyUnavailable: { color: "default", label: "Tạm ngưng" },
-  };
-  const cfg = map[status] || { color: "default", label: status };
-  return <Chip size="small" label={cfg.label} color={cfg.color} />;
-};
+// Status options and chips have been moved into dedicated components
 
 // Main page component
 const RoomManagementPage: React.FC = () => {
@@ -66,6 +42,7 @@ const RoomManagementPage: React.FC = () => {
 
   // Room types for filter and form
   const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
+  const [roomTypesLoading, setRoomTypesLoading] = useState<boolean>(false);
 
   // Dialog state
   const [editingRoom, setEditingRoom] = useState<RoomDto | null>(null);
@@ -81,22 +58,7 @@ const RoomManagementPage: React.FC = () => {
     severity: "success" | "error" | "warning" | "info";
   }>({ open: false, message: "", severity: "success" });
 
-  // Columns for DataTable
-  const columns = useMemo<Column<RoomDto>[]>(
-    () => [
-      { id: "number", label: "Số phòng", minWidth: 100 },
-      { id: "floor", label: "Tầng", minWidth: 80 },
-      { id: "typeName", label: "Loại phòng", minWidth: 140 },
-      {
-        id: "status",
-        label: "Trạng thái",
-        minWidth: 140,
-        format: (value) => statusChip(value as RoomDto["status"]),
-      },
-      { id: "hotelName", label: "Khách sạn", minWidth: 160 },
-    ],
-    []
-  );
+  // Columns are now defined within the RoomTable component
 
   // Fetch room types for filter and forms
   const fetchRoomTypes = async () => {
@@ -236,87 +198,32 @@ const RoomManagementPage: React.FC = () => {
 
       {/* Filters */}
       <PaperLike>
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} sm={3}>
-            <FormControl fullWidth>
-              <InputLabel id="status-label">Trạng thái</InputLabel>
-              <Select
-                labelId="status-label"
-                value={status}
-                label="Trạng thái"
-                onChange={(e: SelectChangeEvent<string>) =>
-                  setStatus(e.target.value as string)
-                }
-              >
-                <MenuItem value="">
-                  <em>Tất cả</em>
-                </MenuItem>
-                {ROOM_STATUS_OPTIONS.map((s) => (
-                  <MenuItem key={s.value} value={s.value}>
-                    {s.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={3}>
-            <TextField
-              label="Tầng"
-              type="number"
-              fullWidth
-              value={floor}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setFloor(e.target.value)
-              }
-            />
-          </Grid>
-          <Grid item xs={12} sm={3}>
-            <FormControl fullWidth>
-              <InputLabel id="type-label">Loại phòng</InputLabel>
-              <Select
-                labelId="type-label"
-                value={typeId}
-                label="Loại phòng"
-                onChange={(e: SelectChangeEvent<string>) =>
-                  setTypeId(e.target.value as string)
-                }
-              >
-                <MenuItem value="">
-                  <em>Tất cả</em>
-                </MenuItem>
-                {roomTypes.map((rt) => (
-                  <MenuItem key={rt.id} value={rt.id}>
-                    {rt.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={3}>
-            <TextField
-              label="Số phòng (Tìm kiếm)"
-              fullWidth
-              value={searchNumber}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setSearchNumber(e.target.value)
-              }
-            />
-          </Grid>
-        </Grid>
+        <RoomFilters
+          status={status}
+          floor={floor}
+          typeId={typeId}
+          searchNumber={searchNumber}
+          onChangeStatus={(v) => setStatus(v)}
+          onChangeFloor={(v) => setFloor(v)}
+          onChangeTypeId={(v) => setTypeId(v)}
+          onChangeSearchNumber={(v) => setSearchNumber(v)}
+          roomTypes={roomTypes}
+          roomTypesLoading={roomTypesLoading}
+        />
       </PaperLike>
 
       {/* Rooms table */}
-      <DataTable
-        columns={columns}
-        data={rooms}
-        title="Danh sách phòng"
+      <RoomTable
+        rooms={rooms}
         loading={loading}
-        pagination={{ page, pageSize, total, onPageChange }}
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        onPageChange={onPageChange}
         onAdd={handleAdd}
         onEdit={handleEdit}
         onDelete={handleDelete}
-        onLock={handleChangeStatus}
-        getRowId={(row: RoomDto) => row.id}
+        onChangeStatus={handleChangeStatus}
         onSearch={(txt: string) => setSearchNumber(txt || "")}
       />
 
@@ -325,6 +232,7 @@ const RoomManagementPage: React.FC = () => {
         open={createOpen}
         onClose={() => setCreateOpen(false)}
         roomTypes={roomTypes}
+        roomTypesLoading={roomTypesLoading}
         onSubmit={async (payload: CreateRoomRequest) => {
           try {
             const res = await roomsApi.createRoom(payload);
@@ -358,6 +266,7 @@ const RoomManagementPage: React.FC = () => {
         open={editOpen}
         initialData={editingRoom}
         roomTypes={roomTypes}
+        roomTypesLoading={roomTypesLoading}
         onClose={() => setEditOpen(false)}
         onSubmit={async (payload: UpdateRoomRequest) => {
           try {
@@ -482,186 +391,8 @@ const PaperLike: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 );
 
 // Add/Edit Room Modal (inline, reusable for both create and edit)
-type RoomFormModalProps = {
-  open: boolean;
-  onClose: () => void;
-  onSubmit: (payload: CreateRoomRequest | UpdateRoomRequest) => void;
-  initialData?: RoomDto | null;
-  roomTypes: RoomType[];
-};
+// Inline RoomFormModal removed; now imported from components
 
-const RoomFormModal: React.FC<RoomFormModalProps> = ({
-  open,
-  onClose,
-  onSubmit,
-  initialData,
-  roomTypes,
-}) => {
-  const isEdit = Boolean(initialData);
-  const [form, setForm] = useState<{
-    number: string;
-    floor: number | string;
-    typeId: string;
-    features: string[];
-    status: RoomDto["status"];
-  }>({
-    number: initialData?.number || "",
-    floor: initialData?.floor ?? 1,
-    typeId: initialData?.typeId || "",
-    features: initialData?.features || [],
-    status: initialData?.status || "Available", // for edit, allow updating active/status
-  });
-
-  useEffect(() => {
-    setForm({
-      number: initialData?.number || "",
-      floor: initialData?.floor ?? 1,
-      typeId: initialData?.typeId || "",
-      features: initialData?.features || [],
-      status: initialData?.status || "Available",
-    });
-  }, [initialData]);
-
-  const handleTextChange =
-    (key: "number" | "floor") => (e: React.ChangeEvent<HTMLInputElement>) =>
-      setForm((f) => ({ ...f, [key]: e.target.value }));
-  const handleSelectChange =
-    (key: "typeId" | "status") => (e: SelectChangeEvent<string>) =>
-      setForm((f) => ({ ...f, [key]: e.target.value as string }));
-
-  const handleSubmit = () => {
-    // Key logic: map form to API payloads depending on create vs edit
-    const payload = isEdit
-      ? {
-          number: form.number,
-          floor: Number(form.floor),
-          typeId: form.typeId,
-          status: form.status,
-          features: form.features,
-        }
-      : {
-          number: form.number,
-          floor: Number(form.floor),
-          typeId: form.typeId,
-          features: form.features,
-        };
-    onSubmit(payload);
-  };
-
-  return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle fontWeight={600}>
-        {isEdit ? "Chỉnh sửa phòng" : "Thêm phòng"}
-      </DialogTitle>
-      <DialogContent>
-        <Stack spacing={2} sx={{ mt: 1 }}>
-          <TextField
-            label="Số phòng"
-            value={form.number}
-            onChange={handleTextChange("number")}
-            required
-          />
-          <TextField
-            label="Tầng"
-            type="number"
-            value={form.floor}
-            onChange={handleTextChange("floor")}
-            required
-          />
-          <FormControl fullWidth>
-            <InputLabel id="type-select-label">Loại phòng</InputLabel>
-            <Select
-              labelId="type-select-label"
-              value={form.typeId}
-              label="Loại phòng"
-              onChange={handleSelectChange("typeId")}
-              required
-            >
-              {roomTypes.map((rt) => (
-                <MenuItem key={rt.id} value={rt.id}>
-                  {rt.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          {isEdit && (
-            <FormControl fullWidth>
-              <InputLabel id="status-select-label">Trạng thái</InputLabel>
-              <Select
-                labelId="status-select-label"
-                value={form.status}
-                label="Trạng thái"
-                onChange={handleSelectChange("status")}
-              >
-                {ROOM_STATUS_OPTIONS.map((s) => (
-                  <MenuItem key={s.value} value={s.value}>
-                    {s.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          )}
-        </Stack>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Hủy</Button>
-        <Button variant="contained" onClick={handleSubmit}>
-          {isEdit ? "Lưu" : "Thêm"}
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
-};
-
-// Change Room Status Modal
-const ChangeRoomStatusModal = ({
-  open,
-  onClose,
-  onSubmit,
-  initialStatus = "Available",
-}) => {
-  const [selected, setSelected] = useState(initialStatus);
-  useEffect(() => setSelected(initialStatus), [initialStatus]);
-
-  return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
-      <DialogTitle fontWeight={600}>Cập nhật trạng thái phòng</DialogTitle>
-      <DialogContent>
-        <Stack spacing={2} sx={{ mt: 1 }}>
-          <FormControl fullWidth>
-            <InputLabel id="change-status-label">Trạng thái</InputLabel>
-            <Select
-              labelId="change-status-label"
-              value={selected}
-              label="Trạng thái"
-              onChange={(e) => setSelected(e.target.value)}
-            >
-              {ROOM_STATUS_OPTIONS.map((s) => (
-                <MenuItem key={s.value} value={s.value}>
-                  {s.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <Typography variant="body2" color="text.secondary">
-            Trạng thái ảnh hưởng đến khả năng bán phòng. "Bảo trì" và "Ngừng
-            phục vụ" sẽ không thể nhận đặt phòng.
-          </Typography>
-        </Stack>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Hủy</Button>
-        <Button
-          variant="contained"
-          color="warning"
-          onClick={() => onSubmit(selected)}
-        >
-          Cập nhật
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
-};
+// Inline ChangeRoomStatusModal removed; now imported from components
 
 export default RoomManagementPage;
