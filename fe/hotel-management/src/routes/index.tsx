@@ -60,6 +60,9 @@ const ManagerRoomTypesPage = lazy(
 const ManagerRoomsPage = lazy(
   () => import("../pages/dashboard/manager/rooms/RoomManagementPage")
 );
+const ManagerMenusPage = lazy(
+  () => import("../pages/dashboard/manager/menus/MenuManagementPage")
+);
 // Loading component
 const LoadingFallback = () => (
   <Box
@@ -201,6 +204,14 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<div>Loading...</div>}>
             <ManagerRoomsPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "menus",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <ManagerMenusPage />
           </Suspense>
         ),
       },
