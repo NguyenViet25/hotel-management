@@ -76,3 +76,4 @@
 2025-11-08 - 1 - 01:39:20 UTC :: test: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — chinh sua tai lieu & mo ta API (khong doi hanh vi)
 2025-11-08 - 2 - 01:39:21 UTC :: fix: UC-33 Phan ca: gan ca, duyet doi ca/ngi phep. — them kiem soat loi & retry nhe (khong doi hanh vi)
 2025-11-08 - 3 - 01:39:24 UTC :: test: UC-26 Order: tao/chinh sua order, ghi chu, void/discount. — refactor luong xu ly cho ro rang (dat tieu chi toi thieu)
+2025-11-08 - 4 - 01:39:26 UTC :: build: UC-02 RBAC: thiet lap quyen thao tac theo vai tro/pham vi. — bo sung case canh bien & no-show (da review so bo)
