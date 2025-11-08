@@ -49,8 +49,8 @@ export const menuItems = {
   ],
   kitchen: [
     { title: "Tổng quan", path: "/kitchen/dashboard", icon: <DashboardIcon /> },
-    { title: "Orders", path: "/kitchen/orders", icon: <RestaurantIcon /> },
-    { title: "Menu", path: "/kitchen/menu", icon: <DiningIcon /> },
+    { title: "Yêu cầu", path: "/kitchen/orders", icon: <RestaurantIcon /> },
+    { title: "Quản lý", path: "/kitchen/management", icon: <DiningIcon /> },
   ],
   waiter: [
     { title: "Tổng quan", path: "/waiter/dashboard", icon: <DashboardIcon /> },

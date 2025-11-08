@@ -73,14 +73,18 @@ export interface ItemResponse<T> {
 }
 
 const menusApi = {
-  async getMenuItems(params: MenusQueryParams = {}): Promise<ListResponse<MenuItemDto>> {
+  async getMenuItems(
+    params: MenusQueryParams = {}
+  ): Promise<ListResponse<MenuItemDto>> {
     const qp = new URLSearchParams();
     if (params.groupId) qp.append("groupId", params.groupId);
     if (params.shift) qp.append("shift", params.shift);
     if (params.status) qp.append("status", params.status);
-    if (params.isActive !== undefined) qp.append("isActive", String(params.isActive));
+    if (params.isActive !== undefined)
+      qp.append("isActive", String(params.isActive));
     if (params.page !== undefined) qp.append("page", String(params.page));
-    if (params.pageSize !== undefined) qp.append("pageSize", String(params.pageSize));
+    if (params.pageSize !== undefined)
+      qp.append("pageSize", String(params.pageSize));
 
     const res = await axios.get(`/admin/menu?${qp.toString()}`);
     return res.data;
@@ -91,17 +95,24 @@ const menusApi = {
     return res.data;
   },
 
-  async createMenuItem(payload: CreateMenuItemRequest): Promise<ItemResponse<MenuItemDto>> {
+  async createMenuItem(
+    payload: CreateMenuItemRequest
+  ): Promise<ItemResponse<MenuItemDto>> {
     const res = await axios.post(`/admin/menu`, payload);
     return res.data;
   },
 
-  async updateMenuItem(id: string, payload: UpdateMenuItemRequest): Promise<ItemResponse<MenuItemDto>> {
+  async updateMenuItem(
+    id: string,
+    payload: UpdateMenuItemRequest
+  ): Promise<ItemResponse<MenuItemDto>> {
     const res = await axios.put(`/admin/menu/${id}`, payload);
     return res.data;
   },
 
-  async deleteMenuItem(id: string): Promise<{ isSuccess: boolean; message: string | null }> {
+  async deleteMenuItem(
+    id: string
+  ): Promise<{ isSuccess: boolean; message: string | null }> {
     const res = await axios.delete(`/admin/menu/${id}`);
     return res.data;
   },

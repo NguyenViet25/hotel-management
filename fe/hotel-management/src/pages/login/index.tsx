@@ -84,6 +84,9 @@ const LoginPage = () => {
       case "frontDesk":
         path = "/frontdesk/dashboard";
         break;
+      case "kitchen":
+        path = "/kitchen/dashboard";
+        break;
     }
     toast.success("Đăng nhập thành công!", { toastId: "welcome-back" });
     navigate(path);

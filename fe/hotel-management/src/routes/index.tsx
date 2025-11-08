@@ -63,6 +63,9 @@ const ManagerRoomsPage = lazy(
 const ManagerMenusPage = lazy(
   () => import("../pages/dashboard/manager/menus/MenuManagementPage")
 );
+const KitchenManagementPage = lazy(
+  () => import("../pages/dashboard/manager/kitchen/KitchenManagementPage")
+);
 // Loading component
 const LoadingFallback = () => (
   <Box
@@ -254,6 +257,14 @@ const router = createBrowserRouter([
       {
         path: "dashboard",
         element: <KitchenDashboard />,
+      },
+      {
+        path: "management",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <KitchenManagementPage />
+          </Suspense>
+        ),
       },
       // Add other kitchen routes here
     ],
