@@ -81,3 +81,4 @@
 2025-11-08 - 1 - 01:39:18 UTC :: chore: UC-20 Keo-tha: gan/doi phong truc quan, tranh trung. — toi uu truy van va bo nho (da review so bo)
 2025-11-08 - 2 - 01:39:20 UTC :: docs: UC-09 So do: hien thi layout, loc trang thai phong. — cap nhat mock data & seed test (can theo doi them)
 2025-11-08 - 3 - 01:39:23 UTC :: fix: UC-02 RBAC: thiet lap quyen thao tac theo vai tro/pham vi. — sua validate va bo sung thong bao loi (da review so bo)
+2025-11-08 - 4 - 01:39:24 UTC :: build: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — bo sung case canh bien & no-show (can theo doi them)
