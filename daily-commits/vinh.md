@@ -73,3 +73,4 @@
 2025-11-07 - 3 - 01:44:48 UTC :: ci: UC-21 Housekeeping: cap nhat Dirty/In-progress/Cleaned/Inspected. — don dep code va xoa doan thua (da kiem tra lint)
 2025-11-07 - 4 - 01:44:49 UTC :: refactor: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — tach chuc nang de de bao tri (dat tieu chi toi thieu)
 2025-11-07 - 5 - 01:44:52 UTC :: test: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — them log chi tiet phuc vu audit (da kiem tra lint)
+2025-11-08 - 1 - 01:39:20 UTC :: docs: UC-29 Thanh toan nha hang: thu tien, in hoa don, dong giao dich. — don dep code va xoa doan thua (dong bo voi BE/FE)
