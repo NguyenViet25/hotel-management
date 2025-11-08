@@ -8,6 +8,7 @@ import AdminDashboardPage from "../pages/dashboard/admin";
 import { menuItems } from "./menu-items";
 import ManagerDashboardPage from "../pages/dashboard/manager";
 import { useStore, type StoreState } from "../hooks/useStore";
+import OrdersManagementPage from "../pages/dashboard/waiter/orders/OrdersManagementPage";
 
 // Role-aware layout wrapper for standalone pages like /profile
 const RoleAwareLayout = () => {
@@ -238,6 +239,14 @@ const router = createBrowserRouter([
         path: "dashboard",
         element: <FrontDeskDashboard />,
       },
+      {
+        path: "orders",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <OrdersManagementPage />
+          </Suspense>
+        ),
+      },
       // Add other front desk routes here
     ],
   },
@@ -289,26 +298,7 @@ const router = createBrowserRouter([
       // Add other waiter routes here
     ],
   },
-  // Cashier routes
-  {
-    path: "/cashier",
-    element: (
-      <RequireAuth>
-        <MainLayout title="Cashier" menuItems={menuItems.cashier} />
-      </RequireAuth>
-    ),
-    children: [
-      {
-        path: "",
-        element: <Navigate to="/cashier/dashboard" replace />,
-      },
-      {
-        path: "dashboard",
-        element: <CashierDashboard />,
-      },
-      // Add other cashier routes here
-    ],
-  },
+
   // Accountant routes
   {
     path: "/accountant",

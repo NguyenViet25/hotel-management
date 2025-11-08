@@ -73,6 +73,7 @@ const LoginPage = () => {
 
   const navigateToCorrectPage = (user: User) => {
     const role = user?.roles[0]?.toLowerCase();
+    console.log("role", role);
     let path = "/dashboard";
     switch (role) {
       case "admin":
@@ -81,9 +82,10 @@ const LoginPage = () => {
       case "manager":
         path = "/manager/dashboard";
         break;
-      case "frontDesk":
+      case "frontdesk":
         path = "/frontdesk/dashboard";
         break;
+
       case "kitchen":
         path = "/kitchen/dashboard";
         break;

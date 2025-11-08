@@ -41,11 +41,8 @@ export const menuItems = {
       path: "/frontdesk/dashboard",
       icon: <DashboardIcon />,
     },
+    { title: "Yêu cầu", path: "/frontdesk/orders", icon: <RestaurantIcon /> },
     { title: "Bookings", path: "/frontdesk/bookings", icon: <HotelIcon /> },
-    { title: "Check-in/out", path: "/frontdesk/checkin", icon: <PersonIcon /> },
-    { title: "Room Status", path: "/frontdesk/rooms", icon: <RoomIcon /> },
-    { title: "Charges", path: "/frontdesk/charges", icon: <PaymentsIcon /> },
-    { title: "Calendar", path: "/frontdesk/calendar", icon: <ReceiptIcon /> },
   ],
   kitchen: [
     { title: "Tổng quan", path: "/kitchen/dashboard", icon: <DashboardIcon /> },
