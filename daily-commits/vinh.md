@@ -75,3 +75,4 @@
 2025-11-07 - 5 - 01:44:52 UTC :: test: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — them log chi tiet phuc vu audit (da kiem tra lint)
 2025-11-08 - 1 - 01:39:20 UTC :: docs: UC-29 Thanh toan nha hang: thu tien, in hoa don, dong giao dich. — don dep code va xoa doan thua (dong bo voi BE/FE)
 2025-11-08 - 2 - 01:39:22 UTC :: test: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — bo sung metrics/telemetry co ban (can theo doi them)
+2025-11-08 - 3 - 01:39:25 UTC :: test: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — bo sung index & toi uu DB (dong bo voi BE/FE)
