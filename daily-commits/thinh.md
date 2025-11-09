@@ -82,3 +82,4 @@
 2025-11-09 - 2 - 01:48:37 UTC :: build: UC-18 Room Move/Extend: doi phong, gia han dem o. — cap nhat cau hinh va kiem tra bien (da review so bo)
 2025-11-09 - 3 - 01:48:38 UTC :: fix: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — don dep code va xoa doan thua (da kiem tra lint)
 2025-11-09 - 4 - 01:48:40 UTC :: fix: UC-33 Phan ca: gan ca, duyet doi ca/ngi phep. — cai thien hieu nang render/list (can theo doi them)
+2025-11-09 - 5 - 01:48:41 UTC :: perf: UC-38 Audit Log: xem/loc thao tac, hanh dong, thoi gian. — fix race-condition nho trong thao tac (khong doi hanh vi)
