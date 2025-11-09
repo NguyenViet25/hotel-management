@@ -99,6 +99,8 @@ export interface BookingDetailsDto {
   id: string;
   hotelId: string;
   primaryGuestId?: string;
+  primaryGuestName?: string;
+  phoneNumber?: string;
   status: BookingStatus;
   depositAmount: number;
   discountAmount: number;
@@ -204,10 +206,22 @@ export interface BookingIntervalDto {
   guestName?: string;
 }
 
+// Summary row used for the table display
+export interface BookingSummaryDto {
+  id: string;
+  roomNumber?: string;
+  roomTypeName?: string;
+  startDate?: string;
+  endDate?: string;
+  status: BookingStatus;
+  depositAmount?: number;
+  primaryGuestName?: string;
+}
+
 const bookingsApi = {
   async list(
     query: BookingsQueryDto = {}
-  ): Promise<ListEnvelope<BookingDetailsDto>> {
+  ): Promise<ApiResponse<BookingDetailsDto[]>> {
     const qp = new URLSearchParams();
     if (query.hotelId) qp.append("hotelId", query.hotelId);
     if (query.status !== undefined) qp.append("status", String(query.status));

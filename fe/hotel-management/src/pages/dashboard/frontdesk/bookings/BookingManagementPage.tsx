@@ -1,8 +1,17 @@
-import { Alert, Box, Chip, Snackbar, Stack, Typography } from "@mui/material";
+import {
+  Alert,
+  Box,
+  Chip,
+  IconButton,
+  Snackbar,
+  Stack,
+  Tooltip,
+} from "@mui/material";
 import { Dayjs } from "dayjs";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import bookingsApi, {
-  type BookingDto,
+  type BookingDetailsDto,
+  type BookingRoomTypeDto,
   type BookingsQueryDto,
   type BookingStatus,
   type BookingSummaryDto,
@@ -12,21 +21,17 @@ import DataTable, {
   type Column,
 } from "../../../../components/common/DataTable";
 import PageTitle from "../../../../components/common/PageTitle";
-import ActionsCell from "./components/ActionsCell";
+import { useStore, type StoreState } from "../../../../hooks/useStore";
 import BookingFormModal from "./components/BookingFormModal";
 import CallLogModal from "./components/CallLogModal";
 import CancelBookingModal from "./components/CancelBookingModal";
-import ChangeRoomModal from "./components/ChangeRoomModal";
-import CheckInModal from "./components/CheckInModal";
-import CheckoutModal from "./components/CheckoutModal";
-import EditBookingFormModal from "./components/EditBookingFormModal";
-import ExtendStayModal from "./components/ExtendStayModal";
+
+import { Edit, RemoveRedEye } from "@mui/icons-material";
 import FiltersBar, {
   type StatusOption as FiltersStatusOption,
 } from "./components/FiltersBar";
 import RoomMapDialog from "./components/RoomMapDialog";
 import TopBarControls from "./components/TopBarControls";
-import { useStore, type StoreState } from "../../../../hooks/useStore";
 
 type StatusOption = { value: BookingStatus | ""; label: string };
 
@@ -41,7 +46,7 @@ const STATUS_OPTIONS: StatusOption[] = [
 
 const BookingManagementPage: React.FC = () => {
   // Data state
-  const [rows, setRows] = useState<BookingSummaryDto[]>([]);
+  const [rows, setRows] = useState<BookingDetailsDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -67,13 +72,8 @@ const BookingManagementPage: React.FC = () => {
   const [openCancel, setOpenCancel] = useState(false);
   const [openCallLog, setOpenCallLog] = useState(false);
   const [openRoomMap, setOpenRoomMap] = useState(false);
-  const [openCheckIn, setOpenCheckIn] = useState(false);
-  const [openChangeRoom, setOpenChangeRoom] = useState(false);
-  const [openExtendStay, setOpenExtendStay] = useState(false);
-  const [openCheckout, setOpenCheckout] = useState(false);
-  const [selectedBooking, setSelectedBooking] = useState<BookingDto | null>(
-    null
-  );
+  const [selectedBooking, setSelectedBooking] =
+    useState<BookingDetailsDto | null>(null);
 
   // Notifications
   const [snackbar, setSnackbar] = useState<{
@@ -129,7 +129,8 @@ const BookingManagementPage: React.FC = () => {
         if (noFilters) {
           // Fetch all bookings at once for initial view
           const all = await bookingsApi.getAll(baseQuery);
-          setRows(all as any);
+          console.log("all", all);
+          setRows(all);
           setTotal(all.length);
           setPage(1);
         } else {
@@ -139,7 +140,9 @@ const BookingManagementPage: React.FC = () => {
             pageSize,
           } as BookingsQueryDto;
           const res = await bookingsApi.list(query);
-          const data = (res as any).data || (res as any).items || [];
+          const data = ((res as any).data ||
+            (res as any).items ||
+            []) as BookingDetailsDto[];
           const meta = (res as any).meta || {};
           setRows(data);
           setTotal(meta.total ?? data.length ?? 0);
@@ -184,118 +187,50 @@ const BookingManagementPage: React.FC = () => {
     }
   };
 
-  const openCancelModal = async (summary: BookingSummaryDto) => {
-    try {
-      const res = await bookingsApi.getById(summary.id);
-      if ((res as any).isSuccess && (res as any).data) {
-        setSelectedBooking((res as any).data);
-        setOpenCancel(true);
-      }
-    } catch (err) {
-      setSnackbar({
-        open: true,
-        message: "Không thể mở hủy booking",
-        severity: "error",
-      });
-    }
-  };
-
-  const openCallLogModal = async (summary: BookingSummaryDto) => {
-    try {
-      const res = await bookingsApi.getById(summary.id);
-      if ((res as any).isSuccess && (res as any).data) {
-        setSelectedBooking((res as any).data);
-        setOpenCallLog(true);
-      }
-    } catch (err) {
-      setSnackbar({
-        open: true,
-        message: "Không thể mở xác nhận cuộc gọi",
-        severity: "error",
-      });
-    }
-  };
-
-  const openCheckInModal = async (summary: BookingSummaryDto) => {
-    try {
-      const res = await bookingsApi.getById(summary.id);
-      if ((res as any)?.isSuccess && (res as any)?.data) {
-        setSelectedBooking((res as any).data);
-        setOpenCheckIn(true);
-      }
-    } catch (err) {
-      setSnackbar({
-        open: true,
-        message: "Không thể mở check-in",
-        severity: "error",
-      });
-    }
-  };
-
-  const openChangeRoomModal = async (summary: BookingSummaryDto) => {
-    try {
-      const res = await bookingsApi.getById(summary.id);
-      if ((res as any)?.isSuccess && (res as any)?.data) {
-        setSelectedBooking((res as any).data);
-        setOpenChangeRoom(true);
-      }
-    } catch (err) {
-      setSnackbar({
-        open: true,
-        message: "Không thể mở đổi phòng",
-        severity: "error",
-      });
-    }
-  };
-
-  const openExtendStayModal = async (summary: BookingSummaryDto) => {
-    try {
-      const res = await bookingsApi.getById(summary.id);
-      if ((res as any)?.isSuccess && (res as any)?.data) {
-        setSelectedBooking((res as any).data);
-        setOpenExtendStay(true);
-      }
-    } catch (err) {
-      setSnackbar({
-        open: true,
-        message: "Không thể mở gia hạn",
-        severity: "error",
-      });
-    }
-  };
-
-  const openCheckoutModal = async (summary: BookingSummaryDto) => {
-    try {
-      const res = await bookingsApi.getById(summary.id);
-      if ((res as any)?.isSuccess && (res as any)?.data) {
-        setSelectedBooking((res as any).data);
-        setOpenCheckout(true);
-      }
-    } catch (err) {
-      setSnackbar({
-        open: true,
-        message: "Không thể mở check-out",
-        severity: "error",
-      });
-    }
-  };
-
-  const columns: Column<BookingSummaryDto & { actions?: React.ReactNode }>[] = [
-    { id: "id", label: "ID", minWidth: 140 },
-    { id: "roomNumber", label: "Phòng", minWidth: 80 },
-    { id: "roomTypeName", label: "Loại phòng", minWidth: 120 },
+  const columns: Column<BookingDetailsDto & { actions?: React.ReactNode }>[] = [
     {
-      id: "startDate",
-      label: "Từ",
-      minWidth: 140,
-      format: (v) => (v ? new Date(v).toLocaleString() : ""),
+      id: "createdAt",
+      label: "Ngày đặt",
+      minWidth: 120,
+      format: (s) => {
+        return s ? new Date(s).toLocaleDateString() : "";
+      },
+    },
+    { id: "primaryGuestName", label: "Khách", minWidth: 120 },
+    { id: "phoneNumber", label: "Số điện thoại", minWidth: 120 },
+    {
+      id: "bookingRoomTypes",
+      label: "Loại phòng ",
+      format: (s) => {
+        return s?.map((t: BookingRoomTypeDto) => t.roomTypeName).join(", ");
+      },
+      minWidth: 160,
     },
     {
-      id: "endDate",
-      label: "Đến",
-      minWidth: 140,
-      format: (v) => (v ? new Date(v).toLocaleString() : ""),
+      id: "totalAmount",
+      label: "Tổng cộng",
+      minWidth: 120,
+      format: (v) => (typeof v === "number" ? v.toLocaleString() : ""),
     },
+    {
+      id: "discountAmount",
+      label: "Giảm giá",
+      minWidth: 120,
+      format: (v) => (typeof v === "number" ? v.toLocaleString() : ""),
+    },
+    {
+      id: "depositAmount",
+      label: "Cọc",
+      minWidth: 120,
+      format: (v) => (typeof v === "number" ? v.toLocaleString() : ""),
+    },
+    {
+      id: "leftAmount",
+      label: "Còn lại",
+      minWidth: 120,
+      format: (v) => (typeof v === "number" ? v.toLocaleString() : ""),
+    },
+
     {
       id: "status",
       label: "Trạng thái",
@@ -321,30 +256,31 @@ const BookingManagementPage: React.FC = () => {
         return <Chip label={m.label} color={m.color} size="small" />;
       },
     },
-    {
-      id: "depositAmount",
-      label: "Cọc",
-      minWidth: 80,
-      format: (v) => (typeof v === "number" ? v.toLocaleString() : ""),
-    },
-    { id: "primaryGuestName", label: "Khách", minWidth: 160 },
-    { id: "actions", label: "Tác vụ", minWidth: 520, align: "center" },
+
+    { id: "actions", label: "Tác vụ", minWidth: 100, align: "center" },
   ];
 
   const tableData = useMemo(() => {
     return rows.map((r) => ({
       ...r,
       actions: (
-        <ActionsCell
-          summary={r}
-          onEdit={openEditModal}
-          onCancel={openCancelModal}
-          onCallLog={openCallLogModal}
-          onCheckIn={openCheckInModal}
-          onChangeRoom={openChangeRoomModal}
-          onExtendStay={openExtendStayModal}
-          onCheckout={openCheckoutModal}
-        />
+        <Stack
+          direction="row"
+          spacing={1}
+          justifyContent="center"
+          sx={{ flexWrap: "wrap" }}
+        >
+          <Tooltip title="Xem chi tiết">
+            <IconButton onClick={() => {}}>
+              <RemoveRedEye />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Chỉnh sửa">
+            <IconButton onClick={() => {}}>
+              <Edit />
+            </IconButton>
+          </Tooltip>
+        </Stack>
       ),
     }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -391,8 +327,8 @@ const BookingManagementPage: React.FC = () => {
       {/* Table */}
       <DataTable
         title="Danh sách booking"
-        columns={columns as any}
-        data={tableData as any}
+        columns={columns}
+        data={tableData}
         loading={loading}
         pagination={{
           page,
@@ -406,7 +342,6 @@ const BookingManagementPage: React.FC = () => {
       {/* Create */}
       <BookingFormModal
         open={openCreate}
-        hotelId={hotelId}
         onClose={() => setOpenCreate(false)}
         onSubmitted={() => {
           setSnackbar({
@@ -415,21 +350,6 @@ const BookingManagementPage: React.FC = () => {
             severity: "success",
           });
           fetchList(1);
-        }}
-      />
-
-      {/* Edit */}
-      <EditBookingFormModal
-        open={openEdit}
-        onClose={() => setOpenEdit(false)}
-        booking={selectedBooking}
-        onSubmitted={() => {
-          setSnackbar({
-            open: true,
-            message: "Cập nhật booking thành công",
-            severity: "success",
-          });
-          fetchList();
         }}
       />
 
@@ -457,66 +377,6 @@ const BookingManagementPage: React.FC = () => {
           setSnackbar({
             open: true,
             message: "Đã ghi nhận cuộc gọi",
-            severity: "success",
-          });
-          fetchList();
-        }}
-      />
-
-      {/* Check-in */}
-      <CheckInModal
-        open={openCheckIn}
-        onClose={() => setOpenCheckIn(false)}
-        booking={selectedBooking}
-        onSubmitted={() => {
-          setSnackbar({
-            open: true,
-            message: "Đã check-in",
-            severity: "success",
-          });
-          fetchList();
-        }}
-      />
-
-      {/* Change Room */}
-      <ChangeRoomModal
-        open={openChangeRoom}
-        onClose={() => setOpenChangeRoom(false)}
-        booking={selectedBooking}
-        onSubmitted={() => {
-          setSnackbar({
-            open: true,
-            message: "Đã đổi phòng",
-            severity: "success",
-          });
-          fetchList();
-        }}
-      />
-
-      {/* Extend Stay */}
-      <ExtendStayModal
-        open={openExtendStay}
-        onClose={() => setOpenExtendStay(false)}
-        booking={selectedBooking}
-        onSubmitted={() => {
-          setSnackbar({
-            open: true,
-            message: "Đã gia hạn",
-            severity: "success",
-          });
-          fetchList();
-        }}
-      />
-
-      {/* Checkout */}
-      <CheckoutModal
-        open={openCheckout}
-        onClose={() => setOpenCheckout(false)}
-        booking={selectedBooking}
-        onSubmitted={(summary) => {
-          setSnackbar({
-            open: true,
-            message: summary || "Đã check-out",
             severity: "success",
           });
           fetchList();

@@ -133,6 +133,7 @@ public class BookingDetailsDto
     public Guid HotelId { get; set; }
     public Guid? PrimaryGuestId { get; set; }
     public string? PrimaryGuestName { get; set; }
+    public string? PhoneNumber { get; set; }
     public BookingStatus Status { get; set; }
     public decimal DepositAmount { get; set; }
     public decimal DiscountAmount { get; set; }

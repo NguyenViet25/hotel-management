@@ -209,7 +209,10 @@ const BookingFormModal: React.FC<Props> = ({ open, onClose, onSubmitted }) => {
         deposit: values.depositAmount || 0,
         discount: values.discountAmount || 0,
         total: values.totalAmount || 0,
-        left: values.depositAmount || 0,
+        left:
+          (values.totalAmount || 0) -
+          (values.depositAmount || 0) -
+          (values.discountAmount || 0),
         notes: values.notes || undefined,
         roomTypes: values.roomTypes.map((rt) => ({
           roomTypeId: rt.roomId,

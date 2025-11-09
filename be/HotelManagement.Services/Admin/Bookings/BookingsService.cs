@@ -292,6 +292,7 @@ public class BookingsService : IBookingsService
         try
         {
             var q = _bookingRepo.Query()
+                .Include(x => x.PrimaryGuest)
                 .Include(b => b.BookingRoomTypes)
                 .ThenInclude(rt => rt.BookingRooms)
                 .Where(x => true);
@@ -344,7 +345,8 @@ public class BookingsService : IBookingsService
                 Id = b.Id,
                 HotelId = b.HotelId,
                 PrimaryGuestId = b.PrimaryGuestId,
-                PrimaryGuestName = (b.PrimaryGuestId.HasValue && guestMap.ContainsKey(b.PrimaryGuestId.Value)) ? guestMap[b.PrimaryGuestId.Value] : null,
+                PrimaryGuestName = b.PrimaryGuest?.FullName,
+                PhoneNumber = b.PrimaryGuest?.Phone,
                 Status = b.Status,
                 DepositAmount = b.DepositAmount,
                 DiscountAmount = b.DiscountAmount,
