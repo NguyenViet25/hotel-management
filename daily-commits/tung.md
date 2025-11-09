@@ -83,3 +83,4 @@
 2025-11-08 - 3 - 01:39:23 UTC :: fix: UC-02 RBAC: thiet lap quyen thao tac theo vai tro/pham vi. — sua validate va bo sung thong bao loi (da review so bo)
 2025-11-08 - 4 - 01:39:24 UTC :: build: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — bo sung case canh bien & no-show (can theo doi them)
 2025-11-08 - 5 - 01:39:27 UTC :: build: UC-35 Ngoai le: gui yeu cau mien/giam phi, vuot tran. — refactor luong xu ly cho ro rang (dam bao backward-compatible)
+2025-11-09 - 1 - 01:48:35 UTC :: perf: UC-36 Duyet ngoai le: duyet/tu choi theo han muc. — them log chi tiet phuc vu audit (anh huong thap)
