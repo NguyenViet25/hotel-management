@@ -83,3 +83,8 @@
 2025-11-08 - 3 - 01:39:23 UTC :: fix: UC-02 RBAC: thiet lap quyen thao tac theo vai tro/pham vi. — sua validate va bo sung thong bao loi (da review so bo)
 2025-11-08 - 4 - 01:39:24 UTC :: build: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — bo sung case canh bien & no-show (can theo doi them)
 2025-11-08 - 5 - 01:39:27 UTC :: build: UC-35 Ngoai le: gui yeu cau mien/giam phi, vuot tran. — refactor luong xu ly cho ro rang (dam bao backward-compatible)
+2025-11-09 - 1 - 01:48:35 UTC :: perf: UC-36 Duyet ngoai le: duyet/tu choi theo han muc. — them log chi tiet phuc vu audit (anh huong thap)
+2025-11-09 - 2 - 01:48:38 UTC :: refactor: UC-34 Cham cong: ghi nhan diem danh, ban giao ca. — bo sung metrics/telemetry co ban (anh huong thap)
+2025-11-09 - 3 - 01:48:40 UTC :: refactor: UC-42 Phan quyen: thiet lap quyen theo co so. — chinh sua tai lieu & mo ta API (da smoke test)
+2025-11-09 - 4 - 01:48:42 UTC :: perf: UC-28 Room charge F&B: ghi hoa don ban an vao folio. — refactor luong xu ly cho ro rang (chuan bi cho tinh nang tiep theo)
+2025-11-09 - 5 - 01:48:43 UTC :: docs: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — kiem tra tuong thich mui gio/tien te (da kiem tra lint)
