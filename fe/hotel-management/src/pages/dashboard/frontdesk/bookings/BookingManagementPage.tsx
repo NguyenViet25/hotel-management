@@ -34,6 +34,10 @@ import EditBookingFormModal from "./components/EditBookingFormModal";
 import CancelBookingModal from "./components/CancelBookingModal";
 import CallLogModal from "./components/CallLogModal";
 import RoomMapTimeline from "./components/RoomMapTimeline";
+import CheckInModal from "./components/CheckInModal";
+import ChangeRoomModal from "./components/ChangeRoomModal";
+import ExtendStayModal from "./components/ExtendStayModal";
+import CheckoutModal from "./components/CheckoutModal";
 
 type StatusOption = { value: number | ""; label: string };
 
@@ -74,6 +78,10 @@ const BookingManagementPage: React.FC = () => {
   const [openCancel, setOpenCancel] = useState(false);
   const [openCallLog, setOpenCallLog] = useState(false);
   const [openRoomMap, setOpenRoomMap] = useState(false);
+  const [openCheckIn, setOpenCheckIn] = useState(false);
+  const [openChangeRoom, setOpenChangeRoom] = useState(false);
+  const [openExtendStay, setOpenExtendStay] = useState(false);
+  const [openCheckout, setOpenCheckout] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<BookingDto | null>(
     null
   );
@@ -254,14 +262,14 @@ const BookingManagementPage: React.FC = () => {
       format: (v) => (typeof v === "number" ? v.toLocaleString() : ""),
     },
     { id: "primaryGuestName", label: "Khách", minWidth: 160 },
-    { id: "actions", label: "Tác vụ", minWidth: 220, align: "center" },
+    { id: "actions", label: "Tác vụ", minWidth: 520, align: "center" },
   ];
 
   const tableData = useMemo(() => {
     return rows.map((r) => ({
       ...r,
       actions: (
-        <Stack direction="row" spacing={1} justifyContent="center">
+        <Stack direction="row" spacing={1} justifyContent="center" sx={{ flexWrap: "wrap" }}>
           <Button size="small" variant="text" onClick={() => openEditModal(r)}>
             Sửa
           </Button>
@@ -280,6 +288,60 @@ const BookingManagementPage: React.FC = () => {
             onClick={() => openCallLogModal(r)}
           >
             Gọi xác nhận
+          </Button>
+          <Button
+            size="small"
+            variant="text"
+            color="success"
+            onClick={async () => {
+              const res = await bookingsApi.getById(r.id);
+              if ((res as any)?.isSuccess && (res as any)?.data) {
+                setSelectedBooking((res as any).data);
+                setOpenCheckIn(true);
+              }
+            }}
+          >
+            Nhận phòng
+          </Button>
+          <Button
+            size="small"
+            variant="text"
+            onClick={async () => {
+              const res = await bookingsApi.getById(r.id);
+              if ((res as any)?.isSuccess && (res as any)?.data) {
+                setSelectedBooking((res as any).data);
+                setOpenChangeRoom(true);
+              }
+            }}
+          >
+            Đổi phòng
+          </Button>
+          <Button
+            size="small"
+            variant="text"
+            onClick={async () => {
+              const res = await bookingsApi.getById(r.id);
+              if ((res as any)?.isSuccess && (res as any)?.data) {
+                setSelectedBooking((res as any).data);
+                setOpenExtendStay(true);
+              }
+            }}
+          >
+            Gia hạn
+          </Button>
+          <Button
+            size="small"
+            variant="text"
+            color="primary"
+            onClick={async () => {
+              const res = await bookingsApi.getById(r.id);
+              if ((res as any)?.isSuccess && (res as any)?.data) {
+                setSelectedBooking((res as any).data);
+                setOpenCheckout(true);
+              }
+            }}
+          >
+            Check-out
           </Button>
         </Stack>
       ),
@@ -464,6 +526,50 @@ const BookingManagementPage: React.FC = () => {
             message: "Đã ghi nhận cuộc gọi",
             severity: "success",
           });
+          fetchList();
+        }}
+      />
+
+      {/* Check-in */}
+      <CheckInModal
+        open={openCheckIn}
+        onClose={() => setOpenCheckIn(false)}
+        booking={selectedBooking}
+        onSubmitted={() => {
+          setSnackbar({ open: true, message: "Đã check-in", severity: "success" });
+          fetchList();
+        }}
+      />
+
+      {/* Change Room */}
+      <ChangeRoomModal
+        open={openChangeRoom}
+        onClose={() => setOpenChangeRoom(false)}
+        booking={selectedBooking}
+        onSubmitted={() => {
+          setSnackbar({ open: true, message: "Đã đổi phòng", severity: "success" });
+          fetchList();
+        }}
+      />
+
+      {/* Extend Stay */}
+      <ExtendStayModal
+        open={openExtendStay}
+        onClose={() => setOpenExtendStay(false)}
+        booking={selectedBooking}
+        onSubmitted={() => {
+          setSnackbar({ open: true, message: "Đã gia hạn", severity: "success" });
+          fetchList();
+        }}
+      />
+
+      {/* Checkout */}
+      <CheckoutModal
+        open={openCheckout}
+        onClose={() => setOpenCheckout(false)}
+        booking={selectedBooking}
+        onSubmitted={(summary) => {
+          setSnackbar({ open: true, message: summary || "Đã check-out", severity: "success" });
           fetchList();
         }}
       />
