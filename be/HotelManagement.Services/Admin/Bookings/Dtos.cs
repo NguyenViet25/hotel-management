@@ -132,6 +132,7 @@ public class BookingDetailsDto
     public Guid Id { get; set; }
     public Guid HotelId { get; set; }
     public Guid? PrimaryGuestId { get; set; }
+    public string? PrimaryGuestName { get; set; }
     public BookingStatus Status { get; set; }
     public decimal DepositAmount { get; set; }
     public decimal DiscountAmount { get; set; }
@@ -165,4 +166,36 @@ public class RoomMapQueryDto
     [Required]
     public DateTime Date { get; set; }
     public Guid? HotelId { get; set; }
+}
+
+public class BookingsQueryDto
+{
+    public Guid? HotelId { get; set; }
+    public BookingStatus? Status { get; set; }
+    public DateTime? StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
+    public string? GuestName { get; set; }
+    public string? RoomNumber { get; set; }
+    public int Page { get; set; } = 1;
+    public int PageSize { get; set; } = 10;
+    public string? SortBy { get; set; }
+    public string? SortDir { get; set; }
+}
+
+// Compact interval used by room schedule timeline
+public class BookingIntervalDto
+{
+    public Guid BookingId { get; set; }
+    public DateTime Start { get; set; }
+    public DateTime End { get; set; }
+    public BookingStatus Status { get; set; }
+    public string? GuestName { get; set; }
+}
+
+public class RoomAvailabilityQueryDto
+{
+    public Guid? HotelId { get; set; }
+    public DateTime? From { get; set; }
+    public DateTime? To { get; set; }
+    public Guid? TypeId { get; set; }
 }

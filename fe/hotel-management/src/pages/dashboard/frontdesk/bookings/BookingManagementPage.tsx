@@ -108,24 +108,43 @@ const BookingManagementPage: React.FC = () => {
     async (pageToLoad?: number) => {
       setLoading(true);
       try {
-        const query: BookingsQueryDto = {
+        const baseQuery: BookingsQueryDto = {
           hotelId: hotelId || undefined,
           status: status === "" ? undefined : (status as BookingStatus),
           startDate: fromDate ? fromDate.toDate().toISOString() : undefined,
           endDate: toDate ? toDate.toDate().toISOString() : undefined,
           guestName: guestName || undefined,
           roomNumber: roomNumber || undefined,
-          page: pageToLoad ?? page,
-          pageSize,
           sortBy: "createdAt",
           sortDir: "desc",
-        };
-        const res = await bookingsApi.list(query);
-        const data = (res as any).data || (res as any).items || [];
-        const meta = (res as any).meta || {};
-        setRows(data);
-        setTotal(meta.total ?? data.length ?? 0);
-        if (pageToLoad) setPage(pageToLoad);
+        } as any;
+
+        const noFilters =
+          !baseQuery.status &&
+          !baseQuery.startDate &&
+          !baseQuery.endDate &&
+          !baseQuery.guestName &&
+          !baseQuery.roomNumber;
+
+        if (noFilters) {
+          // Fetch all bookings at once for initial view
+          const all = await bookingsApi.getAll(baseQuery);
+          setRows(all as any);
+          setTotal(all.length);
+          setPage(1);
+        } else {
+          const query = {
+            ...baseQuery,
+            page: pageToLoad ?? page,
+            pageSize,
+          } as BookingsQueryDto;
+          const res = await bookingsApi.list(query);
+          const data = (res as any).data || (res as any).items || [];
+          const meta = (res as any).meta || {};
+          setRows(data);
+          setTotal(meta.total ?? data.length ?? 0);
+          if (pageToLoad) setPage(pageToLoad);
+        }
       } catch (err) {
         setSnackbar({
           open: true,

@@ -1,4 +1,4 @@
-﻿using HotelManagement.Domain;
+using HotelManagement.Domain;
 using HotelManagement.Domain.Repositories;
 using HotelManagement.Repository.Common;
 using HotelManagement.Services.Admin.Bookings.Dtos;
@@ -232,6 +232,7 @@ public class BookingsService : IBookingsService
                 Id = b.Id,
                 HotelId = b.HotelId,
                 PrimaryGuestId = b.PrimaryGuestId,
+                PrimaryGuestName = (await _guestRepo.FindAsync(b.PrimaryGuestId ?? Guid.Empty))?.FullName,
                 Status = b.Status,
                 DepositAmount = b.DepositAmount,
                 DiscountAmount = b.DiscountAmount,
@@ -283,6 +284,100 @@ public class BookingsService : IBookingsService
         catch (Exception ex)
         {
             return ApiResponse<BookingDetailsDto>.Fail($"Error retrieving booking: {ex.Message}");
+        }
+    }
+
+    public async Task<ApiResponse<List<BookingDetailsDto>>> ListAsync(BookingsQueryDto query)
+    {
+        try
+        {
+            var q = _bookingRepo.Query()
+                .Include(b => b.BookingRoomTypes)
+                .ThenInclude(rt => rt.BookingRooms)
+                .Where(x => true);
+
+            if (query.HotelId.HasValue)
+                q = q.Where(b => b.HotelId == query.HotelId.Value);
+            if (query.Status.HasValue)
+                q = q.Where(b => b.Status == query.Status.Value);
+            if (query.StartDate.HasValue)
+                q = q.Where(b => b.CreatedAt >= query.StartDate.Value);
+            if (query.EndDate.HasValue)
+                q = q.Where(b => b.CreatedAt <= query.EndDate.Value);
+            if (!string.IsNullOrWhiteSpace(query.GuestName))
+            {
+                var gn = query.GuestName!.Trim();
+                q = q.Where(b => (_guestRepo.Query().Any(g => g.Id == b.PrimaryGuestId && (g.FullName ?? "").Contains(gn))));
+            }
+            if (!string.IsNullOrWhiteSpace(query.RoomNumber))
+            {
+                var rn = query.RoomNumber!.Trim();
+                q = q.Where(b => b.BookingRoomTypes.Any(rt => rt.BookingRooms.Any(r => (r.RoomName ?? "").Contains(rn))));
+            }
+
+            // Sorting
+            var sortDir = (query.SortDir ?? "desc").ToLower();
+            var sortBy = (query.SortBy ?? "createdAt").ToLower();
+            if (sortBy == "createdAt")
+            {
+                q = sortDir == "asc" ? q.OrderBy(b => b.CreatedAt) : q.OrderByDescending(b => b.CreatedAt);
+            }
+            else
+            {
+                q = q.OrderByDescending(b => b.CreatedAt);
+            }
+
+            var total = await q.CountAsync();
+            var items = await q
+                .Skip((query.Page - 1) * query.PageSize)
+                .Take(query.PageSize)
+                .ToListAsync();
+
+            // Preload guests
+            var primaryGuestIds = items.Select(b => b.PrimaryGuestId).Where(id => id.HasValue).Select(id => id!.Value).Distinct().ToList();
+            var guestMap = await _guestRepo.Query()
+                .Where(g => primaryGuestIds.Contains(g.Id))
+                .ToDictionaryAsync(g => g.Id, g => g.FullName);
+
+            var dtos = items.Select(b => new BookingDetailsDto
+            {
+                Id = b.Id,
+                HotelId = b.HotelId,
+                PrimaryGuestId = b.PrimaryGuestId,
+                PrimaryGuestName = (b.PrimaryGuestId.HasValue && guestMap.ContainsKey(b.PrimaryGuestId.Value)) ? guestMap[b.PrimaryGuestId.Value] : null,
+                Status = b.Status,
+                DepositAmount = b.DepositAmount,
+                DiscountAmount = b.DiscountAmount,
+                TotalAmount = b.TotalAmount,
+                LeftAmount = b.LeftAmount,
+                CreatedAt = b.CreatedAt,
+                BookingRoomTypes = b.BookingRoomTypes.Select(rt => new BookingRoomTypeDto
+                {
+                    BookingRoomTypeId = rt.BookingRoomTypeId,
+                    RoomTypeId = rt.RoomTypeId,
+                    RoomTypeName = rt.RoomTypeName,
+                    Capacity = rt.Capacity,
+                    Price = rt.Price,
+                    TotalRoom = rt.TotalRoom,
+                    BookingRooms = rt.BookingRooms.Select(r => new BookingRoomDto
+                    {
+                        BookingRoomId = r.BookingRoomId,
+                        RoomId = r.RoomId,
+                        RoomName = r.RoomName,
+                        StartDate = r.StartDate,
+                        EndDate = r.EndDate,
+                        BookingStatus = r.BookingStatus,
+                        Guests = new List<BookingGuestDto>()
+                    }).ToList()
+                }).ToList(),
+                CallLogs = new List<CallLogDto>()
+            }).ToList();
+
+            return ApiResponse<List<BookingDetailsDto>>.Ok(dtos, meta: new { total, page = query.Page, pageSize = query.PageSize });
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<List<BookingDetailsDto>>.Fail($"Error listing bookings: {ex.Message}");
         }
     }
 
@@ -485,6 +580,33 @@ public class BookingsService : IBookingsService
         }
     }
 
+    public async Task<ApiResponse<List<CallLogDto>>> GetCallLogsAsync(Guid bookingId)
+    {
+        try
+        {
+            var booking = await _bookingRepo.FindAsync(bookingId);
+            if (booking == null) return ApiResponse<List<CallLogDto>>.Fail("Booking not found");
+
+            var logs = await _callLogRepo.Query()
+                .Where(cl => cl.BookingId == bookingId)
+                .OrderByDescending(cl => cl.CallTime)
+                .Select(cl => new CallLogDto
+                {
+                    Id = cl.Id,
+                    CallTime = cl.CallTime,
+                    Result = cl.Result,
+                    Notes = cl.Notes,
+                    StaffUserId = cl.StaffUserId
+                }).ToListAsync();
+
+            return ApiResponse<List<CallLogDto>>.Ok(logs);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<List<CallLogDto>>.Fail($"Error retrieving call logs: {ex.Message}");
+        }
+    }
+
     public async Task<ApiResponse<List<RoomMapItemDto>>> GetRoomMapAsync(RoomMapQueryDto query)
     {
         try
@@ -517,6 +639,66 @@ public class BookingsService : IBookingsService
         catch (Exception ex)
         {
             return ApiResponse<List<RoomMapItemDto>>.Fail($"Error building room map: {ex.Message}");
+        }
+    }
+
+    public async Task<ApiResponse<object>> GetRoomAvailabilityAsync(RoomAvailabilityQueryDto query)
+    {
+        try
+        {
+            var q = _roomRepo.Query().Include(r => r.RoomType).Where(r => true);
+            if (query.HotelId.HasValue) q = q.Where(r => r.HotelId == query.HotelId.Value);
+            if (query.TypeId.HasValue) q = q.Where(r => r.RoomTypeId == query.TypeId.Value);
+            var rooms = await q.ToListAsync();
+
+            var from = query.From?.Date ?? DateTime.UtcNow.Date;
+            var to = query.To?.Date ?? from.AddDays(1);
+
+            var roomIds = rooms.Select(r => r.Id).ToList();
+            var overlapping = await _bookingRoomRepo.Query()
+                .Where(br => roomIds.Contains(br.RoomId) && br.BookingStatus != BookingRoomStatus.Cancelled)
+                .Where(br => from < br.EndDate && to > br.StartDate)
+                .Select(br => br.RoomId)
+                .Distinct()
+                .ToListAsync();
+
+            var available = rooms.Where(r => !overlapping.Contains(r.Id))
+                .Select(r => new { roomId = r.Id, roomNumber = r.Number, roomTypeId = r.RoomTypeId, roomTypeName = r.RoomType?.Name ?? string.Empty }).ToList();
+
+            var result = new { availableRooms = available, totalAvailable = available.Count };
+            return ApiResponse<object>.Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<object>.Fail($"Error checking availability: {ex.Message}");
+        }
+    }
+
+    public async Task<ApiResponse<List<BookingIntervalDto>>> GetRoomScheduleAsync(Guid roomId, DateTime from, DateTime to)
+    {
+        try
+        {
+            var intervals = await _bookingRoomRepo.Query()
+                .Include(br => br.BookingRoomType)
+                .ThenInclude(brt => brt.Booking)
+                .Where(br => br.RoomId == roomId && br.BookingStatus != BookingRoomStatus.Cancelled)
+                .Where(br => from < br.EndDate && to > br.StartDate)
+                .Select(br => new BookingIntervalDto
+                {
+                    BookingId = br.BookingRoomType.BookingId,
+                    Start = br.StartDate,
+                    End = br.EndDate,
+                    Status = br.BookingRoomType.Booking.Status,
+                    GuestName = (br.BookingRoomType.Booking.PrimaryGuestId.HasValue) ?
+                        _guestRepo.Query().Where(g => g.Id == br.BookingRoomType.Booking.PrimaryGuestId.Value).Select(g => g.FullName).FirstOrDefault() : null
+                })
+                .ToListAsync();
+
+            return ApiResponse<List<BookingIntervalDto>>.Ok(intervals);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<List<BookingIntervalDto>>.Fail($"Error retrieving room schedule: {ex.Message}");
         }
     }
 

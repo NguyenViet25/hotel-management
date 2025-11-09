@@ -223,6 +223,26 @@ const bookingsApi = {
     return res.data;
   },
 
+  // Fetch all bookings in one call by using a large page size.
+  async getAll(
+    query: Partial<BookingsQueryDto> = {}
+  ): Promise<BookingDetailsDto[]> {
+    const qp = new URLSearchParams();
+    if (query.hotelId) qp.append("hotelId", query.hotelId);
+    if (query.status !== undefined) qp.append("status", String(query.status));
+    if (query.startDate) qp.append("startDate", query.startDate);
+    if (query.endDate) qp.append("endDate", query.endDate);
+    if (query.guestName) qp.append("guestName", query.guestName);
+    if (query.roomNumber) qp.append("roomNumber", query.roomNumber);
+    qp.append("page", "1");
+    qp.append("pageSize", "1000");
+    if (query.sortBy) qp.append("sortBy", query.sortBy);
+    if (query.sortDir) qp.append("sortDir", query.sortDir as any);
+    const res = await axios.get(`/admin/bookings?${qp.toString()}`);
+    const body = res.data as any;
+    return body?.data || body?.items || [];
+  },
+
   async getById(id: string): Promise<ApiResponse<BookingDetailsDto>> {
     const res = await axios.get(`/admin/bookings/${id}`);
     return res.data;
