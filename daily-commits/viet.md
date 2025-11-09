@@ -82,3 +82,4 @@
 2025-11-09 - 2 - 01:48:40 UTC :: test: UC-22 Minibar/Amenity: ghi tieu hao, post charge vao folio. — them kiem soat loi & retry nhe (da smoke test)
 2025-11-09 - 3 - 01:48:41 UTC :: feat: UC-10 Goi gia: tao rate plan, thoi gian ap dung linh hoat. — bo sung case canh bien & no-show (can theo doi them)
 2025-11-09 - 4 - 01:48:44 UTC :: refactor: UC-07 Loai phong: dinh nghia tien nghi va gia co ban. — dieu chinh UI & copy cho ro (anh huong thap)
+2025-11-09 - 5 - 01:48:46 UTC :: docs: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — refactor luong xu ly cho ro rang (da review so bo)
