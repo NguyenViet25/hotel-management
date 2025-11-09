@@ -7,7 +7,6 @@ import bookingsApi, {
   type BookingStatus,
   type BookingSummaryDto,
 } from "../../../../api/bookingsApi";
-import roomsApi, { type RoomDto } from "../../../../api/roomsApi";
 import roomTypesApi, { type RoomType } from "../../../../api/roomTypesApi";
 import DataTable, {
   type Column,
@@ -27,6 +26,7 @@ import FiltersBar, {
 } from "./components/FiltersBar";
 import RoomMapDialog from "./components/RoomMapDialog";
 import TopBarControls from "./components/TopBarControls";
+import { useStore, type StoreState } from "../../../../hooks/useStore";
 
 type StatusOption = { value: BookingStatus | ""; label: string };
 
@@ -48,7 +48,8 @@ const BookingManagementPage: React.FC = () => {
   const [pageSize] = useState(10);
 
   // Filters
-  const [hotelId, setHotelId] = useState<string>("");
+  const { user } = useStore<StoreState>((state) => state);
+  const hotelId = user?.hotelId || "";
   const [status, setStatus] = useState<BookingStatus | "">("");
   const [fromDate, setFromDate] = useState<Dayjs | null>(null);
   const [toDate, setToDate] = useState<Dayjs | null>(null);
@@ -58,7 +59,6 @@ const BookingManagementPage: React.FC = () => {
 
   // Reference data for selects
   const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
-  const [rooms, setRooms] = useState<RoomDto[]>([]);
   const [refLoading, setRefLoading] = useState(false);
 
   // Modals
@@ -90,15 +90,9 @@ const BookingManagementPage: React.FC = () => {
         page: 1,
         pageSize: 100,
       });
+      console.log("rtRes", rtRes);
       const rtItems = (rtRes as any).items || rtRes.data || [];
       setRoomTypes(rtItems);
-      const rRes = await roomsApi.getRooms({
-        hotelId: hotelId || undefined,
-        page: 1,
-        pageSize: 100,
-      });
-      const rItems = (rRes as any).items || rRes.data || [];
-      setRooms(rItems);
     } catch (err) {
       setSnackbar({
         open: true,
@@ -393,6 +387,7 @@ const BookingManagementPage: React.FC = () => {
       {/* Create */}
       <BookingFormModal
         open={openCreate}
+        hotelId={hotelId}
         onClose={() => setOpenCreate(false)}
         onSubmitted={() => {
           setSnackbar({

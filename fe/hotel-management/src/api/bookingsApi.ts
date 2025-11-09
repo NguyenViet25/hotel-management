@@ -72,7 +72,6 @@ export interface CreateBookingDto {
   primaryGuest?: GuestDto;
   additionalGuests?: GuestDto[];
   depositAmount: number;
-  depositPayment?: { amount: number; type: PaymentType };
   notes?: string;
 }
 
