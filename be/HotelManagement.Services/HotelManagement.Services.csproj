@@ -1,12 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\HotelManagement.Repositories\HotelManagement.Repositories.csproj" />
     <ProjectReference Include="..\HotelManagement.Domain\HotelManagement.Domain.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
+    <ProjectReference Include="..\HotelManagement.Repository\HotelManagement.Repository.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

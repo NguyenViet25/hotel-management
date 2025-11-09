@@ -1,4 +1,10 @@
-# hotel-management-system
-Hotel Management System – A capstone project for FPTU Software Engineering that manages hotel operations like room booking, customer info, and billing. Good luck!
+# Hotel Management System
 
-Accessing the system: https://hotel-management-woad-five.vercel.app/
+**Project Overview:**  
+This is a capstone project designed to manage hotel operations efficiently. It includes features for handling bookings, rooms, customers, and other hotel management tasks.
+
+**Access the APIs:**  
+https://hm-web-api.azurewebsites.net/swagger/index.html
+
+**Access the Client Application:**  
+https://hotel-management-five-zeta.vercel.app
