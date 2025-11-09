@@ -41,8 +41,8 @@ export const menuItems = {
       path: "/frontdesk/dashboard",
       icon: <DashboardIcon />,
     },
+    { title: "Đặt phòng", path: "/frontdesk/bookings", icon: <HotelIcon /> },
     { title: "Yêu cầu", path: "/frontdesk/orders", icon: <RestaurantIcon /> },
-    { title: "Bookings", path: "/frontdesk/bookings", icon: <HotelIcon /> },
   ],
   kitchen: [
     { title: "Tổng quan", path: "/kitchen/dashboard", icon: <DashboardIcon /> },

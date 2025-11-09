@@ -1,7 +1,21 @@
 import React, { useEffect, useState } from "react";
-import { Box, Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions, Button } from "@mui/material";
+import {
+  Box,
+  Snackbar,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+} from "@mui/material";
 import PageTitle from "../../../../components/common/PageTitle";
-import menusApi, { type MenuItemDto, type MenuGroupDto, type CreateMenuItemRequest, type UpdateMenuItemRequest } from "../../../../api/menusApi";
+import menusApi, {
+  type MenuItemDto,
+  type MenuGroupDto,
+  type CreateMenuItemRequest,
+  type UpdateMenuItemRequest,
+} from "../../../../api/menusApi";
 import MenuFilters from "./components/MenuFilters";
 import MenuTable from "./components/MenuTable";
 import MenuItemFormModal from "./components/MenuItemFormModal";
@@ -31,7 +45,11 @@ const MenuManagementPage: React.FC = () => {
   const [deleteTarget, setDeleteTarget] = useState<MenuItemDto | null>(null);
 
   // Notifications
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: "success" | "error" | "info" | "warning" }>({ open: false, message: "", severity: "success" });
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: "success" | "error" | "info" | "warning";
+  }>({ open: false, message: "", severity: "success" });
 
   // Fetch menu groups for filters and forms
   const fetchGroups = async () => {
@@ -57,10 +75,18 @@ const MenuManagementPage: React.FC = () => {
       if (res.isSuccess) {
         setItems(res.data);
       } else {
-        setSnackbar({ open: true, message: res.message || "Không thể tải danh sách món", severity: "error" });
+        setSnackbar({
+          open: true,
+          message: res.message || "Không thể tải danh sách món",
+          severity: "error",
+        });
       }
     } catch (err) {
-      setSnackbar({ open: true, message: "Đã xảy ra lỗi khi tải danh sách món", severity: "error" });
+      setSnackbar({
+        open: true,
+        message: "Đã xảy ra lỗi khi tải danh sách món",
+        severity: "error",
+      });
     } finally {
       setLoading(false);
     }
@@ -78,7 +104,10 @@ const MenuManagementPage: React.FC = () => {
   }, [groupId, shift, status, isActive]);
 
   // Handlers
-  const handleFilterChange = (key: "groupId" | "shift" | "status" | "isActive", value: string) => {
+  const handleFilterChange = (
+    key: "groupId" | "shift" | "status" | "isActive",
+    value: string
+  ) => {
     switch (key) {
       case "groupId":
         setGroupId(value);
@@ -112,14 +141,26 @@ const MenuManagementPage: React.FC = () => {
     try {
       const res = await menusApi.createMenuItem(payload);
       if (res.isSuccess) {
-        setSnackbar({ open: true, message: "Tạo món thành công", severity: "success" });
+        setSnackbar({
+          open: true,
+          message: "Tạo món thành công",
+          severity: "success",
+        });
         closeCreate();
         fetchMenuItems();
       } else {
-        setSnackbar({ open: true, message: res.message || "Không thể tạo món", severity: "error" });
+        setSnackbar({
+          open: true,
+          message: res.message || "Không thể tạo món",
+          severity: "error",
+        });
       }
     } catch (err) {
-      setSnackbar({ open: true, message: "Đã xảy ra lỗi khi tạo món", severity: "error" });
+      setSnackbar({
+        open: true,
+        message: "Đã xảy ra lỗi khi tạo món",
+        severity: "error",
+      });
     }
   };
 
@@ -128,14 +169,26 @@ const MenuManagementPage: React.FC = () => {
     try {
       const res = await menusApi.updateMenuItem(editingItem.id, payload);
       if (res.isSuccess) {
-        setSnackbar({ open: true, message: "Cập nhật món thành công", severity: "success" });
+        setSnackbar({
+          open: true,
+          message: "Cập nhật món thành công",
+          severity: "success",
+        });
         closeEdit();
         fetchMenuItems();
       } else {
-        setSnackbar({ open: true, message: res.message || "Không thể cập nhật món", severity: "error" });
+        setSnackbar({
+          open: true,
+          message: res.message || "Không thể cập nhật món",
+          severity: "error",
+        });
       }
     } catch (err) {
-      setSnackbar({ open: true, message: "Đã xảy ra lỗi khi cập nhật", severity: "error" });
+      setSnackbar({
+        open: true,
+        message: "Đã xảy ra lỗi khi cập nhật",
+        severity: "error",
+      });
     }
   };
 
@@ -144,14 +197,27 @@ const MenuManagementPage: React.FC = () => {
     try {
       const res = await menusApi.deleteMenuItem(deleteTarget.id);
       if (res.isSuccess) {
-        setSnackbar({ open: true, message: "Xóa món thành công", severity: "success" });
+        setSnackbar({
+          open: true,
+          message: "Xóa món thành công",
+          severity: "success",
+        });
         setDeleteTarget(null);
         fetchMenuItems();
       } else {
-        setSnackbar({ open: true, message: res.message || "Không thể xóa món (có thể có đơn hàng liên quan)", severity: "error" });
+        setSnackbar({
+          open: true,
+          message:
+            res.message || "Không thể xóa món (có thể có đơn hàng liên quan)",
+          severity: "error",
+        });
       }
     } catch (err) {
-      setSnackbar({ open: true, message: "Đã xảy ra lỗi khi xóa", severity: "error" });
+      setSnackbar({
+        open: true,
+        message: "Đã xảy ra lỗi khi xóa",
+        severity: "error",
+      });
     }
   };
 
@@ -159,20 +225,14 @@ const MenuManagementPage: React.FC = () => {
     <Box>
       <PageTitle title="Quản lý Thực đơn" subtitle="Xem, thêm, sửa, xóa món" />
 
-      {/* Filters: group, shift, status, active */}
-      <Box sx={{ p: 2, mb: 2, borderRadius: 2, bgcolor: "background.paper", boxShadow: 1 }}>
-        <MenuFilters
-          menuGroups={groups}
-          groupId={groupId}
-          shift={shift}
-          status={status}
-          isActive={isActive}
-          onChange={handleFilterChange}
-        />
-      </Box>
-
       {/* Table with actions */}
-      <MenuTable data={items} loading={loading} onAdd={openCreate} onEdit={openEdit} onDelete={openDelete} />
+      <MenuTable
+        data={items}
+        loading={loading}
+        onAdd={openCreate}
+        onEdit={openEdit}
+        onDelete={openDelete}
+      />
 
       {/* Create modal */}
       <MenuItemFormModal
@@ -198,14 +258,24 @@ const MenuManagementPage: React.FC = () => {
         <DialogTitle>Xóa món</DialogTitle>
         <DialogContent>Bạn có chắc chắn muốn xóa món này?</DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteTarget(null)} color="inherit">Hủy</Button>
-          <Button onClick={confirmDelete} variant="contained" color="error">Xóa</Button>
+          <Button onClick={() => setDeleteTarget(null)} color="inherit">
+            Hủy
+          </Button>
+          <Button onClick={confirmDelete} variant="contained" color="error">
+            Xóa
+          </Button>
         </DialogActions>
       </Dialog>
 
       {/* Snackbar notifications */}
-      <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar((s) => ({ ...s, open: false }))}>
-        <Alert severity={snackbar.severity} sx={{ width: "100%" }}>{snackbar.message}</Alert>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+      >
+        <Alert severity={snackbar.severity} sx={{ width: "100%" }}>
+          {snackbar.message}
+        </Alert>
       </Snackbar>
     </Box>
   );

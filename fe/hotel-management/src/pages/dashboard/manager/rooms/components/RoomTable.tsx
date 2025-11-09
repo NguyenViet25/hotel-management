@@ -3,7 +3,11 @@ import { Chip } from "@mui/material";
 import DataTable, {
   type Column,
 } from "../../../../../components/common/DataTable";
-import type { RoomDto } from "../../../../../api/roomsApi";
+import {
+  getRoomStatusString,
+  type RoomDto,
+  type RoomStatus,
+} from "../../../../../api/roomsApi";
 
 type RoomTableProps = {
   rooms: RoomDto[];
@@ -19,18 +23,27 @@ type RoomTableProps = {
   onSearch?: (txt: string) => void;
 };
 
-const statusChip = (status: RoomDto["status"]) => {
-  const map: Record<
-    string,
-    { color: "success" | "warning" | "error" | "default"; label: string }
-  > = {
-    Available: { color: "success", label: "Sẵn sàng" },
-    UnderMaintenance: { color: "warning", label: "Bảo trì" },
-    OutOfService: { color: "error", label: "Ngừng phục vụ" },
-    TemporarilyUnavailable: { color: "default", label: "Tạm ngưng" },
+const statusChip = (status: RoomStatus) => {
+  const s = getRoomStatusString(status);
+
+  const map: Record<string, { color: string; label: string }> = {
+    Available: { color: "#4CAF50", label: "Sẵn sàng" }, // green
+    Occupied: { color: "#F44336", label: "Đang sử dụng" }, // red
+    Cleaning: { color: "#2196F3", label: "Đang dọn dẹp" }, // blue
+    OutOfService: { color: "#FF9800", label: "Ngừng phục vụ" }, // orange
+    Dirty: { color: "#795548", label: "Bẩn" }, // brown
+    Clean: { color: "#00BCD4", label: "Đã dọn sạch" }, // teal
+    Maintenance: { color: "#9C27B0", label: "Bảo trì" }, // purple
   };
-  const cfg = map[status] || { color: "default", label: String(status) };
-  return <Chip size="small" label={cfg.label} color={cfg.color} />;
+  const cfg = map[s] || { color: "default", label: String(status) };
+  return (
+    <Chip
+      size="small"
+      label={cfg.label}
+      color="primary"
+      sx={{ backgroundColor: cfg.color }}
+    />
+  );
 };
 
 const RoomTable: React.FC<RoomTableProps> = ({
@@ -50,14 +63,13 @@ const RoomTable: React.FC<RoomTableProps> = ({
     () => [
       { id: "number", label: "Số phòng", minWidth: 100 },
       { id: "floor", label: "Tầng", minWidth: 80 },
-      { id: "typeName", label: "Loại phòng", minWidth: 140 },
+      { id: "roomTypeName", label: "Loại phòng", minWidth: 140 },
       {
         id: "status",
         label: "Trạng thái",
         minWidth: 140,
-        format: (v) => statusChip(v as RoomDto["status"]),
+        format: (v) => statusChip(v),
       },
-      { id: "hotelName", label: "Khách sạn", minWidth: 160 },
     ],
     []
   );

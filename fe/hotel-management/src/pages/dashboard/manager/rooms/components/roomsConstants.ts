@@ -1,8 +1,11 @@
-import type { RoomDto } from "../../../../../api/roomsApi";
+import { RoomStatus } from "../../../../../api/roomsApi";
 
-export const ROOM_STATUS_OPTIONS: { value: RoomDto["status"]; label: string }[] = [
-  { value: "Available", label: "Sẵn sàng" },
-  { value: "UnderMaintenance", label: "Bảo trì" },
-  { value: "OutOfService", label: "Ngừng phục vụ" },
-  { value: "TemporarilyUnavailable", label: "Tạm ngưng" },
+export const ROOM_STATUS_OPTIONS: { value: RoomStatus; label: string }[] = [
+  { value: RoomStatus.Available, label: "Sẵn sàng" },
+  { value: RoomStatus.Occupied, label: "Đang sử dụng" },
+  { value: RoomStatus.Cleaning, label: "Đang dọn dẹp" },
+  { value: RoomStatus.OutOfService, label: "Ngừng phục vụ" },
+  { value: RoomStatus.Dirty, label: "Bẩn" },
+  { value: RoomStatus.Clean, label: "Đã dọn sạch" },
+  { value: RoomStatus.Maintenance, label: "Bảo trì" },
 ];

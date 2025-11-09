@@ -32,6 +32,7 @@ import type {
 } from "../../../../../api/roomsApi";
 import type { RoomType } from "../../../../../api/roomTypesApi";
 import { ROOM_STATUS_OPTIONS } from "./roomsConstants";
+import { useStore, type StoreState } from "../../../../../hooks/useStore";
 
 type RoomFormModalProps = {
   open: boolean;
@@ -50,37 +51,38 @@ const RoomFormModal: React.FC<RoomFormModalProps> = ({
   roomTypes,
   roomTypesLoading = false,
 }) => {
+  const { user } = useStore<StoreState>((state) => state);
+
   const [number, setNumber] = useState<string>(initialData?.number ?? "");
   const [floor, setFloor] = useState<string>(
     initialData?.floor ? String(initialData.floor) : ""
   );
   const [typeId, setTypeId] = useState<string>(
-    initialData?.typeId ? String(initialData.typeId) : ""
+    initialData?.roomTypeId ? String(initialData.roomTypeId) : ""
   );
-  const [status, setStatus] = useState<string>(
-    initialData?.status ?? "Available"
-  );
+  const [status, setStatus] = useState<number>(initialData?.status ?? 0);
 
   useEffect(() => {
     setNumber(initialData?.number ?? "");
     setFloor(initialData?.floor ? String(initialData.floor) : "");
-    setTypeId(initialData?.typeId ? String(initialData.typeId) : "");
-    setStatus(initialData?.status ?? "Available");
+    setTypeId(initialData?.roomTypeId ? String(initialData.roomTypeId) : "");
+    setStatus(initialData?.status ?? 0);
   }, [initialData]);
 
   const handleSubmit = async () => {
     const payload: CreateRoomRequest | UpdateRoomRequest = initialData
       ? {
-          id: initialData.id!,
+          hotelId: user?.hotelId,
           number,
           floor: Number(floor),
-          typeId: Number(typeId),
+          roomTypeId: typeId,
           status,
         }
       : {
           number,
+          hotelId: user?.hotelId,
           floor: Number(floor),
-          typeId: Number(typeId),
+          roomTypeId: typeId,
           status,
         };
     await onSubmit(payload);
@@ -88,7 +90,7 @@ const RoomFormModal: React.FC<RoomFormModalProps> = ({
 
   const handleTypeChange = (e: SelectChangeEvent<string>) =>
     setTypeId(e.target.value);
-  const handleStatusChange = (e: SelectChangeEvent<string>) =>
+  const handleStatusChange = (e: SelectChangeEvent<number>) =>
     setStatus(e.target.value);
 
   return (

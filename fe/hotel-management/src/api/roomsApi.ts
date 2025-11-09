@@ -1,16 +1,44 @@
 import axios from "./axios";
 
 export interface RoomDto {
-  id: string;
-  hotelId?: string;
-  hotelName?: string;
+  id: string; // GUID as string
+  hotelId: string; // GUID as string
+  roomTypeId: string; // GUID as string
+  roomTypeName: string;
   number: string;
   floor: number;
-  typeId: string;
-  typeName?: string;
-  status: string; // e.g. Available | UnderMaintenance | OutOfService | TemporarilyUnavailable
-  features?: string[];
-  canDelete?: boolean;
+  status: number;
+}
+
+export enum RoomStatus {
+  Available = 0,
+  Occupied = 1,
+  Cleaning = 2,
+  OutOfService = 3,
+  Dirty = 4,
+  Clean = 5,
+  Maintenance = 6,
+}
+
+export function getRoomStatusString(status: number | RoomStatus): string {
+  switch (status) {
+    case RoomStatus.Available:
+      return "Available";
+    case RoomStatus.Occupied:
+      return "Occupied";
+    case RoomStatus.Cleaning:
+      return "Cleaning";
+    case RoomStatus.OutOfService:
+      return "OutOfService";
+    case RoomStatus.Dirty:
+      return "Dirty";
+    case RoomStatus.Clean:
+      return "Clean";
+    case RoomStatus.Maintenance:
+      return "Maintenance";
+    default:
+      return "Unknown";
+  }
 }
 
 export interface RoomsQueryParams {
@@ -27,17 +55,11 @@ export interface CreateRoomRequest {
   hotelId?: string;
   number: string;
   floor: number;
-  typeId: string;
-  features?: string[];
+  roomTypeId: string;
+  status?: number;
 }
 
-export interface UpdateRoomRequest {
-  number?: string;
-  floor?: number;
-  typeId?: string;
-  status?: string;
-  features?: string[];
-}
+export interface UpdateRoomRequest extends CreateRoomRequest {}
 
 export interface ListResponse<T> {
   isSuccess: boolean;
@@ -57,7 +79,9 @@ export interface ItemResponse<T> {
 }
 
 const roomsApi = {
-  async getRooms(params: RoomsQueryParams = {}): Promise<ListResponse<RoomDto>> {
+  async getRooms(
+    params: RoomsQueryParams = {}
+  ): Promise<ListResponse<RoomDto>> {
     const qp = new URLSearchParams();
     if (params.hotelId) qp.append("hotelId", params.hotelId);
     if (params.status) qp.append("status", params.status);
@@ -81,17 +105,24 @@ const roomsApi = {
     return res.data;
   },
 
-  async updateRoom(id: string, payload: UpdateRoomRequest): Promise<ItemResponse<RoomDto>> {
+  async updateRoom(
+    id: string,
+    payload: UpdateRoomRequest
+  ): Promise<ItemResponse<RoomDto>> {
     const res = await axios.put(`/admin/rooms/${id}`, payload);
     return res.data;
   },
 
-  async deleteRoom(id: string): Promise<{ isSuccess: boolean; message: string | null }> {
+  async deleteRoom(
+    id: string
+  ): Promise<{ isSuccess: boolean; message: string | null }> {
     const res = await axios.delete(`/admin/rooms/${id}`);
     return res.data;
   },
 
-  async validateDelete(id: string): Promise<{ isSuccess: boolean; message: string | null }> {
+  async validateDelete(
+    id: string
+  ): Promise<{ isSuccess: boolean; message: string | null }> {
     // Optional endpoint; if not supported, server should enforce and return error on delete
     const res = await axios.get(`/admin/rooms/${id}/can-delete`);
     return res.data;
