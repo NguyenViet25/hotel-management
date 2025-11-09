@@ -78,3 +78,8 @@
 2025-11-08 - 3 - 01:39:24 UTC :: test: UC-26 Order: tao/chinh sua order, ghi chu, void/discount. — refactor luong xu ly cho ro rang (dat tieu chi toi thieu)
 2025-11-08 - 4 - 01:39:26 UTC :: build: UC-02 RBAC: thiet lap quyen thao tac theo vai tro/pham vi. — bo sung case canh bien & no-show (da review so bo)
 2025-11-08 - 5 - 01:39:28 UTC :: chore: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — chinh sua tai lieu & mo ta API (anh huong thap)
+2025-11-09 - 1 - 01:48:37 UTC :: chore: UC-37 Night Audit: kiem tra folio chua chot, khoa giao dich. — tach chuc nang de de bao tri (anh huong thap)
+2025-11-09 - 2 - 01:48:40 UTC :: test: UC-22 Minibar/Amenity: ghi tieu hao, post charge vao folio. — them kiem soat loi & retry nhe (da smoke test)
+2025-11-09 - 3 - 01:48:41 UTC :: feat: UC-10 Goi gia: tao rate plan, thoi gian ap dung linh hoat. — bo sung case canh bien & no-show (can theo doi them)
+2025-11-09 - 4 - 01:48:44 UTC :: refactor: UC-07 Loai phong: dinh nghia tien nghi va gia co ban. — dieu chinh UI & copy cho ro (anh huong thap)
+2025-11-09 - 5 - 01:48:46 UTC :: docs: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — refactor luong xu ly cho ro rang (da review so bo)
