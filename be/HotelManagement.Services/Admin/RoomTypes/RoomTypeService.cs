@@ -5,6 +5,8 @@ using HotelManagement.Repository.Common;
 using HotelManagement.Services.Admin.RoomTypes.Dtos;
 using HotelManagement.Services.Common;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace HotelManagement.Services.Admin.RoomTypes;
 
@@ -47,7 +49,7 @@ public class RoomTypeService : IRoomTypeService
                 return ApiResponse<RoomTypeDto>.Fail("Room type name already exists in this hotel");
             }
 
-            
+
 
             // Create room type
             var roomType = new RoomType
@@ -55,7 +57,10 @@ public class RoomTypeService : IRoomTypeService
                 Id = Guid.NewGuid(),
                 HotelId = dto.HotelId,
                 Name = dto.Name,
-                Description = dto.Description
+                Description = dto.Description,
+                BasePriceFrom = dto.PriceFrom,
+                BasePriceTo = dto.PriceTo,
+                Prices = JsonSerializer.Serialize(dto.PriceByDates)
             };
 
             await _roomTypeRepository.AddAsync(roomType);
@@ -100,6 +105,9 @@ public class RoomTypeService : IRoomTypeService
             // Update room type
             roomType.Name = dto.Name;
             roomType.Description = dto.Description;
+            roomType.Capacity = dto.Capacity;
+            roomType.BasePriceFrom = dto.PriceFrom;
+            roomType.BasePriceTo = dto.PriceTo;
 
             await _roomTypeRepository.UpdateAsync(roomType);
             await _roomTypeRepository.SaveChangesAsync();
@@ -289,9 +297,13 @@ public class RoomTypeService : IRoomTypeService
             HotelName = roomType.Hotel?.Name ?? "",
             Name = roomType.Name,
             Description = roomType.Description,
-            Images = new List<string>(), // TODO: Implement image storage
-            RoomCount = roomCount,
+            Images = new List<string>(), 
+            RoomCount = roomType.Capacity,
             CanDelete = canDelete,
+            PriceFrom = roomType.BasePriceFrom,
+            PriceTo = roomType.BasePriceTo,
+            PriceByDates = null,
+
         };
     }
 
@@ -320,7 +332,8 @@ public class RoomTypeService : IRoomTypeService
             Images = baseDto.Images,
             RoomCount = baseDto.RoomCount,
             CanDelete = baseDto.CanDelete,
-            BasePrice = baseDto.BasePrice,
+            PriceFrom = baseDto.PriceFrom,
+            PriceTo = baseDto.PriceTo,
             Rooms = rooms,
             PricingInfo = null // TODO: Implement pricing info mapping
         };

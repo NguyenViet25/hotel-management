@@ -4,13 +4,12 @@ namespace HotelManagement.Services.Admin.RoomTypes.Dtos;
 public class CreateRoomTypeDto
 {
     public Guid HotelId { get; set; }
+    public int Capacity { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public decimal PriceFrom { get; set; }
     public decimal PriceTo { get; set; }
     public List<PriceByDate>? PriceByDates { get; set; } = [];
-    public List<Guid>? AmenityIds { get; set; } = new();
-    public List<string>? Images { get; set; } = new(); 
 }
 
 public class PriceByDate
@@ -21,7 +20,6 @@ public class PriceByDate
 
 public class UpdateRoomTypeDto : CreateRoomTypeDto
 {
-   
 }
 
 public class RoomTypeQueryDto
@@ -42,14 +40,10 @@ public class RoomTypeDto
     public string Description { get; set; } = string.Empty;
     public List<string> Images { get; set; } = new();
     public int RoomCount { get; set; }
-    public bool CanDelete { get; set; } 
-    public decimal? BasePrice { get; set; }
-}
-
-public class AmenityDto
-{
-    public Guid Id { get; set; }
-    public string Name { get; set; } = string.Empty;
+    public bool CanDelete { get; set; }
+    public decimal PriceFrom { get; set; }
+    public decimal PriceTo { get; set; }
+    public List<PriceByDate>? PriceByDates { get; set; } = [];
 }
 
 public class RoomTypeDetailDto : RoomTypeDto

@@ -1,7 +1,4 @@
-﻿using HotelManagement.Services.Admin.Hotels;
-using HotelManagement.Services.Admin.Hotels.Dtos;
-using HotelManagement.Services.Admin.Users.Dtos;
-using HotelManagement.Services.Auth;
+﻿using HotelManagement.Services.Auth;
 using HotelManagement.Services.Auth.Dtos;
 using HotelManagement.Services.Common;
 using Microsoft.AspNetCore.Authorization;
@@ -12,16 +9,9 @@ namespace HotelManagement.Api.Controllers;
 [ApiController]
 [Route("api/auth")]
 [AllowAnonymous]
-public class AuthController : ControllerBase
+public class AuthController(IAuthService auth) : ControllerBase
 {
-    private readonly IAuthService _auth;
-    private readonly IHotelsAdminService _hotelsAdmin;
-
-    public AuthController(IAuthService auth, IHotelsAdminService hotelsAdmin)
-    {
-        _auth = auth;
-        _hotelsAdmin = hotelsAdmin;
-    }
+    private readonly IAuthService _auth = auth;
 
     [HttpPost("login")]
     [AllowAnonymous]
@@ -46,14 +36,6 @@ public class AuthController : ControllerBase
         return Ok(ApiResponse<LoginResponseDto>.Ok(result, "Đăng nhập thành công"));
     }
 
-    [HttpPost("2fa/verify")]
-    [AllowAnonymous]
-    public async Task<ActionResult<ApiResponse<LoginResponseDto>>> VerifyTwoFactor([FromBody] TwoFactorVerifyDto request)
-    {
-        var result = await _auth.VerifyTwoFactorAsync(request);
-        if (string.IsNullOrEmpty(result.AccessToken)) return Unauthorized(ApiResponse<LoginResponseDto>.Fail("Invalid 2FA code"));
-        return Ok(ApiResponse<LoginResponseDto>.Ok(result, "2FA success"));
-    }
 
     [HttpPost("logout")]
     [Authorize]
@@ -81,11 +63,5 @@ public class AuthController : ControllerBase
     }
 
 
-    [HttpGet("hotels")]
-    public async Task<IActionResult> ListHotels([FromQuery] UsersQueryDto query)
-    {
-        var result = await _hotelsAdmin.ListAllAsync();
-        return Ok(result);
 
-    }
 }

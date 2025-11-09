@@ -9,6 +9,9 @@ namespace HotelManagement.Api.Infrastructure;
 
 public static class DatabaseInitializationExtensions
 {
+
+    private static Guid DEFAULT_HOTEL_ID = Guid.Parse("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
+
     public static IApplicationBuilder InitializeDatabase(this IApplicationBuilder app)
     {
         using (var scope = app.ApplicationServices.CreateScope())
@@ -20,7 +23,8 @@ public static class DatabaseInitializationExtensions
             // Apply any pending migrations
             dbContext.Database.Migrate();
 
-            // Seed roles and users
+            SeedHotelsAsync(dbContext).GetAwaiter().GetResult();
+            SeedRoomTypesAsync(dbContext).GetAwaiter().GetResult();
             SeedRoles(roleManager).GetAwaiter().GetResult();
             SeedUsers(userManager, dbContext).GetAwaiter().GetResult();
         }
@@ -43,23 +47,119 @@ public static class DatabaseInitializationExtensions
         }
     }
 
-    private static async Task SeedUsers(UserManager<AppUser> userManager, ApplicationDbContext dbContext)
+    public static async Task SeedRoomTypesAsync(DbContext dbContext)
     {
-        // Create a hotel if none exists
-        var hotel = await dbContext.Set<Hotel>().FirstOrDefaultAsync();
-        if (hotel == null)
+        var hotelId = DEFAULT_HOTEL_ID;
+        // Check if there are already room types for this hotel
+        bool exists = await dbContext.Set<RoomType>().AnyAsync(rt => rt.HotelId == hotelId);
+        if (exists)
+            return; // Already seeded
+
+        var roomTypes = new List<RoomType>
         {
-            hotel = new Hotel
+            new RoomType
             {
                 Id = Guid.NewGuid(),
-                Code = "MAIN",
-                Name = "Khách sạn chính",
-                Address = "123 Đường Chính",
-                IsActive = true
-            };
-            dbContext.Set<Hotel>().Add(hotel);
-            await dbContext.SaveChangesAsync();
-        }
+                HotelId = hotelId,
+                Capacity = 2,
+                Name = "Phòng Standard",
+                Description = "Phòng Standard tiện nghi cho 2 khách, có cửa sổ hướng ra thành phố.",
+                BasePriceFrom = 500000,
+                BasePriceTo = 700000,
+                Prices = "", // JSON string or empty for now
+            },
+            new RoomType
+            {
+                Id = Guid.NewGuid(),
+                HotelId = hotelId,
+                Capacity = 3,
+                Name = "Phòng Superior",
+                Description = "Phòng Superior rộng rãi, trang bị đầy đủ tiện nghi, phù hợp gia đình nhỏ.",
+                BasePriceFrom = 800000,
+                BasePriceTo = 1200000,
+                Prices = "",
+            },
+            new RoomType
+            {
+                Id = Guid.NewGuid(),
+                HotelId = hotelId,
+                Capacity = 4,
+                Name = "Phòng Deluxe",
+                Description = "Phòng Deluxe sang trọng, có ban công và tầm nhìn hướng biển.",
+                BasePriceFrom = 1500000,
+                BasePriceTo = 2000000,
+                Prices = "",
+            }
+        };
+
+        dbContext.Set<RoomType>().AddRange(roomTypes);
+        await dbContext.SaveChangesAsync();
+    }
+
+    public static async Task SeedHotelsAsync(DbContext dbContext)
+    {
+        // Check if there are any hotels already
+        if (await dbContext.Set<Hotel>().AnyAsync())
+            return; // Already seeded
+
+        var hotels = new List<Hotel>
+        {
+            new Hotel
+            {
+                Id = Guid.NewGuid(),
+                Code = "TTS1",
+                Name = "Tân Trường Sơn 1",
+                Address = "02 Nguyễn Thị Lợi, Trung Sơn, Sầm Sơn",
+                Phone = "0967092888",
+                Email = "kstantruongson@gmail.com",
+                Description = "Tọa lạc tại vị trí đắc địa bậc nhất Sầm Sơn, Khách sạn Tân Trường Sơn 1... [truncated for brevity]",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            },
+            new Hotel
+            {
+                Id = Guid.NewGuid(),
+                Code = "TTS2",
+                Name = "Tân Trường Sơn 2",
+                Address = "06 Nguyễn Thị Lợi, Trung Sơn, Sầm Sơn",
+                Phone = "0919153868",
+                Email = "kstantruongson@gmail.com",
+                Description = "Tọa lạc tại trái tim Bãi tắm C sầm uất, Khách sạn Tân Trường Sơn 2... [truncated]",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            },
+            new Hotel
+            {
+                Id = Guid.NewGuid(),
+                Code = "TTS3",
+                Name = "Tân Trường Sơn 3",
+                Address = "Khu phố Hồng Thắng, Sầm Sơn",
+                Phone = "0904231333",
+                Email = "kstantruongson@gmail.com",
+                Description = "Khách sạn Tân Trường Sơn 3 tọa lạc tại khu phố Hồng Thắng...",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            },
+            new Hotel
+            {
+                Id = DEFAULT_HOTEL_ID,
+                Code = "TTSLEGACY",
+                Name = "Tân Trường Sơn Legacy",
+                Address = "Khu đô thị FLC, Sầm Sơn",
+                Phone = "0976199368",
+                Email = "kstantruongson@gmail.com",
+                Description = "Nằm tách biệt khỏi sự náo nhiệt của trung tâm bãi tắm, Khách sạn Tân Trường Sơn Legacy...",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            }
+        };
+
+        dbContext.Set<Hotel>().AddRange(hotels);
+        await dbContext.SaveChangesAsync();
+    }
+
+    private static async Task SeedUsers(UserManager<AppUser> userManager, ApplicationDbContext dbContext)
+    {
 
         // Define user data with Vietnamese fullname and phone number
         var userData = new[]
@@ -124,7 +224,8 @@ public static class DatabaseInitializationExtensions
                     Email = user.Email,
                     EmailConfirmed = true,
                     Fullname = user.Fullname,
-                    PhoneNumber = user.PhoneNumber
+                    PhoneNumber = user.PhoneNumber,
+                    LockoutEnd = DateTime.Now.AddMonths(-1),
                 };
 
                 var result = await userManager.CreateAsync(appUser, user.Password);
@@ -138,7 +239,7 @@ public static class DatabaseInitializationExtensions
                     var userPropertyRole = new UserPropertyRole
                     {
                         Id = Guid.NewGuid(),
-                        HotelId = hotel.Id,
+                        HotelId = DEFAULT_HOTEL_ID,
                         UserId = appUser.Id,
                         Role = user.Role
                     };

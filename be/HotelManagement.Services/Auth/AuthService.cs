@@ -1,6 +1,9 @@
 using HotelManagement.Domain.Entities;
+using HotelManagement.Repository;
+using HotelManagement.Services.Admin.Users.Dtos;
 using HotelManagement.Services.Auth.Dtos;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace HotelManagement.Services.Auth;
@@ -8,12 +11,14 @@ namespace HotelManagement.Services.Auth;
 public class AuthService : IAuthService
 {
     private readonly UserManager<AppUser> _userManager;
+    private readonly ApplicationDbContext _db;
     private readonly ITokenService _tokenService;
 
-    public AuthService(UserManager<AppUser> userManager, ITokenService tokenService)
+    public AuthService(UserManager<AppUser> userManager, ITokenService tokenService, ApplicationDbContext dbContext)
     {
         _userManager = userManager;
         _tokenService = tokenService;
+        _db = dbContext;
     }
 
     public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request)
@@ -26,7 +31,7 @@ public class AuthService : IAuthService
         {
             return new LoginResponseDto(false, null, user.LockoutEnd, null);
         }
-        
+
         var passwordValid = await _userManager.CheckPasswordAsync(user, request.Password);
         if (!passwordValid) return new LoginResponseDto(false, null, null, null);
 
@@ -50,21 +55,16 @@ public class AuthService : IAuthService
             new Claim("twoFactor", (await _userManager.GetTwoFactorEnabledAsync(user)).ToString())
         });
 
-        return new LoginResponseDto(false, token, null, UserMapper.MapToResponseAsync(user, roles.ToList()));
+
+        var propertyRoles = await _db.UserPropertyRoles.AsNoTracking()
+            .Select(pr => new UserPropertyRoleDto(pr.UserId, pr.HotelId, pr.Role, "")).ToListAsync();
+
+        var hotel = propertyRoles.Where(x => x.Id == user.Id).FirstOrDefault();
+
+        return new LoginResponseDto(false, token, null, UserMapper.MapToResponseAsync(user, roles.ToList(), hotel?.HotelId));
     }
 
-    public async Task<LoginResponseDto> VerifyTwoFactorAsync(TwoFactorVerifyDto request)
-    {
-        var user = await _userManager.FindByNameAsync(request.Username);
-        if (user is null) return new LoginResponseDto(true, null, null, null);
-
-        var valid2fa = await _userManager.VerifyTwoFactorTokenAsync(user, request.Provider, request.Code);
-        if (!valid2fa) return new LoginResponseDto(true, null, null, null);
-
-        var roles = await _userManager.GetRolesAsync(user);
-        var token = _tokenService.CreateAccessToken(user.Id, user.UserName!, roles);
-        return new LoginResponseDto(false, token, DateTimeOffset.UtcNow.AddHours(1), UserMapper.MapToResponseAsync(user, roles.ToList()));
-    }
+  
 
     public Task LogoutAsync(string userName)
     {
