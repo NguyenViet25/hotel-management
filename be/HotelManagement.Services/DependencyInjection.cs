@@ -1,58 +1,32 @@
+using HotelManagement.Services.Auth;
+using HotelManagement.Services.Admin.Users;
+using HotelManagement.Services.Admin.Hotels;
+using HotelManagement.Services.Admin.Audit;
+using HotelManagement.Services.Admin.RoomTypes;
+using HotelManagement.Services.Admin.Rooms;
+using HotelManagement.Services.Admin.Menu;
+using HotelManagement.Services.Admin.Kitchen;
+using HotelManagement.Services.Profile;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
-using HotelManagement.Services.Interfaces;
-using HotelManagement.Services.Services;
-using HotelManagement.Services.Models;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
+using HotelManagement.Services.Admin.Bookings;
 
-namespace HotelManagement.Services
+namespace HotelManagement.Services;
+
+public static class DependencyInjection
 {
-    public static class DependencyInjection
+    public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
-        public static IServiceCollection AddServices(this IServiceCollection services, IConfiguration configuration)
-        {
-            // Configure JWT settings
-            var jwtSettings = configuration.GetSection("JwtSettings");
-            services.Configure<JwtSettings>(jwtSettings);
-            
-            // Configure Google OAuth settings
-            var googleSettings = configuration.GetSection("GoogleOAuth");
-            services.Configure<GoogleOAuthSettings>(googleSettings);
-            
-            // Add HttpClient for external API calls
-            services.AddHttpClient();
-            
-            // Configure JWT Authentication
-            services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(options =>
-            {
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtSettings["Secret"])),
-                    ValidateIssuer = true,
-                    ValidIssuer = jwtSettings["Issuer"],
-                    ValidateAudience = true,
-                    ValidAudience = jwtSettings["Audience"],
-                    ValidateLifetime = true,
-                    ClockSkew = TimeSpan.Zero
-                };
-            });
-            
-            // Register services
+        services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IAuthService, AuthService>();
-            services.AddScoped<IUserService, UserService>();
-            services.AddScoped<IRoleService, RoleService>();
-            services.AddScoped<IHotelPropertyService, HotelPropertyService>();
-            services.AddScoped<IRoomService, RoomService>();
-            
-            return services;
-        }
+            services.AddScoped<IUsersAdminService, UsersAdminService>();
+            services.AddScoped<IHotelsAdminService, HotelsAdminService>();
+            services.AddScoped<IAuditService, AuditService>();
+            services.AddScoped<IRoomTypeService, RoomTypeService>();
+            services.AddScoped<IRoomsService, RoomsService>();
+            services.AddScoped<IMenuService, MenuService>();
+            services.AddScoped<IKitchenService, KitchenService>();
+            services.AddScoped<IProfileService, ProfileService>();
+            services.AddScoped<IBookingsService,BookingsService>();
+        return services;
     }
 }
