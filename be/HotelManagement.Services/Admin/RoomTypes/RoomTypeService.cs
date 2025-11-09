@@ -100,7 +100,7 @@ public class RoomTypeService : IRoomTypeService
                 }
             }
 
-           
+
 
             // Update room type
             roomType.Name = dto.Name;
@@ -256,13 +256,14 @@ public class RoomTypeService : IRoomTypeService
     {
         try
         {
-            // Check if there are any rooms of this type with active bookings
-            var hasActiveBookings = await _bookingRepository.Query()
-                .Include(b => b.Room)
-                .AnyAsync(b => b.Room.RoomTypeId == id &&
-                              (b.Status == BookingStatus.Confirmed ||
-                               b.Status == BookingStatus.CheckedIn));
+            // TODO: update later
+            //var hasActiveBookings = await _bookingRepository.Query()
+            //        .Include(b => b.Room)
+            //        .AnyAsync(b => b.Room.RoomTypeId == id &&
+            //                    (b.Status == BookingRoomStatus.Confirmed ||
+            //                        b.Status == BookingRoomStatus.CheckedIn));
 
+            var hasActiveBookings = false;
             if (hasActiveBookings)
             {
                 return ApiResponse.Fail("Cannot delete room type with active bookings");
@@ -278,16 +279,19 @@ public class RoomTypeService : IRoomTypeService
 
     private async Task<RoomTypeDto> MapToRoomTypeDto(RoomType roomType)
     {
-      
+
 
         var roomCount = await _roomRepository.Query()
             .CountAsync(r => r.RoomTypeId == roomType.Id);
 
-        var canDelete = !await _bookingRepository.Query()
-            .Include(b => b.Room)
-            .AnyAsync(b => b.Room!.RoomTypeId == roomType.Id &&
-                          (b.Status == BookingStatus.Confirmed ||
-                           b.Status == BookingStatus.CheckedIn));
+        // TODO: update later
+        //var canDelete = !await _bookingRepository.Query()
+        //    .Include(b => b.Room)
+        //    .AnyAsync(b => b.Room!.RoomTypeId == roomType.Id &&
+        //                  (b.Status == BookingRoomStatus.Confirmed ||
+        //                   b.Status == BookingRoomStatus.CheckedIn));
+        var canDelete = true;
+
 
 
         return new RoomTypeDto
@@ -297,7 +301,7 @@ public class RoomTypeService : IRoomTypeService
             HotelName = roomType.Hotel?.Name ?? "",
             Name = roomType.Name,
             Description = roomType.Description,
-            Images = new List<string>(), 
+            Images = new List<string>(),
             RoomCount = roomType.Capacity,
             CanDelete = canDelete,
             PriceFrom = roomType.BasePriceFrom,

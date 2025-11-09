@@ -20,6 +20,8 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
     public DbSet<Guest> Guests => Set<Guest>();
     public DbSet<Booking> Bookings => Set<Booking>();
     public DbSet<BookingGuest> BookingGuests => Set<BookingGuest>();
+    public DbSet<BookingRoomType> BookingRoomTypes => Set<BookingRoomType>();
+    public DbSet<BookingRoom> BookingRooms => Set<BookingRoom>();
     public DbSet<CallLog> CallLogs => Set<CallLog>();
     public DbSet<HousekeepingTask> HousekeepingTasks => Set<HousekeepingTask>();
     public DbSet<RoomStatusLog> RoomStatusLogs => Set<RoomStatusLog>();
@@ -39,7 +41,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
     {
         base.OnModelCreating(builder);
 
-        builder.Entity<BookingGuest>().HasKey(x => new { x.BookingId, x.GuestId });
+        builder.Entity<BookingGuest>().HasKey(x => new { x.BookingRoomId, x.GuestId });
 
         builder.Entity<Hotel>().HasIndex(h => h.Code).IsUnique();
         builder.Entity<HotelRoom>().HasIndex(r => new { r.HotelId, r.RoomTypeId, r.Id }).IsUnique();
@@ -92,10 +94,16 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
             .HasForeignKey(b => b.HotelId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.Entity<Booking>()
-            .HasOne<HotelRoom>()
+        builder.Entity<BookingRoomType>()
+            .HasOne<Booking>()
             .WithMany()
-            .HasForeignKey(b => b.RoomId)
+            .HasForeignKey(b => b.BookingId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<BookingRoom>()
+            .HasOne<BookingRoomType>()
+            .WithMany()
+            .HasForeignKey(b => b.BookingRoomTypeId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.Entity<Booking>()
@@ -105,9 +113,9 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
             .OnDelete(DeleteBehavior.SetNull);
 
         builder.Entity<BookingGuest>()
-            .HasOne(bg => bg.Booking)
+            .HasOne(bg => bg.BookingRoom)
             .WithMany(b => b.Guests)
-            .HasForeignKey(bg => bg.BookingId)
+            .HasForeignKey(bg => bg.BookingRoomId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<BookingGuest>()

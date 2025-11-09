@@ -3,8 +3,6 @@ using HotelManagement.Services.Admin.Users;
 using HotelManagement.Services.Admin.Hotels;
 using HotelManagement.Services.Admin.Audit;
 using HotelManagement.Services.Admin.RoomTypes;
-using HotelManagement.Services.Admin.Bookings;
-using HotelManagement.Services.Admin.GroupBookings;
 using HotelManagement.Services.Admin.Rooms;
 using HotelManagement.Services.Admin.Menu;
 using HotelManagement.Services.Admin.Kitchen;
@@ -23,8 +21,6 @@ public static class DependencyInjection
             services.AddScoped<IHotelsAdminService, HotelsAdminService>();
             services.AddScoped<IAuditService, AuditService>();
             services.AddScoped<IRoomTypeService, RoomTypeService>();
-            services.AddScoped<IBookingService, BookingService>();
-            services.AddScoped<IGroupBookingService, GroupBookingService>();
             services.AddScoped<IRoomsService, RoomsService>();
             services.AddScoped<IMenuService, MenuService>();
             services.AddScoped<IKitchenService, KitchenService>();

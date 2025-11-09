@@ -1,7 +1,5 @@
 using HotelManagement.Services.Admin.Rooms;
 using HotelManagement.Services.Admin.Rooms.Dtos;
-using HotelManagement.Services.Admin.Bookings;
-using HotelManagement.Services.Admin.Bookings.Dtos;
 using HotelManagement.Services.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,12 +12,10 @@ namespace HotelManagement.Api.Controllers.Admin;
 public class RoomsController : ControllerBase
 {
     private readonly IRoomsService _roomsService;
-    private readonly IBookingService _bookingService;
 
-    public RoomsController(IRoomsService roomsService, IBookingService bookingService)
+    public RoomsController(IRoomsService roomsService)
     {
         _roomsService = roomsService;
-        _bookingService = bookingService;
     }
 
     // UC-23: List rooms by status, floor, type
@@ -74,67 +70,4 @@ public class RoomsController : ControllerBase
         return Ok(result);
     }
 
-    // UC-34: Get room availability timeline for all rooms in a hotel
-    [HttpGet("availability")]
-    [Authorize(Roles = "FrontDesk")]
-    public async Task<IActionResult> GetRoomAvailability([FromQuery] RoomAvailabilityQueryDto query)
-    {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
-        // Validate date range
-        if (query.From >= query.To)
-        {
-            return BadRequest("From date must be before To date");
-        }
-
-        // Limit date range to prevent excessive data
-        var maxDays = 365;
-        if ((query.To - query.From).TotalDays > maxDays)
-        {
-            return BadRequest($"Date range cannot exceed {maxDays} days");
-        }
-
-        var result = await _bookingService.GetRoomAvailabilityAsync(query);
-        
-        if (result.IsSuccess)
-        {
-            return Ok(result);
-        }
-
-        return BadRequest(result);
-    }
-
-    // UC-34: Get booking schedule for a specific room
-    [HttpGet("{roomId}/schedule")]
-    [Authorize(Roles = "FrontDesk")]
-    public async Task<IActionResult> GetRoomSchedule(
-        Guid roomId, 
-        [FromQuery] DateTime from, 
-        [FromQuery] DateTime to)
-    {
-        // Validate date range
-        if (from >= to)
-        {
-            return BadRequest("From date must be before To date");
-        }
-
-        // Limit date range to prevent excessive data
-        var maxDays = 365;
-        if ((to - from).TotalDays > maxDays)
-        {
-            return BadRequest($"Date range cannot exceed {maxDays} days");
-        }
-
-        var result = await _bookingService.GetRoomScheduleAsync(roomId, from, to);
-        
-        if (result.IsSuccess)
-        {
-            return Ok(result);
-        }
-
-        return BadRequest(result);
-    }
 }
