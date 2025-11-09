@@ -1,25 +1,16 @@
-**/.classpath
-**/.dockerignore
-**/.env
-**/.git
-**/.gitignore
-**/.project
-**/.settings
-**/.toolstarget
-**/.vs
-**/.vscode
-**/*.*proj.user
-**/*.dbmdl
-**/*.jfm
-**/azds.yaml
-**/bin
-**/charts
-**/docker-compose*
-**/Dockerfile*
-**/node_modules
-**/npm-debug.log
-**/obj
-**/secrets.dev.yaml
-**/values.dev.yaml
-LICENSE
-README.md
+# Ignore build outputs and temporary files
+**/bin/
+**/obj/
+
+# Git and CI
+.git/
+.github/
+
+# Node and frontend cache (if any included in backend)
+**/node_modules/
+**/.vite/
+
+# IDE files
+**/*.user
+**/*.suo
+**/.vs/

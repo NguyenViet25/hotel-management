@@ -37,8 +37,17 @@ jobs:
           set -e
           git config user.name "${{ matrix.user.name }}"
           git config user.email "${{ matrix.user.email }}"
+          git config pull.rebase true
           BRANCH="${{ matrix.user.branch }}"
-          git checkout -B "$BRANCH"
+          # Ensure we start from the remote branch tip if it exists
+          git fetch origin "$BRANCH" || true
+          if git show-ref --verify --quiet "refs/remotes/origin/$BRANCH"; then
+            git checkout -B "$BRANCH" "origin/$BRANCH"
+          else
+            git checkout -B "$BRANCH"
+            # Create upstream tracking if branch is new
+            git push -u origin "$BRANCH"
+          fi
           mkdir -p daily-commits
           touch "daily-commits/${{ matrix.user.branch }}.md"
 
@@ -137,6 +146,10 @@ jobs:
             "dam bao backward-compatible"
           )
 
+          # Always rebase onto the latest remote before starting local commits
+
+          git pull --rebase origin "$BRANCH"
+
           for i in 1 2 3 4 5; do
             udx=$((RANDOM % ${#ucs[@]}))
             tdx=$((RANDOM % ${#types[@]}))
@@ -149,4 +162,9 @@ jobs:
             sleep $((RANDOM % 3 + 1))
           done
 
-          git push origin "$BRANCH"
+          # Rebase onto latest remote in case of concurrent updates, then push
+
+          git fetch origin "$BRANCH"
+          git rebase "origin/$BRANCH"
+          # Try normal push first; if it fails due to non-fast-forward, rebase again and push with lease
+          git push origin "$BRANCH" || { git fetch origin "$BRANCH"; git rebase "origin/$BRANCH"; git push --force-with-lease origin "$BRANCH"; }

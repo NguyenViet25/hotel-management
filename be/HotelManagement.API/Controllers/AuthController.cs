@@ -1,217 +1,67 @@
-using System;
-using System.Threading.Tasks;
-using HotelManagement.Services.Interfaces;
+﻿using HotelManagement.Services.Auth;
+using HotelManagement.Services.Auth.Dtos;
+using HotelManagement.Services.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using HotelManagement.API.Models;
 
-namespace HotelManagement.API.Controllers
+namespace HotelManagement.Api.Controllers;
+
+[ApiController]
+[Route("api/auth")]
+[AllowAnonymous]
+public class AuthController(IAuthService auth) : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class AuthController : ControllerBase
+    private readonly IAuthService _auth = auth;
+
+    [HttpPost("login")]
+    [AllowAnonymous]
+    public async Task<ActionResult<ApiResponse<LoginResponseDto>>> Login([FromBody] LoginRequestDto request)
     {
-        private readonly IAuthService _authService;
+        var result = await _auth.LoginAsync(request);
+        if (result.RequiresTwoFactor) return Ok(ApiResponse<LoginResponseDto>.Ok(result, "Two-factor required"));
 
-        public AuthController(IAuthService authService)
+        if (result.ExpiresAt > DateTimeOffset.Now) // <-- Assuming your LoginAsync sets this
         {
-            _authService = authService;
+            // Optional: calculate remaining lockout time
+            var remainingLockout = result.ExpiresAt.HasValue
+                ? (result.ExpiresAt.Value - DateTimeOffset.Now).TotalMinutes
+                : 0;
+
+            return Unauthorized(ApiResponse<LoginResponseDto>.Fail(
+                $"Tải khoản của bạn đã bị khóa."
+            ));
         }
 
-        [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequest request)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var result = await _authService.LoginAsync(request.Username, request.Password);
-
-            if (!result.Success)
-            {
-                return Unauthorized(new { message = "Invalid username or password" });
-            }
-
-            return Ok(new
-            {
-                token = result.Token,
-                refreshToken = result.RefreshToken,
-                user = new
-                {
-                    id = result.User.Id,
-                    username = result.User.Username,
-                    email = result.User.Email,
-                    firstName = result.User.FirstName,
-                    lastName = result.User.LastName
-                }
-            });
-        }
-
-        [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var result = await _authService.RegisterAsync(
-                request.Username,
-                request.Email,
-                request.Password,
-                request.FirstName,
-                request.LastName);
-
-            if (!result.Success)
-            {
-                return BadRequest(new { message = result.Message });
-            }
-
-            return Ok(new { message = result.Message });
-        }
-
-        [HttpPost("refresh-token")]
-        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var result = await _authService.RefreshTokenAsync(request.Token, request.RefreshToken);
-
-            if (!result.Success)
-            {
-                return Unauthorized(new { message = "Invalid token or refresh token" });
-            }
-
-            return Ok(new
-            {
-                token = result.Token,
-                refreshToken = result.RefreshToken
-            });
-        }
-
-        [HttpPost("google-login")]
-        public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginRequest request)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var result = await _authService.GoogleLoginAsync(request.Credential);
-
-            if (!result.Success)
-            {
-                return Unauthorized(new { message = "Invalid Google credentials" });
-            }
-
-            return Ok(new
-            {
-                token = result.Token,
-                refreshToken = result.RefreshToken
-            });
-        }
-
-        [Authorize]
-        [HttpPost("change-password")]
-        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Unauthorized(new { message = "User not authenticated" });
-            }
-
-            var result = await _authService.ChangePasswordAsync(userId, request.CurrentPassword, request.NewPassword);
-
-            if (!result.Success)
-            {
-                return BadRequest(new { message = result.Message });
-            }
-
-            return Ok(new { message = result.Message });
-        }
-
-        [HttpPost("forgot-password")]
-        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var result = await _authService.ForgotPasswordAsync(request.Email);
-
-            // Always return success to prevent email enumeration attacks
-            return Ok(new { message = "If your email is registered, you will receive password reset instructions" });
-        }
-
-        [HttpPost("reset-password")]
-        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var result = await _authService.ResetPasswordAsync(request.Email, request.Token, request.NewPassword);
-
-            if (!result.Success)
-            {
-                return BadRequest(new { message = result.Message });
-            }
-
-            return Ok(new { message = result.Message });
-        }
-
-        [HttpGet("verify-email")]
-        public async Task<IActionResult> VerifyEmail([FromQuery] string userId, [FromQuery] string token)
-        {
-            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(token))
-            {
-                return BadRequest(new { message = "Invalid verification link" });
-            }
-
-            var result = await _authService.VerifyEmailAsync(userId, token);
-
-            if (!result.Success)
-            {
-                return BadRequest(new { message = result.Message });
-            }
-
-            return Ok(new { message = result.Message });
-        }
-
-        [Authorize]
-        [HttpPost("send-verification-email")]
-        public async Task<IActionResult> SendVerificationEmail()
-        {
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Unauthorized(new { message = "User not authenticated" });
-            }
-
-            var result = await _authService.SendVerificationEmailAsync(userId);
-
-            if (!result.Success)
-            {
-                return BadRequest(new { message = result.Message });
-            }
-
-            return Ok(new { message = result.Message });
-        }
+        if (string.IsNullOrEmpty(result.AccessToken)) return Unauthorized(ApiResponse<LoginResponseDto>.Fail("Đăng nhập thất bại. Vui lòng kiểm tra thông tin đăng nhập."));
+        return Ok(ApiResponse<LoginResponseDto>.Ok(result, "Đăng nhập thành công"));
     }
+
+
+    [HttpPost("logout")]
+    [Authorize]
+    public async Task<ActionResult<ApiResponse>> Logout()
+    {
+        await _auth.LogoutAsync(User.Identity?.Name ?? string.Empty);
+        return Ok(ApiResponse.Ok("Logged out"));
+    }
+
+    [HttpPost("forgot-password")]
+    [AllowAnonymous]
+    public async Task<ActionResult<ApiResponse>> ForgotPassword([FromBody] ForgotPasswordRequestDto request)
+    {
+        var ok = await _auth.SendForgotPasswordOtpAsync(request);
+        if (!ok) return NotFound(ApiResponse.Fail("User not found"));
+        return Ok(ApiResponse.Ok("Reset OTP sent"));
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<ActionResult<ApiResponse>> ResetPassword([FromBody] ResetPasswordRequestDto request)
+    {
+        var ok = await _auth.ResetPasswordAsync(request);
+        if (!ok) return BadRequest(ApiResponse.Fail("Reset failed"));
+        return Ok(ApiResponse.Ok("Password reset successful"));
+    }
+
 
 
 }
