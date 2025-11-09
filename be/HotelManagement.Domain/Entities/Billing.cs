@@ -1,24 +1,5 @@
 namespace HotelManagement.Domain;
 
-public class Payment
-{
-    public Guid Id { get; set; }
-    public Guid HotelId { get; set; }
-    public Guid? BookingId { get; set; }
-    public Guid? OrderId { get; set; }
-    public Guid? InvoiceId { get; set; }
-    public decimal Amount { get; set; }
-    public PaymentType Type { get; set; }
-    public PaymentMethod Method { get; set; }
-    public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
-    public string? TransactionReference { get; set; }
-    public string? Notes { get; set; }
-    public Guid CreatedById { get; set; }
-    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
-    
-    // Navigation properties
-    public Invoice? Invoice { get; set; }
-}
 
 public class Invoice
 {
@@ -45,7 +26,6 @@ public class Invoice
     
     // Navigation properties
     public ICollection<InvoiceLine> Lines { get; set; } = new List<InvoiceLine>();
-    public ICollection<Payment> Payments { get; set; } = new List<Payment>();
 }
 
 public enum InvoiceLineSourceType

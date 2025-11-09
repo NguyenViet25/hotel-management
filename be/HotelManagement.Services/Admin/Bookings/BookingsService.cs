@@ -70,14 +70,15 @@ public class BookingsService : IBookingsService
             var booking = new Booking
             {
                 Id = Guid.NewGuid(),
-                HotelId = dto.HotelId,
+                HotelIdKey = dto.HotelId,
                 PrimaryGuestId = primaryGuest.Id,
                 Status = BookingStatus.Pending,
                 DepositAmount = dto.Deposit,
                 DiscountAmount = dto.Discount,
                 TotalAmount = dto.Total,
                 LeftAmount = dto.Left,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                Notes = dto.Notes,
             };
             await _bookingRepo.AddAsync(booking);
             await _bookingRepo.SaveChangesAsync();
@@ -95,14 +96,15 @@ public class BookingsService : IBookingsService
                 var brt = new BookingRoomType
                 {
                     BookingRoomTypeId = Guid.NewGuid(),
-                    BookingId = booking.Id,
+                    BookingIdKey = booking.Id,
                     RoomTypeId = rt.RoomTypeId,
                     RoomTypeName = roomType.Name,
                     Capacity = rt.Capacity ?? roomType.Capacity,
                     Price = rt.Price ?? roomType.BasePriceFrom,
                     StartDate = rt.StartDate,
                     EndDate = rt.EndDate,
-                    TotalRoom = rt.Rooms?.Count ?? 0
+                    TotalRoom = rt.TotalRoom ?? 0
+
                 };
                 await _bookingRoomTypeRepo.AddAsync(brt);
                 await _bookingRoomTypeRepo.SaveChangesAsync();
@@ -141,7 +143,7 @@ public class BookingsService : IBookingsService
                     {
                         BookingRoomId = Guid.NewGuid(),
                         RoomId = r.RoomId,
-                        BookingRoomTypeId = brt.BookingRoomTypeId,
+                        BookingRoomTypeIdKey = brt.BookingRoomTypeId,
                         RoomName = room.Number,
                         StartDate = r.StartDate,
                         EndDate = r.EndDate,
@@ -208,6 +210,7 @@ public class BookingsService : IBookingsService
         try
         {
             var b = await _bookingRepo.Query()
+                .Include(x => x.PrimaryGuest)
                 .Include(b => b.BookingRoomTypes)
                 .ThenInclude(brt => brt.BookingRooms)
                 .Include(b => b.CallLogs)
@@ -230,9 +233,12 @@ public class BookingsService : IBookingsService
             var dto = new BookingDetailsDto
             {
                 Id = b.Id,
-                HotelId = b.HotelId,
+                HotelId = b.HotelIdKey,
                 PrimaryGuestId = b.PrimaryGuestId,
-                PrimaryGuestName = (await _guestRepo.FindAsync(b.PrimaryGuestId ?? Guid.Empty))?.FullName,
+                PrimaryGuestName = b.PrimaryGuest?.FullName,
+                PhoneNumber = b.PrimaryGuest?.Phone,
+                Email = b.PrimaryGuest?.Email,
+                Notes = b.Notes,
                 Status = b.Status,
                 DepositAmount = b.DepositAmount,
                 DiscountAmount = b.DiscountAmount,
@@ -279,6 +285,31 @@ public class BookingsService : IBookingsService
                 }).ToList() ?? new List<CallLogDto>()
             };
 
+            var roomTypes = await _bookingRoomTypeRepo.Query()
+                    .Include(x => x.RoomType).Where(x => x.BookingIdKey == dto.Id).ToListAsync();
+
+            dto.BookingRoomTypes = roomTypes.Select(rt => new BookingRoomTypeDto
+            {
+                BookingRoomTypeId = rt.BookingRoomTypeId,
+                RoomTypeId = rt.RoomTypeId,
+                RoomTypeName = rt.RoomTypeName,
+                Capacity = rt.Capacity,
+                Price = rt.Price,
+                TotalRoom = rt.TotalRoom,
+                StartDate = rt.StartDate,
+                EndDate = rt.EndDate,
+                BookingRooms = rt.BookingRooms.Select(r => new BookingRoomDto
+                {
+                    BookingRoomId = r.BookingRoomId,
+                    RoomId = r.RoomId,
+                    RoomName = r.RoomName,
+                    StartDate = r.StartDate,
+                    EndDate = r.EndDate,
+                    BookingStatus = r.BookingStatus,
+                    Guests = new List<BookingGuestDto>()
+                }).ToList()
+            }).ToList();
+
             return ApiResponse<BookingDetailsDto>.Ok(dto);
         }
         catch (Exception ex)
@@ -298,7 +329,7 @@ public class BookingsService : IBookingsService
                 .Where(x => true);
 
             if (query.HotelId.HasValue)
-                q = q.Where(b => b.HotelId == query.HotelId.Value);
+                q = q.Where(b => b.HotelIdKey == query.HotelId.Value);
             if (query.Status.HasValue)
                 q = q.Where(b => b.Status == query.Status.Value);
             if (query.StartDate.HasValue)
@@ -340,19 +371,23 @@ public class BookingsService : IBookingsService
                 .Where(g => primaryGuestIds.Contains(g.Id))
                 .ToDictionaryAsync(g => g.Id, g => g.FullName);
 
+
+
             var dtos = items.Select(b => new BookingDetailsDto
             {
                 Id = b.Id,
-                HotelId = b.HotelId,
+                HotelId = b.HotelIdKey,
                 PrimaryGuestId = b.PrimaryGuestId,
                 PrimaryGuestName = b.PrimaryGuest?.FullName,
                 PhoneNumber = b.PrimaryGuest?.Phone,
+                Email = b.PrimaryGuest?.Email,
                 Status = b.Status,
                 DepositAmount = b.DepositAmount,
                 DiscountAmount = b.DiscountAmount,
                 TotalAmount = b.TotalAmount,
                 LeftAmount = b.LeftAmount,
                 CreatedAt = b.CreatedAt,
+                Notes = b.Notes,
                 BookingRoomTypes = b.BookingRoomTypes.Select(rt => new BookingRoomTypeDto
                 {
                     BookingRoomTypeId = rt.BookingRoomTypeId,
@@ -375,7 +410,38 @@ public class BookingsService : IBookingsService
                 CallLogs = new List<CallLogDto>()
             }).ToList();
 
-            return ApiResponse<List<BookingDetailsDto>>.Ok(dtos, meta: new { total, page = query.Page, pageSize = query.PageSize });
+            var list = new List<BookingDetailsDto>();
+
+            foreach (var item in dtos)
+            {
+                var roomTypes = await _bookingRoomTypeRepo.Query()
+                    .Include(x => x.RoomType).Where(x => x.BookingIdKey == item.Id).ToListAsync();
+
+                item.BookingRoomTypes = roomTypes.Select(rt => new BookingRoomTypeDto
+                {
+                    BookingRoomTypeId = rt.BookingRoomTypeId,
+                    RoomTypeId = rt.RoomTypeId,
+                    RoomTypeName = rt.RoomTypeName,
+                    Capacity = rt.Capacity,
+                    Price = rt.Price,
+                    TotalRoom = rt.TotalRoom,
+                    BookingRooms = rt.BookingRooms.Select(r => new BookingRoomDto
+                    {
+                        BookingRoomId = r.BookingRoomId,
+                        RoomId = r.RoomId,
+                        RoomName = r.RoomName,
+                        StartDate = r.StartDate,
+                        EndDate = r.EndDate,
+                        BookingStatus = r.BookingStatus,
+                        Guests = new List<BookingGuestDto>()
+                    }).ToList()
+                }).ToList();
+
+                list.Add(item);
+            }
+
+
+            return ApiResponse<List<BookingDetailsDto>>.Ok(list, meta: new { total, page = query.Page, pageSize = query.PageSize });
         }
         catch (Exception ex)
         {
@@ -399,56 +465,23 @@ public class BookingsService : IBookingsService
                 return ApiResponse<BookingDetailsDto>.Fail("Booking not found");
             }
 
-            if (dto.Deposit.HasValue)
-            {
-                // Refund logic if deposit reduced
-                var diff = booking.DepositAmount - dto.Deposit.Value;
-                if (diff > 0)
-                {
-                    booking.DepositAmount = dto.Deposit.Value;
-                    // create a refund payment record
-                    // Note: no payment service layer exists here; keep simple
-                }
-                else if (diff < 0)
-                {
-                    booking.DepositAmount = dto.Deposit.Value;
-                }
-            }
-
-            if (dto.Discount.HasValue)
-            {
-                booking.DiscountAmount = dto.Discount.Value;
-            }
-
-            if (dto.Status.HasValue)
-            {
-                booking.Status = dto.Status.Value;
-            }
-
             if (dto.RoomTypes != null)
             {
-                // For simplicity: replace room types/rooms entirely
-                // Validate availability and rebuild
-                // Remove existing
-                var existingRoomTypeIds = booking.BookingRoomTypes.Select(rt => rt.BookingRoomTypeId).ToList();
-                var existingRooms = booking.BookingRoomTypes.SelectMany(rt => rt.BookingRooms).Select(r => r.BookingRoomId).ToList();
+                var existingRoomTypeIds = await _bookingRoomTypeRepo.Query().Where(x => x.BookingIdKey == booking.Id).ToListAsync();
 
-                foreach (var rId in existingRooms)
+                foreach (var item in existingRoomTypeIds)
                 {
-                    var br = await _bookingRoomRepo.FindAsync(rId);
-                    if (br != null) await _bookingRoomRepo.RemoveAsync(br);
-                }
-                foreach (var rtId in existingRoomTypeIds)
-                {
-                    var brt = await _bookingRoomTypeRepo.FindAsync(rtId);
-                    if (brt != null) await _bookingRoomTypeRepo.RemoveAsync(brt);
+                    await _bookingRoomTypeRepo.RemoveAsync(item);
+                    await _bookingRoomTypeRepo.SaveChangesAsync();
                 }
 
-                decimal total = 0m;
+                // TODO: remove booking room later
+                await _bookingRoomRepo.SaveChangesAsync();
+
                 foreach (var rt in dto.RoomTypes)
                 {
                     var roomType = await _roomTypeRepo.FindAsync(rt.RoomTypeId);
-                    if (roomType == null || roomType.HotelId != booking.HotelId)
+                    if (roomType == null || roomType.HotelId != booking.HotelIdKey)
                     {
                         await _uow.RollbackTransactionAsync();
                         return ApiResponse<BookingDetailsDto>.Fail("Room type invalid for hotel");
@@ -457,19 +490,21 @@ public class BookingsService : IBookingsService
                     var brt = new BookingRoomType
                     {
                         BookingRoomTypeId = Guid.NewGuid(),
-                        BookingId = booking.Id,
+                        BookingIdKey = booking.Id,
                         RoomTypeId = rt.RoomTypeId,
                         RoomTypeName = roomType.Name,
+                        StartDate = rt.StartDate,
+                        EndDate = rt.EndDate,
                         Capacity = rt.Capacity ?? roomType.Capacity,
                         Price = rt.Price ?? roomType.BasePriceFrom,
-                        TotalRoom = rt.Rooms?.Count ?? 0
+                        TotalRoom = rt.TotalRoom ?? 0
                     };
                     await _bookingRoomTypeRepo.AddAsync(brt);
+                    await _bookingRoomTypeRepo.SaveChangesAsync();
 
                     if (rt.Rooms == null || rt.Rooms.Count == 0)
                     {
-                        await _uow.RollbackTransactionAsync();
-                        return ApiResponse<BookingDetailsDto>.Fail("Each room type must include rooms");
+                        continue;
                     }
 
                     foreach (var r in rt.Rooms)
@@ -480,7 +515,7 @@ public class BookingsService : IBookingsService
                             return ApiResponse<BookingDetailsDto>.Fail("Invalid date range for room");
                         }
 
-                        var room = await _roomRepo.Query().FirstOrDefaultAsync(x => x.Id == r.RoomId && x.HotelId == booking.HotelId && x.RoomTypeId == rt.RoomTypeId);
+                        var room = await _roomRepo.Query().FirstOrDefaultAsync(x => x.Id == r.RoomId && x.HotelId == booking.HotelIdKey && x.RoomTypeId == rt.RoomTypeId);
                         if (room == null)
                         {
                             await _uow.RollbackTransactionAsync();
@@ -500,25 +535,37 @@ public class BookingsService : IBookingsService
                         {
                             BookingRoomId = Guid.NewGuid(),
                             RoomId = r.RoomId,
-                            BookingRoomTypeId = brt.BookingRoomTypeId,
+                            BookingRoomTypeIdKey = brt.BookingRoomTypeId,
                             RoomName = room.Number,
                             StartDate = r.StartDate,
                             EndDate = r.EndDate,
                             BookingStatus = BookingRoomStatus.Pending
                         };
                         await _bookingRoomRepo.AddAsync(bookingRoom);
+                        await _bookingRoomRepo.SaveChangesAsync();
 
-                        var nights = (decimal)(bookingRoom.EndDate.Date - bookingRoom.StartDate.Date).TotalDays;
-                        total += (brt.Price) * nights;
                     }
                 }
 
-                booking.TotalAmount = Math.Max(0, total - booking.DiscountAmount);
+            }
+            booking.TotalAmount = dto.Total;
+            booking.LeftAmount = dto.Left;
+            booking.DiscountAmount = dto.Discount;
+            booking.DepositAmount = dto.Deposit;
+            booking.Notes = dto.Notes;
+
+            var guest = await _guestRepo.Query().FirstOrDefaultAsync(x => x.Id == booking.PrimaryGuestId);
+            if (guest is not null)
+            {
+                guest.FullName = dto.PrimaryGuest.Fullname;
+                guest.Phone = dto.PrimaryGuest.Phone ?? "";
+                guest.Email = dto.PrimaryGuest.Email;
+                await _guestRepo.SaveChangesAsync();
             }
 
-            booking.LeftAmount = Math.Max(0, booking.TotalAmount - booking.DepositAmount);
-
             await _bookingRepo.UpdateAsync(booking);
+            await _bookingRepo.SaveChangesAsync();
+
             await _uow.CommitTransactionAsync();
             return await GetByIdAsync(booking.Id);
         }
@@ -687,7 +734,7 @@ public class BookingsService : IBookingsService
                 .Where(br => from < br.EndDate && to > br.StartDate)
                 .Select(br => new BookingIntervalDto
                 {
-                    BookingId = br.BookingRoomType.BookingId,
+                    BookingId = br.BookingRoomType.BookingIdKey,
                     Start = br.StartDate,
                     End = br.EndDate,
                     Status = br.BookingRoomType.Booking.Status,

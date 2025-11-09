@@ -86,12 +86,5 @@ public class OrdersController : ControllerBase
         return Ok(result);
     }
 
-    // Apply discount code to order
-    [HttpPost("{orderId}/apply-discount")]
-    public async Task<ActionResult<ApiResponse<decimal>>> ApplyDiscount(Guid orderId, [FromBody] ApplyDiscountDto dto)
-    {
-        var result = await _ordersService.ApplyDiscountAsync(orderId, dto);
-        if (!result.IsSuccess) return BadRequest(result);
-        return Ok(result);
-    }
+   
 }

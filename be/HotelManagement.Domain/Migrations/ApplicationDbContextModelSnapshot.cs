@@ -63,19 +63,25 @@ namespace HotelManagement.Domain.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("DepositAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("DiscountAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<Guid>("HotelId")
+                    b.Property<Guid?>("HotelId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("HotelId1")
+                    b.Property<Guid>("HotelIdKey")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("LeftAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid?>("PrimaryGuestId")
                         .HasColumnType("uniqueidentifier");
@@ -84,13 +90,14 @@ namespace HotelManagement.Domain.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("HotelId");
 
-                    b.HasIndex("HotelId1");
+                    b.HasIndex("HotelIdKey");
 
                     b.HasIndex("PrimaryGuestId");
 
@@ -118,10 +125,10 @@ namespace HotelManagement.Domain.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("BookingRoomTypeId")
+                    b.Property<Guid?>("BookingRoomTypeId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("BookingRoomTypeId1")
+                    b.Property<Guid>("BookingRoomTypeIdKey")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("BookingStatus")
@@ -146,7 +153,7 @@ namespace HotelManagement.Domain.Migrations
 
                     b.HasIndex("BookingRoomTypeId");
 
-                    b.HasIndex("BookingRoomTypeId1");
+                    b.HasIndex("BookingRoomTypeIdKey");
 
                     b.HasIndex("HotelRoomId");
 
@@ -159,10 +166,10 @@ namespace HotelManagement.Domain.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("BookingId")
+                    b.Property<Guid?>("BookingId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("BookingId1")
+                    b.Property<Guid>("BookingIdKey")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Capacity")
@@ -172,6 +179,7 @@ namespace HotelManagement.Domain.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<Guid>("RoomTypeId")
@@ -190,7 +198,7 @@ namespace HotelManagement.Domain.Migrations
 
                     b.HasIndex("BookingId");
 
-                    b.HasIndex("BookingId1");
+                    b.HasIndex("BookingIdKey");
 
                     b.HasIndex("RoomTypeId");
 
@@ -258,41 +266,6 @@ namespace HotelManagement.Domain.Migrations
                     b.HasIndex("WaiterUserId");
 
                     b.ToTable("DiningSessions");
-                });
-
-            modelBuilder.Entity("HotelManagement.Domain.DiscountRule", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("HotelId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsPercentage")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("ValidFrom")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("ValidTo")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("HotelId");
-
-                    b.ToTable("DiscountRules");
                 });
 
             modelBuilder.Entity("HotelManagement.Domain.Entities.AppUser", b =>
@@ -517,6 +490,7 @@ namespace HotelManagement.Domain.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("DiscountAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<Guid?>("GuestId")
@@ -542,6 +516,7 @@ namespace HotelManagement.Domain.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("PaidAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime?>("PaidAt")
@@ -554,12 +529,15 @@ namespace HotelManagement.Domain.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("SubTotal")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("TaxAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("VatIncluded")
@@ -583,6 +561,7 @@ namespace HotelManagement.Domain.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Description")
@@ -663,6 +642,7 @@ namespace HotelManagement.Domain.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("UnitPrice")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
@@ -771,6 +751,7 @@ namespace HotelManagement.Domain.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("UnitPrice")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
@@ -782,61 +763,6 @@ namespace HotelManagement.Domain.Migrations
                     b.HasIndex("ProposedReplacementMenuItemId");
 
                     b.ToTable("OrderItems");
-                });
-
-            modelBuilder.Entity("HotelManagement.Domain.Payment", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<Guid?>("BookingId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("CreatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("HotelId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("InvoiceId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Method")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Notes")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid?>("OrderId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("Timestamp")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("TransactionReference")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BookingId");
-
-                    b.HasIndex("HotelId");
-
-                    b.HasIndex("InvoiceId");
-
-                    b.HasIndex("OrderId");
-
-                    b.ToTable("Payments");
                 });
 
             modelBuilder.Entity("HotelManagement.Domain.RoomStatusLog", b =>
@@ -876,9 +802,11 @@ namespace HotelManagement.Domain.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("BasePriceFrom")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("BasePriceTo")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("Capacity")
@@ -913,6 +841,7 @@ namespace HotelManagement.Domain.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<Guid>("HotelId")
@@ -1127,15 +1056,15 @@ namespace HotelManagement.Domain.Migrations
 
             modelBuilder.Entity("HotelManagement.Domain.Booking", b =>
                 {
-                    b.HasOne("HotelManagement.Domain.Hotel", null)
-                        .WithMany()
-                        .HasForeignKey("HotelId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("HotelManagement.Domain.Hotel", "Hotel")
                         .WithMany()
-                        .HasForeignKey("HotelId1");
+                        .HasForeignKey("HotelId");
+
+                    b.HasOne("HotelManagement.Domain.Hotel", null)
+                        .WithMany()
+                        .HasForeignKey("HotelIdKey")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("HotelManagement.Domain.Guest", "PrimaryGuest")
                         .WithMany()
@@ -1168,15 +1097,15 @@ namespace HotelManagement.Domain.Migrations
 
             modelBuilder.Entity("HotelManagement.Domain.BookingRoom", b =>
                 {
-                    b.HasOne("HotelManagement.Domain.BookingRoomType", null)
-                        .WithMany()
-                        .HasForeignKey("BookingRoomTypeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("HotelManagement.Domain.BookingRoomType", "BookingRoomType")
                         .WithMany("BookingRooms")
-                        .HasForeignKey("BookingRoomTypeId1");
+                        .HasForeignKey("BookingRoomTypeId");
+
+                    b.HasOne("HotelManagement.Domain.BookingRoomType", null)
+                        .WithMany()
+                        .HasForeignKey("BookingRoomTypeIdKey")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("HotelManagement.Domain.HotelRoom", "HotelRoom")
                         .WithMany()
@@ -1189,15 +1118,15 @@ namespace HotelManagement.Domain.Migrations
 
             modelBuilder.Entity("HotelManagement.Domain.BookingRoomType", b =>
                 {
-                    b.HasOne("HotelManagement.Domain.Booking", null)
-                        .WithMany()
-                        .HasForeignKey("BookingId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("HotelManagement.Domain.Booking", "Booking")
                         .WithMany("BookingRoomTypes")
-                        .HasForeignKey("BookingId1");
+                        .HasForeignKey("BookingId");
+
+                    b.HasOne("HotelManagement.Domain.Booking", null)
+                        .WithMany()
+                        .HasForeignKey("BookingIdKey")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("HotelManagement.Domain.RoomType", "RoomType")
                         .WithMany()
@@ -1237,15 +1166,6 @@ namespace HotelManagement.Domain.Migrations
                         .WithMany()
                         .HasForeignKey("WaiterUserId")
                         .OnDelete(DeleteBehavior.SetNull);
-                });
-
-            modelBuilder.Entity("HotelManagement.Domain.DiscountRule", b =>
-                {
-                    b.HasOne("HotelManagement.Domain.Hotel", null)
-                        .WithMany()
-                        .HasForeignKey("HotelId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("HotelManagement.Domain.HotelRoom", b =>
@@ -1382,31 +1302,6 @@ namespace HotelManagement.Domain.Migrations
                         .WithMany()
                         .HasForeignKey("ProposedReplacementMenuItemId")
                         .OnDelete(DeleteBehavior.SetNull);
-                });
-
-            modelBuilder.Entity("HotelManagement.Domain.Payment", b =>
-                {
-                    b.HasOne("HotelManagement.Domain.Booking", null)
-                        .WithMany()
-                        .HasForeignKey("BookingId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("HotelManagement.Domain.Hotel", null)
-                        .WithMany()
-                        .HasForeignKey("HotelId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("HotelManagement.Domain.Invoice", "Invoice")
-                        .WithMany("Payments")
-                        .HasForeignKey("InvoiceId");
-
-                    b.HasOne("HotelManagement.Domain.Order", null)
-                        .WithMany()
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Invoice");
                 });
 
             modelBuilder.Entity("HotelManagement.Domain.RoomStatusLog", b =>
@@ -1551,8 +1446,6 @@ namespace HotelManagement.Domain.Migrations
             modelBuilder.Entity("HotelManagement.Domain.Invoice", b =>
                 {
                     b.Navigation("Lines");
-
-                    b.Navigation("Payments");
                 });
 
             modelBuilder.Entity("HotelManagement.Domain.MenuGroup", b =>

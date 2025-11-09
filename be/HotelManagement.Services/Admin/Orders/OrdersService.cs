@@ -13,25 +13,19 @@ public class OrdersService : IOrdersService
     private readonly IRepository<Hotel> _hotelRepository;
     private readonly IRepository<Booking> _bookingRepository;
     private readonly IRepository<MenuItem> _menuItemRepository;
-    private readonly IRepository<DiscountRule> _discountRuleRepository;
-    private readonly IRepository<Payment> _paymentRepository;
 
     public OrdersService(
         IRepository<Order> orderRepository,
         IRepository<OrderItem> orderItemRepository,
         IRepository<Hotel> hotelRepository,
         IRepository<Booking> bookingRepository,
-        IRepository<MenuItem> menuItemRepository,
-        IRepository<DiscountRule> discountRuleRepository,
-        IRepository<Payment> paymentRepository)
+        IRepository<MenuItem> menuItemRepository)
     {
         _orderRepository = orderRepository;
         _orderItemRepository = orderItemRepository;
         _hotelRepository = hotelRepository;
         _bookingRepository = bookingRepository;
         _menuItemRepository = menuItemRepository;
-        _discountRuleRepository = discountRuleRepository;
-        _paymentRepository = paymentRepository;
     }
 
     public async Task<ApiResponse<List<OrderSummaryDto>>> ListAsync(OrdersQueryDto query)
@@ -189,7 +183,7 @@ public class OrdersService : IOrdersService
     {
         try
         {
-            var booking = await _bookingRepository.Query().FirstOrDefaultAsync(b => b.Id == dto.BookingId && b.HotelId == dto.HotelId);
+            var booking = await _bookingRepository.Query().FirstOrDefaultAsync(b => b.Id == dto.BookingId && b.HotelIdKey == dto.HotelId);
             if (booking == null) return ApiResponse<OrderDetailsDto>.Fail("Booking not found in hotel");
 
             var order = new Order
@@ -335,33 +329,5 @@ public class OrdersService : IOrdersService
         }
     }
 
-    public async Task<ApiResponse<decimal>> ApplyDiscountAsync(Guid orderId, ApplyDiscountDto dto)
-    {
-        try
-        {
-            var order = await _orderRepository.FindAsync(orderId);
-            if (order == null) return ApiResponse<decimal>.Fail("Order not found");
-            if (order.HotelId != dto.HotelId) return ApiResponse<decimal>.Fail("Order does not belong to hotel");
-
-            var itemsTotal = await _orderItemRepository.Query()
-                .Where(i => i.OrderId == orderId && i.Status != OrderItemStatus.Voided)
-                .SumAsync(i => i.UnitPrice * i.Quantity);
-
-            var rule = await _discountRuleRepository.Query()
-                .FirstOrDefaultAsync(dr => dr.HotelId == dto.HotelId && dr.Code == dto.Code && dr.IsActive &&
-                    (dr.ValidFrom == null || dr.ValidFrom <= DateTime.UtcNow) &&
-                    (dr.ValidTo == null || dr.ValidTo >= DateTime.UtcNow));
-
-            if (rule == null) return ApiResponse<decimal>.Fail("Invalid or inactive discount code");
-
-            var discountAmount = rule.IsPercentage ? Math.Round(itemsTotal * (rule.Amount / 100m), 2) : rule.Amount;
-            if (discountAmount > itemsTotal) discountAmount = itemsTotal;
-
-            return ApiResponse<decimal>.Ok(discountAmount, meta: new { code = dto.Code, percentage = rule.IsPercentage, amount = rule.Amount, itemsTotal, discountedTotal = itemsTotal - discountAmount });
-        }
-        catch (Exception ex)
-        {
-            return ApiResponse<decimal>.Fail($"Error applying discount: {ex.Message}");
-        }
-    }
+   
 }

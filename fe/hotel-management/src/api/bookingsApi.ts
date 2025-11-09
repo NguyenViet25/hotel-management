@@ -45,13 +45,7 @@ export interface CreateBookingDto {
   notes?: string;
 }
 
-export interface UpdateBookingDto {
-  deposit?: number;
-  discount?: number;
-  status?: BookingStatus;
-  notes?: string;
-  roomTypes?: CreateBookingRoomTypeDto[];
-}
+export interface UpdateBookingDto extends CreateBookingDto {}
 
 export interface AddCallLogDto {
   callTime: string; // ISO string
@@ -84,6 +78,8 @@ export interface BookingRoomTypeDto {
   capacity: number;
   price: number;
   totalRoom: number;
+  startDate: string;
+  endDate: string;
   bookingRooms: BookingRoomDto[];
 }
 
@@ -101,6 +97,7 @@ export interface BookingDetailsDto {
   primaryGuestId?: string;
   primaryGuestName?: string;
   phoneNumber?: string;
+  email?: string;
   status: BookingStatus;
   depositAmount: number;
   discountAmount: number;
@@ -110,6 +107,21 @@ export interface BookingDetailsDto {
   notes?: string;
   bookingRoomTypes: BookingRoomTypeDto[];
   callLogs: CallLogDto[];
+}
+
+// Minimal BookingDto used by some UI components
+export interface BookingDto {
+  id: string;
+  roomNumber?: string;
+  status?: BookingStatus;
+  depositAmount?: number;
+  discountAmount?: number;
+  totalAmount?: number;
+  leftAmount?: number;
+  notes?: string;
+  primaryGuest?: { fullName?: string };
+  bookingRoomTypes?: BookingRoomTypeDto[];
+  totalRoom?: number;
 }
 
 export interface RoomTimelineSegmentDto {

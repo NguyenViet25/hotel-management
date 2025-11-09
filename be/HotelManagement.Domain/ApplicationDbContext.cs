@@ -16,7 +16,6 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
     public DbSet<RoomType> RoomTypes => Set<RoomType>();
     public DbSet<HotelRoom> Rooms => Set<HotelRoom>();
     public DbSet<SurchargeRule> SurchargeRules => Set<SurchargeRule>();
-    public DbSet<DiscountRule> DiscountRules => Set<DiscountRule>();
     public DbSet<Guest> Guests => Set<Guest>();
     public DbSet<Booking> Bookings => Set<Booking>();
     public DbSet<BookingGuest> BookingGuests => Set<BookingGuest>();
@@ -31,7 +30,6 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
     public DbSet<DiningSession> DiningSessions => Set<DiningSession>();
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
-    public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<Invoice> Invoices => Set<Invoice>();
     public DbSet<InvoiceLine> InvoiceLines => Set<InvoiceLine>();
     public DbSet<UserPropertyRole> UserPropertyRoles => Set<UserPropertyRole>();
@@ -81,30 +79,59 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
             .HasForeignKey(sr => sr.HotelId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.Entity<DiscountRule>()
-            .HasOne<Hotel>()
-            .WithMany()
-            .HasForeignKey(dr => dr.HotelId)
-            .OnDelete(DeleteBehavior.Restrict);
+        builder.Entity<SurchargeRule>()
+            .Property(s => s.Amount)
+            .HasPrecision(18, 2);
+
 
         // Booking relations
         builder.Entity<Booking>()
             .HasOne<Hotel>()
             .WithMany()
-            .HasForeignKey(b => b.HotelId)
+            .HasForeignKey(b => b.HotelIdKey)
             .OnDelete(DeleteBehavior.Restrict);
+
+        var booking = builder.Entity<Booking>();
+
+        booking.Property(s => s.TotalAmount).HasPrecision(18, 2);
+        booking.Property(s => s.DepositAmount).HasPrecision(18, 2);
+        booking.Property(s => s.DiscountAmount).HasPrecision(18, 2);
+        booking.Property(s => s.LeftAmount).HasPrecision(18, 2);
+
+        var bookingRoomType = builder.Entity<BookingRoomType>();
+        bookingRoomType.Property(s => s.Price).HasPrecision(18, 2);
+
+        var invoice = builder.Entity<Invoice>();
+        invoice.Property(s => s.PaidAmount).HasPrecision(18, 2);
+        invoice.Property(s => s.DiscountAmount).HasPrecision(18, 2);
+        invoice.Property(s => s.SubTotal).HasPrecision(18, 2);
+        invoice.Property(s => s.TaxAmount).HasPrecision(18, 2);
+        invoice.Property(s => s.TotalAmount).HasPrecision(18, 2);
+
+        var roomType = builder.Entity<RoomType>();
+        roomType.Property(s => s.BasePriceFrom).HasPrecision(18, 2);
+        roomType.Property(s => s.BasePriceTo).HasPrecision(18, 2);
+
+        var menuItem = builder.Entity<MenuItem>();
+        menuItem.Property(s => s.UnitPrice).HasPrecision(18, 2);
+
+        var orderItem = builder.Entity<OrderItem>();
+        orderItem.Property(s => s.UnitPrice).HasPrecision(18, 2);
+
+        var invoiceLine = builder.Entity<InvoiceLine>();
+        invoiceLine.Property(s => s.Amount).HasPrecision(18, 2);
 
         builder.Entity<BookingRoomType>()
             .HasOne<Booking>()
             .WithMany()
-            .HasForeignKey(b => b.BookingId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .HasForeignKey(b => b.BookingIdKey)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<BookingRoom>()
             .HasOne<BookingRoomType>()
             .WithMany()
-            .HasForeignKey(b => b.BookingRoomTypeId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .HasForeignKey(b => b.BookingRoomTypeIdKey)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<Booking>()
             .HasOne(b => b.PrimaryGuest)
@@ -224,24 +251,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
             .HasForeignKey(oi => oi.ProposedReplacementMenuItemId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        // Billing relations
-        builder.Entity<Payment>()
-            .HasOne<Hotel>()
-            .WithMany()
-            .HasForeignKey(p => p.HotelId)
-            .OnDelete(DeleteBehavior.Restrict);
 
-        builder.Entity<Payment>()
-            .HasOne<Booking>()
-            .WithMany()
-            .HasForeignKey(p => p.BookingId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.Entity<Payment>()
-            .HasOne<Order>()
-            .WithMany()
-            .HasForeignKey(p => p.OrderId)
-            .OnDelete(DeleteBehavior.Restrict);
 
         builder.Entity<Invoice>()
             .HasOne<Hotel>()

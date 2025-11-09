@@ -6,9 +6,11 @@ import {
   Snackbar,
   Stack,
   Tooltip,
+  Typography,
 } from "@mui/material";
 import { Dayjs } from "dayjs";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import bookingsApi, {
   type BookingDetailsDto,
   type BookingRoomTypeDto,
@@ -45,6 +47,7 @@ const STATUS_OPTIONS: StatusOption[] = [
 ];
 
 const BookingManagementPage: React.FC = () => {
+  const navigate = useNavigate();
   // Data state
   const [rows, setRows] = useState<BookingDetailsDto[]>([]);
   const [loading, setLoading] = useState(false);
@@ -171,7 +174,7 @@ const BookingManagementPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, fromDate, toDate, guestName, roomNumber, hotelId]);
 
-  const openEditModal = async (summary: BookingSummaryDto) => {
+  const openEditModal = async (summary: BookingDetailsDto) => {
     try {
       const res = await bookingsApi.getById(summary.id);
       if ((res as any).isSuccess && (res as any).data) {
@@ -202,7 +205,13 @@ const BookingManagementPage: React.FC = () => {
       id: "bookingRoomTypes",
       label: "Loại phòng ",
       format: (s) => {
-        return s?.map((t: BookingRoomTypeDto) => t.roomTypeName).join(", ");
+        return s?.map((t: BookingRoomTypeDto) => (
+          <Stack key={t.roomTypeId} gap={1}>
+            <Typography variant="body2">
+              {t.totalRoom} {t.roomTypeName}
+            </Typography>
+          </Stack>
+        ));
       },
       minWidth: 160,
     },
@@ -210,25 +219,25 @@ const BookingManagementPage: React.FC = () => {
       id: "totalAmount",
       label: "Tổng cộng",
       minWidth: 120,
-      format: (v) => (typeof v === "number" ? v.toLocaleString() : ""),
+      format: (v) => (typeof v === "number" ? `${v.toLocaleString()} đ` : ""),
     },
     {
       id: "discountAmount",
       label: "Giảm giá",
       minWidth: 120,
-      format: (v) => (typeof v === "number" ? v.toLocaleString() : ""),
+      format: (v) => (typeof v === "number" ? `${v.toLocaleString()} đ` : ""),
     },
     {
       id: "depositAmount",
       label: "Cọc",
       minWidth: 120,
-      format: (v) => (typeof v === "number" ? v.toLocaleString() : ""),
+      format: (v) => (typeof v === "number" ? `${v.toLocaleString()} đ` : ""),
     },
     {
       id: "leftAmount",
       label: "Còn lại",
       minWidth: 120,
-      format: (v) => (typeof v === "number" ? v.toLocaleString() : ""),
+      format: (v) => (typeof v === "number" ? `${v.toLocaleString()} đ` : ""),
     },
 
     {
@@ -271,12 +280,12 @@ const BookingManagementPage: React.FC = () => {
           sx={{ flexWrap: "wrap" }}
         >
           <Tooltip title="Xem chi tiết">
-            <IconButton onClick={() => {}}>
+            <IconButton onClick={() => navigate(`/frontdesk/bookings/${r.id}`)}>
               <RemoveRedEye />
             </IconButton>
           </Tooltip>
           <Tooltip title="Chỉnh sửa">
-            <IconButton onClick={() => {}}>
+            <IconButton onClick={() => openEditModal(r)}>
               <Edit />
             </IconButton>
           </Tooltip>
@@ -350,6 +359,41 @@ const BookingManagementPage: React.FC = () => {
             severity: "success",
           });
           fetchList(1);
+        }}
+      />
+
+      {/* Update */}
+      <BookingFormModal
+        open={openEdit}
+        onClose={() => setOpenEdit(false)}
+        mode="update"
+        bookingData={selectedBooking as any}
+        onUpdate={async (payload) => {
+          if (!selectedBooking) return;
+          try {
+            const res = await bookingsApi.update(selectedBooking.id, payload);
+            if ((res as any).isSuccess) {
+              setSnackbar({
+                open: true,
+                message: "Cập nhật booking thành công",
+                severity: "success",
+              });
+              setOpenEdit(false);
+              fetchList(page);
+            } else {
+              setSnackbar({
+                open: true,
+                message: (res as any).message || "Cập nhật thất bại",
+                severity: "error",
+              });
+            }
+          } catch {
+            setSnackbar({
+              open: true,
+              message: "Cập nhật thất bại",
+              severity: "error",
+            });
+          }
         }}
       />
 

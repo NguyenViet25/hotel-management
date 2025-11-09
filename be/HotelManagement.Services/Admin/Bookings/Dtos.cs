@@ -39,6 +39,7 @@ public class CreateBookingRoomTypeDto
     [Required]
     public Guid RoomTypeId { get; set; }
     public decimal? Price { get; set; }
+    public int? TotalRoom { get; set; }
     public int? Capacity { get; set; }
     [Required]
     public DateTime StartDate { get; set; }
@@ -69,13 +70,9 @@ public class CreateBookingDto
     public string? Notes { get; set; }
 }
 
-public class UpdateBookingDto
+public class UpdateBookingDto: CreateBookingDto
 {
-    public decimal? Deposit { get; set; }
-    public decimal? Discount { get; set; }
-    public BookingStatus? Status { get; set; }
-    public string? Notes { get; set; }
-    public List<CreateBookingRoomTypeDto>? RoomTypes { get; set; }
+  
 }
 
 public class AddCallLogDto
@@ -115,6 +112,9 @@ public class BookingRoomTypeDto
     public int Capacity { get; set; }
     public decimal Price { get; set; }
     public int TotalRoom { get; set; }
+    public DateTime StartDate { get; set; }
+    public DateTime EndDate { get; set; }
+
     public List<BookingRoomDto> BookingRooms { get; set; } = new();
 }
 
@@ -134,6 +134,7 @@ public class BookingDetailsDto
     public Guid? PrimaryGuestId { get; set; }
     public string? PrimaryGuestName { get; set; }
     public string? PhoneNumber { get; set; }
+    public string? Email { get; set; }
     public BookingStatus Status { get; set; }
     public decimal DepositAmount { get; set; }
     public decimal DiscountAmount { get; set; }

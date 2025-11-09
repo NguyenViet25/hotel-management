@@ -3,7 +3,6 @@ using HotelManagement.Domain.Repositories;
 using HotelManagement.Repository.Common;
 using HotelManagement.Services.Admin.Invoicing.Dtos;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 
 namespace HotelManagement.Services.Admin.Invoicing;
 
@@ -69,7 +68,6 @@ public class InvoiceService : IInvoiceService
     {
         var invoice = await _invoiceRepository.Query()
             .Include(i => i.Lines)
-            .Include(i => i.Payments)
             .FirstOrDefaultAsync(i => i.Id == id);
 
         if (invoice == null)
@@ -295,22 +293,7 @@ public class InvoiceService : IInvoiceService
                 Amount = l.Amount,
                 SourceType = l.SourceType,
                 SourceId = l.SourceId
-            }).ToList(),
-            Payments = invoice.Payments?.Select(p => new PaymentDto
-            {
-                Id = p.Id,
-                HotelId = p.HotelId,
-                BookingId = p.BookingId,
-                OrderId = p.OrderId,
-                InvoiceId = p.InvoiceId,
-                Amount = p.Amount,
-                Type = p.Type,
-                Method = p.Method,
-                Status = p.Status,
-                TransactionReference = p.TransactionReference,
-                Notes = p.Notes,
-                Timestamp = p.Timestamp
-            }).ToList() ?? new List<PaymentDto>()
+            }).ToList()
         };
     }
 }

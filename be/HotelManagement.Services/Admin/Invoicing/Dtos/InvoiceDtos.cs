@@ -28,7 +28,6 @@ public class InvoiceDto
     public DateTime? IssuedAt { get; set; }
     public DateTime? PaidAt { get; set; }
     public List<InvoiceLineDto> Lines { get; set; } = new();
-    public List<PaymentDto> Payments { get; set; } = new();
 }
 
 public class InvoiceLineDto

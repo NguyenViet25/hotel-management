@@ -28,17 +28,22 @@ import React, { useEffect, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import bookingsApi, {
+  type BookingDetailsDto,
+  type BookingRoomTypeDto,
   type CreateBookingDto,
+  type UpdateBookingDto,
 } from "../../../../../api/bookingsApi";
 import roomTypesApi, { type RoomType } from "../../../../../api/roomTypesApi";
-import roomsApi, { type RoomDto } from "../../../../../api/roomsApi";
-import RoomBookingSection from "./RoomBookingSection";
 import { useStore, type StoreState } from "../../../../../hooks/useStore";
+import RoomBookingSection from "./RoomBookingSection";
 
 type Props = {
   open: boolean;
   onClose: () => void;
   onSubmitted?: () => void;
+  mode?: "create" | "update";
+  bookingData?: BookingDetailsDto | null;
+  onUpdate?: (data: UpdateBookingDto) => void;
 };
 
 // Price/projection calculation will be handled client-side
@@ -103,7 +108,14 @@ type FormValues = z.infer<typeof schema>;
 // Currency helper
 const formatCurrency = (value: number) => value.toLocaleString();
 
-const BookingFormModal: React.FC<Props> = ({ open, onClose, onSubmitted }) => {
+const BookingFormModal: React.FC<Props> = ({
+  open,
+  onClose,
+  onSubmitted,
+  mode = "create",
+  bookingData,
+  onUpdate,
+}) => {
   const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
   const { user } = useStore<StoreState>((state) => state);
   const hotelId = user?.hotelId || "";
@@ -148,12 +160,12 @@ const BookingFormModal: React.FC<Props> = ({ open, onClose, onSubmitted }) => {
   const totalAmount = watch("totalAmount") || 0;
 
   useEffect(() => {
-    if (roomTypes.length > 0) {
+    if (roomTypes.length > 0 && mode === "create") {
       // Initialize first room section defaults
       setValue("roomTypes.0.roomId", roomTypes[0].id);
       setValue("roomTypes.0.price", roomTypes[0].priceFrom || 0);
     }
-  }, [roomTypes]);
+  }, [roomTypes, mode]);
 
   useEffect(() => {
     // Keep price synced when room type changes
@@ -197,8 +209,89 @@ const BookingFormModal: React.FC<Props> = ({ open, onClose, onSubmitted }) => {
     severity: "success" as "success" | "error" | "info" | "warning",
   });
 
+  // Prefill form when updating an existing booking
+  useEffect(() => {
+    if (mode !== "update" || !bookingData) return;
+    try {
+      setValue("guestName", bookingData.primaryGuestName || "");
+      setValue("guestPhone", bookingData.phoneNumber || "");
+      setValue("guestEmail", bookingData.email || "");
+
+      const brts: BookingRoomTypeDto[] =
+        (bookingData as any).bookingRoomTypes || [];
+      const mapped = brts.map((rt) => {
+        const rooms = (rt.bookingRooms || []).map((r) => ({
+          roomId: r.roomId,
+        }));
+
+        const startDate = dayjs(rt.startDate);
+        const endDate = dayjs(rt.endDate);
+        return {
+          roomId: rt.roomTypeId,
+          startDate,
+          endDate,
+          totalRooms: rt.totalRoom || rooms.length || 1,
+          price: rt.price || 0,
+          rooms,
+        };
+      });
+      if (mapped.length > 0) setValue("roomTypes", mapped as any);
+      setValue("discountAmount", (bookingData as any).discountAmount || 0);
+      setValue("depositAmount", (bookingData as any).depositAmount || 0);
+      setValue("notes", (bookingData as any).notes || "");
+      setValue("totalAmount", (bookingData as any).totalAmount || 0);
+    } catch {}
+  }, [mode, bookingData, setValue]);
+
   const submit = async (values: FormValues) => {
     try {
+      if (values.roomTypes.length === 0) {
+        setSnackbar({
+          open: true,
+          message: "Vui lòng chọn loại phòng",
+          severity: "error",
+        });
+        return;
+      }
+
+      // Update booking flow
+      if (mode === "update" && bookingData?.id) {
+        const payload: UpdateBookingDto = {
+          hotelId: hotelId,
+          primaryGuest: {
+            fullname: values.guestName || "",
+            phone: values.guestPhone,
+            email: values.guestEmail || undefined,
+          },
+          deposit: values.depositAmount || 0,
+          discount: values.discountAmount || 0,
+          total: values.totalAmount || 0,
+          left:
+            (values.totalAmount || 0) -
+            (values.depositAmount || 0) -
+            (values.discountAmount || 0),
+          notes: values.notes || undefined,
+          roomTypes: values.roomTypes.map((rt) => ({
+            roomTypeId: rt.roomId,
+            price: rt.price || 0,
+            capacity: 0,
+            totalRoom: rt.totalRooms || 0,
+            startDate: rt.startDate,
+            endDate: rt.endDate,
+            rooms: rt.rooms.map((r) => ({
+              roomId: r?.roomId,
+              startDate: rt.startDate,
+              endDate: rt.endDate,
+              guests: [],
+            })),
+          })),
+        };
+        onUpdate?.(payload);
+        onClose();
+        reset();
+        return;
+      }
+
       const payload: CreateBookingDto = {
         hotelId: hotelId,
         primaryGuest: {
@@ -218,7 +311,9 @@ const BookingFormModal: React.FC<Props> = ({ open, onClose, onSubmitted }) => {
           roomTypeId: rt.roomId,
           price: rt.price || 0,
           capacity: 0,
-          totalRooms: rt.totalRooms || 0,
+          totalRoom: rt.totalRooms || 0,
+          startDate: rt.startDate,
+          endDate: rt.endDate,
           rooms: rt.rooms.map((r) => ({
             roomId: r?.roomId,
             startDate: rt.startDate,
@@ -249,7 +344,9 @@ const BookingFormModal: React.FC<Props> = ({ open, onClose, onSubmitted }) => {
         <Stack direction="row" alignItems="center" spacing={1.5}>
           <HotelIcon color="primary" />
           <Typography variant="h5" fontWeight={700} sx={{ lineHeight: 1.2 }}>
-            Tạo yêu cầu đặt phòng
+            {mode === "update"
+              ? "Chỉnh sửa yêu cầu đặt phòng"
+              : "Tạo yêu cầu đặt phòng"}
           </Typography>
         </Stack>
       </DialogTitle>
@@ -515,7 +612,7 @@ const BookingFormModal: React.FC<Props> = ({ open, onClose, onSubmitted }) => {
             onClick={handleSubmit(submit)}
             startIcon={<SaveIcon />}
           >
-            Lưu yêu cầu
+            {mode === "update" ? "Cập nhật" : "Lưu yêu cầu"}
           </Button>
         </Stack>
       </DialogActions>
