@@ -19,7 +19,7 @@ const HotelSelect: React.FC<HotelSelectProps> = ({ value, onChange, name }) => {
     const fetchHotels = async () => {
       try {
         const response = await axiosInstance.get<HotelSummaryDto[]>(
-          "/auth/hotels"
+          "/common/hotels"
         );
         setHotels(response.data);
       } catch (err: any) {

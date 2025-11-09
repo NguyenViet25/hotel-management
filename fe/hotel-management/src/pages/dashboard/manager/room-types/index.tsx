@@ -1,24 +1,22 @@
-import React, { useEffect, useState } from "react";
 import {
-  Box,
-  Typography,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  Snackbar,
   Alert,
-  Stack,
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Snackbar,
 } from "@mui/material";
-import RoomTypeTable from "./components/RoomTypeTable";
-import RoomTypeForm from "./components/RoomTypeForm";
+import React, { useEffect, useState } from "react";
 import roomTypesApi, {
-  type RoomType,
   type CreateRoomTypeRequest,
+  type RoomType,
   type UpdateRoomTypeRequest,
 } from "../../../../api/roomTypesApi";
 import PageTitle from "../../../../components/common/PageTitle";
+import RoomTypeForm from "./components/RoomTypeForm";
+import RoomTypeTable from "./components/RoomTypeTable";
 
 const RoomTypePage: React.FC = () => {
   const [items, setItems] = useState<RoomType[]>([]);
@@ -26,6 +24,7 @@ const RoomTypePage: React.FC = () => {
   const [page, setPage] = useState<number>(1);
   const [pageSize] = useState<number>(10);
   const [total, setTotal] = useState<number>(0);
+  const [search, setSearch] = useState<string>();
 
   const [createOpen, setCreateOpen] = useState<boolean>(false);
   const [editOpen, setEditOpen] = useState<boolean>(false);
@@ -38,12 +37,13 @@ const RoomTypePage: React.FC = () => {
     severity: "success" | "error" | "info" | "warning";
   }>({ open: false, message: "", severity: "success" });
 
-  const fetchList = async (newPage?: number) => {
+  const fetchList = async (newPage?: number, search?: string) => {
     setLoading(true);
     try {
       const res = await roomTypesApi.getRoomTypes({
         page: newPage ?? page,
         pageSize,
+        searchTerm: search,
       });
       if (res.isSuccess) {
         setItems(res.data);
@@ -67,8 +67,8 @@ const RoomTypePage: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchList(1);
-  }, []);
+    fetchList(1, search);
+  }, [search]);
 
   const handleAdd = () => {
     setSelected(null);
@@ -201,14 +201,14 @@ const RoomTypePage: React.FC = () => {
         onAdd={handleAdd}
         onEdit={handleEdit}
         onDelete={handleDelete}
-        onSearch={() => {}}
+        onSearch={(e) => setSearch(e)}
       />
 
       {/* Create */}
       <RoomTypeForm
         open={createOpen}
         onClose={() => setCreateOpen(false)}
-        onSubmit={submitCreate}
+        onSubmit={(e) => submitCreate(e)}
         hotelId={items[0]?.hotelId}
       />
 
@@ -216,7 +216,7 @@ const RoomTypePage: React.FC = () => {
       <RoomTypeForm
         open={editOpen}
         onClose={() => setEditOpen(false)}
-        onSubmit={submitUpdate}
+        onSubmit={(e) => submitUpdate(e)}
         initialData={selected}
       />
 

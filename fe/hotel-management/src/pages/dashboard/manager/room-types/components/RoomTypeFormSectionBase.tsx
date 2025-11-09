@@ -1,18 +1,15 @@
-import React from "react";
-import {
-  Grid,
-  TextField,
-  Typography,
-  Paper,
-  Tooltip,
-  InputAdornment,
-  Divider,
-  Box,
-  Stack,
-} from "@mui/material";
-import { Controller, type Control } from "react-hook-form";
-import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import {
+  Box,
+  Divider,
+  InputAdornment,
+  Stack,
+  TextField,
+  Tooltip,
+  Typography,
+} from "@mui/material";
+import React from "react";
+import { Controller, type Control } from "react-hook-form";
 
 export interface BaseSectionProps {
   control: Control<any>;
@@ -40,18 +37,19 @@ const RoomTypeFormSectionBase: React.FC<BaseSectionProps> = ({
       <Divider sx={{ mb: 2 }} />
       <Stack direction={"row"} spacing={2}>
         <Controller
-          name="basePrice"
+          name="basePriceFrom"
           control={control}
           render={({ field }) => (
             <Tooltip title="Nhập giá cơ bản theo VNĐ">
               <TextField
                 {...field}
+                name="basePriceFrom"
                 label="Giá từ (VND)"
                 type="number"
                 fullWidth
                 margin="normal"
-                error={!!errors.basePrice}
-                helperText={errors.basePrice?.message}
+                error={!!errors.basePriceFrom}
+                helperText={errors.basePriceFrom?.message}
                 inputProps={{ min: 0 }}
                 InputProps={{
                   endAdornment: (
@@ -63,7 +61,7 @@ const RoomTypeFormSectionBase: React.FC<BaseSectionProps> = ({
           )}
         />
         <Controller
-          name="basePrice"
+          name="basePriceTo"
           control={control}
           render={({ field }) => (
             <Tooltip title="Nhập giá cơ bản theo VNĐ">
@@ -73,8 +71,8 @@ const RoomTypeFormSectionBase: React.FC<BaseSectionProps> = ({
                 type="number"
                 fullWidth
                 margin="normal"
-                error={!!errors.basePrice}
-                helperText={errors.basePrice?.message}
+                error={!!errors.basePriceTo}
+                helperText={errors.basePriceTo?.message}
                 inputProps={{ min: 0 }}
                 InputProps={{
                   endAdornment: (

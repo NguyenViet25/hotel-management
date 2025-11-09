@@ -1,18 +1,22 @@
 import axios from "./axios";
 
-export interface AmenityDto { id: string; name: string; }
+export interface AmenityDto {
+  id: string;
+  name: string;
+}
 
 export interface RoomType {
-  id: string;
-  hotelId: string;
+  id: string; // GUID as string
+  hotelId: string; // GUID as string
   hotelName: string;
   name: string;
   description: string;
-  amenities: AmenityDto[];
-  images: string[];
+  images: string[]; // List of image URLs
   roomCount: number;
   canDelete: boolean;
-  basePrice?: number | null;
+  priceFrom: number;
+  priceTo: number;
+  priceByDates?: PriceByDate[]; // optional, defaults to empty array if needed
 }
 
 export interface RoomTypeQueryParams {
@@ -23,19 +27,25 @@ export interface RoomTypeQueryParams {
 }
 
 export interface CreateRoomTypeRequest {
-  hotelId: string;
+  hotelId: string; // UUID string
+  capacity: number;
   name: string;
   description: string;
-  amenityIds?: string[];
-  images?: string[];
+  priceFrom: number;
+  priceTo: number;
+  priceByDates?: PriceByDate[]; // optional, defaults to empty array if nee
 }
 
-export interface UpdateRoomTypeRequest {
-  name: string;
-  description: string;
-  amenityIds?: string[];
-  images?: string[];
+// PriceByDate equivalent
+export interface PriceByDate {
+  date: Date;
+  price: number;
 }
+
+// CreateRoomTypeDto equivalent
+export interface CreateRoomTypeDto {}
+
+export interface UpdateRoomTypeRequest extends CreateRoomTypeRequest {}
 
 export interface ListResponse<T> {
   isSuccess: boolean;

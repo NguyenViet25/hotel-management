@@ -59,7 +59,7 @@ const LoginPage = () => {
       );
       const { accessToken, user } = response.data.data;
       if (!user) throw new Error();
-      console.log(user);
+      console.log("user", user);
       setUser(user);
       localStorageHelper.setAuthData(accessToken!, user);
       navigateToCorrectPage(user);

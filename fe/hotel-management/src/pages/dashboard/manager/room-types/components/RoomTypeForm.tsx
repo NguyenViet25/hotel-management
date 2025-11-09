@@ -1,98 +1,71 @@
-import React, { useMemo, useState } from "react";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  TextField,
-  Stack,
-  Grid,
-  Paper,
-  Tabs,
-  Tab,
-  Typography,
-  Alert,
-  Tooltip,
-  InputAdornment,
-  Divider,
-  Box,
-} from "@mui/material";
-import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+import DescriptionIcon from "@mui/icons-material/Description";
+import HomeWorkIcon from "@mui/icons-material/HomeWork";
+import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
+import SaveIcon from "@mui/icons-material/Save";
+import {
+  Alert,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  InputAdornment,
+  Paper,
+  Stack,
+  Tab,
+  Tabs,
+  TextField,
+  Tooltip,
+  Typography,
+} from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { v4 as uuidv4 } from "uuid";
 import * as yup from "yup";
 import type {
-  RoomType,
   CreateRoomTypeRequest,
+  RoomType,
   UpdateRoomTypeRequest,
 } from "../../../../../api/roomTypesApi";
 import roomTypesApi from "../../../../../api/roomTypesApi";
-import pricingApi, {
-  type DayOfWeekPriceDto,
-} from "../../../../../api/pricingApi";
 import RoomTypeFormSectionBase from "./RoomTypeFormSectionBase";
-import RoomTypeFormSectionWeekday from "./RoomTypeFormSectionWeekday";
 import RoomTypeFormSectionDateRange from "./RoomTypeFormSectionDateRange";
-import HomeWorkIcon from "@mui/icons-material/HomeWork";
-import DescriptionIcon from "@mui/icons-material/Description";
-import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
-import ImageIcon from "@mui/icons-material/Image";
-import SaveIcon from "@mui/icons-material/Save";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import { useStore, type StoreState } from "../../../../../hooks/useStore";
 
 export interface RoomTypeFormProps {
   open: boolean;
   onClose: () => void;
   initialData?: RoomType | null;
   hotelId?: string; // required for create
-  onCreated?: (id: string) => void;
+  onSubmit: (data: any) => void;
 }
-
-const weekdayArraySchema = yup
-  .array()
-  .of(
-    yup
-      .number()
-      .transform((val) => (isNaN(val as any) ? 0 : Number(val)))
-      .min(0)
-      .required()
-  )
-  .length(7, "Cần đủ 7 giá theo thứ");
-
-const dateRangeSchema = yup.object({
-  startDate: yup
-    .date()
-    .typeError("Ngày bắt đầu không hợp lệ")
-    .required("Chọn ngày bắt đầu"),
-  endDate: yup
-    .date()
-    .typeError("Ngày kết thúc không hợp lệ")
-    .required("Chọn ngày kết thúc")
-    .min(yup.ref("startDate"), "Ngày kết thúc phải sau ngày bắt đầu"),
-  price: yup
-    .number()
-    .transform((val) => (isNaN(val as any) ? 0 : Number(val)))
-    .min(0, "Giá phải >= 0")
-    .required("Nhập giá"),
-});
 
 const schema = yup.object({
   hotelId: yup.string().optional(),
   name: yup.string().required("Vui lòng nhập tên loại phòng"),
   description: yup.string().optional(),
-  guests: yup
+  capacity: yup
     .number()
     .transform((val) => (isNaN(val as any) ? 0 : Number(val)))
     .min(1, "Sức chứa tối thiểu là 1")
     .required("Nhập sức chứa"),
-  images: yup.array().of(yup.string().url("URL ảnh không hợp lệ")).optional(),
-  basePrice: yup
+  basePriceFrom: yup
     .number()
     .transform((val) => (isNaN(val as any) ? 0 : Number(val)))
     .min(0, "Giá base phải >= 0")
     .required("Nhập giá base"),
-  weekdayPrices: weekdayArraySchema,
-  dateRanges: yup.array().of(dateRangeSchema).optional(),
+  basePriceTo: yup
+    .number()
+    .transform((val) => (isNaN(val as any) ? 0 : Number(val)))
+    .min(0, "Giá base phải >= 0")
+    .required("Nhập giá base"),
+  prices: yup.array().of(
+    yup.object({
+      date: yup.number().min(0).max(6).required(),
+      price: yup.number().min(0).required(),
+    })
+  ),
 });
 
 type FormValues = yup.InferType<typeof schema>;
@@ -102,12 +75,12 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
   onClose,
   initialData,
   hotelId,
-  onCreated,
+  onSubmit,
 }) => {
+  console.log("initialData", initialData);
   const isEdit = !!initialData;
   const [tabIndex, setTabIndex] = useState(0);
-
-  const defaultWeekdayPrices = useMemo(() => Array(7).fill(0), []);
+  const { user } = useStore<StoreState>((state) => state);
 
   const {
     register,
@@ -117,91 +90,73 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
     reset,
     setError,
   } = useForm<FormValues>({
-    resolver: yupResolver(schema),
+    resolver: yupResolver(schema) as any,
     defaultValues: {
-      hotelId: hotelId ?? "2cd64918-c7f5-4051-a629-a96594096087",
+      hotelId: user?.hotelId || "",
       name: initialData?.name ?? "",
       description: initialData?.description ?? "",
-      guests: 2,
-      images: [],
-      basePrice: 0,
-      weekdayPrices: defaultWeekdayPrices,
-      dateRanges: [],
+      capacity: initialData?.roomCount ?? 2,
+      basePriceFrom: initialData?.priceFrom ?? 0,
+      basePriceTo: initialData?.priceTo ?? 0,
+      prices: [],
     },
   });
+
+  useEffect(() => {
+    if (isEdit && initialData) {
+      reset({
+        ...initialData,
+        capacity: initialData?.roomCount ?? 2,
+        basePriceFrom: initialData?.priceFrom ?? 0,
+        basePriceTo: initialData?.priceTo ?? 0,
+        prices:
+          initialData.priceByDates?.map((p) => ({
+            date: p.date.getDay(),
+            price: p.price,
+          })) || [],
+      });
+    }
+  }, [isEdit, initialData, reset]);
 
   const submitHandler = async (values: FormValues) => {
     try {
       if (isEdit && initialData) {
         const payload: UpdateRoomTypeRequest = {
+          hotelId: user?.hotelId || "",
           name: values.name,
           description: values.description ?? "",
+          capacity: values.capacity,
+          priceFrom: values.basePriceFrom,
+          priceTo: values.basePriceTo,
+          priceByDates: values.prices?.map((p) => ({
+            date: new Date(p.date),
+            price: p.price,
+          })),
         };
-        await roomTypesApi.updateRoomType(initialData.id, payload);
-        onClose();
-        reset();
-        return;
+        onSubmit(payload);
       }
 
       const createPayload: CreateRoomTypeRequest = {
         hotelId: values.hotelId || hotelId || "",
         name: values.name,
         description: values.description ?? "",
-        amenityIds: [],
+        capacity: values.capacity,
+        priceFrom: values.basePriceFrom,
+        priceTo: values.basePriceTo,
+        priceByDates: values.prices?.map((p) => ({
+          date: new Date(p.date),
+          price: p.price,
+        })),
       };
-      const created = await roomTypesApi.createRoomType(createPayload);
-      const roomTypeId = created.id;
-      const hotelIdToUse = created.hotelId ?? (values.hotelId || hotelId || "");
 
-      // Base price
-      if (values.basePrice >= 0) {
-        await pricingApi.setBasePrice({
-          hotelId: hotelIdToUse,
-          roomTypeId,
-          price: values.basePrice,
-        });
-      }
-
-      // Weekday prices: only send non-zero entries
-      const weekdayPrices: DayOfWeekPriceDto[] = values.weekdayPrices
-        .map((price, idx) => ({ dayOfWeek: idx, price }))
-        .filter((p) => p.price > 0);
-      if (weekdayPrices.length > 0) {
-        await pricingApi.setBulkDayOfWeekPrices(
-          hotelIdToUse,
-          roomTypeId,
-          weekdayPrices
-        );
-      }
-
-      // Date-range prices
-      if (values.dateRanges && values.dateRanges.length > 0) {
-        for (const dr of values.dateRanges) {
-          if (dr.price > 0 && dr.startDate && dr.endDate) {
-            const startIso = new Date(dr.startDate as any)
-              .toISOString()
-              .slice(0, 10);
-            const endIso = new Date(dr.endDate as any)
-              .toISOString()
-              .slice(0, 10);
-            await pricingApi.createDateRangePrice({
-              hotelId: hotelIdToUse,
-              roomTypeId,
-              startDate: startIso,
-              endDate: endIso,
-              price: dr.price,
-            });
-          }
-        }
-      }
-
-      onCreated?.(roomTypeId);
-      onClose();
-      reset();
+      onSubmit(createPayload);
     } catch (err: any) {
       setError("root", {
         message: err?.message || "Có lỗi khi tạo loại phòng hoặc thiết lập giá",
       });
+    } finally {
+      onClose();
+      reset();
     }
   };
 
@@ -211,7 +166,7 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
         {isEdit ? "Chỉnh sửa loại phòng" : "Thêm loại phòng & Giá"}
       </DialogTitle>
       <DialogContent>
-        <Typography variant="body2" sx={{ color: "text.secondary", mb: 2 }}>
+        <Typography variant="body2" sx={{ color: "text.secondary" }}>
           Thiết lập thông tin và giá cho loại phòng
         </Typography>
 
@@ -240,7 +195,7 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
             />
           </Tooltip>
           <Controller
-            name="guests"
+            name="capacity"
             control={control}
             render={({ field }) => (
               <Tooltip title="Số khách tối đa của loại phòng">
@@ -250,8 +205,8 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
                   type="number"
                   fullWidth
                   margin="normal"
-                  error={!!errors.guests}
-                  helperText={errors.guests?.message}
+                  error={!!errors.capacity}
+                  helperText={errors.capacity?.message}
                   inputProps={{ min: 1 }}
                   InputProps={{
                     startAdornment: (
@@ -266,18 +221,18 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
           />
         </Stack>
         <Controller
-          name="guests"
+          name="description"
           control={control}
           render={({ field }) => (
-            <Tooltip title="Số khách tối đa của loại phòng">
+            <Tooltip title="Nhập mô tả loại phòng">
               <TextField
                 {...field}
                 label="Mô tả"
                 type="text"
                 fullWidth
                 margin="normal"
-                error={!!errors.guests}
-                helperText={errors.guests?.message}
+                error={!!errors.description}
+                helperText={errors.description?.message}
                 sx={{ alignItems: "center" }}
                 placeholder="Nhập mô tả loại phòng"
                 multiline

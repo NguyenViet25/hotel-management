@@ -10,6 +10,7 @@ export interface User {
   phoneNumber?: string;
   propertyRoles?: PropertyRole[];
   lockedUntil?: string | null;
+  hotelId: string;
 }
 
 export interface PropertyRole {
