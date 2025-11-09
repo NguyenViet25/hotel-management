@@ -78,3 +78,8 @@
 2025-11-08 - 3 - 01:39:22 UTC :: build: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — toi uu truy van va bo nho (anh huong thap)
 2025-11-08 - 4 - 01:39:25 UTC :: feat: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — chuan hoa ten ham/bien theo convention (da kiem tra lint)
 2025-11-08 - 5 - 01:39:28 UTC :: feat: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — cap nhat mock data & seed test (dat tieu chi toi thieu)
+2025-11-09 - 1 - 01:48:35 UTC :: perf: UC-06 Co so: gan quan ly phu trach va quyen truy cap. — don dep code va xoa doan thua (dam bao backward-compatible)
+2025-11-09 - 2 - 01:48:37 UTC :: build: UC-18 Room Move/Extend: doi phong, gia han dem o. — cap nhat cau hinh va kiem tra bien (da review so bo)
+2025-11-09 - 3 - 01:48:38 UTC :: fix: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — don dep code va xoa doan thua (da kiem tra lint)
+2025-11-09 - 4 - 01:48:40 UTC :: fix: UC-33 Phan ca: gan ca, duyet doi ca/ngi phep. — cai thien hieu nang render/list (can theo doi them)
+2025-11-09 - 5 - 01:48:41 UTC :: perf: UC-38 Audit Log: xem/loc thao tac, hanh dong, thoi gian. — fix race-condition nho trong thao tac (khong doi hanh vi)
