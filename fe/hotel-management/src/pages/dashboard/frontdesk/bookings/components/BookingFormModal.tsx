@@ -27,6 +27,8 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import dayjs, { Dayjs } from "dayjs";
 import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import bookingsApi, {
   type CreateBookingDto,
 } from "../../../../../api/bookingsApi";
@@ -55,6 +57,66 @@ type FormValues = {
   price: number;
 };
 
+const schema = z
+  .object({
+    roomId: z.string().min(1, "Vui lòng chọn loại phòng"),
+    startDate: z
+      .custom<Dayjs>((v) => dayjs.isDayjs(v) && v.isValid(), {
+        message: "Ngày bắt đầu không hợp lệ",
+      })
+      .nullable(),
+    endDate: z
+      .custom<Dayjs>((v) => dayjs.isDayjs(v) && v.isValid(), {
+        message: "Ngày kết thúc không hợp lệ",
+      })
+      .nullable(),
+    guestName: z.string().min(2, "Họ tên phải có ít nhất 2 ký tự"),
+    guestPhone: z
+      .string()
+      .min(8, "SĐT tối thiểu 8 ký tự")
+      .max(20, "SĐT tối đa 20 ký tự")
+      .regex(/^[+0-9\-\s()]+$/, "SĐT chỉ gồm số và ký tự phổ biến"),
+    guestEmail: z
+      .string()
+      .email("Email không hợp lệ")
+      .optional()
+      .or(z.literal("")),
+    totalRooms: z.coerce
+      .number("Số lượng phòng phải là số")
+      .int("Số lượng phòng phải là số nguyên")
+      .min(1, "Tối thiểu 1 phòng"),
+    depositAmount: z.coerce
+      .number("Tiền cọc phải là số")
+      .min(0, "Tiền cọc không âm"),
+    discountAmount: z.coerce
+      .number("Giảm giá cố định phải là số")
+      .min(0, "Không âm")
+      .optional(),
+    discountPercent: z.coerce
+      .number("Giảm giá % phải là số")
+      .min(0, "Không âm")
+      .max(100, "Tối đa 100%")
+      .optional(),
+    totalAmount: z.coerce
+      .number("Tiền phòng phải là số")
+      .min(0, "Không âm")
+      .optional(),
+    notes: z.string().optional(),
+    price: z.coerce
+      .number("Giá phòng phải là số")
+      .min(1, "Giá phòng tối thiểu là 1"),
+  })
+  .refine(
+    (data) =>
+      !!data.startDate &&
+      !!data.endDate &&
+      (data.endDate as Dayjs).isAfter(data.startDate as Dayjs),
+    {
+      message: "Đến ngày phải sau Từ ngày",
+      path: ["endDate"],
+    }
+  );
+
 const BookingFormModal: React.FC<Props> = ({
   open,
   onClose,
@@ -63,25 +125,31 @@ const BookingFormModal: React.FC<Props> = ({
 }) => {
   const [rooms, setRooms] = useState<RoomType[]>([]);
 
-  const { control, handleSubmit, reset, setValue, watch } = useForm<FormValues>(
-    {
-      defaultValues: {
-        roomId: rooms.length > 0 ? rooms[0].id : "",
-        startDate: dayjs(),
-        endDate: dayjs().add(1, "day"),
-        guestName: "",
-        guestPhone: "",
-        guestEmail: "",
-        totalRooms: 1,
-        depositAmount: 0,
-        discountAmount: 0,
-        discountPercent: 0,
-        notes: "",
-        price: 0,
-        totalAmount: 0,
-      },
-    }
-  );
+  const {
+    control,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      roomId: rooms.length > 0 ? rooms[0].id : "",
+      startDate: dayjs(),
+      endDate: dayjs().add(1, "day"),
+      guestName: "",
+      guestPhone: "",
+      guestEmail: "",
+      totalRooms: 1,
+      depositAmount: 0,
+      discountAmount: 0,
+      discountPercent: 0,
+      notes: "",
+      price: 0,
+      totalAmount: 0,
+    },
+  });
 
   const roomId = watch("roomId");
   const startDate = watch("startDate");
@@ -89,6 +157,7 @@ const BookingFormModal: React.FC<Props> = ({
   const discountPercent = watch("discountPercent") || 0;
   const discountAmount = watch("discountAmount") || 0;
   const totalRooms = watch("totalRooms") || 1;
+  const price = watch("price") || 1;
 
   useEffect(() => {
     if (rooms.length > 0) {
@@ -99,14 +168,32 @@ const BookingFormModal: React.FC<Props> = ({
 
   useEffect(() => {
     const price = rooms.find((r) => r.id === roomId)?.priceFrom || 0;
-    const days = endDate?.diff(startDate, "day") || 0;
-    const discountPercentAmount = price * (discountPercent / 100);
-    const totalAmount =
-      price * days * totalRooms - discountAmount - discountPercentAmount;
 
     setValue("price", price);
+  }, [roomId]);
+
+  useEffect(() => {
+    const days = endDate?.diff(startDate, "day") || 0;
+    const discountPercentAmount = price * (discountPercent / 100);
+    const amount = price * days * totalRooms;
+    const totalAmount = amount - discountAmount - discountPercentAmount;
+
+    if (totalAmount < 0) {
+      setValue("totalAmount", 0);
+      setValue("discountAmount", amount);
+      return;
+    }
+
     setValue("totalAmount", totalAmount);
-  }, [roomId, startDate, endDate, discountAmount, discountPercent, totalRooms]);
+  }, [
+    roomId,
+    startDate,
+    endDate,
+    discountAmount,
+    discountPercent,
+    totalRooms,
+    price,
+  ]);
 
   useEffect(() => {
     const loadRooms = async () => {
@@ -182,6 +269,8 @@ const BookingFormModal: React.FC<Props> = ({
                     fullWidth
                     required
                     placeholder="Nhập họ tên khách hàng"
+                    error={!!errors.guestName}
+                    helperText={errors.guestName?.message}
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
@@ -203,6 +292,8 @@ const BookingFormModal: React.FC<Props> = ({
                     fullWidth
                     required
                     placeholder="Nhập số điện thoại khách hàng"
+                    error={!!errors.guestPhone}
+                    helperText={errors.guestPhone?.message}
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
@@ -223,6 +314,8 @@ const BookingFormModal: React.FC<Props> = ({
                     type="email"
                     fullWidth
                     placeholder="Nhập email khách hàng"
+                    error={!!errors.guestEmail}
+                    helperText={errors.guestEmail?.message}
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
@@ -266,6 +359,8 @@ const BookingFormModal: React.FC<Props> = ({
                   label="Loại phòng"
                   fullWidth
                   required
+                  error={!!errors.roomId}
+                  helperText={errors.roomId?.message}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -298,6 +393,8 @@ const BookingFormModal: React.FC<Props> = ({
                     label="Giá phòng (VND)"
                     type="number"
                     fullWidth
+                    error={!!errors.price}
+                    helperText={errors.price?.message}
                     InputProps={{
                       endAdornment: (
                         <InputAdornment position="start">VND</InputAdornment>
@@ -317,6 +414,8 @@ const BookingFormModal: React.FC<Props> = ({
                     label="Số lượng phòng"
                     type="number"
                     fullWidth
+                    error={!!errors.totalRooms}
+                    helperText={errors.totalRooms?.message}
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
@@ -348,6 +447,8 @@ const BookingFormModal: React.FC<Props> = ({
                       slotProps={{
                         textField: {
                           fullWidth: true,
+                          error: !!errors.startDate,
+                          helperText: errors.startDate?.message,
                           InputProps: {
                             startAdornment: (
                               <InputAdornment position="start">
@@ -374,6 +475,8 @@ const BookingFormModal: React.FC<Props> = ({
                       slotProps={{
                         textField: {
                           fullWidth: true,
+                          error: !!errors.endDate,
+                          helperText: errors.endDate?.message,
                           InputProps: {
                             startAdornment: (
                               <InputAdornment position="start">
@@ -407,6 +510,8 @@ const BookingFormModal: React.FC<Props> = ({
                     label="Tiền cọc"
                     type="number"
                     fullWidth
+                    error={!!errors.depositAmount}
+                    helperText={errors.depositAmount?.message}
                     InputProps={{
                       endAdornment: (
                         <InputAdornment position="start">VND</InputAdornment>
@@ -424,6 +529,8 @@ const BookingFormModal: React.FC<Props> = ({
                     label="Giảm giá (%)"
                     type="number"
                     fullWidth
+                    error={!!errors.discountPercent}
+                    helperText={errors.discountPercent?.message}
                     InputProps={{
                       endAdornment: (
                         <InputAdornment position="start">%</InputAdornment>
@@ -441,6 +548,8 @@ const BookingFormModal: React.FC<Props> = ({
                     label="Giảm giá cố định (VND)"
                     type="number"
                     fullWidth
+                    error={!!errors.discountAmount}
+                    helperText={errors.discountAmount?.message}
                     InputProps={{
                       endAdornment: (
                         <InputAdornment position="start">VND</InputAdornment>
