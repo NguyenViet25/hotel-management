@@ -47,7 +47,11 @@ const RoomMapDialog: React.FC<RoomMapDialogProps> = ({
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
       <DialogTitle>Sơ đồ phòng</DialogTitle>
       <DialogContent>
-        <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mb: 2 }}>
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={2}
+          sx={{ my: 2 }}
+        >
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
               label="Từ ngày"
