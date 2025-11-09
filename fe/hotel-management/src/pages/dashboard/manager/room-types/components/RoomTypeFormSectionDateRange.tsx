@@ -1,24 +1,10 @@
-import React from "react";
-import {
-  Box,
-  Grid,
-  IconButton,
-  Paper,
-  TextField,
-  Typography,
-  Button,
-  Tooltip,
-  Divider,
-  InputAdornment,
-} from "@mui/material";
-import { Controller, useFieldArray, type Control } from "react-hook-form";
-import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import DeleteIcon from "@mui/icons-material/Delete";
-import AddIcon from "@mui/icons-material/Add";
-import EventIcon from "@mui/icons-material/Event";
-import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import { Box, Divider, Tooltip, Typography } from "@mui/material";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import React from "react";
+import { type Control } from "react-hook-form";
+import CalendarPriceSetup from "./CalendarPriceSetup";
 
 export interface DateRangeSectionProps {
   control: Control<any>;
@@ -26,13 +12,11 @@ export interface DateRangeSectionProps {
 }
 
 const RoomTypeFormSectionDateRange: React.FC<DateRangeSectionProps> = ({
-  control,
-  errors,
+  control: _control,
+  errors: _errors,
 }) => {
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "dateRanges",
-  });
+  // Calendar-based price setup is stored locally for now
+  // Integrate with form when backend mapping is ready
 
   return (
     <Box sx={{ borderRadius: 2 }}>
@@ -49,14 +33,20 @@ const RoomTypeFormSectionDateRange: React.FC<DateRangeSectionProps> = ({
         Ví dụ: Lễ/Tết hoặc mùa cao điểm.
       </Typography>
       <Divider sx={{ mb: 2 }} />
-      <Box
-        sx={{
-          mb: 2,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      ></Box>
+      <Box sx={{ mb: 2 }}>
+        <LocalizationProvider
+          dateAdapter={AdapterDayjs}
+          adapterLocale="vi"
+          localeText={{
+            okButtonLabel: "Đồng ý",
+            cancelButtonLabel: "Hủy",
+            clearButtonLabel: "Xóa",
+            todayButtonLabel: "Hôm nay",
+          }}
+        >
+          <CalendarPriceSetup />
+        </LocalizationProvider>
+      </Box>
     </Box>
   );
 };

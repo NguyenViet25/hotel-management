@@ -1,24 +1,19 @@
-import React from "react";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Stack,
-  InputAdornment,
-} from "@mui/material";
-import PersonIcon from "@mui/icons-material/Person";
-import EmailIcon from "@mui/icons-material/Email";
 import BadgeIcon from "@mui/icons-material/Badge";
+import EmailIcon from "@mui/icons-material/Email";
+import PersonIcon from "@mui/icons-material/Person";
 import PhoneIcon from "@mui/icons-material/Phone";
-import AssignmentIndIcon from "@mui/icons-material/AssignmentInd";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  InputAdornment,
+  Stack,
+  TextField,
+} from "@mui/material";
+import React from "react";
 import type { UpdateUserRequest, User } from "../../../../../api/userService";
+import HotelSelect from "../components/HotelSelect";
 import RoleSelect from "../components/RoleSelect";
 
 interface EditUserDialogProps {
@@ -111,7 +106,16 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
               ),
             }}
           />
-          <RoleSelect value={formData.roles[0]} onChange={handleInputChange} />
+          <RoleSelect
+            name="roles"
+            value={formData?.roles?.[0] || ""}
+            onChange={(e) => handleInputChange(e)}
+          />
+          <HotelSelect
+            name="propertyRoles"
+            value={formData?.propertyRoles?.[0]?.hotelId || ""}
+            onChange={(e) => handleInputChange(e)}
+          />
 
           <Stack direction={"row"} justifyContent={"right"} gap={1}>
             <Button onClick={onClose}>Hủy</Button>

@@ -21,6 +21,12 @@ public class AuthService : IAuthService
         var user = await _userManager.FindByNameAsync(request.Username) ?? await _userManager.FindByEmailAsync(request.Username);
         if (user is null) return new LoginResponseDto(false, null, null, null);
 
+
+        if (user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.Now)
+        {
+            return new LoginResponseDto(false, null, user.LockoutEnd, null);
+        }
+        
         var passwordValid = await _userManager.CheckPasswordAsync(user, request.Password);
         if (!passwordValid) return new LoginResponseDto(false, null, null, null);
 
@@ -44,7 +50,7 @@ public class AuthService : IAuthService
             new Claim("twoFactor", (await _userManager.GetTwoFactorEnabledAsync(user)).ToString())
         });
 
-        return new LoginResponseDto(false, token, DateTimeOffset.UtcNow.AddHours(1), UserMapper.MapToResponseAsync(user, roles.ToList()));
+        return new LoginResponseDto(false, token, null, UserMapper.MapToResponseAsync(user, roles.ToList()));
     }
 
     public async Task<LoginResponseDto> VerifyTwoFactorAsync(TwoFactorVerifyDto request)

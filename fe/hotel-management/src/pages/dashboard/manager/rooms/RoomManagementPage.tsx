@@ -18,7 +18,6 @@ import roomsApi, {
 import roomTypesApi, { type RoomType } from "../../../../api/roomTypesApi";
 import PageTitle from "../../../../components/common/PageTitle";
 import ChangeRoomStatusModal from "./components/ChangeRoomStatusModal";
-import RoomFilters from "./components/RoomFilters";
 import RoomFormModal from "./components/RoomFormModal";
 import RoomTable from "./components/RoomTable";
 
@@ -194,22 +193,6 @@ const RoomManagementPage: React.FC = () => {
         title="Quản lý phòng"
         subtitle="Xem danh sách phòng, thêm/sửa/xóa và cập nhật trạng thái"
       />
-
-      {/* Filters */}
-      <PaperLike>
-        <RoomFilters
-          status={status}
-          floor={floor}
-          typeId={typeId}
-          searchNumber={searchNumber}
-          onChangeStatus={(v) => setStatus(v)}
-          onChangeFloor={(v) => setFloor(v)}
-          onChangeTypeId={(v) => setTypeId(v)}
-          onChangeSearchNumber={(v) => setSearchNumber(v)}
-          roomTypes={roomTypes}
-          roomTypesLoading={roomTypesLoading}
-        />
-      </PaperLike>
 
       {/* Rooms table */}
       <RoomTable

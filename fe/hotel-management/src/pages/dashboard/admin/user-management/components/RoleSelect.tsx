@@ -9,11 +9,11 @@ export interface RoleInfo {
 }
 
 const roleMap: Record<string, RoleInfo> = {
-  Admin: {
-    label: "Quản trị hệ thống",
-    description:
-      "Quản trị hệ thống toàn chuỗi: tạo tài khoản, phân quyền, cấu hình giá, quản lý cơ sở, theo dõi audit, thiết lập báo cáo, cấu hình cổng thanh toán và dashboard.",
-  },
+  // Admin: {
+  //   label: "Quản trị hệ thống",
+  //   description:
+  //     "Quản trị hệ thống toàn chuỗi: tạo tài khoản, phân quyền, cấu hình giá, quản lý cơ sở, theo dõi audit, thiết lập báo cáo, cấu hình cổng thanh toán và dashboard.",
+  // },
   Manager: {
     label: "Quản lý cơ sở",
     description:
@@ -34,16 +34,7 @@ const roleMap: Record<string, RoleInfo> = {
     description:
       "Quản lý sơ đồ bàn, tạo order, chỉnh sửa, void/discount, post charge vào phòng, thu tiền và đóng hóa đơn.",
   },
-  Cashier: {
-    label: "Thu ngân",
-    description:
-      "Tiếp nhận thanh toán F&B, xử lý hóa đơn điện tử và hỗ trợ đối soát thu chi.",
-  },
-  Accountant: {
-    label: "Kế toán",
-    description:
-      "Thực hiện nghiệp vụ tài chính: kiểm tra folio, đối soát doanh thu, lập và xuất hóa đơn điện tử.",
-  },
+
   Housekeeper: {
     label: "Buồng phòng",
     description: "Hoạt động quản lý buồng phòng và vệ sinh.",
@@ -67,7 +58,7 @@ const RoleSelect: React.FC<RoleSelectProps> = ({ value, onChange, name }) => {
       name={name || "role"}
       value={value}
       onChange={onChange}
-      label="Vai trò"
+      label="Chọn vai trò"
       startIcon={<AssignmentIndIcon />}
       options={options}
       placeholder="Chọn vai trò cho người dùng"

@@ -1,5 +1,4 @@
 using HotelManagement.Domain;
-using HotelManagement.Services.Admin.Pricing.Dtos;
 
 namespace HotelManagement.Services.Admin.Bookings.Dtos;
 
@@ -232,7 +231,6 @@ public class ExtendStayDto
 public class ExtendStayResultDto
 {
     public BookingDto Booking { get; set; } = new();
-    public PriceCalculationResultDto Price { get; set; } = new();
 }
 
 // UC-39: Check-out & đối soát

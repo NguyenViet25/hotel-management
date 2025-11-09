@@ -12,28 +12,19 @@ public class RoomTypeService : IRoomTypeService
 {
     private readonly IRepository<RoomType> _roomTypeRepository;
     private readonly IRepository<Hotel> _hotelRepository;
-    private readonly IRepository<Amenity> _amenityRepository;
-    private readonly IRepository<RoomTypeAmenity> _roomTypeAmenityRepository;
     private readonly IRepository<HotelRoom> _roomRepository;
     private readonly IRepository<Booking> _bookingRepository;
-    private readonly IRepository<RoomBasePrice> _basePriceRepository;
 
     public RoomTypeService(
         IRepository<RoomType> roomTypeRepository,
         IRepository<Hotel> hotelRepository,
-        IRepository<Amenity> amenityRepository,
-        IRepository<RoomTypeAmenity> roomTypeAmenityRepository,
         IRepository<HotelRoom> roomRepository,
-        IRepository<Booking> bookingRepository,
-        IRepository<RoomBasePrice> basePriceRepository)
+        IRepository<Booking> bookingRepository)
     {
         _roomTypeRepository = roomTypeRepository;
         _hotelRepository = hotelRepository;
-        _amenityRepository = amenityRepository;
-        _roomTypeAmenityRepository = roomTypeAmenityRepository;
         _roomRepository = roomRepository;
         _bookingRepository = bookingRepository;
-        _basePriceRepository = basePriceRepository;
     }
 
     public async Task<ApiResponse<RoomTypeDto>> CreateAsync(CreateRoomTypeDto dto)
@@ -56,18 +47,7 @@ public class RoomTypeService : IRoomTypeService
                 return ApiResponse<RoomTypeDto>.Fail("Room type name already exists in this hotel");
             }
 
-            // Validate amenities exist
-            if (dto.AmenityIds.Any())
-            {
-                var amenities = await _amenityRepository.Query()
-                    .Where(a => dto.AmenityIds.Contains(a.Id) && a.HotelId == dto.HotelId)
-                    .ToListAsync();
-
-                if (amenities.Count != dto.AmenityIds.Count)
-                {
-                    return ApiResponse<RoomTypeDto>.Fail("One or more amenities not found or don't belong to this hotel");
-                }
-            }
+            
 
             // Create room type
             var roomType = new RoomType
@@ -81,21 +61,6 @@ public class RoomTypeService : IRoomTypeService
             await _roomTypeRepository.AddAsync(roomType);
             await _roomTypeRepository.SaveChangesAsync();
 
-            // Add amenities
-            if (dto.AmenityIds.Any())
-            {
-                var roomTypeAmenities = dto.AmenityIds.Select(amenityId => new RoomTypeAmenity
-                {
-                    RoomTypeId = roomType.Id,
-                    AmenityId = amenityId
-                }).ToList();
-
-                foreach (var rta in roomTypeAmenities)
-                {
-                    await _roomTypeAmenityRepository.AddAsync(rta);
-                }
-                await _roomTypeAmenityRepository.SaveChangesAsync();
-            }
 
             return ApiResponse<RoomTypeDto>.Ok(await MapToRoomTypeDto(roomType));
         }
@@ -130,49 +95,13 @@ public class RoomTypeService : IRoomTypeService
                 }
             }
 
-            // Validate amenities exist
-            if (dto.AmenityIds.Any())
-            {
-                var amenities = await _amenityRepository.Query()
-                    .Where(a => dto.AmenityIds.Contains(a.Id) && a.HotelId == roomType.HotelId)
-                    .ToListAsync();
-
-                if (amenities.Count != dto.AmenityIds.Count)
-                {
-                    return ApiResponse<RoomTypeDto>.Fail("One or more amenities not found or don't belong to this hotel");
-                }
-            }
+           
 
             // Update room type
             roomType.Name = dto.Name;
             roomType.Description = dto.Description;
 
             await _roomTypeRepository.UpdateAsync(roomType);
-
-            // Update amenities - remove existing and add new ones
-            var existingAmenities = await _roomTypeAmenityRepository.Query()
-                .Where(rta => rta.RoomTypeId == id)
-                .ToListAsync();
-
-            foreach (var existing in existingAmenities)
-            {
-                await _roomTypeAmenityRepository.RemoveAsync(existing);
-            }
-
-            if (dto.AmenityIds.Any())
-            {
-                var newAmenities = dto.AmenityIds.Select(amenityId => new RoomTypeAmenity
-                {
-                    RoomTypeId = id,
-                    AmenityId = amenityId
-                }).ToList();
-
-                foreach (var amenity in newAmenities)
-                {
-                    await _roomTypeAmenityRepository.AddAsync(amenity);
-                }
-            }
-
             await _roomTypeRepository.SaveChangesAsync();
 
             return ApiResponse<RoomTypeDto>.Ok(await MapToRoomTypeDto(roomType));
@@ -198,16 +127,6 @@ public class RoomTypeService : IRoomTypeService
             if (!canDelete.IsSuccess)
             {
                 return canDelete;
-            }
-
-            // Remove amenity associations
-            var amenityAssociations = await _roomTypeAmenityRepository.Query()
-                .Where(rta => rta.RoomTypeId == id)
-                .ToListAsync();
-
-            foreach (var association in amenityAssociations)
-            {
-                await _roomTypeAmenityRepository.RemoveAsync(association);
             }
 
             // Remove room type
@@ -351,14 +270,7 @@ public class RoomTypeService : IRoomTypeService
 
     private async Task<RoomTypeDto> MapToRoomTypeDto(RoomType roomType)
     {
-        var amenities = await _amenityRepository.Query()
-            .Where(a => a.RoomTypeAmenities.Any(rta => rta.RoomTypeId == roomType.Id))
-            .Select(a => new AmenityDto
-            {
-                Id = a.Id,
-                Name = a.Name
-            })
-            .ToListAsync();
+      
 
         var roomCount = await _roomRepository.Query()
             .CountAsync(r => r.RoomTypeId == roomType.Id);
@@ -369,10 +281,6 @@ public class RoomTypeService : IRoomTypeService
                           (b.Status == BookingStatus.Confirmed ||
                            b.Status == BookingStatus.CheckedIn));
 
-        var basePrice = await _basePriceRepository.Query()
-            .Where(bp => bp.RoomTypeId == roomType.Id)
-            .Select(bp => bp.Price)
-            .FirstOrDefaultAsync();
 
         return new RoomTypeDto
         {
@@ -381,11 +289,9 @@ public class RoomTypeService : IRoomTypeService
             HotelName = roomType.Hotel?.Name ?? "",
             Name = roomType.Name,
             Description = roomType.Description,
-            Amenities = amenities,
             Images = new List<string>(), // TODO: Implement image storage
             RoomCount = roomCount,
             CanDelete = canDelete,
-            BasePrice = basePrice == 0 ? null : basePrice
         };
     }
 
@@ -411,7 +317,6 @@ public class RoomTypeService : IRoomTypeService
             HotelName = baseDto.HotelName,
             Name = baseDto.Name,
             Description = baseDto.Description,
-            Amenities = baseDto.Amenities,
             Images = baseDto.Images,
             RoomCount = baseDto.RoomCount,
             CanDelete = baseDto.CanDelete,

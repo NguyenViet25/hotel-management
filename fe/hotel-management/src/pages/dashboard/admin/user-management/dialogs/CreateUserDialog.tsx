@@ -1,25 +1,20 @@
-import React from "react";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  Button,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Stack,
-  InputAdornment,
-} from "@mui/material";
-import PersonIcon from "@mui/icons-material/Person";
-import EmailIcon from "@mui/icons-material/Email";
-import LockIcon from "@mui/icons-material/Lock";
 import BadgeIcon from "@mui/icons-material/Badge";
+import EmailIcon from "@mui/icons-material/Email";
+import PersonIcon from "@mui/icons-material/Person";
 import PhoneIcon from "@mui/icons-material/Phone";
-import AssignmentIndIcon from "@mui/icons-material/AssignmentInd";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  InputAdornment,
+  Stack,
+  TextField,
+} from "@mui/material";
+import React from "react";
 import type { CreateUserRequest } from "../../../../../api/userService";
 import RoleSelect from "../components/RoleSelect";
+import HotelSelect from "../components/HotelSelect";
 
 interface CreateUserDialogProps {
   open: boolean;
@@ -114,7 +109,16 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
               ),
             }}
           />
-          <RoleSelect value={formData.role} onChange={handleInputChange} />
+          <RoleSelect
+            name="roles"
+            value={formData?.roles?.[0] || ""}
+            onChange={(e) => handleInputChange(e)}
+          />
+          <HotelSelect
+            name="propertyRoles"
+            value={formData?.propertyRoles?.[0]?.hotelId || ""}
+            onChange={(e) => handleInputChange(e)}
+          />
 
           <Stack direction={"row"} justifyContent={"right"} gap={1}>
             <Button onClick={onClose}>Hủy</Button>

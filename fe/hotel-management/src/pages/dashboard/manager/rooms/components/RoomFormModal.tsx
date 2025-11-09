@@ -1,21 +1,33 @@
-import React, { useEffect, useState } from "react";
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  InputAdornment,
+  InputLabel,
+  MenuItem,
+  Select,
   Stack,
   TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
+  Typography,
 } from "@mui/material";
 import type { SelectChangeEvent } from "@mui/material/Select";
+import React, { useEffect, useState } from "react";
+import {
+  Hotel as HotelIcon,
+  Numbers as NumbersIcon,
+  Layers as LayersIcon,
+  Category as CategoryIcon,
+  CheckCircle as CheckCircleIcon,
+  Edit as EditIcon,
+  AddCircle as AddCircleIcon,
+  Close as CloseIcon,
+} from "@mui/icons-material";
 import type {
-  RoomDto,
   CreateRoomRequest,
+  RoomDto,
   UpdateRoomRequest,
 } from "../../../../../api/roomsApi";
 import type { RoomType } from "../../../../../api/roomTypesApi";
@@ -45,7 +57,6 @@ const RoomFormModal: React.FC<RoomFormModalProps> = ({
   const [typeId, setTypeId] = useState<string>(
     initialData?.typeId ? String(initialData.typeId) : ""
   );
-  const [features, setFeatures] = useState<string>(initialData?.features ?? "");
   const [status, setStatus] = useState<string>(
     initialData?.status ?? "Available"
   );
@@ -54,7 +65,6 @@ const RoomFormModal: React.FC<RoomFormModalProps> = ({
     setNumber(initialData?.number ?? "");
     setFloor(initialData?.floor ? String(initialData.floor) : "");
     setTypeId(initialData?.typeId ? String(initialData.typeId) : "");
-    setFeatures(initialData?.features ?? "");
     setStatus(initialData?.status ?? "Available");
   }, [initialData]);
 
@@ -65,14 +75,12 @@ const RoomFormModal: React.FC<RoomFormModalProps> = ({
           number,
           floor: Number(floor),
           typeId: Number(typeId),
-          features,
           status,
         }
       : {
           number,
           floor: Number(floor),
           typeId: Number(typeId),
-          features,
           status,
         };
     await onSubmit(payload);
@@ -84,25 +92,61 @@ const RoomFormModal: React.FC<RoomFormModalProps> = ({
     setStatus(e.target.value);
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle>
-        {initialData ? "Chỉnh sửa phòng" : "Thêm phòng"}
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="sm"
+      PaperProps={{
+        sx: { borderRadius: 3, overflow: "hidden" },
+      }}
+    >
+      <DialogTitle
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+          bgcolor: "primary.main",
+          color: "primary.contrastText",
+        }}
+      >
+        {initialData ? <EditIcon /> : <AddCircleIcon />}
+        <Typography variant="h6" sx={{ flexGrow: 1 }}>
+          {initialData ? "Chỉnh sửa phòng" : "Thêm phòng mới"}
+        </Typography>
       </DialogTitle>
-      <DialogContent>
-        <Stack spacing={2} mt={1}>
+
+      <DialogContent sx={{ mt: 2 }}>
+        <Stack spacing={2} sx={{ pt: 1 }}>
           <TextField
             label="Số phòng"
             value={number}
             onChange={(e) => setNumber(e.target.value)}
             fullWidth
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <NumbersIcon color="primary" />
+                </InputAdornment>
+              ),
+            }}
           />
+
           <TextField
             label="Tầng"
             value={floor}
             onChange={(e) => setFloor(e.target.value)}
             type="number"
             fullWidth
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <LayersIcon color="primary" />
+                </InputAdornment>
+              ),
+            }}
           />
+
           <FormControl fullWidth disabled={!!roomTypesLoading}>
             <InputLabel id="type-label">Loại phòng</InputLabel>
             <Select
@@ -110,6 +154,11 @@ const RoomFormModal: React.FC<RoomFormModalProps> = ({
               value={typeId}
               label="Loại phòng"
               onChange={handleTypeChange}
+              startAdornment={
+                <InputAdornment position="start">
+                  <CategoryIcon color="primary" />
+                </InputAdornment>
+              }
             >
               {roomTypes.map((t) => (
                 <MenuItem key={t.id} value={String(t.id)}>
@@ -118,12 +167,7 @@ const RoomFormModal: React.FC<RoomFormModalProps> = ({
               ))}
             </Select>
           </FormControl>
-          <TextField
-            label="Đặc điểm"
-            value={features}
-            onChange={(e) => setFeatures(e.target.value)}
-            fullWidth
-          />
+
           <FormControl fullWidth>
             <InputLabel id="status-label">Trạng thái</InputLabel>
             <Select
@@ -131,6 +175,11 @@ const RoomFormModal: React.FC<RoomFormModalProps> = ({
               value={status}
               label="Trạng thái"
               onChange={handleStatusChange}
+              startAdornment={
+                <InputAdornment position="start">
+                  <CheckCircleIcon color="primary" />
+                </InputAdornment>
+              }
             >
               {ROOM_STATUS_OPTIONS.map((opt) => (
                 <MenuItem key={opt.value} value={opt.value}>
@@ -141,14 +190,29 @@ const RoomFormModal: React.FC<RoomFormModalProps> = ({
           </FormControl>
         </Stack>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Hủy</Button>
+
+      <DialogActions
+        sx={{
+          px: 3,
+          py: 2,
+          bgcolor: "background.paper",
+        }}
+      >
+        <Button
+          onClick={onClose}
+          color="error"
+          startIcon={<CloseIcon />}
+          variant="contained"
+        >
+          Hủy
+        </Button>
         <Button
           variant="contained"
+          startIcon={<HotelIcon />}
           onClick={handleSubmit}
           disabled={!number || !floor || !typeId}
         >
-          {initialData ? "Lưu" : "Tạo"}
+          {initialData ? "Lưu thay đổi" : "Tạo phòng"}
         </Button>
       </DialogActions>
     </Dialog>

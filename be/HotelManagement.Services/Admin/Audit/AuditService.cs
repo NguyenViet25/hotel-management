@@ -17,6 +17,7 @@ public class AuditService : IAuditService
     public async Task<(IEnumerable<AuditLogDto> Items, int Total)> QueryAsync(AuditQueryDto query, Guid actorUserId, bool isAdmin)
     {
         var baseQuery = _db.AuditLogs.AsQueryable();
+
         var allowedHotelIds = await GetAllowedHotelIdsAsync(actorUserId, isAdmin);
         if (allowedHotelIds != null)
         {
@@ -35,10 +36,22 @@ public class AuditService : IAuditService
         baseQuery = baseQuery.OrderByDescending(l => l.Timestamp);
         var total = await baseQuery.CountAsync();
         var items = await baseQuery.Skip((query.Page - 1) * query.PageSize).Take(query.PageSize)
-            .Select(l => new AuditLogDto(l.Id, l.Timestamp, l.Action, l.HotelId, l.UserId,
+            .Select(l => new AuditLogDto(l.Id, l.Timestamp, l.Action, l.HotelId.ToString(), l.UserId.ToString(),
                 SafeDeserialize(l.MetadataJson)))
             .ToListAsync();
-        return (items, total);
+
+        var list = new List<AuditLogDto>();
+        for (var i = 0; i < items.Count; i++)
+        {
+            var log = items[i];
+            var hotel = await _db.Hotels.FirstOrDefaultAsync(x => x.Id.ToString() == log.HotelId);
+            var user = await _db.Users.FirstOrDefaultAsync(x => x.Id.ToString() == log.UserId);
+
+            list.Add(new AuditLogDto(log.Id, log.Timestamp, log.Action , hotel?.Name ?? "N/A", user?.UserName ?? "N/A",
+                log.Metadata));
+        }
+
+        return (list, total);
     }
 
     private static object? SafeDeserialize(string? json)

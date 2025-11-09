@@ -1,4 +1,3 @@
-import React from "react";
 import {
   FormControl,
   InputAdornment,
@@ -6,6 +5,7 @@ import {
   MenuItem,
   Select,
 } from "@mui/material";
+import React from "react";
 
 export interface Option {
   value: string | number;
@@ -21,7 +21,6 @@ interface CustomSelectProps {
   options?: Option[];
   placeholder?: string;
 }
-
 const CustomSelect: React.FC<CustomSelectProps> = ({
   name,
   value,

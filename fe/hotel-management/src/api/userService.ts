@@ -13,9 +13,10 @@ export interface User {
 }
 
 export interface PropertyRole {
-  propertyId: string;
-  propertyName: string;
+  id: string;
+  hotelId: string;
   role: string;
+  name: string;
 }
 
 export interface UserListResponse {
@@ -41,6 +42,12 @@ export interface CreateUserRequest {
   fullName: string;
   phoneNumber: string;
   roles: string[];
+  propertyRoles: PropertyRole[];
+}
+
+export interface AssignPropertyRoleDto {
+  hotelId: string;
+  role: number;
 }
 
 export interface UpdateUserRequest {
@@ -48,6 +55,7 @@ export interface UpdateUserRequest {
   fullName: string;
   phoneNumber: string;
   roles: string[];
+  propertyRoles: AssignPropertyRoleDto[];
 }
 
 export interface LockUserRequest {

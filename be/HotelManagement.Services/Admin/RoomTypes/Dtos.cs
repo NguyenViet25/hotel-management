@@ -6,16 +6,22 @@ public class CreateRoomTypeDto
     public Guid HotelId { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
-    public List<Guid> AmenityIds { get; set; } = new();
-    public List<string> Images { get; set; } = new(); // Base64 or URLs
+    public decimal PriceFrom { get; set; }
+    public decimal PriceTo { get; set; }
+    public List<PriceByDate>? PriceByDates { get; set; } = [];
+    public List<Guid>? AmenityIds { get; set; } = new();
+    public List<string>? Images { get; set; } = new(); 
 }
 
-public class UpdateRoomTypeDto
+public class PriceByDate
 {
-    public string Name { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
-    public List<Guid> AmenityIds { get; set; } = new();
-    public List<string> Images { get; set; } = new();
+    public DateTime Date { get; set; }
+    public decimal Price { get; set; }
+}
+
+public class UpdateRoomTypeDto : CreateRoomTypeDto
+{
+   
 }
 
 public class RoomTypeQueryDto
@@ -34,10 +40,9 @@ public class RoomTypeDto
     public string HotelName { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
-    public List<AmenityDto> Amenities { get; set; } = new();
     public List<string> Images { get; set; } = new();
     public int RoomCount { get; set; }
-    public bool CanDelete { get; set; } // True if no active bookings
+    public bool CanDelete { get; set; } 
     public decimal? BasePrice { get; set; }
 }
 

@@ -65,7 +65,7 @@ const LoginPage = () => {
       navigateToCorrectPage(user);
     } catch (error) {
       console.error(error);
-      toast.error("Đăng nhập thất bại. Vui lòng kiểm tra thông tin đăng nhập.");
+      toast.error(error.response.data.message);
     } finally {
       setLoading(false);
     }

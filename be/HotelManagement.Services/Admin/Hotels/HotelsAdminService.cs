@@ -50,6 +50,16 @@ public class HotelsAdminService : IHotelsAdminService
         return (items, total);
     }
 
+    public async Task<IEnumerable<HotelSummaryDto>> ListAllAsync()
+    {
+        var baseQuery = _db.Hotels.AsQueryable();
+        var items = await baseQuery
+            .Select(h => new HotelSummaryDto(h.Id, h.Code, h.Name, h.Address, h.IsActive, h.CreatedAt))
+            .ToListAsync();
+
+        return items;
+    }
+
     public async Task<HotelDetailsDto?> GetAsync(Guid id, Guid actorUserId, bool isAdmin)
     {
         var allowed = await GetAllowedHotelIdsAsync(actorUserId, isAdmin);

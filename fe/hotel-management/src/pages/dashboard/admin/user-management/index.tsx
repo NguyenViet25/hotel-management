@@ -2,6 +2,7 @@ import { Alert, Box, Chip, Snackbar } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import type {
   CreateUserRequest,
+  PropertyRole,
   UpdateUserRequest,
   User,
 } from "../../../../api/userService";
@@ -45,6 +46,7 @@ const UserManagement: React.FC = () => {
     fullName: "",
     phoneNumber: "",
     roles: [],
+    propertyRoles: [],
   });
 
   // State for form validation
@@ -62,22 +64,31 @@ const UserManagement: React.FC = () => {
 
   // Table columns definition
   const columns: Column<User>[] = [
-    { id: "userName", label: "Tên đăng nhập", minWidth: 160, sortable: true },
-    { id: "email", label: "Email", minWidth: 180, sortable: true },
-    { id: "fullname", label: "Họ và tên", minWidth: 150, sortable: true },
+    { id: "userName", label: "Tài khoản", minWidth: 120, sortable: true },
+    { id: "fullname", label: "Họ và tên", minWidth: 120, sortable: true },
     { id: "email", label: "Email", minWidth: 180, sortable: true },
     { id: "phoneNumber", label: "Số điện thoại", minWidth: 120 },
     {
       id: "roles",
       label: "Vai trò",
-      minWidth: 100,
+      minWidth: 120,
       sortable: true,
       format: (value) => getRoleInfo(value[0]).label || "N/A",
     },
     {
+      id: "propertyRoles",
+      label: "Cơ sở",
+      minWidth: 120,
+      sortable: true,
+      format: (value: PropertyRole[]) => {
+        if (!value || value.length === 0) return "N/A";
+        return value.map((role) => role.name).join(", ");
+      },
+    },
+    {
       id: "lockedUntil",
       label: "Trạng thái",
-      minWidth: 100,
+      minWidth: 120,
       format: (value: string) => {
         if (!value) <Chip size="small" label={"Hoạt động"} color={"primary"} />; // no lock
         const lockedUntilDate = new Date(value);
@@ -96,7 +107,7 @@ const UserManagement: React.FC = () => {
   // Fetch users on component mount and when page, pageSize, or sorting changes
   useEffect(() => {
     fetchUsers();
-  }, [page, pageSize, sortBy, sortDirection]);
+  }, [page, pageSize, sortBy, sortDirection, search]);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -131,13 +142,25 @@ const UserManagement: React.FC = () => {
 
   // Handle form input change
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>
+    e: React.ChangeEvent<HTMLInputElement | { name?: string; value: any }>
   ) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name as string]: value,
-    });
+    if (name === "roles") {
+      setFormData({
+        ...formData,
+        roles: [value],
+      });
+    } else if (name === "propertyRoles") {
+      setFormData({
+        ...formData,
+        propertyRoles: [{ hotelId: value }],
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name as string]: value,
+      });
+    }
 
     // Clear error for this field
     if (formErrors[name as string]) {
@@ -180,7 +203,7 @@ const UserManagement: React.FC = () => {
     try {
       const response = await userService.createUser({
         ...formData,
-        roles: [formData.role],
+        roles: formData.roles,
       });
 
       if (response.isSuccess) {
@@ -192,8 +215,8 @@ const UserManagement: React.FC = () => {
         showSnackbar(response.message || "Không thể tạo người dùng", "error");
       }
     } catch (error) {
-      console.error("Error creating user:", error);
-      showSnackbar("Đã xảy ra lỗi khi tạo người dùng", "error");
+      console.error("Error creating user:", error.response.data.message);
+      showSnackbar(error.response.data.message, "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -207,7 +230,7 @@ const UserManagement: React.FC = () => {
     try {
       const response = await userService.updateUser(selectedUser.id, {
         ...formData,
-        roles: [formData.role],
+        roles: formData.roles,
       });
       if (response.isSuccess) {
         showSnackbar("Cập nhật người dùng thành công", "success");
@@ -305,6 +328,7 @@ const UserManagement: React.FC = () => {
       fullName: user.fullname || "",
       phoneNumber: user.phoneNumber || "",
       roles: user.roles,
+      propertyRoles: user.propertyRoles || [],
     });
     setEditDialogOpen(true);
   };
@@ -329,6 +353,7 @@ const UserManagement: React.FC = () => {
       fullName: "",
       phoneNumber: "",
       roles: [],
+      propertyRoles: [],
     });
     setFormErrors({});
   };

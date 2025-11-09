@@ -1,9 +1,10 @@
-using HotelManagement.Domain;
+﻿using HotelManagement.Domain;
 using HotelManagement.Domain.Entities;
 using HotelManagement.Repository;
 using HotelManagement.Services.Admin.Users.Dtos;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace HotelManagement.Services.Admin.Users;
 
@@ -67,6 +68,10 @@ public class UsersAdminService : IUsersAdminService
             .Join(_db.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => new { ur.UserId, r.Name })
             .ToListAsync();
         var rolesByUser = userRolePairs.GroupBy(x => x.UserId).ToDictionary(g => g.Key, g => g.Select(x => x.Name ?? string.Empty).ToList());
+        var propertyRoles = await _db.UserPropertyRoles.AsNoTracking().Select(pr => new UserPropertyRoleDto(pr.UserId, pr.HotelId, pr.Role, "")).ToListAsync();
+
+
+        var list = await GetHotel(propertyRoles);
 
         var items = users.Select(u => new UserSummaryDto(
             u.Id,
@@ -76,10 +81,27 @@ public class UsersAdminService : IUsersAdminService
             u.Fullname,
             u.EmailConfirmed,
             u.LockoutEnd,
-            rolesByUser.TryGetValue(u.Id, out var r) ? r : Array.Empty<string>()
+            rolesByUser.TryGetValue(u.Id, out var r) ? r : Array.Empty<string>(),
+            propertyRoles = list.Where(x => x.Id == u.Id).ToList()
         ));
 
         return (items, total);
+    }
+
+    private async Task<List<UserPropertyRoleDto>> GetHotel(List<UserPropertyRoleDto> propertyRoles)
+    {
+        var list = new List<UserPropertyRoleDto>();
+
+        for (var i = 0; i < propertyRoles.Count; i++)
+        {
+            var pro = propertyRoles[i];
+            var hotel = await _db.Hotels.FindAsync(pro?.HotelId);
+            if (hotel is null) continue;
+
+            list.Add(new UserPropertyRoleDto(pro!.Id, pro.HotelId, pro.Role, hotel.Name));
+
+        }
+        return list;
     }
 
     public async Task<UserDetailsDto?> GetAsync(Guid id)
@@ -87,19 +109,25 @@ public class UsersAdminService : IUsersAdminService
         var u = await _users.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
         if (u == null) return null;
         var roles = await _db.UserRoles.Where(ur => ur.UserId == id).Join(_db.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => r.Name ?? string.Empty).ToListAsync();
-        var propertyRoles = await _db.UserPropertyRoles.Where(pr => pr.UserId == id).AsNoTracking().Select(pr => new UserPropertyRoleDto(pr.Id, pr.HotelId, pr.Role)).ToListAsync();
+        var propertyRoles = await _db.UserPropertyRoles.Where(pr => pr.UserId == id).AsNoTracking().Select(pr => new UserPropertyRoleDto(pr.Id, pr.HotelId, pr.Role, "")).ToListAsync();
         return new UserDetailsDto(u.Id, u.UserName, u.Email, u.PhoneNumber, u.EmailConfirmed, u.LockoutEnd, roles, propertyRoles);
     }
 
     public async Task<UserDetailsDto> CreateAsync(CreateUserDto dto)
     {
+
+        var existUser = await _db.Users.Where(x => x.UserName == dto.UserName || x.Email == dto.Email).AnyAsync();
+
+        if(existUser)
+            throw new InvalidOperationException($"Người dùng đã tồn tại");
+
         var user = new AppUser
         {
             Fullname = dto.Fullname,
             UserName = dto.UserName,
             Email = dto.Email,
             PhoneNumber = dto.PhoneNumber,
-            EmailConfirmed = false
+            EmailConfirmed = true
         };
         var result = await _users.CreateAsync(user, "Password1@");
         if (!result.Succeeded)
@@ -107,6 +135,7 @@ public class UsersAdminService : IUsersAdminService
             var msg = string.Join("; ", result.Errors.Select(e => e.Description));
             throw new InvalidOperationException($"Create user failed: {msg}");
         }
+        var res = await _users.SetLockoutEndDateAsync(user, DateTime.Now.AddMonths(-1));
 
         // Assign Identity roles if provided
         if (dto.Roles != null)
@@ -177,7 +206,7 @@ public class UsersAdminService : IUsersAdminService
         {
             // Replace property roles with provided set
             var existing = await _db.UserPropertyRoles.Where(pr => pr.UserId == user.Id).ToListAsync();
-            _db.UserPropertyRoles.RemoveRange(existing);
+            if (existing.Any()) { _db.UserPropertyRoles.RemoveRange(existing); }
             foreach (var pr in dto.PropertyRoles)
             {
                 _db.UserPropertyRoles.Add(new UserPropertyRole
@@ -236,7 +265,7 @@ public class UsersAdminService : IUsersAdminService
         };
         _db.UserPropertyRoles.Add(upr);
         await _db.SaveChangesAsync();
-        return new UserPropertyRoleDto(upr.Id, upr.HotelId, upr.Role);
+        return new UserPropertyRoleDto(upr.Id, upr.HotelId, upr.Role, "");
     }
 
     public async Task<bool> RemovePropertyRoleAsync(Guid id, Guid propertyRoleId)

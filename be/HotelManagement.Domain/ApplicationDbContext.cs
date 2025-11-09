@@ -14,12 +14,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
 
     public DbSet<Hotel> Hotels => Set<Hotel>();
     public DbSet<RoomType> RoomTypes => Set<RoomType>();
-    public DbSet<Amenity> Amenities => Set<Amenity>();
-    public DbSet<RoomTypeAmenity> RoomTypeAmenities => Set<RoomTypeAmenity>();
     public DbSet<HotelRoom> Rooms => Set<HotelRoom>();
-    public DbSet<RoomBasePrice> RoomBasePrices => Set<RoomBasePrice>();
-    public DbSet<RoomDayOfWeekPrice> RoomDayOfWeekPrices => Set<RoomDayOfWeekPrice>();
-    public DbSet<RoomDateRangePrice> RoomDateRangePrices => Set<RoomDateRangePrice>();
     public DbSet<SurchargeRule> SurchargeRules => Set<SurchargeRule>();
     public DbSet<DiscountRule> DiscountRules => Set<DiscountRule>();
     public DbSet<Guest> Guests => Set<Guest>();
@@ -44,7 +39,6 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
     {
         base.OnModelCreating(builder);
 
-        builder.Entity<RoomTypeAmenity>().HasKey(x => new { x.RoomTypeId, x.AmenityId });
         builder.Entity<BookingGuest>().HasKey(x => new { x.BookingId, x.GuestId });
 
         builder.Entity<Hotel>().HasIndex(h => h.Code).IsUnique();
@@ -68,11 +62,6 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
             .HasForeignKey(rt => rt.HotelId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.Entity<Amenity>()
-            .HasOne(a => a.Hotel)
-            .WithMany()
-            .HasForeignKey(a => a.HotelId);
-
         builder.Entity<OrderItem>()
             .HasOne<Order>()
             .WithMany(o => o.Items)
@@ -82,43 +71,6 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
             .HasOne(mi => mi.Group)
             .WithMany(g => g.Items)
             .HasForeignKey(mi => mi.MenuGroupId);
-
-        // Pricing relations
-        builder.Entity<RoomBasePrice>()
-            .HasOne<Hotel>()
-            .WithMany()
-            .HasForeignKey(rbp => rbp.HotelId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.Entity<RoomBasePrice>()
-            .HasOne<RoomType>()
-            .WithMany()
-            .HasForeignKey(rbp => rbp.RoomTypeId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.Entity<RoomDayOfWeekPrice>()
-            .HasOne<Hotel>()
-            .WithMany()
-            .HasForeignKey(rdwp => rdwp.HotelId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.Entity<RoomDayOfWeekPrice>()
-            .HasOne<RoomType>()
-            .WithMany()
-            .HasForeignKey(rdwp => rdwp.RoomTypeId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.Entity<RoomDateRangePrice>()
-            .HasOne<Hotel>()
-            .WithMany()
-            .HasForeignKey(rdrp => rdrp.HotelId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.Entity<RoomDateRangePrice>()
-            .HasOne<RoomType>()
-            .WithMany()
-            .HasForeignKey(rdrp => rdrp.RoomTypeId)
-            .OnDelete(DeleteBehavior.Restrict);
 
         // Rules relations
         builder.Entity<SurchargeRule>()

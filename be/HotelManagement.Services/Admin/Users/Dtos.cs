@@ -2,7 +2,7 @@ using HotelManagement.Domain;
 
 namespace HotelManagement.Services.Admin.Users.Dtos;
 
-public record UserPropertyRoleDto(Guid Id, Guid HotelId, UserRole Role);
+public record UserPropertyRoleDto(Guid Id, Guid HotelId, UserRole Role, string? Name);
 
 public record AssignPropertyRoleDto(Guid HotelId, UserRole Role);
 
@@ -14,7 +14,8 @@ public record UserSummaryDto(
     string? Fullname,
     bool EmailConfirmed,
     DateTimeOffset? LockedUntil,
-    IEnumerable<string> Roles
+    IEnumerable<string> Roles,
+    IEnumerable<UserPropertyRoleDto> PropertyRoles
 );
 
 public record UserDetailsDto(

@@ -1,6 +1,6 @@
 namespace HotelManagement.Services.Admin.Audit.Dtos;
 
-public record AuditLogDto(Guid Id, DateTime Timestamp, string Action, Guid? HotelId, Guid? UserId, object? Metadata);
+public record AuditLogDto(Guid Id, DateTime Timestamp, string Action, string? HotelId, string? UserId, object? Metadata);
 
 public record AuditQueryDto(
     int Page = 1,

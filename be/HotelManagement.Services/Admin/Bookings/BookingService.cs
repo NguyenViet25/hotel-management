@@ -1,10 +1,7 @@
 using HotelManagement.Domain;
-using HotelManagement.Domain.Entities;
 using HotelManagement.Repository;
 using HotelManagement.Repository.Common;
 using HotelManagement.Services.Admin.Bookings.Dtos;
-using HotelManagement.Services.Admin.Pricing;
-using HotelManagement.Services.Admin.Pricing.Dtos;
 using HotelManagement.Services.Common;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,7 +17,6 @@ public class BookingService : IBookingService
     private readonly IRepository<Payment> _paymentRepository;
     private readonly IRepository<CallLog> _callLogRepository;
     private readonly IRepository<RoomStatusLog> _roomStatusLogRepository;
-    private readonly IPricingService _pricingService;
 
     public BookingService(
         ApplicationDbContext db,
@@ -30,8 +26,7 @@ public class BookingService : IBookingService
         IRepository<Hotel> hotelRepository,
         IRepository<Payment> paymentRepository,
         IRepository<CallLog> callLogRepository,
-        IRepository<RoomStatusLog> roomStatusLogRepository,
-        IPricingService pricingService)
+        IRepository<RoomStatusLog> roomStatusLogRepository)
     {
         _db = db;
         _bookingRepository = bookingRepository;
@@ -41,7 +36,6 @@ public class BookingService : IBookingService
         _paymentRepository = paymentRepository;
         _callLogRepository = callLogRepository;
         _roomStatusLogRepository = roomStatusLogRepository;
-        _pricingService = pricingService;
     }
 
     // UC-31: Create booking with deposit
@@ -505,23 +499,7 @@ public class BookingService : IBookingService
                 return ApiResponse<ExtendStayResultDto>.Fail("Room is already booked for the extended dates");
             }
 
-            // Calculate price for extended stay
-            var priceRequest = new PriceCalculationRequestDto
-            {
-                HotelId = booking.HotelId,
-                RoomTypeId = booking.Room!.RoomTypeId,
-                CheckInDate = booking.EndDate, // Start from current end date
-                CheckOutDate = dto.NewEndDate,
-                GuestCount = booking.Guests.Count + (booking.PrimaryGuest != null ? 1 : 0),
-                DiscountCode = dto.DiscountCode
-            };
-
-            var priceResponse = await _pricingService.CalculatePriceAsync(priceRequest);
-            if (!priceResponse.IsSuccess)
-            {
-                return ApiResponse<ExtendStayResultDto>.Fail(priceResponse.Message);
-            }
-
+        
             // Update booking end date
             var oldEndDate = booking.EndDate;
             booking.EndDate = dto.NewEndDate;
@@ -539,7 +517,6 @@ public class BookingService : IBookingService
             var result = new ExtendStayResultDto
             {
                 Booking = updatedBookingResponse.Data,
-                Price = priceResponse.Data
             };
 
             return ApiResponse<ExtendStayResultDto>.Ok(result);

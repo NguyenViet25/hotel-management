@@ -1,4 +1,4 @@
-import axios from './axios';
+import axios from "./axios";
 
 // Types for Audit Log API
 export interface AuditLogDto {
@@ -33,22 +33,32 @@ export interface ApiResponse<T> {
 }
 
 const auditService = {
-  getLogs: async (query: AuditQueryDto = {}): Promise<ApiResponse<AuditLogDto[]>> => {
-    const { page = 1, pageSize = 10, from, to, userId, hotelId, action } = query;
-    
+  getLogs: async (
+    query: AuditQueryDto = {}
+  ): Promise<ApiResponse<AuditLogDto[]>> => {
+    const {
+      page = 1,
+      pageSize = 10,
+      from,
+      to,
+      userId,
+      hotelId,
+      action,
+    } = query;
+
     const params = new URLSearchParams();
-    params.append('page', page.toString());
-    params.append('pageSize', pageSize.toString());
-    
-    if (from) params.append('from', from);
-    if (to) params.append('to', to);
-    if (userId) params.append('userId', userId);
-    if (hotelId) params.append('hotelId', hotelId);
-    if (action) params.append('action', action);
-    
-    const response = await axios.get(`/api/admin/audit/logs?${params.toString()}`);
+    params.append("page", page.toString());
+    params.append("pageSize", pageSize.toString());
+
+    if (from) params.append("from", from);
+    if (to) params.append("to", to);
+    if (userId) params.append("userId", userId);
+    if (hotelId) params.append("hotelId", hotelId);
+    if (action) params.append("action", action);
+
+    const response = await axios.get(`/admin/audit/logs?${params.toString()}`);
     return response.data;
-  }
+  },
 };
 
 export default auditService;

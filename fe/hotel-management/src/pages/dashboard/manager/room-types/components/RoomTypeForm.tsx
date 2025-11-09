@@ -206,7 +206,7 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
       <DialogTitle fontWeight={600}>
         {isEdit ? "Chỉnh sửa loại phòng" : "Thêm loại phòng & Giá"}
       </DialogTitle>
@@ -218,7 +218,7 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
         {/* Common fields */}
         <Stack
           direction={{ xs: "column", lg: "row" }}
-          sx={{ mb: 2, borderRadius: 2 }}
+          sx={{ borderRadius: 2 }}
           gap={2}
         >
           <Tooltip title="Nhập tên loại phòng hiển thị cho khách">
@@ -265,11 +265,38 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
             )}
           />
         </Stack>
-
+        <Controller
+          name="guests"
+          control={control}
+          render={({ field }) => (
+            <Tooltip title="Số khách tối đa của loại phòng">
+              <TextField
+                {...field}
+                label="Mô tả"
+                type="text"
+                fullWidth
+                margin="normal"
+                error={!!errors.guests}
+                helperText={errors.guests?.message}
+                sx={{ alignItems: "center" }}
+                placeholder="Nhập mô tả loại phòng"
+                multiline
+                inputProps={{ min: 1 }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <DescriptionIcon fontSize="small" />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Tooltip>
+          )}
+        />
         {/* Tabs for pricing sections */}
         <Paper
           variant="outlined"
-          sx={{ bgcolor: "grey.100", mb: 2, borderRadius: 2 }}
+          sx={{ bgcolor: "grey.100", my: 2, borderRadius: 2 }}
         >
           <Tabs
             value={tabIndex}

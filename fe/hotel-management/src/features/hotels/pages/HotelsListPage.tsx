@@ -1,11 +1,11 @@
-import { Box, Chip, Typography } from "@mui/material";
+import { Box, Chip } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import type { Hotel } from "../../../api/hotelService";
 import DataTable, { type Column } from "../../../components/common/DataTable";
+import PageTitle from "../../../components/common/PageTitle";
 import ChangeStatusModal from "../components/ChangeStatusModal";
 import HotelFormModal from "../components/HotelFormModal";
 import { useHotels } from "../hooks/useHotels";
-import PageTitle from "../../../components/common/PageTitle";
 
 const HotelsListPage: React.FC = () => {
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
@@ -23,7 +23,7 @@ const HotelsListPage: React.FC = () => {
       pageSize: 10,
       search: searchText,
     });
-  }, [searchText, statusFilter]);
+  }, [searchText, statusFilter, searchText]);
 
   const columns: Column<Hotel>[] = [
     {
@@ -100,7 +100,7 @@ const HotelsListPage: React.FC = () => {
         onLock={handleOpenStatusModal}
         getRowId={(row) => row.id}
         onSort={handleSort}
-        onSearch={() => {}}
+        onSearch={(e) => setSearchText(e)}
       />
       <HotelFormModal
         visible={isCreateModalVisible}

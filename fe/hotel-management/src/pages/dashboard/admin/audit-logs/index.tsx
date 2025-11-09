@@ -1,18 +1,9 @@
-import {
-  Alert,
-  Box,
-  Button,
-  Grid,
-  Snackbar,
-  TextField,
-  Typography,
-} from "@mui/material";
-import React, { useEffect, useState } from "react";
+import { Alert, Box, Button, Grid, Snackbar, TextField } from "@mui/material";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
-import FileDownloadIcon from "@mui/icons-material/FileDownload";
+import React, { useEffect, useState } from "react";
 
 import auditService, {
   type AuditLogDto,
@@ -61,7 +52,7 @@ const AuditLogs: React.FC = () => {
     },
     {
       id: "hotelId",
-      label: "Thực thể",
+      label: "Cơ sở",
       minWidth: 150,
       format: (value) => value || "N/A",
     },
@@ -152,13 +143,6 @@ const AuditLogs: React.FC = () => {
     setPage(1);
   };
 
-  const handleSearch = (searchText: string) => {
-    setSearchText(searchText);
-    const newFilters = { ...filters, action: searchText || undefined, page: 1 };
-    setFilters(newFilters);
-    setPage(1);
-  };
-
   const handleResetFilters = () => {
     setFromDate(null);
     setToDate(null);
@@ -169,49 +153,6 @@ const AuditLogs: React.FC = () => {
       pageSize: 10,
     });
     setPage(1);
-  };
-
-  const handleExport = () => {
-    if (logs.length === 0) {
-      showSnackbar("Không có nhật ký để xuất", "warning");
-      return;
-    }
-
-    const headers = [
-      "Hành động",
-      "Người dùng",
-      "Thực thể",
-      "Thời gian",
-      "Chi tiết",
-    ];
-    const csvRows = [
-      headers.join(","),
-      ...logs.map((log) =>
-        [
-          log.action,
-          log.userId || "Hệ thống",
-          log.hotelId || "N/A",
-          dayjs(log.timestamp).format("DD/MM/YYYY HH:mm:ss"),
-          log.metadata
-            ? JSON.stringify(log.metadata).replace(/,/g, ";")
-            : "Không có chi tiết",
-        ].join(",")
-      ),
-    ];
-
-    const csvContent = csvRows.join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute(
-      "download",
-      `audit_logs_${dayjs().format("YYYYMMDD_HHmmss")}.csv`
-    );
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
   const showSnackbar = (
