@@ -30,6 +30,8 @@ public class BookingRoomType
     public decimal Price { get; set; }
     public int TotalRoom { get; set; }
     public ICollection<BookingRoom> BookingRooms { get; set; } = [];
+    public DateTime StartDate { get; set; }
+    public DateTime EndDate { get; set; }
 
     public Booking? Booking{ get; set; }
     public RoomType? RoomType { get; set; }

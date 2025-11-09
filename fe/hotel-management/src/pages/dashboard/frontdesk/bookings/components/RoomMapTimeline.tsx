@@ -46,9 +46,9 @@ const RoomMapTimeline: React.FC<Props> = ({
         const roomsRes = await roomsApi.getRooms({
           page: 1,
           pageSize: 200,
-          roomTypeId,
+          typeId: roomTypeId,
         });
-        const roomList = roomsRes.items || roomsRes.data?.items || [];
+        const roomList = roomsRes.data || [];
         setRooms(roomList);
         const sched: Record<string, BookingIntervalDto[]> = {};
         for (const r of roomList) {
@@ -57,7 +57,7 @@ const RoomMapTimeline: React.FC<Props> = ({
             from.toISOString(),
             to.toISOString()
           );
-          sched[r.id] = res.data || res.items || [];
+          sched[r.id] = (res as any).data || [];
         }
         setSchedules(sched);
       } catch (e) {
@@ -94,7 +94,7 @@ const RoomMapTimeline: React.FC<Props> = ({
                 {room.number}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                {room.typeName}
+                {room.roomTypeName}
               </Typography>
             </Box>
             <Box

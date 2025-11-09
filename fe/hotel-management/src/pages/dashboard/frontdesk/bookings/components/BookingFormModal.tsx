@@ -8,6 +8,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import PhoneIcon from "@mui/icons-material/Phone";
 import SaveIcon from "@mui/icons-material/Save";
 import {
+  Alert,
   Button,
   Card,
   CardContent,
@@ -17,6 +18,7 @@ import {
   DialogTitle,
   Divider,
   InputAdornment,
+  Snackbar,
   Stack,
   TextField,
   Typography,
@@ -29,13 +31,14 @@ import bookingsApi, {
   type CreateBookingDto,
 } from "../../../../../api/bookingsApi";
 import roomTypesApi, { type RoomType } from "../../../../../api/roomTypesApi";
+import roomsApi, { type RoomDto } from "../../../../../api/roomsApi";
 import RoomBookingSection from "./RoomBookingSection";
+import { useStore, type StoreState } from "../../../../../hooks/useStore";
 
 type Props = {
   open: boolean;
   onClose: () => void;
   onSubmitted?: () => void;
-  hotelId?: string;
 };
 
 // Price/projection calculation will be handled client-side
@@ -53,6 +56,13 @@ const roomItemSchema = z
       .int("Số lượng phòng phải là số nguyên")
       .min(1, "Tối thiểu 1 phòng"),
     price: z.coerce.number("Giá phòng phải là số").min(1, "Giá tối thiểu là 1"),
+    rooms: z.array(
+      z
+        .object({
+          roomId: z.string().min(1, "Vui lòng chọn phòng"),
+        })
+        .optional()
+    ),
   })
   .refine(
     (data) =>
@@ -74,7 +84,7 @@ const schema = z.object({
     .email("Email không hợp lệ")
     .optional()
     .or(z.literal("")),
-  rooms: z.array(roomItemSchema).min(1, "Thêm ít nhất 1 phòng"),
+  roomTypes: z.array(roomItemSchema).min(1, "Thêm ít nhất 1 phòng"),
   discountAmount: z.coerce
     .number("Giảm giá phải là số")
     .min(0, "Giảm giá không âm"),
@@ -93,14 +103,10 @@ type FormValues = z.infer<typeof schema>;
 // Currency helper
 const formatCurrency = (value: number) => value.toLocaleString();
 
-const BookingFormModal: React.FC<Props> = ({
-  open,
-  onClose,
-  onSubmitted,
-  hotelId,
-}) => {
+const BookingFormModal: React.FC<Props> = ({ open, onClose, onSubmitted }) => {
   const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
-
+  const { user } = useStore<StoreState>((state) => state);
+  const hotelId = user?.hotelId || "";
   const {
     control,
     handleSubmit,
@@ -114,13 +120,14 @@ const BookingFormModal: React.FC<Props> = ({
       guestName: "",
       guestPhone: "",
       guestEmail: "",
-      rooms: [
+      roomTypes: [
         {
           roomId: "",
           startDate: dayjs(),
           endDate: dayjs().add(1, "day"),
           totalRooms: 1,
           price: 0,
+          rooms: [],
         },
       ],
       discountAmount: 0,
@@ -130,9 +137,12 @@ const BookingFormModal: React.FC<Props> = ({
     },
   });
 
-  const { fields, append, remove } = useFieldArray({ name: "rooms", control });
+  const { fields, append, remove } = useFieldArray({
+    name: "roomTypes",
+    control,
+  });
 
-  const roomsWatch = watch("rooms") || [];
+  const roomsWatch = watch("roomTypes") || [];
   const depositAmount = watch("depositAmount") || 0;
   const discountAmount = watch("discountAmount") || 0;
   const totalAmount = watch("totalAmount") || 0;
@@ -140,8 +150,8 @@ const BookingFormModal: React.FC<Props> = ({
   useEffect(() => {
     if (roomTypes.length > 0) {
       // Initialize first room section defaults
-      setValue("rooms.0.roomId", roomTypes[0].id);
-      setValue("rooms.0.price", roomTypes[0].priceFrom || 0);
+      setValue("roomTypes.0.roomId", roomTypes[0].id);
+      setValue("roomTypes.0.price", roomTypes[0].priceFrom || 0);
     }
   }, [roomTypes]);
 
@@ -149,7 +159,7 @@ const BookingFormModal: React.FC<Props> = ({
     // Keep price synced when room type changes
     roomsWatch.forEach((r, idx) => {
       const p = roomTypes.find((t) => t.id === r.roomId)?.priceFrom || 0;
-      if (p && p !== r.price) setValue(`rooms.${idx}.price`, p);
+      if (p && p !== r.price) setValue(`roomTypes.${idx}.price`, p);
     });
   }, [roomsWatch.map((r) => r.roomId).join("|"), roomTypes]);
 
@@ -181,41 +191,53 @@ const BookingFormModal: React.FC<Props> = ({
     if (open) loadRoomTypes();
   }, [open, hotelId]);
 
-  const submit = async (values: FormValues) => {
-    // Create one booking per room section
-    try {
-      const results = await Promise.all(
-        values.rooms.map((section, idx) => {
-          if (!section.startDate || !section.endDate)
-            return Promise.resolve(null as any);
-          const payload: CreateBookingDto = {
-            hotelId:
-              hotelId ||
-              roomTypes.find((rt) => rt.id === section.roomId)?.hotelId ||
-              "",
-            roomId: section.roomId,
-            startDate: section.startDate.toDate().toISOString(),
-            endDate: section.endDate.toDate().toISOString(),
-            primaryGuest: {
-              fullName: values.guestName,
-              phone: values.guestPhone,
-              email: values.guestEmail || undefined,
-            },
-            // Assign the global deposit amount to the first booking; others 0
-            depositAmount: idx === 0 ? Number(values.depositAmount) || 0 : 0,
-            notes: values.notes || undefined,
-          };
-          return bookingsApi.create(payload);
-        })
-      );
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success" as "success" | "error" | "info" | "warning",
+  });
 
-      const ok = results.every((r) => r && (r as any).isSuccess);
+  const submit = async (values: FormValues) => {
+    try {
+      const payload: CreateBookingDto = {
+        hotelId: hotelId,
+        primaryGuest: {
+          fullname: values.guestName || "",
+          phone: values.guestPhone,
+          email: values.guestEmail || undefined,
+        },
+        deposit: values.depositAmount || 0,
+        discount: values.discountAmount || 0,
+        total: values.totalAmount || 0,
+        left: values.depositAmount || 0,
+        notes: values.notes || undefined,
+        roomTypes: values.roomTypes.map((rt) => ({
+          roomTypeId: rt.roomId,
+          price: rt.price || 0,
+          capacity: 0,
+          totalRooms: rt.totalRooms || 0,
+          rooms: rt.rooms.map((r) => ({
+            roomId: r?.roomId,
+            startDate: rt.startDate,
+            endDate: rt.endDate,
+            guests: [],
+          })),
+        })),
+      };
+      const results = await bookingsApi.create(payload);
+
+      const ok = results.isSuccess;
       if (ok) {
         onSubmitted?.();
         onClose();
         reset();
       }
-    } catch {}
+    } catch (e: any) {
+      console.log("e", e);
+      const msg =
+        e?.message || "Không thể tạo booking. Vui lòng kiểm tra dữ liệu.";
+      setSnackbar({ open: true, message: msg, severity: "error" });
+    }
   };
 
   return (
@@ -340,6 +362,7 @@ const BookingFormModal: React.FC<Props> = ({
                     endDate: dayjs().add(1, "day"),
                     totalRooms: 1,
                     price: roomTypes[0]?.priceFrom || 0,
+                    rooms: [],
                   })
                 }
               >
@@ -465,6 +488,14 @@ const BookingFormModal: React.FC<Props> = ({
             )}
           />
         </Stack>
+
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={3000}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+        >
+          <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
+        </Snackbar>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
         <Stack

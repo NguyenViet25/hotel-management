@@ -1,4 +1,4 @@
-using HotelManagement.Domain;
+﻿using HotelManagement.Domain;
 using HotelManagement.Domain.Repositories;
 using HotelManagement.Repository.Common;
 using HotelManagement.Services.Admin.Bookings.Dtos;
@@ -49,10 +49,10 @@ public class BookingsService : IBookingsService
         try
         {
             var hotel = await _hotelRepo.FindAsync(dto.HotelId);
-            if (hotel == null) return ApiResponse<BookingDetailsDto>.Fail("Hotel not found");
+            if (hotel == null) return ApiResponse<BookingDetailsDto>.Fail("Không tìm thấy khách sạn");
 
             if (dto.RoomTypes == null || dto.RoomTypes.Count == 0)
-                return ApiResponse<BookingDetailsDto>.Fail("At least one room type is required");
+                return ApiResponse<BookingDetailsDto>.Fail("Điền ít nhất 1 loại phòng");
 
             // Create primary guest
             var primaryGuest = new Guest
@@ -63,6 +63,7 @@ public class BookingsService : IBookingsService
                 Email = dto.PrimaryGuest.Email
             };
             await _guestRepo.AddAsync(primaryGuest);
+            await _guestRepo.SaveChangesAsync();
 
             await _uow.BeginTransactionAsync();
 
@@ -74,13 +75,13 @@ public class BookingsService : IBookingsService
                 Status = BookingStatus.Pending,
                 DepositAmount = dto.Deposit,
                 DiscountAmount = dto.Discount,
-                TotalAmount = 0,
-                LeftAmount = 0,
+                TotalAmount = dto.Total,
+                LeftAmount = dto.Left,
                 CreatedAt = DateTime.UtcNow
             };
             await _bookingRepo.AddAsync(booking);
+            await _bookingRepo.SaveChangesAsync();
 
-            decimal total = 0m;
 
             foreach (var rt in dto.RoomTypes)
             {
@@ -99,14 +100,16 @@ public class BookingsService : IBookingsService
                     RoomTypeName = roomType.Name,
                     Capacity = rt.Capacity ?? roomType.Capacity,
                     Price = rt.Price ?? roomType.BasePriceFrom,
+                    StartDate = rt.StartDate,
+                    EndDate = rt.EndDate,
                     TotalRoom = rt.Rooms?.Count ?? 0
                 };
                 await _bookingRoomTypeRepo.AddAsync(brt);
+                await _bookingRoomTypeRepo.SaveChangesAsync();
 
                 if (rt.Rooms == null || rt.Rooms.Count == 0)
                 {
-                    await _uow.RollbackTransactionAsync();
-                    return ApiResponse<BookingDetailsDto>.Fail("Each room type must include rooms");
+                    continue;
                 }
 
                 foreach (var r in rt.Rooms)
@@ -145,6 +148,7 @@ public class BookingsService : IBookingsService
                         BookingStatus = BookingRoomStatus.Pending
                     };
                     await _bookingRoomRepo.AddAsync(bookingRoom);
+                    await _bookingRoomRepo.SaveChangesAsync();
 
                     // Guests per room (optional), also link primary guest to first room of first type
                     var guests = r.Guests ?? new List<CreateBookingRoomGuestDto>();
@@ -156,6 +160,7 @@ public class BookingsService : IBookingsService
                             BookingRoomId = bookingRoom.BookingRoomId,
                             GuestId = primaryGuest.Id
                         });
+                        await _bookingGuestRepo.SaveChangesAsync();
                     }
                     else
                     {
@@ -172,6 +177,7 @@ public class BookingsService : IBookingsService
                                     Email = g.Email
                                 };
                                 await _guestRepo.AddAsync(newG);
+                                await _guestRepo.SaveChangesAsync();
                                 gid = newG.Id;
                             }
 
@@ -183,22 +189,16 @@ public class BookingsService : IBookingsService
                         }
                     }
 
-                    var nights = (decimal)(bookingRoom.EndDate.Date - bookingRoom.StartDate.Date).TotalDays;
-                    total += (brt.Price) * nights;
                 }
             }
 
-            booking.TotalAmount = Math.Max(0, total - booking.DiscountAmount);
-            booking.LeftAmount = Math.Max(0, booking.TotalAmount - booking.DepositAmount);
-
-            await _bookingRepo.UpdateAsync(booking);
             await _uow.CommitTransactionAsync();
 
             return await GetByIdAsync(booking.Id);
         }
         catch (Exception ex)
         {
-            try { await _uow.RollbackTransactionAsync(); } catch {}
+            try { await _uow.RollbackTransactionAsync(); } catch { }
             return ApiResponse<BookingDetailsDto>.Fail($"Error creating booking: {ex.Message}");
         }
     }
@@ -427,7 +427,7 @@ public class BookingsService : IBookingsService
         }
         catch (Exception ex)
         {
-            try { await _uow.RollbackTransactionAsync(); } catch {}
+            try { await _uow.RollbackTransactionAsync(); } catch { }
             return ApiResponse<BookingDetailsDto>.Fail($"Error updating booking: {ex.Message}");
         }
     }

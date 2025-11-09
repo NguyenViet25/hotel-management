@@ -40,6 +40,10 @@ public class CreateBookingRoomTypeDto
     public Guid RoomTypeId { get; set; }
     public decimal? Price { get; set; }
     public int? Capacity { get; set; }
+    [Required]
+    public DateTime StartDate { get; set; }
+    [Required]
+    public DateTime EndDate { get; set; }
     public List<CreateBookingRoomDto> Rooms { get; set; } = new();
 }
 
@@ -52,6 +56,12 @@ public class CreateBookingDto
     public decimal Deposit { get; set; }
     [Range(0, 100000000)]
     public decimal Discount { get; set; }
+
+    [Range(0, 100000000)]
+    public decimal Total { get; set; }
+    [Range(0, 100000000)]
+    public decimal Left { get; set; }
+
     [Required]
     public PrimaryGuestInfoDto PrimaryGuest { get; set; } = new();
     [Required]

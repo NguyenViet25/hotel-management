@@ -6,91 +6,134 @@ export type BookingStatus = 0 | 1 | 2 | 3 | 4; // example: Pending=0, Confirmed=
 export type PaymentType = 0 | 1 | 2 | 3; // example: Cash=0, Card=1, Transfer=2, Other=3
 export type CallResult = 0 | 1 | 2; // example: Confirmed=0, NoAnswer=1, Cancelled=2
 
-export interface GuestDto {
-  id?: string;
-  fullName: string;
-  phone: string;
+export interface PrimaryGuestInfoDto {
+  fullname: string;
+  phone?: string;
   email?: string;
-  idCardImageUrl?: string;
 }
 
-export interface PaymentDto {
-  id: string;
-  amount: number;
-  type: PaymentType;
-  timestamp: string; // ISO
+export interface CreateBookingRoomGuestDto {
+  guestId?: string;
+  fullname?: string;
+  phone?: string;
+  email?: string;
 }
 
-export interface CallLogDto {
-  id: string;
-  callTime: string; // ISO
-  result: CallResult;
-  notes?: string;
-  staffName?: string;
-}
-
-export interface BookingDto {
-  id: string;
-  hotelId: string;
-  hotelName?: string;
+export interface CreateBookingRoomDto {
   roomId: string;
-  roomNumber?: string;
-  roomTypeName?: string;
-  startDate: string; // ISO
-  endDate: string; // ISO
-  status: BookingStatus;
-  depositAmount: number;
-  createdAt: string; // ISO
-  primaryGuest?: GuestDto;
-  additionalGuests?: GuestDto[];
-  totalGuests?: number;
-  callLogs?: CallLogDto[];
-  payments?: PaymentDto[];
-  notes?: string | null;
+  startDate: string; // ISO string
+  endDate: string; // ISO string
+  guests?: CreateBookingRoomGuestDto[];
 }
 
-export interface BookingSummaryDto {
-  id: string;
-  hotelId: string;
-  roomId: string;
-  roomNumber?: string;
-  roomTypeName?: string;
-  startDate: string;
-  endDate: string;
-  status: BookingStatus;
-  depositAmount: number;
-  createdAt: string;
-  primaryGuestName?: string;
+export interface CreateBookingRoomTypeDto {
+  roomTypeId: string;
+  price?: number;
+  capacity?: number;
+  totalRooms?: number;
+  rooms: CreateBookingRoomDto[];
 }
 
 export interface CreateBookingDto {
   hotelId: string;
-  roomId: string;
-  startDate: string; // ISO
-  endDate: string; // ISO
-  primaryGuestId?: string;
-  primaryGuest?: GuestDto;
-  additionalGuests?: GuestDto[];
-  depositAmount: number;
+  deposit: number;
+  discount?: number;
+  total?: number;
+  left?: number;
+  primaryGuest: PrimaryGuestInfoDto;
+  roomTypes: CreateBookingRoomTypeDto[];
   notes?: string;
 }
 
 export interface UpdateBookingDto {
-  roomId?: string;
-  startDate?: string; // ISO
-  endDate?: string; // ISO
-  primaryGuestId?: string;
-  primaryGuest?: GuestDto;
-  additionalGuests?: GuestDto[];
-  depositAmount?: number;
+  deposit?: number;
+  discount?: number;
+  status?: BookingStatus;
   notes?: string;
+  roomTypes?: CreateBookingRoomTypeDto[];
 }
 
-export interface CancelBookingDto {
-  reason: string;
-  refundAmount: number;
-  refundType: PaymentType;
-  deductAmount?: number;
+export interface AddCallLogDto {
+  callTime: string; // ISO string
+  result: CallResult;
+  notes?: string;
+  staffUserId?: string;
+}
+
+export interface BookingGuestDto {
+  guestId: string;
+  fullname?: string;
+  phone?: string;
+  email?: string;
+}
+
+export interface BookingRoomDto {
+  bookingRoomId: string;
+  roomId: string;
+  roomName?: string;
+  startDate: string;
+  endDate: string;
+  bookingStatus: BookingRoomStatus;
+  guests: BookingGuestDto[];
+}
+
+export interface BookingRoomTypeDto {
+  bookingRoomTypeId: string;
+  roomTypeId: string;
+  roomTypeName?: string;
+  capacity: number;
+  price: number;
+  totalRoom: number;
+  bookingRooms: BookingRoomDto[];
+}
+
+export interface CallLogDto {
+  id: string;
+  callTime: string;
+  result: CallResult;
+  notes?: string;
+  staffUserId?: string;
+}
+
+export interface BookingDetailsDto {
+  id: string;
+  hotelId: string;
+  primaryGuestId?: string;
+  status: BookingStatus;
+  depositAmount: number;
+  discountAmount: number;
+  totalAmount: number;
+  leftAmount: number;
+  createdAt: string;
+  notes?: string;
+  bookingRoomTypes: BookingRoomTypeDto[];
+  callLogs: CallLogDto[];
+}
+
+export interface RoomTimelineSegmentDto {
+  start: string;
+  end: string;
+  status: string; // e.g., "Available" | "Booked"
+  bookingId?: string;
+}
+
+export interface RoomMapItemDto {
+  roomId: string;
+  roomNumber: string;
+  roomTypeId: string;
+  roomTypeName: string;
+  timeline: RoomTimelineSegmentDto[];
+}
+
+export interface RoomMapQueryDto {
+  date: string; // ISO string
+  hotelId?: string;
+}
+
+export enum BookingRoomStatus {
+  Pending = "Pending",
+  Occupied = "Occupied",
+  Available = "Available",
 }
 
 export interface CheckInDto {
@@ -115,12 +158,12 @@ export interface CheckoutRequestDto {
 
 export interface CheckoutResultDto {
   totalPaid: number;
-  booking?: BookingDto;
+  booking?: BookingDetailsDto;
   checkoutTime?: string; // ISO
 }
 
 export interface ExtendStayResultDto {
-  booking: BookingDto;
+  booking: BookingDetailsDto;
   price: number;
 }
 
@@ -164,7 +207,7 @@ export interface BookingIntervalDto {
 const bookingsApi = {
   async list(
     query: BookingsQueryDto = {}
-  ): Promise<ListEnvelope<BookingSummaryDto>> {
+  ): Promise<ListEnvelope<BookingDetailsDto>> {
     const qp = new URLSearchParams();
     if (query.hotelId) qp.append("hotelId", query.hotelId);
     if (query.status !== undefined) qp.append("status", String(query.status));
@@ -180,12 +223,14 @@ const bookingsApi = {
     return res.data;
   },
 
-  async getById(id: string): Promise<ApiResponse<BookingDto>> {
+  async getById(id: string): Promise<ApiResponse<BookingDetailsDto>> {
     const res = await axios.get(`/admin/bookings/${id}`);
     return res.data;
   },
 
-  async create(payload: CreateBookingDto): Promise<ApiResponse<BookingDto>> {
+  async create(
+    payload: CreateBookingDto
+  ): Promise<ApiResponse<BookingDetailsDto>> {
     const res = await axios.post(`/admin/bookings`, payload);
     return res.data;
   },
@@ -193,23 +238,20 @@ const bookingsApi = {
   async update(
     id: string,
     payload: UpdateBookingDto
-  ): Promise<ApiResponse<BookingDto>> {
+  ): Promise<ApiResponse<BookingDetailsDto>> {
     const res = await axios.put(`/admin/bookings/${id}`, payload);
     return res.data;
   },
 
-  async cancel(
-    id: string,
-    payload: CancelBookingDto
-  ): Promise<ApiResponse<BookingDto>> {
-    const res = await axios.post(`/admin/bookings/${id}/cancel`, payload);
+  async cancel(id: string): Promise<ApiResponse<BookingDetailsDto>> {
+    const res = await axios.delete(`/admin/bookings/${id}`);
     return res.data;
   },
 
   async checkIn(
     id: string,
     payload: CheckInDto
-  ): Promise<ApiResponse<BookingDto>> {
+  ): Promise<ApiResponse<BookingDetailsDto>> {
     const res = await axios.post(`/admin/bookings/${id}/check-in`, payload);
     return res.data;
   },
@@ -225,7 +267,7 @@ const bookingsApi = {
   async changeRoom(
     id: string,
     payload: ChangeRoomDto
-  ): Promise<ApiResponse<BookingDto>> {
+  ): Promise<ApiResponse<BookingDetailsDto>> {
     const res = await axios.post(`/admin/bookings/${id}/change-room`, payload);
     return res.data;
   },

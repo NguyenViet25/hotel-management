@@ -51,7 +51,7 @@ const RoomBookingSection: React.FC<Props> = ({
       </Stack>
 
       <Controller
-        name={`rooms.${index}.roomId`}
+        name={`roomTypes.${index}.roomId`}
         control={control}
         rules={{ required: true }}
         render={({ field }) => (
@@ -60,8 +60,8 @@ const RoomBookingSection: React.FC<Props> = ({
             label="Loại phòng"
             fullWidth
             required
-            error={!!errors?.rooms?.[index]?.roomId}
-            helperText={errors?.rooms?.[index]?.roomId?.message}
+            error={!!errors?.roomTypes?.[index]?.roomId}
+            helperText={errors?.roomTypes?.[index]?.roomId?.message}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -93,15 +93,15 @@ const RoomBookingSection: React.FC<Props> = ({
 
       <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
         <Controller
-          name={`rooms.${index}.price`}
+          name={`roomTypes.${index}.price`}
           control={control}
           render={({ field }) => (
             <TextField
               label="Giá phòng (VND)"
               type="number"
               fullWidth
-              error={!!errors?.rooms?.[index]?.price}
-              helperText={errors?.rooms?.[index]?.price?.message}
+              error={!!errors?.roomTypes?.[index]?.price}
+              helperText={errors?.roomTypes?.[index]?.price?.message}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="start">VND</InputAdornment>
@@ -115,15 +115,15 @@ const RoomBookingSection: React.FC<Props> = ({
         />
 
         <Controller
-          name={`rooms.${index}.totalRooms`}
+          name={`roomTypes.${index}.totalRooms`}
           control={control}
           render={({ field }) => (
             <TextField
               label="Số lượng phòng"
               type="number"
               fullWidth
-              error={!!errors?.rooms?.[index]?.totalRooms}
-              helperText={errors?.rooms?.[index]?.totalRooms?.message}
+              error={!!errors?.roomTypes?.[index]?.totalRooms}
+              helperText={errors?.roomTypes?.[index]?.totalRooms?.message}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -141,7 +141,7 @@ const RoomBookingSection: React.FC<Props> = ({
       <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <Controller
-            name={`rooms.${index}.startDate`}
+            name={`roomTypes.${index}.startDate`}
             control={control}
             rules={{ required: true }}
             render={({ field }) => (
@@ -152,8 +152,8 @@ const RoomBookingSection: React.FC<Props> = ({
                 slotProps={{
                   textField: {
                     fullWidth: true,
-                    error: !!errors?.rooms?.[index]?.startDate,
-                    helperText: errors?.rooms?.[index]?.startDate?.message,
+                    error: !!errors?.roomTypes?.[index]?.startDate,
+                    helperText: errors?.roomTypes?.[index]?.startDate?.message,
                     InputProps: {
                       startAdornment: (
                         <InputAdornment position="start">
@@ -169,7 +169,7 @@ const RoomBookingSection: React.FC<Props> = ({
         </LocalizationProvider>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <Controller
-            name={`rooms.${index}.endDate`}
+            name={`roomTypes.${index}.endDate`}
             control={control}
             rules={{ required: true }}
             render={({ field }) => (
@@ -180,8 +180,8 @@ const RoomBookingSection: React.FC<Props> = ({
                 slotProps={{
                   textField: {
                     fullWidth: true,
-                    error: !!errors?.rooms?.[index]?.endDate,
-                    helperText: errors?.rooms?.[index]?.endDate?.message,
+                    error: !!errors?.roomTypes?.[index]?.endDate,
+                    helperText: errors?.roomTypes?.[index]?.endDate?.message,
                     InputProps: {
                       startAdornment: (
                         <InputAdornment position="start">

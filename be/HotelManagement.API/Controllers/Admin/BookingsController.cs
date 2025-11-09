@@ -11,9 +11,9 @@ namespace HotelManagement.Api.Controllers.Admin;
 [Authorize]
 public class BookingsController : ControllerBase
 {
-    private readonly BookingsService _bookingsService;
+    private readonly IBookingsService _bookingsService;
 
-    public BookingsController(BookingsService bookingsService)
+    public BookingsController(IBookingsService bookingsService)
     {
         _bookingsService = bookingsService;
     }
@@ -26,6 +26,8 @@ public class BookingsController : ControllerBase
         if (!result.IsSuccess) return BadRequest(result);
         return Ok(result);
     }
+
+ 
 
     [HttpGet("{id}")]
     public async Task<ActionResult<ApiResponse<BookingDetailsDto>>> Get(Guid id)

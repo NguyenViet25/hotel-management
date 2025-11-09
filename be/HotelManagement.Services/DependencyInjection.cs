@@ -8,6 +8,7 @@ using HotelManagement.Services.Admin.Menu;
 using HotelManagement.Services.Admin.Kitchen;
 using HotelManagement.Services.Profile;
 using Microsoft.Extensions.DependencyInjection;
+using HotelManagement.Services.Admin.Bookings;
 
 namespace HotelManagement.Services;
 
@@ -25,7 +26,7 @@ public static class DependencyInjection
             services.AddScoped<IMenuService, MenuService>();
             services.AddScoped<IKitchenService, KitchenService>();
             services.AddScoped<IProfileService, ProfileService>();
-            services.AddScoped<Admin.Bookings.IBookingsService, Admin.Bookings.BookingsService>();
+            services.AddScoped<IBookingsService,BookingsService>();
         return services;
     }
 }
