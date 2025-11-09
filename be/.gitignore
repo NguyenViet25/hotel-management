@@ -1,148 +1,39 @@
-## .NET Core
-*.swp
-*.*~
-project.lock.json
-.DS_Store
-*.pyc
-
-## Visual Studio files
+## .NET / Visual Studio
 .vs/
+bin/
+obj/
+Debug/
+Release/
+TestResults/
+
+## IDE settings
+.idea/
 .vscode/
-*_i.c
-*_p.c
-*_h.h
-*.ilk
-*.meta
-*.obj
-*.iobj
-*.pch
-*.pdb
-*.ipdb
-*.pgc
-*.pgd
-*.rsp
-*.sbr
-*.tlb
-*.tli
-*.tlh
-*.tmp
-*.tmp_proj
-*_wpftmp.csproj
-*.log
-*.tlog
-*.vspscc
-*.vssscc
-.builds
-*.pidb
-*.svclog
-*.scc
-ipch/
-*.aps
-*.ncb
-*.opendb
-*.opensdf
-*.sdf
-*.cachefile
-*.VC.db
-*.VC.VC.opendb
-*.psess
-*.vsp
-*.vspx
-*.sap
-
-## Build results
-[Dd]ebug/
-[Dd]ebugPublic/
-[Rr]elease/
-[Rr]eleases/
-x64/
-x86/
-[Ww][Ii][Nn]32/
-[Aa][Rr][Mm]/
-[Aa][Rr][Mm]64/
-bld/
-[Bb]in/
-[Oo]bj/
-[Ll]og/
-[Ll]ogs/
-
-## NuGet Packages
-*.nupkg
-# NuGet Symbol Packages
-*.snupkg
-# The packages folder can be ignored because of Package Restore
-**/[Pp]ackages/*
-# except build/, which is used as an MSBuild target.
-!**/[Pp]ackages/build/
-# Uncomment if necessary however generally it will be regenerated when needed
-#!**/[Pp]ackages/repositories.config
-# NuGet v3's project.json files produces more ignorable files
-*.nuget.props
-*.nuget.targets
-
-## User-specific files
-*.rsuser
 *.suo
 *.user
 *.userosscache
 *.sln.docstates
-*.userprefs
 
-## Mono auto generated files
-mono_crash.*
+## Build & publish artifacts
+artifacts/
+publish/
 
-## Database files
-*.mdf
-*.ldf
-*.ndf
+## Logs & temp
+logs/
+*.log
+*.tmp
+*.temp
 
-## SQL Server files
-*.mdf
-*.ldf
+## OS junk
+.DS_Store
+Thumbs.db
 
-## Business Intelligence projects
-*.rdl.data
-*.bim.layout
-*.bim_*.settings
-*.rptproj.rsuser
-*- [Bb]ackup.rdl
-*- [Bb]ackup ([0-9]).rdl
-*- [Bb]ackup ([0-9][0-9]).rdl
-
-## Microsoft Fakes
-FakesAssemblies/
-
-## Local History for Visual Studio
-.localhistory/
-
-## Visual Studio History (VSHistory) files
-.vshistory/
-
-## Coverlet is a free, cross platform Code Coverage Tool
-coverage*.json
-coverage*.xml
-coverage*.info
-
-## ASP.NET Scaffolding
-ScaffoldingReadMe.txt
-
-## StyleCop
-StyleCopReport.xml
-
-## Rider
-.idea/
-*.sln.iml
-
-## Docker
-.docker/
-
-## Environment files
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-## Misc
-*.cache
+## Database design files
+*.dbmdl
 *.bak
+
+## Coverage
+coverage/
+
+## Environment files (if any)
+.env

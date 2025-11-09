@@ -1,0 +1,44 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=Password1@
+      - MSSQL_PID=Developer
+    ports:
+      - "11433:1433"
+    volumes:
+      - mssql-data:/var/opt/mssql
+
+  api:
+    build:
+      context: ./be
+      dockerfile: HotelManagement.API/Dockerfile
+    container_name: hotel-management-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=HotelManagement;User Id=sa;Password=Password1@;TrustServerCertificate=True
+      - Jwt__Key=3k8s1ZGQ9q2a4nQ6wV9s+0b7hJmP1aHq0Y2uV6Bf2lM=
+      - Jwt__Issuer=HotelManagement
+      - Jwt__Audience=HotelManagementAudience
+    ports:
+      - "5283:5283"
+    depends_on:
+      - sqlserver
+
+  frontend:
+    build:
+      context: ./fe/hotel-management
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=http://api:5283
+    container_name: hotel-management-frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+
+volumes:
+  mssql-data:
+    driver: local
