@@ -25,6 +25,7 @@ public static class DependencyInjection
             services.AddScoped<IMenuService, MenuService>();
             services.AddScoped<IKitchenService, KitchenService>();
             services.AddScoped<IProfileService, ProfileService>();
+            services.AddScoped<Admin.Bookings.IBookingsService, Admin.Bookings.BookingsService>();
         return services;
     }
 }
