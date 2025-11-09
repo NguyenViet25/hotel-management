@@ -87,3 +87,4 @@
 2025-11-09 - 2 - 01:48:38 UTC :: refactor: UC-34 Cham cong: ghi nhan diem danh, ban giao ca. — bo sung metrics/telemetry co ban (anh huong thap)
 2025-11-09 - 3 - 01:48:40 UTC :: refactor: UC-42 Phan quyen: thiet lap quyen theo co so. — chinh sua tai lieu & mo ta API (da smoke test)
 2025-11-09 - 4 - 01:48:42 UTC :: perf: UC-28 Room charge F&B: ghi hoa don ban an vao folio. — refactor luong xu ly cho ro rang (chuan bi cho tinh nang tiep theo)
+2025-11-09 - 5 - 01:48:43 UTC :: docs: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — kiem tra tuong thich mui gio/tien te (da kiem tra lint)
