@@ -206,13 +206,13 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
       <DialogTitle fontWeight={600}>
         {isEdit ? "Chỉnh sửa loại phòng" : "Thêm loại phòng & Giá"}
       </DialogTitle>
       <DialogContent>
         <Typography variant="body2" sx={{ color: "text.secondary", mb: 2 }}>
-          Thiết lập base/weekday/date-range cho loại phòng
+          Thiết lập thông tin và giá cho loại phòng
         </Typography>
 
         {/* Common fields */}
@@ -276,8 +276,7 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
             onChange={(_, v) => setTabIndex(v)}
             variant="fullWidth"
           >
-            <Tab label="Giá base" />
-            <Tab label="Giá theo thứ" />
+            <Tab label="Khoảng giá base" />
             <Tab label="Giá theo ngày" />
           </Tabs>
         </Paper>
@@ -286,13 +285,8 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
           {tabIndex === 0 && (
             <RoomTypeFormSectionBase control={control} errors={errors as any} />
           )}
+
           {tabIndex === 1 && (
-            <RoomTypeFormSectionWeekday
-              control={control}
-              errors={errors as any}
-            />
-          )}
-          {tabIndex === 2 && (
             <RoomTypeFormSectionDateRange
               control={control}
               errors={errors as any}
