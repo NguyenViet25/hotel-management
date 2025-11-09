@@ -369,7 +369,7 @@ namespace HotelManagement.Domain.Migrations
 
                     b.Property<string>("Number")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("RoomTypeId")
                         .HasColumnType("uniqueidentifier");
@@ -381,7 +381,7 @@ namespace HotelManagement.Domain.Migrations
 
                     b.HasIndex("RoomTypeId");
 
-                    b.HasIndex("HotelId", "Number")
+                    b.HasIndex("HotelId", "RoomTypeId", "Id")
                         .IsUnique();
 
                     b.ToTable("Rooms");

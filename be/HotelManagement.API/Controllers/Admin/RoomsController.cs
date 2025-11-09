@@ -13,10 +13,10 @@ namespace HotelManagement.Api.Controllers.Admin;
 [Authorize]
 public class RoomsController : ControllerBase
 {
-    private readonly RoomsService _roomsService;
+    private readonly IRoomsService _roomsService;
     private readonly IBookingService _bookingService;
 
-    public RoomsController(RoomsService roomsService, IBookingService bookingService)
+    public RoomsController(IRoomsService roomsService, IBookingService bookingService)
     {
         _roomsService = roomsService;
         _bookingService = bookingService;

@@ -25,6 +25,7 @@ public static class DatabaseInitializationExtensions
 
             SeedHotelsAsync(dbContext).GetAwaiter().GetResult();
             SeedRoomTypesAsync(dbContext).GetAwaiter().GetResult();
+            SeedHotelRoomsAsync(dbContext).GetAwaiter().GetResult();
             SeedRoles(roleManager).GetAwaiter().GetResult();
             SeedUsers(userManager, dbContext).GetAwaiter().GetResult();
         }
@@ -45,6 +46,48 @@ public static class DatabaseInitializationExtensions
                 await roleManager.CreateAsync(new IdentityRole<Guid>(roleName));
             }
         }
+    }
+
+    public static async Task SeedHotelRoomsAsync(DbContext dbContext)
+    {
+        var hotelId = DEFAULT_HOTEL_ID;
+
+        // Get all room types for the hotel
+        var roomTypes = await dbContext.Set<RoomType>()
+            .Where(rt => rt.HotelId == hotelId)
+            .ToListAsync();
+
+        if (!roomTypes.Any()) return; // No room types to seed
+        var index = 1;
+
+        foreach (var roomType in roomTypes)
+        {
+            // Check if rooms already exist for this room type
+            bool exists = await dbContext.Set<HotelRoom>()
+                .AnyAsync(r => r.RoomTypeId == roomType.Id);
+            if (exists) continue;
+
+            var rooms = new List<HotelRoom>();
+
+            for (int i = index; i <= 5; i++)
+            {
+                rooms.Add(new HotelRoom
+                {
+                    Id = Guid.NewGuid(),
+                    HotelId = hotelId,
+                    RoomTypeId = roomType.Id,
+                    Number = $"P-{(i + index):D3}", // e.g., STD-001
+                    Floor = (i - 1) / 2 + 1, // simple floor calculation
+                    Status = RoomStatus.Available
+                });
+
+            }
+            index += 5;
+
+            dbContext.Set<HotelRoom>().AddRange(rooms);
+        }
+
+        await dbContext.SaveChangesAsync();
     }
 
     public static async Task SeedRoomTypesAsync(DbContext dbContext)

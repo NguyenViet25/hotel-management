@@ -393,7 +393,7 @@ namespace HotelManagement.Domain.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     HotelId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     RoomTypeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Number = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Number = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Floor = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false)
                 },
@@ -1024,9 +1024,9 @@ namespace HotelManagement.Domain.Migrations
                 column: "OrderId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Rooms_HotelId_Number",
+                name: "IX_Rooms_HotelId_RoomTypeId_Id",
                 table: "Rooms",
-                columns: new[] { "HotelId", "Number" },
+                columns: new[] { "HotelId", "RoomTypeId", "Id" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
