@@ -81,3 +81,4 @@
 2025-11-09 - 1 - 01:48:37 UTC :: test: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — refactor luong xu ly cho ro rang (can theo doi them)
 2025-11-09 - 2 - 01:48:40 UTC :: refactor: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — sua validate va bo sung thong bao loi (can theo doi them)
 2025-11-09 - 3 - 01:48:44 UTC :: docs: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — bo sung unit test muc co ban (dam bao backward-compatible)
+2025-11-09 - 4 - 01:48:46 UTC :: chore: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — chinh sua tai lieu & mo ta API (chuan bi cho tinh nang tiep theo)
