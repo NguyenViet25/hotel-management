@@ -80,3 +80,4 @@
 2025-11-08 - 5 - 01:39:28 UTC :: chore: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — chinh sua tai lieu & mo ta API (anh huong thap)
 2025-11-09 - 1 - 01:48:37 UTC :: chore: UC-37 Night Audit: kiem tra folio chua chot, khoa giao dich. — tach chuc nang de de bao tri (anh huong thap)
 2025-11-09 - 2 - 01:48:40 UTC :: test: UC-22 Minibar/Amenity: ghi tieu hao, post charge vao folio. — them kiem soat loi & retry nhe (da smoke test)
+2025-11-09 - 3 - 01:48:41 UTC :: feat: UC-10 Goi gia: tao rate plan, thoi gian ap dung linh hoat. — bo sung case canh bien & no-show (can theo doi them)
