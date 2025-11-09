@@ -80,3 +80,4 @@
 2025-11-08 - 5 - 01:39:28 UTC :: feat: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — cap nhat mock data & seed test (dat tieu chi toi thieu)
 2025-11-09 - 1 - 01:48:35 UTC :: perf: UC-06 Co so: gan quan ly phu trach va quyen truy cap. — don dep code va xoa doan thua (dam bao backward-compatible)
 2025-11-09 - 2 - 01:48:37 UTC :: build: UC-18 Room Move/Extend: doi phong, gia han dem o. — cap nhat cau hinh va kiem tra bien (da review so bo)
+2025-11-09 - 3 - 01:48:38 UTC :: fix: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — don dep code va xoa doan thua (da kiem tra lint)
