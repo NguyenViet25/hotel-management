@@ -57,6 +57,7 @@ export interface DataTableProps<T> {
   sortBy?: string;
   sortDirection?: "asc" | "desc";
   onSearch?: (searchText: string) => void;
+  borderRadius?: number;
 }
 
 const DataTable = <T extends object>({
@@ -76,6 +77,7 @@ const DataTable = <T extends object>({
   sortBy,
   onSearch,
   sortDirection = "asc",
+  borderRadius = 2,
 }: DataTableProps<T>) => {
   const handleSort = (property: string) => {
     if (onSort) {
@@ -96,14 +98,19 @@ const DataTable = <T extends object>({
   return (
     <Paper
       variant="outlined"
-      sx={{ width: "100%", overflow: "hidden", borderRadius: 2 }}
+      sx={{
+        width: "100%",
+        overflow: "hidden",
+        borderRadius: borderRadius > 0 ? borderRadius : 0,
+      }}
     >
       <Stack
         sx={{
           p: onSearch || onAdd ? 2 : 0,
           display: "flex",
           justifyContent: "space-between",
-          borderBottom: "1px solid rgba(224, 224, 224, 1)",
+          borderBottom:
+            onSearch || onAdd ? "1px solid rgba(224, 224, 224, 1)" : "none",
         }}
         gap={1}
         direction={{ xs: "column", lg: "row" }}

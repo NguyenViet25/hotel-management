@@ -1,6 +1,8 @@
 import React from "react";
 import { Chip, Avatar } from "@mui/material";
-import DataTable, { type Column } from "../../../../../components/common/DataTable";
+import DataTable, {
+  type Column,
+} from "../../../../../components/common/DataTable";
 import type { OrderSummaryDto } from "../../../../../api/ordersApi";
 
 interface OrdersTableProps {
@@ -14,10 +16,13 @@ interface OrdersTableProps {
   onAddBooking?: () => void;
   onEdit?: (record: OrderSummaryDto) => void;
   onCancel?: (record: OrderSummaryDto) => void;
+  onSearch?: (search: string) => void;
 }
 
 const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(value);
+  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
+    value
+  );
 
 const OrdersTable: React.FC<OrdersTableProps> = ({
   data,
@@ -29,6 +34,7 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
   onAddWalkIn,
   onAddBooking,
   onEdit,
+  onSearch,
   onCancel,
 }) => {
   const columns: Column<OrderSummaryDto>[] = [
@@ -62,7 +68,14 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
       id: "status",
       label: "Trạng thái",
       format: (v: string) => {
-        const color = v === "Serving" ? "warning" : v === "Paid" ? "success" : v === "Draft" ? "default" : "error";
+        const color =
+          v === "Serving"
+            ? "warning"
+            : v === "Paid"
+            ? "success"
+            : v === "Draft"
+            ? "default"
+            : "error";
         return <Chip label={v} color={color as any} size="small" />;
       },
       minWidth: 140,
@@ -103,6 +116,8 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
       onDelete={onCancel}
       getRowId={(row) => row.id}
       actionColumn
+      onSearch={onSearch}
+      borderRadius={0}
     />
   );
 };

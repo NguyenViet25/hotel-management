@@ -42,7 +42,7 @@ export const menuItems = {
       icon: <DashboardIcon />,
     },
     { title: "Đặt phòng", path: "/frontdesk/bookings", icon: <HotelIcon /> },
-    { title: "Yêu cầu", path: "/frontdesk/orders", icon: <RestaurantIcon /> },
+    { title: "Đặt món", path: "/frontdesk/orders", icon: <RestaurantIcon /> },
   ],
   kitchen: [
     { title: "Tổng quan", path: "/kitchen/dashboard", icon: <DashboardIcon /> },

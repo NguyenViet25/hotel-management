@@ -89,7 +89,6 @@ const ManagerDashboard = () => <ManagerDashboardPage />;
 const FrontDeskDashboard = () => <div>Front Desk Dashboard</div>;
 const KitchenDashboard = () => <div>Kitchen Dashboard</div>;
 const WaiterDashboard = () => <div>Waiter Dashboard</div>;
-const CashierDashboard = () => <div>Cashier Dashboard</div>;
 const AccountantDashboard = () => <div>Accountant Dashboard</div>;
 const HousekeeperDashboard = () => <div>Housekeeper Dashboard</div>;
 

@@ -1,53 +1,42 @@
+import { Alert, Box, Chip, Snackbar, Stack, Typography } from "@mui/material";
+import { Dayjs } from "dayjs";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  Box,
-  Button,
-  Chip,
-  Grid,
-  MenuItem,
-  Snackbar,
-  Alert,
-  Stack,
-  TextField,
-  Typography,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-} from "@mui/material";
-import PageTitle from "../../../../components/common/PageTitle";
-import DataTable, {
-  type Column,
-} from "../../../../components/common/DataTable";
 import bookingsApi, {
-  type BookingSummaryDto,
   type BookingDto,
   type BookingsQueryDto,
+  type BookingStatus,
+  type BookingSummaryDto,
 } from "../../../../api/bookingsApi";
 import roomsApi, { type RoomDto } from "../../../../api/roomsApi";
 import roomTypesApi, { type RoomType } from "../../../../api/roomTypesApi";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import dayjs, { Dayjs } from "dayjs";
+import DataTable, {
+  type Column,
+} from "../../../../components/common/DataTable";
+import PageTitle from "../../../../components/common/PageTitle";
+import ActionsCell from "./components/ActionsCell";
 import BookingFormModal from "./components/BookingFormModal";
-import EditBookingFormModal from "./components/EditBookingFormModal";
-import CancelBookingModal from "./components/CancelBookingModal";
 import CallLogModal from "./components/CallLogModal";
-import RoomMapTimeline from "./components/RoomMapTimeline";
-import CheckInModal from "./components/CheckInModal";
+import CancelBookingModal from "./components/CancelBookingModal";
 import ChangeRoomModal from "./components/ChangeRoomModal";
-import ExtendStayModal from "./components/ExtendStayModal";
+import CheckInModal from "./components/CheckInModal";
 import CheckoutModal from "./components/CheckoutModal";
+import EditBookingFormModal from "./components/EditBookingFormModal";
+import ExtendStayModal from "./components/ExtendStayModal";
+import FiltersBar, {
+  type StatusOption as FiltersStatusOption,
+} from "./components/FiltersBar";
+import RoomMapDialog from "./components/RoomMapDialog";
+import TopBarControls from "./components/TopBarControls";
 
-type StatusOption = { value: number | ""; label: string };
+type StatusOption = { value: BookingStatus | ""; label: string };
 
 const STATUS_OPTIONS: StatusOption[] = [
   { value: "", label: "Tất cả" },
-  { value: 0, label: "Chờ duyệt" },
-  { value: 1, label: "Đã xác nhận" },
-  { value: 2, label: "Đã nhận phòng" },
-  { value: 3, label: "Hoàn tất" },
-  { value: 4, label: "Đã hủy" },
+  { value: 0 as BookingStatus, label: "Chờ duyệt" },
+  { value: 1 as BookingStatus, label: "Đã xác nhận" },
+  { value: 2 as BookingStatus, label: "Đã nhận phòng" },
+  { value: 3 as BookingStatus, label: "Hoàn tất" },
+  { value: 4 as BookingStatus, label: "Đã hủy" },
 ];
 
 const BookingManagementPage: React.FC = () => {
@@ -60,7 +49,7 @@ const BookingManagementPage: React.FC = () => {
 
   // Filters
   const [hotelId, setHotelId] = useState<string>("");
-  const [status, setStatus] = useState<number | "">("");
+  const [status, setStatus] = useState<BookingStatus | "">("");
   const [fromDate, setFromDate] = useState<Dayjs | null>(null);
   const [toDate, setToDate] = useState<Dayjs | null>(null);
   const [guestName, setGuestName] = useState<string>("");
@@ -127,7 +116,7 @@ const BookingManagementPage: React.FC = () => {
       try {
         const query: BookingsQueryDto = {
           hotelId: hotelId || undefined,
-          status: status === "" ? undefined : (status as number),
+          status: status === "" ? undefined : (status as BookingStatus),
           startDate: fromDate ? fromDate.toDate().toISOString() : undefined,
           endDate: toDate ? toDate.toDate().toISOString() : undefined,
           guestName: guestName || undefined,
@@ -214,6 +203,70 @@ const BookingManagementPage: React.FC = () => {
     }
   };
 
+  const openCheckInModal = async (summary: BookingSummaryDto) => {
+    try {
+      const res = await bookingsApi.getById(summary.id);
+      if ((res as any)?.isSuccess && (res as any)?.data) {
+        setSelectedBooking((res as any).data);
+        setOpenCheckIn(true);
+      }
+    } catch (err) {
+      setSnackbar({
+        open: true,
+        message: "Không thể mở check-in",
+        severity: "error",
+      });
+    }
+  };
+
+  const openChangeRoomModal = async (summary: BookingSummaryDto) => {
+    try {
+      const res = await bookingsApi.getById(summary.id);
+      if ((res as any)?.isSuccess && (res as any)?.data) {
+        setSelectedBooking((res as any).data);
+        setOpenChangeRoom(true);
+      }
+    } catch (err) {
+      setSnackbar({
+        open: true,
+        message: "Không thể mở đổi phòng",
+        severity: "error",
+      });
+    }
+  };
+
+  const openExtendStayModal = async (summary: BookingSummaryDto) => {
+    try {
+      const res = await bookingsApi.getById(summary.id);
+      if ((res as any)?.isSuccess && (res as any)?.data) {
+        setSelectedBooking((res as any).data);
+        setOpenExtendStay(true);
+      }
+    } catch (err) {
+      setSnackbar({
+        open: true,
+        message: "Không thể mở gia hạn",
+        severity: "error",
+      });
+    }
+  };
+
+  const openCheckoutModal = async (summary: BookingSummaryDto) => {
+    try {
+      const res = await bookingsApi.getById(summary.id);
+      if ((res as any)?.isSuccess && (res as any)?.data) {
+        setSelectedBooking((res as any).data);
+        setOpenCheckout(true);
+      }
+    } catch (err) {
+      setSnackbar({
+        open: true,
+        message: "Không thể mở check-out",
+        severity: "error",
+      });
+    }
+  };
+
   const columns: Column<BookingSummaryDto & { actions?: React.ReactNode }>[] = [
     { id: "id", label: "ID", minWidth: 140 },
     { id: "roomNumber", label: "Phòng", minWidth: 80 },
@@ -269,81 +322,16 @@ const BookingManagementPage: React.FC = () => {
     return rows.map((r) => ({
       ...r,
       actions: (
-        <Stack direction="row" spacing={1} justifyContent="center" sx={{ flexWrap: "wrap" }}>
-          <Button size="small" variant="text" onClick={() => openEditModal(r)}>
-            Sửa
-          </Button>
-          <Button
-            size="small"
-            variant="text"
-            color="error"
-            onClick={() => openCancelModal(r)}
-          >
-            Hủy
-          </Button>
-          <Button
-            size="small"
-            variant="text"
-            color="warning"
-            onClick={() => openCallLogModal(r)}
-          >
-            Gọi xác nhận
-          </Button>
-          <Button
-            size="small"
-            variant="text"
-            color="success"
-            onClick={async () => {
-              const res = await bookingsApi.getById(r.id);
-              if ((res as any)?.isSuccess && (res as any)?.data) {
-                setSelectedBooking((res as any).data);
-                setOpenCheckIn(true);
-              }
-            }}
-          >
-            Nhận phòng
-          </Button>
-          <Button
-            size="small"
-            variant="text"
-            onClick={async () => {
-              const res = await bookingsApi.getById(r.id);
-              if ((res as any)?.isSuccess && (res as any)?.data) {
-                setSelectedBooking((res as any).data);
-                setOpenChangeRoom(true);
-              }
-            }}
-          >
-            Đổi phòng
-          </Button>
-          <Button
-            size="small"
-            variant="text"
-            onClick={async () => {
-              const res = await bookingsApi.getById(r.id);
-              if ((res as any)?.isSuccess && (res as any)?.data) {
-                setSelectedBooking((res as any).data);
-                setOpenExtendStay(true);
-              }
-            }}
-          >
-            Gia hạn
-          </Button>
-          <Button
-            size="small"
-            variant="text"
-            color="primary"
-            onClick={async () => {
-              const res = await bookingsApi.getById(r.id);
-              if ((res as any)?.isSuccess && (res as any)?.data) {
-                setSelectedBooking((res as any).data);
-                setOpenCheckout(true);
-              }
-            }}
-          >
-            Check-out
-          </Button>
-        </Stack>
+        <ActionsCell
+          summary={r}
+          onEdit={openEditModal}
+          onCancel={openCancelModal}
+          onCallLog={openCallLogModal}
+          onCheckIn={openCheckInModal}
+          onChangeRoom={openChangeRoomModal}
+          onExtendStay={openExtendStayModal}
+          onCheckout={openCheckoutModal}
+        />
       ),
     }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -351,109 +339,41 @@ const BookingManagementPage: React.FC = () => {
 
   return (
     <Box>
-      <PageTitle
-        title="Quản lý Bookings"
-        subtitle="Tạo, chỉnh sửa, hủy, xác nhận cuộc gọi và xem sơ đồ phòng"
-      />
-
-      {/* Top bar: hotel scope & refresh */}
       <Stack
-        direction={{ xs: "column", sm: "row" }}
+        direction={{ xs: "column", lg: "row" }}
+        justifyContent={"space-between"}
         spacing={2}
-        alignItems="center"
-        sx={{ mb: 2 }}
+        mb={2}
       >
-        <TextField
-          label="Hotel ID (tuỳ chọn)"
-          value={hotelId}
-          onChange={(e) => setHotelId(e.target.value)}
-          sx={{ minWidth: 280 }}
+        <PageTitle
+          title="Quản lý yêu cầu đặt phòng"
+          subtitle="Tạo, chỉnh sửa, hủy, xác nhận yêu cầu và xem sơ đồ phòng"
         />
-        <Button variant="outlined" onClick={() => fetchList(1)}>
-          Làm mới
-        </Button>
-        <Button variant="contained" onClick={() => setOpenCreate(true)}>
-          Thêm booking
-        </Button>
-        <Button
-          variant="outlined"
-          color="info"
-          onClick={() => setOpenRoomMap(true)}
-        >
-          Xem sơ đồ phòng
-        </Button>
+
+        {/* Top bar: hotel scope & refresh */}
+        <TopBarControls
+          onAddBooking={() => setOpenCreate(true)}
+          onOpenRoomMap={() => setOpenRoomMap(true)}
+        />
       </Stack>
 
       {/* Filters */}
-      <Grid container spacing={2} alignItems="center" sx={{ mb: 2 }}>
-        <Grid item xs={12} md={2}>
-          <TextField
-            select
-            label="Trạng thái"
-            value={status}
-            onChange={(e) => setStatus(e.target.value as any as number | "")}
-            fullWidth
-          >
-            {STATUS_OPTIONS.map((opt) => (
-              <MenuItem key={String(opt.value)} value={opt.value}>
-                {opt.label}
-              </MenuItem>
-            ))}
-          </TextField>
-        </Grid>
-        <Grid item xs={12} md={2}>
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DatePicker
-              label="Từ ngày"
-              value={fromDate}
-              onChange={(v) => setFromDate(v)}
-              slotProps={{ textField: { fullWidth: true } }}
-            />
-          </LocalizationProvider>
-        </Grid>
-        <Grid item xs={12} md={2}>
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DatePicker
-              label="Đến ngày"
-              value={toDate}
-              onChange={(v) => setToDate(v)}
-              slotProps={{ textField: { fullWidth: true } }}
-            />
-          </LocalizationProvider>
-        </Grid>
-        <Grid item xs={12} md={2}>
-          <TextField
-            label="Tên khách"
-            value={guestName}
-            onChange={(e) => setGuestName(e.target.value)}
-            fullWidth
-          />
-        </Grid>
-        <Grid item xs={12} md={2}>
-          <TextField
-            label="Số phòng"
-            value={roomNumber}
-            onChange={(e) => setRoomNumber(e.target.value)}
-            fullWidth
-          />
-        </Grid>
-        <Grid item xs={12} md={2}>
-          <TextField
-            select
-            label="Loại phòng"
-            value={roomTypeId}
-            onChange={(e) => setRoomTypeId(e.target.value)}
-            fullWidth
-          >
-            <MenuItem value="">Tất cả</MenuItem>
-            {roomTypes.map((rt) => (
-              <MenuItem key={rt.id} value={rt.id}>
-                {rt.name}
-              </MenuItem>
-            ))}
-          </TextField>
-        </Grid>
-      </Grid>
+      <FiltersBar
+        status={status}
+        onStatusChange={setStatus}
+        fromDate={fromDate}
+        toDate={toDate}
+        onFromDateChange={setFromDate}
+        onToDateChange={setToDate}
+        guestName={guestName}
+        roomNumber={roomNumber}
+        onGuestNameChange={setGuestName}
+        onRoomNumberChange={setRoomNumber}
+        roomTypeId={roomTypeId}
+        onRoomTypeIdChange={setRoomTypeId}
+        roomTypes={roomTypes}
+        statusOptions={STATUS_OPTIONS as FiltersStatusOption[]}
+      />
 
       {/* Table */}
       <DataTable
@@ -467,7 +387,6 @@ const BookingManagementPage: React.FC = () => {
           total,
           onPageChange: (p) => fetchList(p),
         }}
-        onAdd={() => setOpenCreate(true)}
         getRowId={(r: any) => r.id}
       />
 
@@ -536,7 +455,11 @@ const BookingManagementPage: React.FC = () => {
         onClose={() => setOpenCheckIn(false)}
         booking={selectedBooking}
         onSubmitted={() => {
-          setSnackbar({ open: true, message: "Đã check-in", severity: "success" });
+          setSnackbar({
+            open: true,
+            message: "Đã check-in",
+            severity: "success",
+          });
           fetchList();
         }}
       />
@@ -547,7 +470,11 @@ const BookingManagementPage: React.FC = () => {
         onClose={() => setOpenChangeRoom(false)}
         booking={selectedBooking}
         onSubmitted={() => {
-          setSnackbar({ open: true, message: "Đã đổi phòng", severity: "success" });
+          setSnackbar({
+            open: true,
+            message: "Đã đổi phòng",
+            severity: "success",
+          });
           fetchList();
         }}
       />
@@ -558,7 +485,11 @@ const BookingManagementPage: React.FC = () => {
         onClose={() => setOpenExtendStay(false)}
         booking={selectedBooking}
         onSubmitted={() => {
-          setSnackbar({ open: true, message: "Đã gia hạn", severity: "success" });
+          setSnackbar({
+            open: true,
+            message: "Đã gia hạn",
+            severity: "success",
+          });
           fetchList();
         }}
       />
@@ -569,79 +500,36 @@ const BookingManagementPage: React.FC = () => {
         onClose={() => setOpenCheckout(false)}
         booking={selectedBooking}
         onSubmitted={(summary) => {
-          setSnackbar({ open: true, message: summary || "Đã check-out", severity: "success" });
+          setSnackbar({
+            open: true,
+            message: summary || "Đã check-out",
+            severity: "success",
+          });
           fetchList();
         }}
       />
 
       {/* Room map timeline dialog */}
-      <Dialog
+      <RoomMapDialog
         open={openRoomMap}
         onClose={() => setOpenRoomMap(false)}
-        fullWidth
-        maxWidth="lg"
-      >
-        <DialogTitle>Sơ đồ phòng</DialogTitle>
-        <DialogContent>
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            spacing={2}
-            sx={{ mb: 2 }}
-          >
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DatePicker
-                label="Từ ngày"
-                value={fromDate ?? dayjs()}
-                onChange={(v) => setFromDate(v)}
-                slotProps={{ textField: { fullWidth: true } }}
-              />
-            </LocalizationProvider>
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DatePicker
-                label="Đến ngày"
-                value={toDate ?? dayjs().add(3, "day")}
-                onChange={(v) => setToDate(v)}
-                slotProps={{ textField: { fullWidth: true } }}
-              />
-            </LocalizationProvider>
-            <TextField
-              select
-              label="Loại phòng"
-              value={roomTypeId}
-              onChange={(e) => setRoomTypeId(e.target.value)}
-              sx={{ minWidth: 220 }}
-            >
-              <MenuItem value="">Tất cả</MenuItem>
-              {roomTypes.map((rt) => (
-                <MenuItem key={rt.id} value={rt.id}>
-                  {rt.name}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Stack>
-          {fromDate && toDate ? (
-            <RoomMapTimeline
-              from={fromDate}
-              to={toDate}
-              roomTypeId={roomTypeId || undefined}
-              onSelectBooking={(bid) => {
-                setOpenRoomMap(false);
-                // Open edit modal for booking
-                bookingsApi.getById(bid).then((res: any) => {
-                  if (res?.isSuccess && res.data) {
-                    setSelectedBooking(res.data);
-                    setOpenEdit(true);
-                  }
-                });
-              }}
-            />
-          ) : (
-            <Typography variant="body2" color="text.secondary">
-              Chọn khoảng ngày để xem timeline.
-            </Typography>
-          )}
-        </DialogContent>
-      </Dialog>
+        from={fromDate}
+        to={toDate}
+        onFromChange={setFromDate}
+        onToChange={setToDate}
+        roomTypeId={roomTypeId}
+        onRoomTypeIdChange={setRoomTypeId}
+        roomTypes={roomTypes}
+        onSelectBooking={(bid) => {
+          setOpenRoomMap(false);
+          bookingsApi.getById(bid).then((res: any) => {
+            if (res?.isSuccess && res.data) {
+              setSelectedBooking(res.data);
+              setOpenEdit(true);
+            }
+          });
+        }}
+      />
 
       {/* Snackbar */}
       <Snackbar
