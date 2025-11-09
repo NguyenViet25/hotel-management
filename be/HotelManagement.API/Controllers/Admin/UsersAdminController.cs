@@ -22,6 +22,8 @@ public class UsersAdminController : ControllerBase
         return Ok(ApiResponse<IEnumerable<UserSummaryDto>>.Ok(items, meta: meta));
     }
 
+
+
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<ApiResponse<UserDetailsDto>>> Get(Guid id)
     {
