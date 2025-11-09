@@ -150,6 +150,13 @@ export enum BookingRoomStatus {
   Available = "Available",
 }
 
+export enum EBookingStatus {
+  Pending = 0,
+  Confirmed = 1,
+  Completed = 2,
+  Cancelled = 4,
+}
+
 export interface CheckInDto {
   guests: { guestId: string; idCardImageUrl?: string }[];
 }
