@@ -79,3 +79,4 @@
 2025-11-08 - 4 - 01:39:26 UTC :: chore: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — refactor luong xu ly cho ro rang (khong doi hanh vi)
 2025-11-08 - 5 - 01:39:29 UTC :: build: UC-31 Bao cao: len lich gui email/PDF hang ngay/tuan. — sua validate va bo sung thong bao loi (dam bao backward-compatible)
 2025-11-09 - 1 - 01:48:37 UTC :: test: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — refactor luong xu ly cho ro rang (can theo doi them)
+2025-11-09 - 2 - 01:48:40 UTC :: refactor: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — sua validate va bo sung thong bao loi (can theo doi them)
