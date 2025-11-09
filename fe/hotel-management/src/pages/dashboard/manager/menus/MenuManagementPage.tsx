@@ -103,27 +103,6 @@ const MenuManagementPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupId, shift, status, isActive]);
 
-  // Handlers
-  const handleFilterChange = (
-    key: "groupId" | "shift" | "status" | "isActive",
-    value: string
-  ) => {
-    switch (key) {
-      case "groupId":
-        setGroupId(value);
-        break;
-      case "shift":
-        setShift(value);
-        break;
-      case "status":
-        setStatus(value);
-        break;
-      case "isActive":
-        setIsActive(value);
-        break;
-    }
-  };
-
   const openCreate = () => setCreateOpen(true);
   const openEdit = (record: MenuItemDto) => {
     setEditingItem(record);
@@ -221,9 +200,11 @@ const MenuManagementPage: React.FC = () => {
     }
   };
 
+  const [searchTerm, setSearchTerm] = useState<string>("");
+
   return (
     <Box>
-      <PageTitle title="Quản lý Thực đơn" subtitle="Xem, thêm, sửa, xóa món" />
+      <PageTitle title="Quản lý thực đơn" subtitle="Xem, thêm, sửa, xóa món" />
 
       {/* Table with actions */}
       <MenuTable
@@ -232,6 +213,7 @@ const MenuManagementPage: React.FC = () => {
         onAdd={openCreate}
         onEdit={openEdit}
         onDelete={openDelete}
+        onSearch={(e) => setSearchTerm(e)}
       />
 
       {/* Create modal */}

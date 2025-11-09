@@ -4,7 +4,6 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  Grid,
   TextField,
   FormControl,
   InputLabel,
@@ -12,12 +11,30 @@ import {
   MenuItem,
   Switch,
   FormControlLabel,
+  Stack,
+  InputAdornment,
 } from "@mui/material";
 import React from "react";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { MenuGroupDto, CreateMenuItemRequest, UpdateMenuItemRequest } from "../../../../../api/menusApi";
+import {
+  Group as GroupIcon,
+  Fastfood as FastfoodIcon,
+  MonetizationOn as MonetizationOnIcon,
+  RestaurantMenu as RestaurantMenuIcon,
+  Image as ImageIcon,
+  Info as InfoIcon,
+  CheckCircle as CheckCircleIcon,
+  Block as BlockIcon,
+  Close,
+  Save,
+} from "@mui/icons-material";
+import type {
+  MenuGroupDto,
+  CreateMenuItemRequest,
+  UpdateMenuItemRequest,
+} from "../../../../../api/menusApi";
 
 type FormValues = {
   menuGroupId: string;
@@ -47,7 +64,9 @@ const schema = z.object({
 export interface MenuItemFormModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (payload: CreateMenuItemRequest | UpdateMenuItemRequest) => Promise<void> | void;
+  onSubmit: (
+    payload: CreateMenuItemRequest | UpdateMenuItemRequest
+  ) => Promise<void> | void;
   menuGroups: MenuGroupDto[];
   initialValues?: Partial<FormValues>;
   mode?: "create" | "edit";
@@ -98,50 +117,61 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
         {mode === "create" ? "Thêm món mới" : "Chỉnh sửa món"}
       </DialogTitle>
       <DialogContent>
-        <Grid container spacing={2} sx={{ mt: 0.5 }}>
-          <Grid item xs={12}>
-            <FormControl fullWidth>
-              <InputLabel id="menuGroup-label">Nhóm món</InputLabel>
-              <Controller
-                control={control}
-                name="menuGroupId"
-                render={({ field }) => (
-                  <Select
-                    labelId="menuGroup-label"
-                    label="Nhóm món"
-                    value={field.value}
-                    onChange={(e) => field.onChange(e.target.value)}
-                    error={!!errors.menuGroupId}
-                  >
-                    {menuGroups.map((g) => (
-                      <MenuItem key={g.id} value={g.id}>
-                        {g.name} ({g.shift})
-                      </MenuItem>
-                    ))}
-                  </Select>
-                )}
-              />
-            </FormControl>
-          </Grid>
-
-          <Grid item xs={12}>
+        <Stack spacing={2} sx={{ mt: 1 }}>
+          {/* Menu Group */}
+          <FormControl fullWidth>
+            <InputLabel id="menuGroup-label">Nhóm món</InputLabel>
             <Controller
               control={control}
-              name="name"
+              name="menuGroupId"
               render={({ field }) => (
-                <TextField
-                  label="Tên món"
-                  fullWidth
+                <Select
+                  labelId="menuGroup-label"
+                  label="Nhóm món"
                   value={field.value}
-                  onChange={field.onChange}
-                  error={!!errors.name}
-                  helperText={errors.name?.message}
-                />
+                  onChange={(e) => field.onChange(e.target.value)}
+                  error={!!errors.menuGroupId}
+                  startAdornment={
+                    <InputAdornment position="start">
+                      <GroupIcon />
+                    </InputAdornment>
+                  }
+                >
+                  {menuGroups.map((g) => (
+                    <MenuItem key={g.id} value={g.id}>
+                      {g.name} ({g.shift})
+                    </MenuItem>
+                  ))}
+                </Select>
               )}
             />
-          </Grid>
+          </FormControl>
 
-          <Grid item xs={12} md={6}>
+          {/* Name */}
+          <Controller
+            control={control}
+            name="name"
+            render={({ field }) => (
+              <TextField
+                label="Tên món"
+                fullWidth
+                value={field.value}
+                onChange={field.onChange}
+                error={!!errors.name}
+                helperText={errors.name?.message}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <FastfoodIcon />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            )}
+          />
+
+          {/* Horizontal Stack: Unit Price & Portion Size */}
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
             <Controller
               control={control}
               name="unitPrice"
@@ -154,46 +184,47 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
                   onChange={(e) => field.onChange(Number(e.target.value))}
                   error={!!errors.unitPrice}
                   helperText={errors.unitPrice?.message}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <MonetizationOnIcon />
+                      </InputAdornment>
+                    ),
+                  }}
                 />
               )}
             />
-          </Grid>
 
-          <Grid item xs={12} md={6}>
             <Controller
               control={control}
               name="portionSize"
               render={({ field }) => (
                 <TextField
-                  label="Khẩu phần (ví dụ: 1 phần)"
+                  label="Khẩu phần"
+                  placeholder="1 phần"
                   fullWidth
                   value={field.value}
                   onChange={field.onChange}
                   error={!!errors.portionSize}
                   helperText={errors.portionSize?.message}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <RestaurantMenuIcon />
+                      </InputAdornment>
+                    ),
+                  }}
                 />
               )}
             />
-          </Grid>
+          </Stack>
 
-          <Grid item xs={12}>
-            <Controller
-              control={control}
-              name="imageUrl"
-              render={({ field }) => (
-                <TextField
-                  label="Ảnh (URL)"
-                  fullWidth
-                  value={field.value}
-                  onChange={field.onChange}
-                  error={!!errors.imageUrl}
-                  helperText={errors.imageUrl?.message}
-                />
-              )}
-            />
-          </Grid>
-
-          <Grid item xs={12} md={6}>
+          {/* Horizontal Stack: Status & IsActive */}
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={2}
+            alignItems="center"
+          >
             <FormControl fullWidth>
               <InputLabel id="status-label">Trạng thái</InputLabel>
               <Controller
@@ -206,6 +237,15 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
                     value={field.value}
                     onChange={(e) => field.onChange(e.target.value)}
                     error={!!errors.status}
+                    startAdornment={
+                      <InputAdornment position="start">
+                        {field.value === "Available" ? (
+                          <CheckCircleIcon color="success" />
+                        ) : (
+                          <BlockIcon color="disabled" />
+                        )}
+                      </InputAdornment>
+                    }
                   >
                     <MenuItem value="Available">Đang bán</MenuItem>
                     <MenuItem value="Unavailable">Tạm ngừng</MenuItem>
@@ -214,47 +254,57 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
                 )}
               />
             </FormControl>
-          </Grid>
+          </Stack>
 
-          <Grid item xs={12} md={6}>
-            <Controller
-              control={control}
-              name="isActive"
-              render={({ field }) => (
-                <FormControlLabel
-                  control={<Switch checked={!!field.value} onChange={(e) => field.onChange(e.target.checked)} />}
-                  label="Kích hoạt"
-                />
-              )}
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <Controller
-              control={control}
-              name="description"
-              render={({ field }) => (
-                <TextField
-                  label="Mô tả"
-                  fullWidth
-                  multiline
-                  minRows={2}
-                  value={field.value}
-                  onChange={field.onChange}
-                  error={!!errors.description}
-                  helperText={errors.description?.message}
-                />
-              )}
-            />
-          </Grid>
-        </Grid>
+          {/* Description */}
+          <Controller
+            control={control}
+            name="description"
+            render={({ field }) => (
+              <TextField
+                label="Mô tả"
+                fullWidth
+                multiline
+                minRows={2}
+                value={field.value}
+                onChange={field.onChange}
+                error={!!errors.description}
+                helperText={errors.description?.message}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <InfoIcon />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            )}
+          />
+        </Stack>
+        <Stack
+          direction="row"
+          spacing={2}
+          justifyContent="flex-end"
+          sx={{ mt: 2 }}
+        >
+          <Button
+            startIcon={<Close />}
+            variant="outlined"
+            onClick={onClose}
+            color="error"
+          >
+            Hủy
+          </Button>
+          <Button
+            onClick={handleSubmit(submitHandler)}
+            variant="contained"
+            startIcon={<Save />}
+            disabled={isSubmitting}
+          >
+            {mode === "create" ? "Tạo mới" : "Lưu"}
+          </Button>
+        </Stack>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} color="inherit">Đóng</Button>
-        <Button onClick={handleSubmit(submitHandler)} variant="contained" disabled={isSubmitting}>
-          {mode === "create" ? "Tạo mới" : "Lưu"}
-        </Button>
-      </DialogActions>
     </Dialog>
   );
 };
