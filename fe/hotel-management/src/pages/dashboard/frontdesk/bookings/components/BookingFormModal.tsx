@@ -1,38 +1,35 @@
-import { RoomPreferences } from "@mui/icons-material";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { AddCircle } from "@mui/icons-material";
 import CloseIcon from "@mui/icons-material/Close";
 import EmailIcon from "@mui/icons-material/Email";
 import HotelIcon from "@mui/icons-material/Hotel";
-import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
 import NotesIcon from "@mui/icons-material/Notes";
 import PersonIcon from "@mui/icons-material/Person";
 import PhoneIcon from "@mui/icons-material/Phone";
 import SaveIcon from "@mui/icons-material/Save";
 import {
   Button,
+  Card,
+  CardContent,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   Divider,
   InputAdornment,
-  MenuItem,
   Stack,
   TextField,
   Typography,
 } from "@mui/material";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import dayjs, { Dayjs } from "dayjs";
 import React, { useEffect, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 import bookingsApi, {
   type CreateBookingDto,
 } from "../../../../../api/bookingsApi";
 import roomTypesApi, { type RoomType } from "../../../../../api/roomTypesApi";
+import RoomBookingSection from "./RoomBookingSection";
 
 type Props = {
   open: boolean;
@@ -41,81 +38,60 @@ type Props = {
   hotelId?: string;
 };
 
-type FormValues = {
-  roomId: string;
-  startDate: Dayjs | null;
-  endDate: Dayjs | null;
-  guestName: string;
-  guestPhone: string;
-  guestEmail?: string;
-  totalRooms?: number;
-  depositAmount: number;
-  discountAmount?: number;
-  discountPercent?: number;
-  totalAmount?: number;
-  notes?: string;
-  price: number;
-};
+// Price/projection calculation will be handled client-side
+const dayjsValidator = z.custom<Dayjs>((v) => dayjs.isDayjs(v) && v.isValid(), {
+  message: "Ngày không hợp lệ",
+});
 
-const schema = z
+const roomItemSchema = z
   .object({
     roomId: z.string().min(1, "Vui lòng chọn loại phòng"),
-    startDate: z
-      .custom<Dayjs>((v) => dayjs.isDayjs(v) && v.isValid(), {
-        message: "Ngày bắt đầu không hợp lệ",
-      })
-      .nullable(),
-    endDate: z
-      .custom<Dayjs>((v) => dayjs.isDayjs(v) && v.isValid(), {
-        message: "Ngày kết thúc không hợp lệ",
-      })
-      .nullable(),
-    guestName: z.string().min(2, "Họ tên phải có ít nhất 2 ký tự"),
-    guestPhone: z
-      .string()
-      .min(8, "SĐT tối thiểu 8 ký tự")
-      .max(20, "SĐT tối đa 20 ký tự")
-      .regex(/^[+0-9\-\s()]+$/, "SĐT chỉ gồm số và ký tự phổ biến"),
-    guestEmail: z
-      .string()
-      .email("Email không hợp lệ")
-      .optional()
-      .or(z.literal("")),
+    startDate: dayjsValidator.nullable(),
+    endDate: dayjsValidator.nullable(),
     totalRooms: z.coerce
       .number("Số lượng phòng phải là số")
       .int("Số lượng phòng phải là số nguyên")
       .min(1, "Tối thiểu 1 phòng"),
-    depositAmount: z.coerce
-      .number("Tiền cọc phải là số")
-      .min(0, "Tiền cọc không âm"),
-    discountAmount: z.coerce
-      .number("Giảm giá cố định phải là số")
-      .min(0, "Không âm")
-      .optional(),
-    discountPercent: z.coerce
-      .number("Giảm giá % phải là số")
-      .min(0, "Không âm")
-      .max(100, "Tối đa 100%")
-      .optional(),
-    totalAmount: z.coerce
-      .number("Tiền phòng phải là số")
-      .min(0, "Không âm")
-      .optional(),
-    notes: z.string().optional(),
-    price: z.coerce
-      .number("Giá phòng phải là số")
-      .min(1, "Giá phòng tối thiểu là 1"),
+    price: z.coerce.number("Giá phòng phải là số").min(1, "Giá tối thiểu là 1"),
   })
   .refine(
     (data) =>
       !!data.startDate &&
       !!data.endDate &&
       (data.endDate as Dayjs).isAfter(data.startDate as Dayjs),
-    {
-      message: "Đến ngày phải sau Từ ngày",
-      path: ["endDate"],
-    }
+    { message: "Đến ngày phải sau Từ ngày", path: ["endDate"] }
   );
+
+const schema = z.object({
+  guestName: z.string().min(2, "Họ tên phải có ít nhất 2 ký tự"),
+  guestPhone: z
+    .string()
+    .min(8, "SĐT tối thiểu 8 ký tự")
+    .max(20, "SĐT tối đa 20 ký tự")
+    .regex(/^[+0-9\-\s()]+$/, "SĐT chỉ gồm số và ký tự phổ biến"),
+  guestEmail: z
+    .string()
+    .email("Email không hợp lệ")
+    .optional()
+    .or(z.literal("")),
+  rooms: z.array(roomItemSchema).min(1, "Thêm ít nhất 1 phòng"),
+  discountAmount: z.coerce
+    .number("Giảm giá phải là số")
+    .min(0, "Giảm giá không âm"),
+  depositAmount: z.coerce
+    .number("Tiền cọc phải là số")
+    .min(0, "Tiền cọc không âm"),
+  totalAmount: z.coerce
+    .number("Tổng tiền phải là số")
+    .min(0, "Không âm")
+    .optional(),
+  notes: z.string().optional(),
+});
+
+type FormValues = z.infer<typeof schema>;
+
+// Currency helper
+const formatCurrency = (value: number) => value.toLocaleString();
 
 const BookingFormModal: React.FC<Props> = ({
   open,
@@ -123,7 +99,7 @@ const BookingFormModal: React.FC<Props> = ({
   onSubmitted,
   hotelId,
 }) => {
-  const [rooms, setRooms] = useState<RoomType[]>([]);
+  const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
 
   const {
     control,
@@ -135,101 +111,106 @@ const BookingFormModal: React.FC<Props> = ({
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      roomId: rooms.length > 0 ? rooms[0].id : "",
-      startDate: dayjs(),
-      endDate: dayjs().add(1, "day"),
       guestName: "",
       guestPhone: "",
       guestEmail: "",
-      totalRooms: 1,
-      depositAmount: 0,
+      rooms: [
+        {
+          roomId: "",
+          startDate: dayjs(),
+          endDate: dayjs().add(1, "day"),
+          totalRooms: 1,
+          price: 0,
+        },
+      ],
       discountAmount: 0,
-      discountPercent: 0,
+      depositAmount: 0,
       notes: "",
-      price: 0,
       totalAmount: 0,
     },
   });
 
-  const roomId = watch("roomId");
-  const startDate = watch("startDate");
-  const endDate = watch("endDate");
-  const discountPercent = watch("discountPercent") || 0;
+  const { fields, append, remove } = useFieldArray({ name: "rooms", control });
+
+  const roomsWatch = watch("rooms") || [];
+  const depositAmount = watch("depositAmount") || 0;
   const discountAmount = watch("discountAmount") || 0;
-  const totalRooms = watch("totalRooms") || 1;
-  const price = watch("price") || 1;
+  const totalAmount = watch("totalAmount") || 0;
 
   useEffect(() => {
-    if (rooms.length > 0) {
-      setValue("roomId", rooms[0].id);
-      setValue("price", rooms[0].priceFrom || 0);
+    if (roomTypes.length > 0) {
+      // Initialize first room section defaults
+      setValue("rooms.0.roomId", roomTypes[0].id);
+      setValue("rooms.0.price", roomTypes[0].priceFrom || 0);
     }
-  }, [rooms]);
+  }, [roomTypes]);
 
   useEffect(() => {
-    const price = rooms.find((r) => r.id === roomId)?.priceFrom || 0;
-
-    setValue("price", price);
-  }, [roomId]);
-
-  useEffect(() => {
-    const days = endDate?.diff(startDate, "day") || 0;
-    const discountPercentAmount = price * (discountPercent / 100);
-    const amount = price * days * totalRooms;
-    const totalAmount = amount - discountAmount - discountPercentAmount;
-
-    if (totalAmount < 0) {
-      setValue("totalAmount", 0);
-      setValue("discountAmount", amount);
-      return;
-    }
-
-    setValue("totalAmount", totalAmount);
-  }, [
-    roomId,
-    startDate,
-    endDate,
-    discountAmount,
-    discountPercent,
-    totalRooms,
-    price,
-  ]);
+    // Keep price synced when room type changes
+    roomsWatch.forEach((r, idx) => {
+      const p = roomTypes.find((t) => t.id === r.roomId)?.priceFrom || 0;
+      if (p && p !== r.price) setValue(`rooms.${idx}.price`, p);
+    });
+  }, [roomsWatch.map((r) => r.roomId).join("|"), roomTypes]);
 
   useEffect(() => {
-    const loadRooms = async () => {
+    // Recalculate total amount whenever rooms change
+    const total = roomsWatch.reduce((sum, r) => {
+      const days =
+        r.endDate && r.startDate
+          ? Math.max(dayjs(r.endDate).diff(dayjs(r.startDate), "day"), 0)
+          : 0;
+      const amount = (r.price || 0) * days * (r.totalRooms || 0);
+      return sum + amount;
+    }, 0);
+
+    setValue("totalAmount", total);
+  }, [roomsWatch, roomTypes]);
+
+  useEffect(() => {
+    const loadRoomTypes = async () => {
       try {
         const res = await roomTypesApi.getRoomTypes({
           hotelId,
           page: 1,
           pageSize: 100,
         });
-
-        setRooms((res as any).items || res.data || []);
+        setRoomTypes((res as any).items || res.data || []);
       } catch {}
     };
-    if (open) loadRooms();
+    if (open) loadRoomTypes();
   }, [open, hotelId]);
 
   const submit = async (values: FormValues) => {
-    if (!values.startDate || !values.endDate) return;
-    const payload: CreateBookingDto = {
-      hotelId:
-        hotelId || rooms.find((r) => r.id === values.roomId)?.hotelId || "",
-      roomId: values.roomId,
-      startDate: values.startDate.toDate().toISOString(),
-      endDate: values.endDate.toDate().toISOString(),
-      primaryGuest: {
-        fullName: values.guestName,
-        phone: values.guestPhone,
-        email: values.guestEmail || undefined,
-      },
-      depositAmount: Number(values.depositAmount) || 0,
-
-      notes: values.notes || undefined,
-    };
+    // Create one booking per room section
     try {
-      const res = await bookingsApi.create(payload);
-      if ((res as any).isSuccess) {
+      const results = await Promise.all(
+        values.rooms.map((section, idx) => {
+          if (!section.startDate || !section.endDate)
+            return Promise.resolve(null as any);
+          const payload: CreateBookingDto = {
+            hotelId:
+              hotelId ||
+              roomTypes.find((rt) => rt.id === section.roomId)?.hotelId ||
+              "",
+            roomId: section.roomId,
+            startDate: section.startDate.toDate().toISOString(),
+            endDate: section.endDate.toDate().toISOString(),
+            primaryGuest: {
+              fullName: values.guestName,
+              phone: values.guestPhone,
+              email: values.guestEmail || undefined,
+            },
+            // Assign the global deposit amount to the first booking; others 0
+            depositAmount: idx === 0 ? Number(values.depositAmount) || 0 : 0,
+            notes: values.notes || undefined,
+          };
+          return bookingsApi.create(payload);
+        })
+      );
+
+      const ok = results.every((r) => r && (r as any).isSuccess);
+      if (ok) {
         onSubmitted?.();
         onClose();
         reset();
@@ -243,12 +224,13 @@ const BookingFormModal: React.FC<Props> = ({
         <Stack direction="row" alignItems="center" spacing={1.5}>
           <HotelIcon color="primary" />
           <Typography variant="h5" fontWeight={700} sx={{ lineHeight: 1.2 }}>
-            Đặt phòng có cọc
+            Tạo yêu cầu đặt phòng
           </Typography>
         </Stack>
       </DialogTitle>
       <DialogContent sx={{ pt: 1.5 }}>
         <Stack spacing={2.5} sx={{ pt: 1 }}>
+          {/* Customer info */}
           <Stack spacing={2}>
             <Typography
               variant="subtitle2"
@@ -257,7 +239,6 @@ const BookingFormModal: React.FC<Props> = ({
             >
               1. Thông tin khách hàng
             </Typography>
-
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
               <Controller
                 name="guestName"
@@ -331,8 +312,15 @@ const BookingFormModal: React.FC<Props> = ({
           </Stack>
 
           <Divider />
+
+          {/* Room sections */}
           <Stack spacing={2}>
-            <Stack spacing={2} direction="row" alignItems="center">
+            <Stack
+              spacing={2}
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+            >
               <Typography
                 variant="subtitle2"
                 fontWeight={600}
@@ -340,168 +328,86 @@ const BookingFormModal: React.FC<Props> = ({
               >
                 2. Thông tin phòng
               </Typography>
-              {/* 
               <Button
                 size="small"
                 variant="contained"
-                startIcon={<RemoveRedEye fontSize="small" />}
+                color="success"
+                startIcon={<AddCircle />}
+                onClick={() =>
+                  append({
+                    roomId: roomTypes[0]?.id || "",
+                    startDate: dayjs(),
+                    endDate: dayjs().add(1, "day"),
+                    totalRooms: 1,
+                    price: roomTypes[0]?.priceFrom || 0,
+                  })
+                }
               >
-                Xem giá loại phòng
-              </Button> */}
+                Thêm mục
+              </Button>
             </Stack>
-            <Controller
-              name="roomId"
-              control={control}
-              rules={{ required: true }}
-              render={({ field }) => (
-                <TextField
-                  select
-                  label="Loại phòng"
-                  fullWidth
-                  required
-                  error={!!errors.roomId}
-                  helperText={errors.roomId?.message}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <MeetingRoomIcon fontSize="small" />
-                      </InputAdornment>
-                    ),
-                  }}
-                  {...field}
-                >
-                  {rooms.map((r) => (
-                    <MenuItem key={r.id} value={r.id}>
-                      <Stack>
-                        <Typography fontWeight={600}> {r.name}</Typography>
-                        <Typography color="text.secondary" variant="body2">
-                          {r.priceFrom.toLocaleString()} đ -{" "}
-                          {r.priceTo.toLocaleString()} đ
-                        </Typography>
-                      </Stack>
-                    </MenuItem>
-                  ))}
-                </TextField>
-              )}
-            />
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              <Controller
-                name="price"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    label="Giá phòng (VND)"
-                    type="number"
-                    fullWidth
-                    error={!!errors.price}
-                    helperText={errors.price?.message}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="start">VND</InputAdornment>
-                      ),
-                      inputProps: { min: 1 },
-                      sx: { height: "100%" },
-                    }}
-                    {...field}
-                  />
-                )}
-              />
-              <Controller
-                name="totalRooms"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    label="Số lượng phòng"
-                    type="number"
-                    fullWidth
-                    error={!!errors.totalRooms}
-                    helperText={errors.totalRooms?.message}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <RoomPreferences fontSize="small" />
-                        </InputAdornment>
-                      ),
-                      inputProps: { min: 1 },
-                      sx: { height: "100%" },
-                    }}
-                    {...field}
-                  />
-                )}
-              />
+
+            <Stack spacing={2}>
+              {fields.map((f, idx) => (
+                <Card variant="outlined" sx={{ borderRadius: 2 }}>
+                  <CardContent>
+                    <RoomBookingSection
+                      index={idx}
+                      control={control}
+                      errors={errors}
+                      roomTypes={roomTypes}
+                      onRemove={() => remove(idx)}
+                    />
+                  </CardContent>
+                </Card>
+              ))}
             </Stack>
           </Stack>
 
-          <Stack spacing={2}>
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <Controller
-                  name="startDate"
-                  control={control}
-                  rules={{ required: true }}
-                  render={({ field }) => (
-                    <DatePicker
-                      label="Từ ngày"
-                      value={field.value}
-                      onChange={field.onChange}
-                      slotProps={{
-                        textField: {
-                          fullWidth: true,
-                          error: !!errors.startDate,
-                          helperText: errors.startDate?.message,
-                          InputProps: {
-                            startAdornment: (
-                              <InputAdornment position="start">
-                                <CalendarTodayIcon fontSize="small" />
-                              </InputAdornment>
-                            ),
-                          },
-                        },
-                      }}
-                    />
-                  )}
-                />
-              </LocalizationProvider>
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <Controller
-                  name="endDate"
-                  control={control}
-                  rules={{ required: true }}
-                  render={({ field }) => (
-                    <DatePicker
-                      label="Đến ngày"
-                      value={field.value}
-                      onChange={field.onChange}
-                      slotProps={{
-                        textField: {
-                          fullWidth: true,
-                          error: !!errors.endDate,
-                          helperText: errors.endDate?.message,
-                          InputProps: {
-                            startAdornment: (
-                              <InputAdornment position="start">
-                                <CalendarTodayIcon fontSize="small" />
-                              </InputAdornment>
-                            ),
-                          },
-                        },
-                      }}
-                    />
-                  )}
-                />
-              </LocalizationProvider>
-            </Stack>
-          </Stack>
           <Divider />
+
+          {/* Summary & Payment */}
           <Stack spacing={2}>
             <Typography
               variant="subtitle2"
               fontWeight={600}
               color="text.secondary"
             >
-              3. Thanh toán
+              3. Tóm tắt & Thanh toán
             </Typography>
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+              <TextField
+                label="Tổng tiền"
+                value={formatCurrency(watch("totalAmount") || 0)}
+                fullWidth
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="start">VND</InputAdornment>
+                  ),
+                  disabled: true,
+                }}
+              />
+
+              <Controller
+                name="discountAmount"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    label="Giảm giá (VND)"
+                    type="number"
+                    fullWidth
+                    error={!!errors.discountAmount}
+                    helperText={errors.discountAmount?.message}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="start">VND</InputAdornment>
+                      ),
+                    }}
+                    {...field}
+                  />
+                )}
+              />
+
               <Controller
                 name="depositAmount"
                 control={control}
@@ -521,62 +427,19 @@ const BookingFormModal: React.FC<Props> = ({
                   />
                 )}
               />
-              <Controller
-                name="discountPercent"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    label="Giảm giá (%)"
-                    type="number"
-                    fullWidth
-                    error={!!errors.discountPercent}
-                    helperText={errors.discountPercent?.message}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="start">%</InputAdornment>
-                      ),
-                    }}
-                    {...field}
-                  />
+
+              <TextField
+                label="Còn lại"
+                value={formatCurrency(
+                  totalAmount - discountAmount - depositAmount
                 )}
-              />
-              <Controller
-                name="discountAmount"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    label="Giảm giá cố định (VND)"
-                    type="number"
-                    fullWidth
-                    error={!!errors.discountAmount}
-                    helperText={errors.discountAmount?.message}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="start">VND</InputAdornment>
-                      ),
-                    }}
-                    {...field}
-                  />
-                )}
-              />
-              <Controller
-                name="totalAmount"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    label="Tiền phòng ước tính (sau giảm)"
-                    type="number"
-                    fullWidth
-                    disabled
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="start">VND</InputAdornment>
-                      ),
-                      sx: { color: "black" },
-                    }}
-                    {...field}
-                  />
-                )}
+                fullWidth
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="start">VND</InputAdornment>
+                  ),
+                  disabled: true,
+                }}
               />
             </Stack>
           </Stack>
