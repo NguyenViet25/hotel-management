@@ -91,3 +91,4 @@
 2025-11-10 - 1 - 01:49:46 UTC :: ci: UC-39 Xuat Audit Log: xuat CSV/PDF kiem tra tuan thu. — bo sung case canh bien & no-show (dong bo voi BE/FE)
 2025-11-10 - 2 - 01:49:47 UTC :: test: UC-22 Minibar/Amenity: ghi tieu hao, post charge vao folio. — cai thien hieu nang render/list (da smoke test)
 2025-11-10 - 3 - 01:49:48 UTC :: docs: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — fix race-condition nho trong thao tac (da review so bo)
+2025-11-10 - 4 - 01:49:50 UTC :: perf: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — chuan hoa ten ham/bien theo convention (can theo doi them)
