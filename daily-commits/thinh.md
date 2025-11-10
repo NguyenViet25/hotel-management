@@ -86,3 +86,4 @@
 2025-11-10 - 1 - 01:49:47 UTC :: test: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — refactor luong xu ly cho ro rang (dong bo voi BE/FE)
 2025-11-10 - 2 - 01:49:49 UTC :: fix: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — toi uu truy van va bo nho (da kiem tra lint)
 2025-11-10 - 3 - 01:49:50 UTC :: build: UC-01 RBAC: tao, sua, khoa tai khoan; gan vai tro. — chinh sua tai lieu & mo ta API (anh huong thap)
+2025-11-10 - 4 - 01:49:51 UTC :: chore: UC-18 Room Move/Extend: doi phong, gia han dem o. — tach chuc nang de de bao tri (dam bao backward-compatible)
