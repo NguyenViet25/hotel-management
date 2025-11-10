@@ -88,3 +88,4 @@
 2025-11-09 - 3 - 01:48:40 UTC :: refactor: UC-42 Phan quyen: thiet lap quyen theo co so. — chinh sua tai lieu & mo ta API (da smoke test)
 2025-11-09 - 4 - 01:48:42 UTC :: perf: UC-28 Room charge F&B: ghi hoa don ban an vao folio. — refactor luong xu ly cho ro rang (chuan bi cho tinh nang tiep theo)
 2025-11-09 - 5 - 01:48:43 UTC :: docs: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — kiem tra tuong thich mui gio/tien te (da kiem tra lint)
+2025-11-10 - 1 - 01:49:46 UTC :: ci: UC-39 Xuat Audit Log: xuat CSV/PDF kiem tra tuan thu. — bo sung case canh bien & no-show (dong bo voi BE/FE)
