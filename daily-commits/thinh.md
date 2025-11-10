@@ -85,3 +85,4 @@
 2025-11-09 - 5 - 01:48:41 UTC :: perf: UC-38 Audit Log: xem/loc thao tac, hanh dong, thoi gian. — fix race-condition nho trong thao tac (khong doi hanh vi)
 2025-11-10 - 1 - 01:49:47 UTC :: test: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — refactor luong xu ly cho ro rang (dong bo voi BE/FE)
 2025-11-10 - 2 - 01:49:49 UTC :: fix: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — toi uu truy van va bo nho (da kiem tra lint)
+2025-11-10 - 3 - 01:49:50 UTC :: build: UC-01 RBAC: tao, sua, khoa tai khoan; gan vai tro. — chinh sua tai lieu & mo ta API (anh huong thap)
