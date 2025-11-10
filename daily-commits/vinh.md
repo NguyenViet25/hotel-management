@@ -84,3 +84,4 @@
 2025-11-09 - 4 - 01:48:46 UTC :: chore: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — chinh sua tai lieu & mo ta API (chuan bi cho tinh nang tiep theo)
 2025-11-09 - 5 - 01:48:47 UTC :: perf: UC-40 Thu/chi: doi soat tien mat/the/le phi PG. — tach chuc nang de de bao tri (dam bao backward-compatible)
 2025-11-10 - 1 - 01:49:47 UTC :: fix: UC-21 Housekeeping: cap nhat Dirty/In-progress/Cleaned/Inspected. — cai thien hieu nang render/list (da kiem tra lint)
+2025-11-10 - 2 - 01:49:49 UTC :: perf: UC-06 Co so: gan quan ly phu trach va quyen truy cap. — refactor luong xu ly cho ro rang (anh huong thap)
