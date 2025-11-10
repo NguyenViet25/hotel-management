@@ -84,3 +84,4 @@
 2025-11-09 - 4 - 01:48:44 UTC :: refactor: UC-07 Loai phong: dinh nghia tien nghi va gia co ban. — dieu chinh UI & copy cho ro (anh huong thap)
 2025-11-09 - 5 - 01:48:46 UTC :: docs: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — refactor luong xu ly cho ro rang (da review so bo)
 2025-11-10 - 1 - 01:49:48 UTC :: build: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — tach chuc nang de de bao tri (da smoke test)
+2025-11-10 - 2 - 01:49:50 UTC :: ci: UC-23 Bao tri: tao ticket, dinh anh, mo ta loi. — cap nhat mock data & seed test (khong doi hanh vi)
