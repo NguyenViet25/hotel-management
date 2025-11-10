@@ -83,3 +83,4 @@
 2025-11-09 - 3 - 01:48:38 UTC :: fix: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — don dep code va xoa doan thua (da kiem tra lint)
 2025-11-09 - 4 - 01:48:40 UTC :: fix: UC-33 Phan ca: gan ca, duyet doi ca/ngi phep. — cai thien hieu nang render/list (can theo doi them)
 2025-11-09 - 5 - 01:48:41 UTC :: perf: UC-38 Audit Log: xem/loc thao tac, hanh dong, thoi gian. — fix race-condition nho trong thao tac (khong doi hanh vi)
+2025-11-10 - 1 - 01:49:47 UTC :: test: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — refactor luong xu ly cho ro rang (dong bo voi BE/FE)
