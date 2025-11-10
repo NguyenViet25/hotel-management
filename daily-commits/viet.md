@@ -86,3 +86,4 @@
 2025-11-10 - 1 - 01:49:48 UTC :: build: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — tach chuc nang de de bao tri (da smoke test)
 2025-11-10 - 2 - 01:49:50 UTC :: ci: UC-23 Bao tri: tao ticket, dinh anh, mo ta loi. — cap nhat mock data & seed test (khong doi hanh vi)
 2025-11-10 - 3 - 01:49:53 UTC :: feat: UC-23 Bao tri: tao ticket, dinh anh, mo ta loi. — toi uu truy van va bo nho (da kiem tra lint)
+2025-11-10 - 4 - 01:49:56 UTC :: build: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — cap nhat cau hinh va kiem tra bien (dam bao backward-compatible)
