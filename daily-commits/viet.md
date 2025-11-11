@@ -88,3 +88,4 @@
 2025-11-10 - 3 - 01:49:53 UTC :: feat: UC-23 Bao tri: tao ticket, dinh anh, mo ta loi. — toi uu truy van va bo nho (da kiem tra lint)
 2025-11-10 - 4 - 01:49:56 UTC :: build: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — cap nhat cau hinh va kiem tra bien (dam bao backward-compatible)
 2025-11-10 - 5 - 01:49:59 UTC :: test: UC-09 So do: hien thi layout, loc trang thai phong. — tach chuc nang de de bao tri (dat tieu chi toi thieu)
+2025-11-11 - 1 - 01:46:36 UTC :: docs: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — refactor luong xu ly cho ro rang (da smoke test)
