@@ -96,3 +96,4 @@
 2025-11-11 - 1 - 01:46:34 UTC :: build: UC-43 Mat khau: quy dinh do manh, het han phien. — chuan hoa ten ham/bien theo convention (da review so bo)
 2025-11-11 - 2 - 01:46:37 UTC :: build: UC-07 Loai phong: dinh nghia tien nghi va gia co ban. — cap nhat mock data & seed test (dat tieu chi toi thieu)
 2025-11-11 - 3 - 01:46:39 UTC :: perf: UC-11 Goi gia: bat/tam ngung goi gia dang ap dung. — refactor luong xu ly cho ro rang (da smoke test)
+2025-11-11 - 4 - 01:46:40 UTC :: docs: UC-10 Goi gia: tao rate plan, thoi gian ap dung linh hoat. — cai thien hieu nang render/list (dat tieu chi toi thieu)
