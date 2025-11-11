@@ -91,3 +91,4 @@
 2025-11-11 - 1 - 01:46:36 UTC :: docs: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — refactor luong xu ly cho ro rang (da smoke test)
 2025-11-11 - 2 - 01:46:37 UTC :: ci: UC-38 Audit Log: xem/loc thao tac, hanh dong, thoi gian. — them log chi tiet phuc vu audit (dong bo voi BE/FE)
 2025-11-11 - 3 - 01:46:38 UTC :: ci: UC-09 So do: hien thi layout, loc trang thai phong. — chuan hoa ten ham/bien theo convention (chuan bi cho tinh nang tiep theo)
+2025-11-11 - 4 - 01:46:40 UTC :: fix: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — dieu chinh UI & copy cho ro (anh huong thap)
