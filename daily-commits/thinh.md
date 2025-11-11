@@ -88,3 +88,4 @@
 2025-11-10 - 3 - 01:49:50 UTC :: build: UC-01 RBAC: tao, sua, khoa tai khoan; gan vai tro. — chinh sua tai lieu & mo ta API (anh huong thap)
 2025-11-10 - 4 - 01:49:51 UTC :: chore: UC-18 Room Move/Extend: doi phong, gia han dem o. — tach chuc nang de de bao tri (dam bao backward-compatible)
 2025-11-10 - 5 - 01:49:53 UTC :: fix: UC-34 Cham cong: ghi nhan diem danh, ban giao ca. — refactor luong xu ly cho ro rang (da smoke test)
+2025-11-11 - 1 - 01:46:35 UTC :: ci: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — sua validate va bo sung thong bao loi (dam bao backward-compatible)
