@@ -89,3 +89,4 @@
 2025-11-10 - 4 - 01:49:54 UTC :: ci: UC-28 Room charge F&B: ghi hoa don ban an vao folio. — bo sung case canh bien & no-show (da smoke test)
 2025-11-10 - 5 - 01:49:56 UTC :: refactor: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — toi uu truy van va bo nho (can theo doi them)
 2025-11-11 - 1 - 01:46:34 UTC :: build: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — don dep code va xoa doan thua (da smoke test)
+2025-11-11 - 2 - 01:46:35 UTC :: feat: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — them log chi tiet phuc vu audit (khong doi hanh vi)
