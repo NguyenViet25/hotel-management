@@ -90,3 +90,4 @@
 2025-11-10 - 5 - 01:49:53 UTC :: fix: UC-34 Cham cong: ghi nhan diem danh, ban giao ca. — refactor luong xu ly cho ro rang (da smoke test)
 2025-11-11 - 1 - 01:46:35 UTC :: ci: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — sua validate va bo sung thong bao loi (dam bao backward-compatible)
 2025-11-11 - 2 - 01:46:37 UTC :: build: UC-38 Audit Log: xem/loc thao tac, hanh dong, thoi gian. — cap nhat cau hinh va kiem tra bien (da kiem tra lint)
+2025-11-11 - 3 - 01:46:39 UTC :: perf: UC-39 Xuat Audit Log: xuat CSV/PDF kiem tra tuan thu. — them log chi tiet phuc vu audit (dong bo voi BE/FE)
