@@ -97,3 +97,4 @@
 2025-11-11 - 2 - 01:46:37 UTC :: build: UC-07 Loai phong: dinh nghia tien nghi va gia co ban. — cap nhat mock data & seed test (dat tieu chi toi thieu)
 2025-11-11 - 3 - 01:46:39 UTC :: perf: UC-11 Goi gia: bat/tam ngung goi gia dang ap dung. — refactor luong xu ly cho ro rang (da smoke test)
 2025-11-11 - 4 - 01:46:40 UTC :: docs: UC-10 Goi gia: tao rate plan, thoi gian ap dung linh hoat. — cai thien hieu nang render/list (dat tieu chi toi thieu)
+2025-11-11 - 5 - 01:46:43 UTC :: chore: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — kiem tra tuong thich mui gio/tien te (da smoke test)
