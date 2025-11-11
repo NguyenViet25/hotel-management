@@ -93,3 +93,4 @@
 2025-11-10 - 3 - 01:49:48 UTC :: docs: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — fix race-condition nho trong thao tac (da review so bo)
 2025-11-10 - 4 - 01:49:50 UTC :: perf: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — chuan hoa ten ham/bien theo convention (can theo doi them)
 2025-11-10 - 5 - 01:49:53 UTC :: fix: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — sua validate va bo sung thong bao loi (dam bao backward-compatible)
+2025-11-11 - 1 - 01:46:34 UTC :: build: UC-43 Mat khau: quy dinh do manh, het han phien. — chuan hoa ten ham/bien theo convention (da review so bo)
