@@ -90,3 +90,4 @@
 2025-11-10 - 5 - 01:49:56 UTC :: refactor: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — toi uu truy van va bo nho (can theo doi them)
 2025-11-11 - 1 - 01:46:34 UTC :: build: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — don dep code va xoa doan thua (da smoke test)
 2025-11-11 - 2 - 01:46:35 UTC :: feat: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — them log chi tiet phuc vu audit (khong doi hanh vi)
+2025-11-11 - 3 - 01:46:37 UTC :: refactor: UC-10 Goi gia: tao rate plan, thoi gian ap dung linh hoat. — refactor luong xu ly cho ro rang (dat tieu chi toi thieu)
