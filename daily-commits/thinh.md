@@ -94,3 +94,4 @@
 2025-11-11 - 4 - 01:46:40 UTC :: chore: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — them log chi tiet phuc vu audit (dam bao backward-compatible)
 2025-11-11 - 5 - 01:46:41 UTC :: refactor: UC-40 Thu/chi: doi soat tien mat/the/le phi PG. — dieu chinh UI & copy cho ro (da review so bo)
 2025-11-12 - 1 - 01:45:52 UTC :: perf: UC-01 RBAC: tao, sua, khoa tai khoan; gan vai tro. — bo sung unit test muc co ban (can theo doi them)
+2025-11-12 - 2 - 01:45:53 UTC :: refactor: UC-09 So do: hien thi layout, loc trang thai phong. — bo sung index & toi uu DB (da review so bo)
