@@ -95,3 +95,4 @@
 2025-11-11 - 5 - 01:46:39 UTC :: perf: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — bo sung case canh bien & no-show (da kiem tra lint)
 2025-11-12 - 1 - 01:45:50 UTC :: refactor: UC-34 Cham cong: ghi nhan diem danh, ban giao ca. — cap nhat cau hinh va kiem tra bien (can theo doi them)
 2025-11-12 - 2 - 01:45:52 UTC :: docs: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — dieu chinh quyen truy cap theo vai tro (da smoke test)
+2025-11-12 - 3 - 01:45:55 UTC :: fix: UC-33 Phan ca: gan ca, duyet doi ca/ngi phep. — cap nhat mock data & seed test (da kiem tra lint)
