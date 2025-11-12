@@ -102,3 +102,4 @@
 2025-11-12 - 2 - 01:45:54 UTC :: feat: UC-22 Minibar/Amenity: ghi tieu hao, post charge vao folio. — them log chi tiet phuc vu audit (anh huong thap)
 2025-11-12 - 3 - 01:45:57 UTC :: fix: UC-42 Phan quyen: thiet lap quyen theo co so. — bo sung index & toi uu DB (anh huong thap)
 2025-11-12 - 4 - 01:45:58 UTC :: docs: UC-28 Room charge F&B: ghi hoa don ban an vao folio. — cap nhat mock data & seed test (da review so bo)
+2025-11-12 - 5 - 01:46:01 UTC :: chore: UC-35 Ngoai le: gui yeu cau mien/giam phi, vuot tran. — toi uu truy van va bo nho (dam bao backward-compatible)
