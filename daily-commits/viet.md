@@ -94,3 +94,4 @@
 2025-11-11 - 4 - 01:46:40 UTC :: fix: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — dieu chinh UI & copy cho ro (anh huong thap)
 2025-11-11 - 5 - 01:46:42 UTC :: perf: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — them log chi tiet phuc vu audit (dong bo voi BE/FE)
 2025-11-12 - 1 - 01:45:50 UTC :: refactor: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — bo sung unit test muc co ban (anh huong thap)
+2025-11-12 - 2 - 01:45:53 UTC :: ci: UC-36 Duyet ngoai le: duyet/tu choi theo han muc. — cai thien hieu nang render/list (da kiem tra lint)
