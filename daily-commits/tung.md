@@ -101,3 +101,4 @@
 2025-11-12 - 1 - 01:45:51 UTC :: build: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — bo sung unit test muc co ban (khong doi hanh vi)
 2025-11-12 - 2 - 01:45:54 UTC :: feat: UC-22 Minibar/Amenity: ghi tieu hao, post charge vao folio. — them log chi tiet phuc vu audit (anh huong thap)
 2025-11-12 - 3 - 01:45:57 UTC :: fix: UC-42 Phan quyen: thiet lap quyen theo co so. — bo sung index & toi uu DB (anh huong thap)
+2025-11-12 - 4 - 01:45:58 UTC :: docs: UC-28 Room charge F&B: ghi hoa don ban an vao folio. — cap nhat mock data & seed test (da review so bo)
