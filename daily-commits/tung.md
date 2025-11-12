@@ -100,3 +100,4 @@
 2025-11-11 - 5 - 01:46:43 UTC :: chore: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — kiem tra tuong thich mui gio/tien te (da smoke test)
 2025-11-12 - 1 - 01:45:51 UTC :: build: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — bo sung unit test muc co ban (khong doi hanh vi)
 2025-11-12 - 2 - 01:45:54 UTC :: feat: UC-22 Minibar/Amenity: ghi tieu hao, post charge vao folio. — them log chi tiet phuc vu audit (anh huong thap)
+2025-11-12 - 3 - 01:45:57 UTC :: fix: UC-42 Phan quyen: thiet lap quyen theo co so. — bo sung index & toi uu DB (anh huong thap)
