@@ -94,3 +94,4 @@
 2025-11-11 - 4 - 01:46:38 UTC :: chore: UC-38 Audit Log: xem/loc thao tac, hanh dong, thoi gian. — kiem tra tuong thich mui gio/tien te (dat tieu chi toi thieu)
 2025-11-11 - 5 - 01:46:39 UTC :: perf: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — bo sung case canh bien & no-show (da kiem tra lint)
 2025-11-12 - 1 - 01:45:50 UTC :: refactor: UC-34 Cham cong: ghi nhan diem danh, ban giao ca. — cap nhat cau hinh va kiem tra bien (can theo doi them)
+2025-11-12 - 2 - 01:45:52 UTC :: docs: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — dieu chinh quyen truy cap theo vai tro (da smoke test)
