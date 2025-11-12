@@ -96,3 +96,4 @@
 2025-11-12 - 1 - 01:45:52 UTC :: perf: UC-01 RBAC: tao, sua, khoa tai khoan; gan vai tro. — bo sung unit test muc co ban (can theo doi them)
 2025-11-12 - 2 - 01:45:53 UTC :: refactor: UC-09 So do: hien thi layout, loc trang thai phong. — bo sung index & toi uu DB (da review so bo)
 2025-11-12 - 3 - 01:45:55 UTC :: ci: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — sua validate va bo sung thong bao loi (dam bao backward-compatible)
+2025-11-12 - 4 - 01:45:56 UTC :: ci: UC-43 Mat khau: quy dinh do manh, het han phien. — chuan hoa ten ham/bien theo convention (da kiem tra lint)
