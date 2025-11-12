@@ -96,3 +96,4 @@
 2025-11-12 - 1 - 01:45:50 UTC :: refactor: UC-34 Cham cong: ghi nhan diem danh, ban giao ca. — cap nhat cau hinh va kiem tra bien (can theo doi them)
 2025-11-12 - 2 - 01:45:52 UTC :: docs: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — dieu chinh quyen truy cap theo vai tro (da smoke test)
 2025-11-12 - 3 - 01:45:55 UTC :: fix: UC-33 Phan ca: gan ca, duyet doi ca/ngi phep. — cap nhat mock data & seed test (da kiem tra lint)
+2025-11-12 - 4 - 01:45:56 UTC :: feat: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — cap nhat mock data & seed test (anh huong thap)
