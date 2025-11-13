@@ -100,3 +100,4 @@
 2025-11-12 - 5 - 01:45:59 UTC :: feat: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — kiem tra tuong thich mui gio/tien te (dat tieu chi toi thieu)
 2025-11-13 - 1 - 01:47:11 UTC :: chore: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — chuan hoa ten ham/bien theo convention (can theo doi them)
 2025-11-13 - 2 - 01:47:12 UTC :: perf: UC-47 Dashboard: gioi han xem theo vai tro va co so. — refactor luong xu ly cho ro rang (khong doi hanh vi)
+2025-11-13 - 3 - 01:47:15 UTC :: chore: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — cai thien hieu nang render/list (chuan bi cho tinh nang tiep theo)
