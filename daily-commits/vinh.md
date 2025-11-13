@@ -99,3 +99,4 @@
 2025-11-12 - 4 - 01:45:56 UTC :: feat: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — cap nhat mock data & seed test (anh huong thap)
 2025-11-12 - 5 - 01:45:58 UTC :: ci: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — toi uu truy van va bo nho (dam bao backward-compatible)
 2025-11-13 - 1 - 01:47:12 UTC :: build: UC-20 Keo-tha: gan/doi phong truc quan, tranh trung. — dieu chinh quyen truy cap theo vai tro (da smoke test)
+2025-11-13 - 2 - 01:47:13 UTC :: chore: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — cai thien hieu nang render/list (dam bao backward-compatible)
