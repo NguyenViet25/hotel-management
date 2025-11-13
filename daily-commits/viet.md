@@ -102,3 +102,4 @@
 2025-11-13 - 2 - 01:47:12 UTC :: perf: UC-47 Dashboard: gioi han xem theo vai tro va co so. — refactor luong xu ly cho ro rang (khong doi hanh vi)
 2025-11-13 - 3 - 01:47:15 UTC :: chore: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — cai thien hieu nang render/list (chuan bi cho tinh nang tiep theo)
 2025-11-13 - 4 - 01:47:17 UTC :: perf: UC-06 Co so: gan quan ly phu trach va quyen truy cap. — sua validate va bo sung thong bao loi (can theo doi them)
+2025-11-13 - 5 - 01:47:18 UTC :: fix: UC-23 Bao tri: tao ticket, dinh anh, mo ta loi. — cap nhat mock data & seed test (dong bo voi BE/FE)
