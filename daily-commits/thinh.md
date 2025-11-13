@@ -99,3 +99,4 @@
 2025-11-12 - 4 - 01:45:56 UTC :: ci: UC-43 Mat khau: quy dinh do manh, het han phien. — chuan hoa ten ham/bien theo convention (da kiem tra lint)
 2025-11-12 - 5 - 01:45:57 UTC :: test: UC-09 So do: hien thi layout, loc trang thai phong. — sua validate va bo sung thong bao loi (da smoke test)
 2025-11-13 - 1 - 01:47:13 UTC :: refactor: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — cap nhat mock data & seed test (dam bao backward-compatible)
+2025-11-13 - 2 - 01:47:14 UTC :: feat: UC-43 Mat khau: quy dinh do manh, het han phien. — dieu chinh quyen truy cap theo vai tro (anh huong thap)
