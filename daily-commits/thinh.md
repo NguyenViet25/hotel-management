@@ -102,3 +102,4 @@
 2025-11-13 - 2 - 01:47:14 UTC :: feat: UC-43 Mat khau: quy dinh do manh, het han phien. — dieu chinh quyen truy cap theo vai tro (anh huong thap)
 2025-11-13 - 3 - 01:47:15 UTC :: docs: UC-29 Thanh toan nha hang: thu tien, in hoa don, dong giao dich. — don dep code va xoa doan thua (khong doi hanh vi)
 2025-11-13 - 4 - 01:47:17 UTC :: feat: UC-22 Minibar/Amenity: ghi tieu hao, post charge vao folio. — bo sung case canh bien & no-show (can theo doi them)
+2025-11-13 - 5 - 01:47:21 UTC :: feat: UC-18 Room Move/Extend: doi phong, gia han dem o. — kiem tra tuong thich mui gio/tien te (da smoke test)
