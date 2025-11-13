@@ -106,3 +106,4 @@
 2025-11-13 - 1 - 01:47:13 UTC :: perf: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — bo sung unit test muc co ban (da review so bo)
 2025-11-13 - 2 - 01:47:14 UTC :: feat: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — dieu chinh UI & copy cho ro (anh huong thap)
 2025-11-13 - 3 - 01:47:16 UTC :: fix: UC-02 RBAC: thiet lap quyen thao tac theo vai tro/pham vi. — them log chi tiet phuc vu audit (dam bao backward-compatible)
+2025-11-13 - 4 - 01:47:19 UTC :: chore: UC-29 Thanh toan nha hang: thu tien, in hoa don, dong giao dich. — cap nhat mock data & seed test (da smoke test)
