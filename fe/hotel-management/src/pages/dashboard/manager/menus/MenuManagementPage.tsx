@@ -1,24 +1,23 @@
-import React, { useEffect, useState } from "react";
 import {
-  Box,
-  Snackbar,
   Alert,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
+  Box,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Snackbar,
 } from "@mui/material";
-import PageTitle from "../../../../components/common/PageTitle";
+import React, { useEffect, useState } from "react";
 import menusApi, {
-  type MenuItemDto,
-  type MenuGroupDto,
   type CreateMenuItemRequest,
+  type MenuGroupDto,
+  type MenuItemDto,
   type UpdateMenuItemRequest,
 } from "../../../../api/menusApi";
-import MenuFilters from "./components/MenuFilters";
-import MenuTable from "./components/MenuTable";
+import PageTitle from "../../../../components/common/PageTitle";
 import MenuItemFormModal from "./components/MenuItemFormModal";
+import MenuTable from "./components/MenuTable";
 
 // Menu Management Page implementing UC-45 to UC-48
 // - UC-45: View menu list with filters (group, shift, status, active)
@@ -27,22 +26,21 @@ import MenuItemFormModal from "./components/MenuItemFormModal";
 // - UC-48: Delete dish (server enforces order-history rule)
 
 const MenuManagementPage: React.FC = () => {
-  // Data state
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const [items, setItems] = useState<MenuItemDto[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [groups, setGroups] = useState<MenuGroupDto[]>([]);
-
-  // Filters state
-  const [groupId, setGroupId] = useState<string>("");
-  const [shift, setShift] = useState<string>("");
   const [status, setStatus] = useState<string>("");
-  const [isActive, setIsActive] = useState<string>(""); // "" | "true" | "false"
 
   // Modal state
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<MenuItemDto | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<MenuItemDto | null>(null);
+  const [editingItem, setEditingItem] = useState<MenuItemDto | undefined>(
+    undefined
+  );
+  const [deleteTarget, setDeleteTarget] = useState<MenuItemDto | undefined>(
+    undefined
+  );
 
   // Notifications
   const [snackbar, setSnackbar] = useState<{
@@ -66,10 +64,8 @@ const MenuManagementPage: React.FC = () => {
     setLoading(true);
     try {
       const qp = {
-        groupId: groupId || undefined,
-        shift: shift || undefined,
         status: status || undefined,
-        isActive: isActive ? isActive === "true" : undefined,
+        searchTerm: searchTerm || undefined,
       };
       const res = await menusApi.getMenuItems(qp);
       if (res.isSuccess) {
@@ -101,7 +97,7 @@ const MenuManagementPage: React.FC = () => {
   useEffect(() => {
     fetchMenuItems();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [groupId, shift, status, isActive]);
+  }, [status, searchTerm]);
 
   const openCreate = () => setCreateOpen(true);
   const openEdit = (record: MenuItemDto) => {
@@ -113,7 +109,7 @@ const MenuManagementPage: React.FC = () => {
   const closeCreate = () => setCreateOpen(false);
   const closeEdit = () => {
     setEditOpen(false);
-    setEditingItem(null);
+    setEditingItem(undefined);
   };
 
   const createSubmit = async (payload: CreateMenuItemRequest) => {
@@ -200,8 +196,6 @@ const MenuManagementPage: React.FC = () => {
     }
   };
 
-  const [searchTerm, setSearchTerm] = useState<string>("");
-
   return (
     <Box>
       <PageTitle title="Quản lý thực đơn" subtitle="Xem, thêm, sửa, xóa món" />
@@ -230,16 +224,16 @@ const MenuManagementPage: React.FC = () => {
         open={editOpen}
         onClose={closeEdit}
         onSubmit={editSubmit}
-        initialValues={editingItem || undefined}
+        initialValues={editingItem}
         mode="edit"
       />
 
       {/* Delete confirm */}
-      <Dialog open={!!deleteTarget} onClose={() => setDeleteTarget(null)}>
+      <Dialog open={!!deleteTarget} onClose={() => setDeleteTarget(undefined)}>
         <DialogTitle>Xóa món</DialogTitle>
         <DialogContent>Bạn có chắc chắn muốn xóa món này?</DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteTarget(null)} color="inherit">
+          <Button onClick={() => setDeleteTarget(undefined)} color="inherit">
             Hủy
           </Button>
           <Button onClick={confirmDelete} variant="contained" color="error">

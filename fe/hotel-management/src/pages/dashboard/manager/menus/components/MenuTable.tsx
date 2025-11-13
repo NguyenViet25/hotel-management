@@ -45,34 +45,35 @@ const MenuTable: React.FC<MenuTableProps> = ({
   }, [data, page]);
 
   const columns: Column<MenuItemDto>[] = [
-    {
-      id: "imageUrl",
-      label: "Ảnh",
-      minWidth: 80,
-      format: (value) =>
-        value ? (
-          <Avatar
-            src={value as string}
-            variant="rounded"
-            sx={{ width: 40, height: 40 }}
-          />
-        ) : (
-          "-"
-        ),
-    },
+    // {
+    //   id: "imageUrl",
+    //   label: "Ảnh",
+    //   minWidth: 80,
+    //   format: (value) =>
+    //     value ? (
+    //       <Avatar
+    //         src={value as string}
+    //         variant="rounded"
+    //         sx={{ width: 40, height: 40 }}
+    //       />
+    //     ) : (
+    //       "-"
+    //     ),
+    // },
     { id: "name", label: "Tên món", minWidth: 180 },
     {
       id: "category",
       label: "Nhóm",
       minWidth: 140,
     },
-
+    { id: "description", label: "Mô tả", minWidth: 160 },
     {
       id: "unitPrice",
       label: "Đơn giá",
       minWidth: 120,
       format: (v) => `${Number(v).toLocaleString()} ₫`,
     },
+
     {
       id: "status",
       label: "Trạng thái",

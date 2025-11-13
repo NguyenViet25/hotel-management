@@ -14,7 +14,7 @@ import {
   Stack,
   InputAdornment,
 } from "@mui/material";
-import React from "react";
+import React, { use, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -34,14 +34,16 @@ import type {
   MenuGroupDto,
   CreateMenuItemRequest,
   UpdateMenuItemRequest,
+  MenuItemDto,
 } from "../../../../../api/menusApi";
+import { useStore, type StoreState } from "../../../../../hooks/useStore";
 
 type FormValues = {
   category: string;
   name: string;
   unitPrice: number;
   imageUrl?: string;
-  status: string;
+  status: number;
   isActive: boolean;
   description?: string;
 };
@@ -53,7 +55,7 @@ const schema = z.object({
     .number("Giá phải là số")
     .min(0.01, "Giá phải lớn hơn 0")
     .max(10000000, "Giá quá lớn"),
-  imageUrl: z.string().url("URL không hợp lệ").optional().or(z.literal("")),
+  imageUrl: z.string().optional().or(z.literal("")),
   status: z.number().int().min(0).max(1),
   description: z.string().max(500, "Tối đa 500 ký tự").optional(),
 });
@@ -64,7 +66,7 @@ export interface MenuItemFormModalProps {
   onSubmit: (
     payload: CreateMenuItemRequest | UpdateMenuItemRequest
   ) => Promise<void> | void;
-  initialValues?: Partial<FormValues>;
+  initialValues?: MenuItemDto;
   mode?: "create" | "edit";
 }
 
@@ -75,25 +77,42 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
   initialValues,
   mode = "create",
 }) => {
+  const { user } = useStore<StoreState>((state) => state);
   const {
     control,
     handleSubmit,
     formState: { errors, isSubmitting },
+    reset,
+    setValue,
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      category: initialValues?.category || "Món khai vị",
-      name: initialValues?.name || "",
+      category: initialValues?.category ?? "Món khai vị",
+      name: initialValues?.name ?? "",
       unitPrice: initialValues?.unitPrice ?? 0,
-      imageUrl: initialValues?.imageUrl || "",
-      status: initialValues?.status || "Available",
+      imageUrl: initialValues?.imageUrl ?? "",
+      status: initialValues?.status ?? 0,
       isActive: initialValues?.isActive ?? true,
-      description: initialValues?.description || "",
+      description: initialValues?.description ?? "",
     },
   });
 
+  console.log("errors", errors);
+  useEffect(() => {
+    if (mode === "edit") {
+      setValue("category", initialValues?.category ?? "Món khai vị");
+      setValue("name", initialValues?.name ?? "");
+      setValue("unitPrice", initialValues?.unitPrice ?? 0);
+      setValue("imageUrl", initialValues?.imageUrl ?? "");
+      setValue("status", initialValues?.status ?? 0);
+      setValue("isActive", initialValues?.isActive ?? true);
+      setValue("description", initialValues?.description ?? "");
+    }
+  }, [initialValues]);
+
   const submitHandler = async (values: FormValues) => {
     await onSubmit({
+      hotelId: user?.hotelId,
       category: values.category,
       name: values.name,
       unitPrice: values.unitPrice,
@@ -102,6 +121,8 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
       isActive: values.isActive,
       description: values.description,
     });
+
+    reset();
   };
 
   const foodGroups = [
@@ -125,7 +146,7 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
             <InputLabel id="menuGroup-label">Nhóm món</InputLabel>
             <Controller
               control={control}
-              name="menuGroupId"
+              name="category"
               render={({ field }) => (
                 <Select
                   labelId="menuGroup-label"

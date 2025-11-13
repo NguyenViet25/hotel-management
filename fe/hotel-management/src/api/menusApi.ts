@@ -9,24 +9,17 @@ export interface MenuGroupDto {
 export interface MenuItemDto {
   id: string;
   hotelId?: string;
-  menuGroupId: string;
+  category: string;
   name: string;
   description?: string;
   unitPrice: number;
-  portionSize?: string;
   imageUrl?: string;
   isActive?: boolean;
-  status: string; // Available | Unavailable | SeasonallyUnavailable
-  group?: {
-    id: string;
-    name: string;
-    shift: string;
-  };
+  status: number;
 }
 
 export interface MenusQueryParams {
-  groupId?: string;
-  shift?: string;
+  searchTerm?: string;
   status?: string;
   isActive?: boolean;
   page?: number;
@@ -34,12 +27,13 @@ export interface MenusQueryParams {
 }
 
 export interface CreateMenuItemRequest {
+  hotelId?: string;
   category: string;
   name: string;
   description?: string;
   unitPrice: number;
   imageUrl?: string;
-  status?: string; // default Available
+  status?: number; // default 0 (Available)
   isActive?: boolean;
 }
 
@@ -76,8 +70,7 @@ const menusApi = {
     params: MenusQueryParams = {}
   ): Promise<ListResponse<MenuItemDto>> {
     const qp = new URLSearchParams();
-    if (params.groupId) qp.append("groupId", params.groupId);
-    if (params.shift) qp.append("shift", params.shift);
+    if (params.searchTerm) qp.append("searchTerm", params.searchTerm);
     if (params.status) qp.append("status", params.status);
     if (params.isActive !== undefined)
       qp.append("isActive", String(params.isActive));
