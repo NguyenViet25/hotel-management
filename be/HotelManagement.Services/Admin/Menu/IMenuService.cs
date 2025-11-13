@@ -16,10 +16,5 @@ public interface IMenuService
     
     // UC-48: Delete menu item without existing orders
     Task<ApiResponse<bool>> DeleteMenuItemAsync(Guid id, Guid staffUserId);
-    
-    // Get menu groups
-    Task<ApiResponse<List<MenuGroupDto>>> GetMenuGroupsAsync();
-    
-    // Create menu group
-    Task<ApiResponse<MenuGroupDto>> CreateMenuGroupAsync(CreateMenuGroupDto dto, Guid staffUserId);
+
 }

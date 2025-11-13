@@ -5,7 +5,7 @@ namespace HotelManagement.Services.Admin.Menu;
 
 public class MenuQueryDto
 {
-    public Guid? GroupId { get; set; }
+    public string? Category { get; set; }
     public string? Shift { get; set; }
     public MenuItemStatus? Status { get; set; }
     public bool? IsActive { get; set; }
@@ -15,7 +15,7 @@ public class MenuItemDto
 {
     public Guid Id { get; set; }
     public Guid HotelId { get; set; }
-    public Guid? MenuGroupId { get; set; }
+    public string? Category { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public decimal UnitPrice { get; set; }
@@ -38,8 +38,11 @@ public class MenuItemIngredientDto
 public class CreateMenuItemDto
 {
     [Required]
-    public Guid? MenuGroupId { get; set; }
-    
+    public string? Category { get; set; }
+
+    public Guid HotelId { get; set; }
+
+
     [Required]
     [StringLength(100)]
     public string Name { get; set; } = string.Empty;
@@ -50,10 +53,6 @@ public class CreateMenuItemDto
     [Required]
     [Range(0.01, 10000000)]
     public decimal UnitPrice { get; set; }
-    
-    [Required]
-    [StringLength(50)]
-    public string PortionSize { get; set; } = string.Empty;
     
     public string ImageUrl { get; set; } = string.Empty;
     
@@ -79,8 +78,8 @@ public class CreateMenuItemIngredientDto
 
 public class UpdateMenuItemDto
 {
-    public Guid? MenuGroupId { get; set; }
-    
+    public string? Category { get; set; }
+
     [StringLength(100)]
     public string? Name { get; set; }
     
@@ -89,9 +88,6 @@ public class UpdateMenuItemDto
     
     [Range(0.01, 10000000)]
     public decimal? UnitPrice { get; set; }
-    
-    [StringLength(50)]
-    public string? PortionSize { get; set; }
     
     public string? ImageUrl { get; set; }
     

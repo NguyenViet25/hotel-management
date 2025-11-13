@@ -230,7 +230,6 @@ const MenuManagementPage: React.FC = () => {
         open={editOpen}
         onClose={closeEdit}
         onSubmit={editSubmit}
-        menuGroups={groups}
         initialValues={editingItem || undefined}
         mode="edit"
       />

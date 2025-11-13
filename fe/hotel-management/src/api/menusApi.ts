@@ -34,11 +34,10 @@ export interface MenusQueryParams {
 }
 
 export interface CreateMenuItemRequest {
-  menuGroupId: string;
+  category: string;
   name: string;
   description?: string;
   unitPrice: number;
-  portionSize?: string;
   imageUrl?: string;
   status?: string; // default Available
   isActive?: boolean;

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelManagement.Domain.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251109201304_Init")]
+    [Migration("20251113191444_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -587,34 +587,14 @@ namespace HotelManagement.Domain.Migrations
                     b.ToTable("InvoiceLines");
                 });
 
-            modelBuilder.Entity("HotelManagement.Domain.MenuGroup", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("HotelId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Shift")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("HotelId");
-
-                    b.ToTable("MenuGroups");
-                });
-
             modelBuilder.Entity("HotelManagement.Domain.MenuItem", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Category")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -630,14 +610,7 @@ namespace HotelManagement.Domain.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<Guid?>("MenuGroupId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PortionSize")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -651,8 +624,6 @@ namespace HotelManagement.Domain.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("HotelId");
-
-                    b.HasIndex("MenuGroupId");
 
                     b.ToTable("MenuItems");
                 });
@@ -1233,15 +1204,6 @@ namespace HotelManagement.Domain.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("HotelManagement.Domain.MenuGroup", b =>
-                {
-                    b.HasOne("HotelManagement.Domain.Hotel", null)
-                        .WithMany()
-                        .HasForeignKey("HotelId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("HotelManagement.Domain.MenuItem", b =>
                 {
                     b.HasOne("HotelManagement.Domain.Hotel", null)
@@ -1249,12 +1211,6 @@ namespace HotelManagement.Domain.Migrations
                         .HasForeignKey("HotelId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.HasOne("HotelManagement.Domain.MenuGroup", "Group")
-                        .WithMany("Items")
-                        .HasForeignKey("MenuGroupId");
-
-                    b.Navigation("Group");
                 });
 
             modelBuilder.Entity("HotelManagement.Domain.MenuItemIngredient", b =>
@@ -1449,11 +1405,6 @@ namespace HotelManagement.Domain.Migrations
             modelBuilder.Entity("HotelManagement.Domain.Invoice", b =>
                 {
                     b.Navigation("Lines");
-                });
-
-            modelBuilder.Entity("HotelManagement.Domain.MenuGroup", b =>
-                {
-                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("HotelManagement.Domain.MenuItem", b =>

@@ -10,18 +10,15 @@ namespace HotelManagement.Services.Admin.Menu;
 public class MenuService : IMenuService
 {
     private readonly IRepository<MenuItem> _menuItemRepository;
-    private readonly IRepository<MenuGroup> _menuGroupRepository;
     private readonly IRepository<MenuItemIngredient> _menuItemIngredientRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public MenuService(
         IRepository<MenuItem> menuItemRepository,
-        IRepository<MenuGroup> menuGroupRepository,
         IRepository<MenuItemIngredient> menuItemIngredientRepository,
         IUnitOfWork unitOfWork)
     {
         _menuItemRepository = menuItemRepository;
-        _menuGroupRepository = menuGroupRepository;
         _menuItemIngredientRepository = menuItemIngredientRepository;
         _unitOfWork = unitOfWork;
     }
@@ -32,14 +29,9 @@ public class MenuService : IMenuService
         {
             Expression<Func<MenuItem, bool>> filter = item => true;
 
-            if (query.GroupId.HasValue)
+            if (query.Category != null)
             {
-                filter = filter.And(item => item.MenuGroupId == query.GroupId.Value);
-            }
-
-            if (!string.IsNullOrEmpty(query.Shift))
-            {
-                filter = filter.And(item => item.Group != null && item.Group.Shift == query.Shift);
+                filter = filter.And(item => item.Category == query.Category);
             }
 
             if (query.Status.HasValue)
@@ -54,7 +46,6 @@ public class MenuService : IMenuService
 
             var menuItems = await _menuItemRepository.Query()
                 .Where(filter)
-                .Include(i => i.Group)
                 .Include(i => i.Ingredients)
                 .ToListAsync();
 
@@ -71,24 +62,19 @@ public class MenuService : IMenuService
     {
         try
         {
-            // Validate menu group exists
-            if (await _menuGroupRepository.FindAsync(dto.MenuGroupId!) is null)
-            {
-                return ApiResponse<MenuItemDto>.Fail("Menu group not found");
-            }
+     
 
             var menuItem = new MenuItem
             {
                 Id = Guid.NewGuid(),
-                MenuGroupId = dto.MenuGroupId,
+                Category = dto.Category,
                 Name = dto.Name,
                 Description = dto.Description,
                 UnitPrice = dto.UnitPrice,
-                PortionSize = dto.PortionSize,
                 ImageUrl = dto.ImageUrl,
                 Status = dto.Status,
                 IsActive = true,
-                HotelId = (await _menuGroupRepository.FindAsync(dto.MenuGroupId!))!.HotelId
+                HotelId = dto.HotelId
             };
 
             await _menuItemRepository.AddAsync(menuItem);
@@ -114,7 +100,6 @@ public class MenuService : IMenuService
 
             // Reload the menu item with its relationships
             var createdMenuItem = await _menuItemRepository.Query()
-                .Include(i => i.Group)
                 .Include(i => i.Ingredients)
                 .FirstOrDefaultAsync(i => i.Id == menuItem.Id);
 
@@ -139,18 +124,11 @@ public class MenuService : IMenuService
                 return ApiResponse<MenuItemDto>.Fail("Menu item not found");
             }
 
-            // Validate menu group if provided
-            if (dto.MenuGroupId.HasValue && !await _menuGroupRepository.AnyAsync(dto.MenuGroupId))
-            {
-                return ApiResponse<MenuItemDto>.Fail("Menu group not found");
-            }
-
             // Update properties if provided
-            if (dto.MenuGroupId.HasValue) menuItem.MenuGroupId = dto.MenuGroupId;
+            if (dto.Category != null) menuItem.Category = dto.Category;
             if (!string.IsNullOrEmpty(dto.Name)) menuItem.Name = dto.Name;
             if (!string.IsNullOrEmpty(dto.Description)) menuItem.Description = dto.Description;
             if (dto.UnitPrice.HasValue) menuItem.UnitPrice = dto.UnitPrice.Value;
-            if (!string.IsNullOrEmpty(dto.PortionSize)) menuItem.PortionSize = dto.PortionSize;
             if (!string.IsNullOrEmpty(dto.ImageUrl)) menuItem.ImageUrl = dto.ImageUrl;
             if (dto.Status.HasValue) menuItem.Status = dto.Status.Value;
             if (dto.IsActive.HasValue) menuItem.IsActive = dto.IsActive.Value;
@@ -192,7 +170,6 @@ public class MenuService : IMenuService
 
             // Reload the menu item with its relationships
             var updatedMenuItem = await _menuItemRepository.Query()
-                .Include(i => i.Group)
                 .Include(i => i.Ingredients)
                 .FirstOrDefaultAsync(i => i.Id == menuItem.Id);
 
@@ -238,57 +215,6 @@ public class MenuService : IMenuService
         }
     }
 
-    public async Task<ApiResponse<List<MenuGroupDto>>> GetMenuGroupsAsync()
-    {
-        try
-        {
-            var menuGroups = await _menuGroupRepository.Query().ToListAsync();
-            var result = menuGroups.Select(g => new MenuGroupDto
-            {
-                Id = g.Id,
-                Name = g.Name,
-                Shift = g.Shift
-            }).ToList();
-
-            return ApiResponse<List<MenuGroupDto>>.Ok(result);
-        }
-        catch (Exception ex)
-        {
-            return ApiResponse<List<MenuGroupDto>>.Fail($"Failed to get menu groups: {ex.Message}");
-        }
-    }
-
-    public async Task<ApiResponse<MenuGroupDto>> CreateMenuGroupAsync(CreateMenuGroupDto dto, Guid staffUserId)
-    {
-        try
-        {
-            // Get hotel ID from staff user
-            // For now, we'll use a placeholder
-            var hotelId = Guid.Parse("00000000-0000-0000-0000-000000000001"); // This should be retrieved from user context
-
-            var menuGroup = new MenuGroup
-            {
-                Id = Guid.NewGuid(),
-                HotelId = hotelId,
-                Name = dto.Name,
-                Shift = dto.Shift
-            };
-
-            await _menuGroupRepository.AddAsync(menuGroup);
-            await _unitOfWork.SaveChangesAsync();
-
-            return ApiResponse<MenuGroupDto>.Ok(new MenuGroupDto
-            {
-                Id = menuGroup.Id,
-                Name = menuGroup.Name,
-                Shift = menuGroup.Shift
-            });
-        }
-        catch (Exception ex)
-        {
-            return ApiResponse<MenuGroupDto>.Fail($"Failed to create menu group: {ex.Message}");
-        }
-    }
 
     private MenuItemDto MapToMenuItemDto(MenuItem menuItem)
     {
@@ -296,20 +222,13 @@ public class MenuService : IMenuService
         {
             Id = menuItem.Id,
             HotelId = menuItem.HotelId,
-            MenuGroupId = menuItem.MenuGroupId,
+            Category = menuItem.Category,
             Name = menuItem.Name,
             Description = menuItem.Description,
             UnitPrice = menuItem.UnitPrice,
-            PortionSize = menuItem.PortionSize,
             ImageUrl = menuItem.ImageUrl,
             IsActive = menuItem.IsActive,
             Status = menuItem.Status,
-            Group = menuItem.Group != null ? new MenuGroupDto
-            {
-                Id = menuItem.Group.Id,
-                Name = menuItem.Group.Name,
-                Shift = menuItem.Group.Shift
-            } : null,
             Ingredients = menuItem.Ingredients?.Select(i => new MenuItemIngredientDto
             {
                 Id = i.Id,

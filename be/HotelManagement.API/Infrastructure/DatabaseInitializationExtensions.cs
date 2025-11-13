@@ -28,6 +28,7 @@ public static class DatabaseInitializationExtensions
             SeedHotelRoomsAsync(dbContext).GetAwaiter().GetResult();
             SeedRoles(roleManager).GetAwaiter().GetResult();
             SeedUsers(userManager, dbContext).GetAwaiter().GetResult();
+            SeedMenuItemsAsync(dbContext).GetAwaiter().GetResult();
         }
 
         return app;
@@ -198,6 +199,41 @@ public static class DatabaseInitializationExtensions
         };
 
         dbContext.Set<Hotel>().AddRange(hotels);
+        await dbContext.SaveChangesAsync();
+    }
+
+    public static async Task SeedMenuItemsAsync(DbContext dbContext)
+    {
+        var hotelId = DEFAULT_HOTEL_ID;
+        // Check if there are any menu items already
+        if (await dbContext.Set<MenuItem>().AnyAsync())
+            return; // Already seeded
+
+        var menuItems = new List<MenuItem>
+        {
+            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Món khai vị", Name = "Gỏi cuốn tôm thịt", Description = "Món cuốn truyền thống Việt Nam, gồm tôm, thịt heo, rau sống và bún.", UnitPrice = 35000, ImageUrl = "/images/menu/goi-cuon-tom-thit.jpg" },
+            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Món khai vị", Name = "Chả giò rế", Description = "Chả giò rế chiên giòn, nhân thịt heo và rau củ.", UnitPrice = 40000, ImageUrl = "/images/menu/cha-gio-re.jpg" },
+            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Món chính", Name = "Phở bò đặc biệt", Description = "Phở bò truyền thống với nước dùng đậm đà, thịt bò tái chín.", UnitPrice = 55000, ImageUrl = "/images/menu/pho-bo.jpg" },
+            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Món chính", Name = "Bún chả Hà Nội", Description = "Bún chả nướng ăn kèm nước mắm chua ngọt và rau sống.", UnitPrice = 50000, ImageUrl = "/images/menu/bun-cha.jpg" },
+            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Món chính", Name = "Cơm tấm sườn bì chả", Description = "Cơm tấm ăn kèm sườn nướng, bì, chả trứng hấp và nước mắm tỏi ớt.", UnitPrice = 60000, ImageUrl = "/images/menu/com-tam.jpg" },
+            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Món chính", Name = "Bánh xèo miền Tây", Description = "Bánh xèo vàng giòn, nhân tôm thịt, giá đỗ, ăn kèm rau sống.", UnitPrice = 45000, ImageUrl = "/images/menu/banh-xeo.jpg" },
+            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Món chính", Name = "Bò lúc lắc", Description = "Thịt bò cắt vuông, xào với hành tây, ớt chuông, dùng kèm khoai tây chiên.", UnitPrice = 85000, ImageUrl = "/images/menu/bo-luc-lac.jpg" },
+            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Món lẩu", Name = "Lẩu thái hải sản", Description = "Nước lẩu chua cay kiểu Thái, kèm hải sản tươi ngon.", UnitPrice = 250000, ImageUrl = "/images/menu/lau-thai.jpg" },
+            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Món lẩu", Name = "Lẩu gà lá é", Description = "Món lẩu đặc sản Đà Lạt với gà ta và lá é thơm.", UnitPrice = 220000, ImageUrl = "/images/menu/lau-ga-la-e.jpg" },
+            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Món lẩu", Name = "Lẩu riêu cua bắp bò", Description = "Lẩu riêu cua truyền thống, ăn cùng bắp bò và đậu phụ.", UnitPrice = 230000, ImageUrl = "/images/menu/lau-rieu-cua.jpg" },
+            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Món nướng", Name = "Ba chỉ nướng Hàn Quốc", Description = "Ba chỉ heo tươi nướng than hoa, ăn kèm rau cuốn và kim chi.", UnitPrice = 120000, ImageUrl = "/images/menu/ba-chi-nuong.jpg" },
+            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Món nướng", Name = "Gà nướng mật ong", Description = "Gà nguyên con ướp mật ong nướng thơm phức, da giòn thịt mềm.", UnitPrice = 180000, ImageUrl = "/images/menu/ga-nuong-mat-ong.jpg" },
+            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Món nướng", Name = "Hải sản nướng mỡ hành", Description = "Mực, tôm, sò nướng mỡ hành, chấm muối tiêu chanh.", UnitPrice = 160000, ImageUrl = "/images/menu/hai-san-nuong.jpg" },
+            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Món tráng miệng", Name = "Chè khúc bạch", Description = "Chè mát lạnh với thạch sữa tươi, hạnh nhân, nhãn.", UnitPrice = 35000, ImageUrl = "/images/menu/che-khuc-bach.jpg" },
+            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Món tráng miệng", Name = "Bánh flan caramel", Description = "Bánh flan mềm mịn, vị ngọt dịu và lớp caramel hấp dẫn.", UnitPrice = 30000, ImageUrl = "/images/menu/banh-flan.jpg" },
+            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Món tráng miệng", Name = "Kem dừa non", Description = "Kem dừa béo ngậy, ăn kèm cơm dừa non và thạch dừa.", UnitPrice = 40000, ImageUrl = "/images/menu/kem-dua.jpg" },
+            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Thức uống", Name = "Nước mía sầu riêng", Description = "Nước mía tươi pha sầu riêng thơm béo.", UnitPrice = 30000, ImageUrl = "/images/menu/nuoc-mia-sau-rieng.jpg" },
+            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Thức uống", Name = "Cà phê sữa đá", Description = "Cà phê Việt Nam pha phin truyền thống, thêm sữa đặc và đá.", UnitPrice = 25000, ImageUrl = "/images/menu/ca-phe-sua-da.jpg" },
+            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Thức uống", Name = "Trà tắc mật ong", Description = "Trà tắc tươi kết hợp mật ong rừng, vị thanh mát.", UnitPrice = 25000, ImageUrl = "/images/menu/tra-tac-mat-ong.jpg" },
+            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Thức uống", Name = "Sinh tố xoài", Description = "Sinh tố xoài tươi xay nhuyễn, vị ngọt tự nhiên.", UnitPrice = 40000, ImageUrl = "/images/menu/sinh-to-xoai.jpg" }
+        };
+
+        dbContext.Set<MenuItem>().AddRange(menuItems);
         await dbContext.SaveChangesAsync();
     }
 

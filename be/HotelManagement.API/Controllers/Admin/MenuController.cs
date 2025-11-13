@@ -6,7 +6,7 @@ using System.Security.Claims;
 namespace HotelManagement.Api.Controllers.Admin;
 
 [ApiController]
-[Route("api/admin/[controller]")]
+[Route("api/admin/menu")]
 [Authorize(Roles = "Admin,Manager,Staff")]
 public class MenuController : ControllerBase
 {
@@ -52,20 +52,5 @@ public class MenuController : ControllerBase
         return Ok(result);
     }
 
-    // Get menu groups
-    [HttpGet("groups")]
-    public async Task<IActionResult> GetMenuGroups()
-    {
-        var result = await _menuService.GetMenuGroupsAsync();
-        return Ok(result);
-    }
 
-    // Create menu group
-    [HttpPost("groups")]
-    public async Task<IActionResult> CreateMenuGroup([FromBody] CreateMenuGroupDto dto)
-    {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var result = await _menuService.CreateMenuGroupAsync(dto, Guid.Parse(userId!));
-        return Ok(result);
-    }
 }

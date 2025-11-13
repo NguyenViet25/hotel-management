@@ -37,10 +37,9 @@ import type {
 } from "../../../../../api/menusApi";
 
 type FormValues = {
-  menuGroupId: string;
+  category: string;
   name: string;
   unitPrice: number;
-  portionSize?: string;
   imageUrl?: string;
   status: string;
   isActive: boolean;
@@ -48,16 +47,14 @@ type FormValues = {
 };
 
 const schema = z.object({
-  menuGroupId: z.string().min(1, "Vui lòng chọn nhóm món"),
+  category: z.string().min(1, "Vui lòng chọn nhóm món"),
   name: z.string().min(1, "Tên món là bắt buộc").max(100, "Tối đa 100 ký tự"),
   unitPrice: z
-    .number({ invalid_type_error: "Giá phải là số" })
+    .number("Giá phải là số")
     .min(0.01, "Giá phải lớn hơn 0")
     .max(10000000, "Giá quá lớn"),
-  portionSize: z.string().optional(),
   imageUrl: z.string().url("URL không hợp lệ").optional().or(z.literal("")),
-  status: z.enum(["Available", "Unavailable", "SeasonallyUnavailable"]),
-  isActive: z.boolean().default(true),
+  status: z.number().int().min(0).max(1),
   description: z.string().max(500, "Tối đa 500 ký tự").optional(),
 });
 
@@ -67,7 +64,6 @@ export interface MenuItemFormModalProps {
   onSubmit: (
     payload: CreateMenuItemRequest | UpdateMenuItemRequest
   ) => Promise<void> | void;
-  menuGroups: MenuGroupDto[];
   initialValues?: Partial<FormValues>;
   mode?: "create" | "edit";
 }
@@ -76,7 +72,6 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
   open,
   onClose,
   onSubmit,
-  menuGroups,
   initialValues,
   mode = "create",
 }) => {
@@ -87,10 +82,9 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      menuGroupId: initialValues?.menuGroupId || "",
+      category: initialValues?.category || "Món khai vị",
       name: initialValues?.name || "",
       unitPrice: initialValues?.unitPrice ?? 0,
-      portionSize: initialValues?.portionSize || "",
       imageUrl: initialValues?.imageUrl || "",
       status: initialValues?.status || "Available",
       isActive: initialValues?.isActive ?? true,
@@ -100,16 +94,24 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
 
   const submitHandler = async (values: FormValues) => {
     await onSubmit({
-      menuGroupId: values.menuGroupId,
+      category: values.category,
       name: values.name,
       unitPrice: values.unitPrice,
-      portionSize: values.portionSize,
       imageUrl: values.imageUrl,
       status: values.status,
       isActive: values.isActive,
       description: values.description,
     });
   };
+
+  const foodGroups = [
+    { id: "Món khai vị", name: "Món khai vị" },
+    { id: "Món chính", name: "Món chính" },
+    { id: "Món lẩu", name: "Món lẩu" },
+    { id: "Món nướng", name: "Món nướng" },
+    { id: "Món tráng miệng", name: "Món tráng miệng" },
+    { id: "Thức uống", name: "Thức uống" },
+  ];
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
@@ -130,16 +132,16 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
                   label="Nhóm món"
                   value={field.value}
                   onChange={(e) => field.onChange(e.target.value)}
-                  error={!!errors.menuGroupId}
+                  error={!!errors.category}
                   startAdornment={
                     <InputAdornment position="start">
                       <GroupIcon />
                     </InputAdornment>
                   }
                 >
-                  {menuGroups.map((g) => (
+                  {foodGroups.map((g) => (
                     <MenuItem key={g.id} value={g.id}>
-                      {g.name} ({g.shift})
+                      {g.name}
                     </MenuItem>
                   ))}
                 </Select>
@@ -156,6 +158,7 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
                 label="Tên món"
                 fullWidth
                 value={field.value}
+                placeholder="Nhập tên món ăn"
                 onChange={field.onChange}
                 error={!!errors.name}
                 helperText={errors.name?.message}
@@ -194,31 +197,30 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
                 />
               )}
             />
-
-            <Controller
-              control={control}
-              name="portionSize"
-              render={({ field }) => (
-                <TextField
-                  label="Khẩu phần"
-                  placeholder="1 phần"
-                  fullWidth
-                  value={field.value}
-                  onChange={field.onChange}
-                  error={!!errors.portionSize}
-                  helperText={errors.portionSize?.message}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <RestaurantMenuIcon />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              )}
-            />
           </Stack>
-
+          {/* Description */}
+          <Controller
+            control={control}
+            name="description"
+            render={({ field }) => (
+              <TextField
+                label="Mô tả"
+                fullWidth
+                value={field.value}
+                placeholder="Nhập mô tả món ăn"
+                onChange={field.onChange}
+                error={!!errors.description}
+                helperText={errors.description?.message}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <InfoIcon />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            )}
+          />
           {/* Horizontal Stack: Status & IsActive */}
           <Stack
             direction={{ xs: "column", sm: "row" }}
@@ -239,7 +241,7 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
                     error={!!errors.status}
                     startAdornment={
                       <InputAdornment position="start">
-                        {field.value === "Available" ? (
+                        {field.value === 0 ? (
                           <CheckCircleIcon color="success" />
                         ) : (
                           <BlockIcon color="disabled" />
@@ -247,39 +249,13 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
                       </InputAdornment>
                     }
                   >
-                    <MenuItem value="Available">Đang bán</MenuItem>
-                    <MenuItem value="Unavailable">Tạm ngừng</MenuItem>
-                    <MenuItem value="SeasonallyUnavailable">Theo mùa</MenuItem>
+                    <MenuItem value={0}>Đang bán</MenuItem>
+                    <MenuItem value={1}>Ngừng bán</MenuItem>
                   </Select>
                 )}
               />
             </FormControl>
           </Stack>
-
-          {/* Description */}
-          <Controller
-            control={control}
-            name="description"
-            render={({ field }) => (
-              <TextField
-                label="Mô tả"
-                fullWidth
-                multiline
-                minRows={2}
-                value={field.value}
-                onChange={field.onChange}
-                error={!!errors.description}
-                helperText={errors.description?.message}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <InfoIcon />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            )}
-          />
         </Stack>
         <Stack
           direction="row"

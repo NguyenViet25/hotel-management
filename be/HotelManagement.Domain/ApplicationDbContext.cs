@@ -24,7 +24,6 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
     public DbSet<CallLog> CallLogs => Set<CallLog>();
     public DbSet<HousekeepingTask> HousekeepingTasks => Set<HousekeepingTask>();
     public DbSet<RoomStatusLog> RoomStatusLogs => Set<RoomStatusLog>();
-    public DbSet<MenuGroup> MenuGroups => Set<MenuGroup>();
     public DbSet<MenuItem> MenuItems => Set<MenuItem>();
     public DbSet<Table> Tables => Set<Table>();
     public DbSet<DiningSession> DiningSessions => Set<DiningSession>();
@@ -67,11 +66,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
             .WithMany(o => o.Items)
             .HasForeignKey(oi => oi.OrderId);
 
-        builder.Entity<MenuItem>()
-            .HasOne(mi => mi.Group)
-            .WithMany(g => g.Items)
-            .HasForeignKey(mi => mi.MenuGroupId);
-
+ 
         // Rules relations
         builder.Entity<SurchargeRule>()
             .HasOne<Hotel>()
@@ -180,13 +175,6 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
             .HasOne<HotelRoom>()
             .WithMany(r => r.StatusLogs)
             .HasForeignKey(rsl => rsl.RoomId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        // Menu relations
-        builder.Entity<MenuGroup>()
-            .HasOne<Hotel>()
-            .WithMany()
-            .HasForeignKey(mg => mg.HotelId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.Entity<MenuItem>()
