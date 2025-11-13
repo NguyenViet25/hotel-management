@@ -98,3 +98,4 @@
 2025-11-12 - 3 - 01:45:54 UTC :: fix: UC-01 RBAC: tao, sua, khoa tai khoan; gan vai tro. — kiem tra tuong thich mui gio/tien te (da review so bo)
 2025-11-12 - 4 - 01:45:57 UTC :: chore: UC-26 Order: tao/chinh sua order, ghi chu, void/discount. — bo sung case canh bien & no-show (dong bo voi BE/FE)
 2025-11-12 - 5 - 01:45:59 UTC :: feat: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — kiem tra tuong thich mui gio/tien te (dat tieu chi toi thieu)
+2025-11-13 - 1 - 01:47:11 UTC :: chore: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — chuan hoa ten ham/bien theo convention (can theo doi them)
