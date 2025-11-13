@@ -104,3 +104,4 @@
 2025-11-12 - 4 - 01:45:58 UTC :: docs: UC-28 Room charge F&B: ghi hoa don ban an vao folio. — cap nhat mock data & seed test (da review so bo)
 2025-11-12 - 5 - 01:46:01 UTC :: chore: UC-35 Ngoai le: gui yeu cau mien/giam phi, vuot tran. — toi uu truy van va bo nho (dam bao backward-compatible)
 2025-11-13 - 1 - 01:47:13 UTC :: perf: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — bo sung unit test muc co ban (da review so bo)
+2025-11-13 - 2 - 01:47:14 UTC :: feat: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — dieu chinh UI & copy cho ro (anh huong thap)
