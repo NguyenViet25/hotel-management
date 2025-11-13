@@ -98,3 +98,8 @@
 2025-11-12 - 3 - 01:45:55 UTC :: ci: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — sua validate va bo sung thong bao loi (dam bao backward-compatible)
 2025-11-12 - 4 - 01:45:56 UTC :: ci: UC-43 Mat khau: quy dinh do manh, het han phien. — chuan hoa ten ham/bien theo convention (da kiem tra lint)
 2025-11-12 - 5 - 01:45:57 UTC :: test: UC-09 So do: hien thi layout, loc trang thai phong. — sua validate va bo sung thong bao loi (da smoke test)
+2025-11-13 - 1 - 01:47:13 UTC :: refactor: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — cap nhat mock data & seed test (dam bao backward-compatible)
+2025-11-13 - 2 - 01:47:14 UTC :: feat: UC-43 Mat khau: quy dinh do manh, het han phien. — dieu chinh quyen truy cap theo vai tro (anh huong thap)
+2025-11-13 - 3 - 01:47:15 UTC :: docs: UC-29 Thanh toan nha hang: thu tien, in hoa don, dong giao dich. — don dep code va xoa doan thua (khong doi hanh vi)
+2025-11-13 - 4 - 01:47:17 UTC :: feat: UC-22 Minibar/Amenity: ghi tieu hao, post charge vao folio. — bo sung case canh bien & no-show (can theo doi them)
+2025-11-13 - 5 - 01:47:21 UTC :: feat: UC-18 Room Move/Extend: doi phong, gia han dem o. — kiem tra tuong thich mui gio/tien te (da smoke test)
