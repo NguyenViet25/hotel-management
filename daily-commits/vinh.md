@@ -98,3 +98,4 @@
 2025-11-12 - 3 - 01:45:55 UTC :: fix: UC-33 Phan ca: gan ca, duyet doi ca/ngi phep. — cap nhat mock data & seed test (da kiem tra lint)
 2025-11-12 - 4 - 01:45:56 UTC :: feat: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — cap nhat mock data & seed test (anh huong thap)
 2025-11-12 - 5 - 01:45:58 UTC :: ci: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — toi uu truy van va bo nho (dam bao backward-compatible)
+2025-11-13 - 1 - 01:47:12 UTC :: build: UC-20 Keo-tha: gan/doi phong truc quan, tranh trung. — dieu chinh quyen truy cap theo vai tro (da smoke test)
