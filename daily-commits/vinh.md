@@ -101,3 +101,4 @@
 2025-11-13 - 1 - 01:47:12 UTC :: build: UC-20 Keo-tha: gan/doi phong truc quan, tranh trung. — dieu chinh quyen truy cap theo vai tro (da smoke test)
 2025-11-13 - 2 - 01:47:13 UTC :: chore: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — cai thien hieu nang render/list (dam bao backward-compatible)
 2025-11-13 - 3 - 01:47:16 UTC :: refactor: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — fix race-condition nho trong thao tac (dong bo voi BE/FE)
+2025-11-13 - 4 - 01:47:18 UTC :: chore: UC-01 RBAC: tao, sua, khoa tai khoan; gan vai tro. — refactor luong xu ly cho ro rang (dam bao backward-compatible)
