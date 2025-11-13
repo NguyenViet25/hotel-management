@@ -34,6 +34,12 @@ public class MenuService : IMenuService
                 filter = filter.And(item => item.Category == query.Category);
             }
 
+            if (query.SearchTerm != null)
+            {
+                filter = filter.And(item => item.Name.ToLower().Contains(query.SearchTerm.ToLower()));
+            }
+
+
             if (query.Status.HasValue)
             {
                 filter = filter.And(item => item.Status == query.Status.Value);
@@ -78,6 +84,7 @@ public class MenuService : IMenuService
             };
 
             await _menuItemRepository.AddAsync(menuItem);
+            await _menuItemRepository.SaveChangesAsync();
 
             // Add ingredients
             if (dto.Ingredients != null && dto.Ingredients.Any())
@@ -134,6 +141,7 @@ public class MenuService : IMenuService
             if (dto.IsActive.HasValue) menuItem.IsActive = dto.IsActive.Value;
 
             await _menuItemRepository.UpdateAsync(menuItem);
+            await _menuItemRepository.SaveChangesAsync();
 
             // Update ingredients if provided
             if (dto.Ingredients != null && dto.Ingredients.Any())
@@ -202,9 +210,12 @@ public class MenuService : IMenuService
             foreach (var ingredient in ingredients)
             {
                 await _menuItemIngredientRepository.RemoveAsync(ingredient);
+                await _menuItemIngredientRepository.SaveChangesAsync();
             }
 
             await _menuItemRepository.RemoveAsync(menuItem);
+            await _menuItemRepository.SaveChangesAsync();
+
             await _unitOfWork.SaveChangesAsync();
 
             return ApiResponse<bool>.Ok(true);

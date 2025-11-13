@@ -6,7 +6,7 @@ namespace HotelManagement.Services.Admin.Menu;
 public class MenuQueryDto
 {
     public string? Category { get; set; }
-    public string? Shift { get; set; }
+    public string? SearchTerm { get; set; }
     public MenuItemStatus? Status { get; set; }
     public bool? IsActive { get; set; }
 }
