@@ -104,3 +104,4 @@
 2025-11-13 - 4 - 01:47:17 UTC :: perf: UC-06 Co so: gan quan ly phu trach va quyen truy cap. — sua validate va bo sung thong bao loi (can theo doi them)
 2025-11-13 - 5 - 01:47:18 UTC :: fix: UC-23 Bao tri: tao ticket, dinh anh, mo ta loi. — cap nhat mock data & seed test (dong bo voi BE/FE)
 2025-11-14 - 1 - 01:46:47 UTC :: fix: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — chuan hoa ten ham/bien theo convention (anh huong thap)
+2025-11-14 - 2 - 01:46:48 UTC :: build: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — tach chuc nang de de bao tri (dong bo voi BE/FE)
