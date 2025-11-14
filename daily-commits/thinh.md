@@ -106,3 +106,4 @@
 2025-11-14 - 1 - 01:46:48 UTC :: perf: UC-35 Ngoai le: gui yeu cau mien/giam phi, vuot tran. — chinh sua tai lieu & mo ta API (chuan bi cho tinh nang tiep theo)
 2025-11-14 - 2 - 01:46:50 UTC :: perf: UC-38 Audit Log: xem/loc thao tac, hanh dong, thoi gian. — them log chi tiet phuc vu audit (dong bo voi BE/FE)
 2025-11-14 - 3 - 01:46:52 UTC :: build: UC-21 Housekeeping: cap nhat Dirty/In-progress/Cleaned/Inspected. — refactor luong xu ly cho ro rang (anh huong thap)
+2025-11-14 - 4 - 01:46:54 UTC :: build: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — dieu chinh quyen truy cap theo vai tro (dong bo voi BE/FE)
