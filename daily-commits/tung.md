@@ -111,3 +111,4 @@
 2025-11-14 - 1 - 01:46:50 UTC :: docs: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — dieu chinh quyen truy cap theo vai tro (da smoke test)
 2025-11-14 - 2 - 01:46:53 UTC :: fix: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — dieu chinh UI & copy cho ro (anh huong thap)
 2025-11-14 - 3 - 01:46:54 UTC :: fix: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — bo sung unit test muc co ban (dam bao backward-compatible)
+2025-11-14 - 4 - 01:46:56 UTC :: chore: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — toi uu truy van va bo nho (dam bao backward-compatible)
