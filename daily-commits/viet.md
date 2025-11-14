@@ -106,3 +106,4 @@
 2025-11-14 - 1 - 01:46:47 UTC :: fix: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — chuan hoa ten ham/bien theo convention (anh huong thap)
 2025-11-14 - 2 - 01:46:48 UTC :: build: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — tach chuc nang de de bao tri (dong bo voi BE/FE)
 2025-11-14 - 3 - 01:46:50 UTC :: feat: UC-31 Bao cao: len lich gui email/PDF hang ngay/tuan. — bo sung metrics/telemetry co ban (dat tieu chi toi thieu)
+2025-11-14 - 4 - 01:46:52 UTC :: refactor: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — refactor luong xu ly cho ro rang (khong doi hanh vi)
