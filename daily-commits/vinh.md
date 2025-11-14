@@ -104,3 +104,4 @@
 2025-11-13 - 4 - 01:47:18 UTC :: chore: UC-01 RBAC: tao, sua, khoa tai khoan; gan vai tro. — refactor luong xu ly cho ro rang (dam bao backward-compatible)
 2025-11-13 - 5 - 01:47:20 UTC :: chore: UC-02 RBAC: thiet lap quyen thao tac theo vai tro/pham vi. — bo sung metrics/telemetry co ban (dam bao backward-compatible)
 2025-11-14 - 1 - 01:46:48 UTC :: fix: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — bo sung unit test muc co ban (dong bo voi BE/FE)
+2025-11-14 - 2 - 01:46:51 UTC :: docs: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — dieu chinh quyen truy cap theo vai tro (can theo doi them)
