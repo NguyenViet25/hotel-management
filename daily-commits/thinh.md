@@ -104,3 +104,4 @@
 2025-11-13 - 4 - 01:47:17 UTC :: feat: UC-22 Minibar/Amenity: ghi tieu hao, post charge vao folio. — bo sung case canh bien & no-show (can theo doi them)
 2025-11-13 - 5 - 01:47:21 UTC :: feat: UC-18 Room Move/Extend: doi phong, gia han dem o. — kiem tra tuong thich mui gio/tien te (da smoke test)
 2025-11-14 - 1 - 01:46:48 UTC :: perf: UC-35 Ngoai le: gui yeu cau mien/giam phi, vuot tran. — chinh sua tai lieu & mo ta API (chuan bi cho tinh nang tiep theo)
+2025-11-14 - 2 - 01:46:50 UTC :: perf: UC-38 Audit Log: xem/loc thao tac, hanh dong, thoi gian. — them log chi tiet phuc vu audit (dong bo voi BE/FE)
