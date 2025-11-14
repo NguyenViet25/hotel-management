@@ -107,3 +107,4 @@
 2025-11-14 - 2 - 01:46:51 UTC :: docs: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — dieu chinh quyen truy cap theo vai tro (can theo doi them)
 2025-11-14 - 3 - 01:46:53 UTC :: perf: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — sua validate va bo sung thong bao loi (khong doi hanh vi)
 2025-11-14 - 4 - 01:46:55 UTC :: fix: UC-43 Mat khau: quy dinh do manh, het han phien. — dieu chinh UI & copy cho ro (da smoke test)
+2025-11-14 - 5 - 01:46:56 UTC :: test: UC-42 Phan quyen: thiet lap quyen theo co so. — them log chi tiet phuc vu audit (da kiem tra lint)
