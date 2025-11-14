@@ -108,3 +108,4 @@
 2025-11-13 - 3 - 01:47:16 UTC :: fix: UC-02 RBAC: thiet lap quyen thao tac theo vai tro/pham vi. — them log chi tiet phuc vu audit (dam bao backward-compatible)
 2025-11-13 - 4 - 01:47:19 UTC :: chore: UC-29 Thanh toan nha hang: thu tien, in hoa don, dong giao dich. — cap nhat mock data & seed test (da smoke test)
 2025-11-13 - 5 - 01:47:20 UTC :: perf: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — sua validate va bo sung thong bao loi (da review so bo)
+2025-11-14 - 1 - 01:46:50 UTC :: docs: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — dieu chinh quyen truy cap theo vai tro (da smoke test)
