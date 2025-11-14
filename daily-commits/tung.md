@@ -109,3 +109,4 @@
 2025-11-13 - 4 - 01:47:19 UTC :: chore: UC-29 Thanh toan nha hang: thu tien, in hoa don, dong giao dich. — cap nhat mock data & seed test (da smoke test)
 2025-11-13 - 5 - 01:47:20 UTC :: perf: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — sua validate va bo sung thong bao loi (da review so bo)
 2025-11-14 - 1 - 01:46:50 UTC :: docs: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — dieu chinh quyen truy cap theo vai tro (da smoke test)
+2025-11-14 - 2 - 01:46:53 UTC :: fix: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — dieu chinh UI & copy cho ro (anh huong thap)
