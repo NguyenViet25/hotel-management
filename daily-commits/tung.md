@@ -117,3 +117,4 @@
 2025-11-15 - 2 - 01:42:40 UTC :: chore: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — cap nhat cau hinh va kiem tra bien (can theo doi them)
 2025-11-15 - 3 - 01:42:43 UTC :: docs: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — them log chi tiet phuc vu audit (dong bo voi BE/FE)
 2025-11-15 - 4 - 01:42:45 UTC :: feat: UC-18 Room Move/Extend: doi phong, gia han dem o. — bo sung metrics/telemetry co ban (chuan bi cho tinh nang tiep theo)
+2025-11-15 - 5 - 01:42:46 UTC :: chore: UC-40 Thu/chi: doi soat tien mat/the/le phi PG. — chinh sua tai lieu & mo ta API (dat tieu chi toi thieu)
