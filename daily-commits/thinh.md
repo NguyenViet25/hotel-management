@@ -108,3 +108,4 @@
 2025-11-14 - 3 - 01:46:52 UTC :: build: UC-21 Housekeeping: cap nhat Dirty/In-progress/Cleaned/Inspected. — refactor luong xu ly cho ro rang (anh huong thap)
 2025-11-14 - 4 - 01:46:54 UTC :: build: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — dieu chinh quyen truy cap theo vai tro (dong bo voi BE/FE)
 2025-11-14 - 5 - 01:46:57 UTC :: perf: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — cai thien hieu nang render/list (da review so bo)
+2025-11-15 - 1 - 01:42:38 UTC :: build: UC-29 Thanh toan nha hang: thu tien, in hoa don, dong giao dich. — refactor luong xu ly cho ro rang (dong bo voi BE/FE)
