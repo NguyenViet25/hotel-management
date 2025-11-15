@@ -116,3 +116,4 @@
 2025-11-15 - 1 - 01:42:38 UTC :: ci: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — kiem tra tuong thich mui gio/tien te (dam bao backward-compatible)
 2025-11-15 - 2 - 01:42:40 UTC :: chore: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — cap nhat cau hinh va kiem tra bien (can theo doi them)
 2025-11-15 - 3 - 01:42:43 UTC :: docs: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — them log chi tiet phuc vu audit (dong bo voi BE/FE)
+2025-11-15 - 4 - 01:42:45 UTC :: feat: UC-18 Room Move/Extend: doi phong, gia han dem o. — bo sung metrics/telemetry co ban (chuan bi cho tinh nang tiep theo)
