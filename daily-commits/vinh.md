@@ -109,3 +109,4 @@
 2025-11-14 - 4 - 01:46:55 UTC :: fix: UC-43 Mat khau: quy dinh do manh, het han phien. — dieu chinh UI & copy cho ro (da smoke test)
 2025-11-14 - 5 - 01:46:56 UTC :: test: UC-42 Phan quyen: thiet lap quyen theo co so. — them log chi tiet phuc vu audit (da kiem tra lint)
 2025-11-15 - 1 - 01:42:38 UTC :: perf: UC-42 Phan quyen: thiet lap quyen theo co so. — don dep code va xoa doan thua (dong bo voi BE/FE)
+2025-11-15 - 2 - 01:42:41 UTC :: docs: UC-31 Bao cao: len lich gui email/PDF hang ngay/tuan. — kiem tra tuong thich mui gio/tien te (da kiem tra lint)
