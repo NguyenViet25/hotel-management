@@ -111,3 +111,4 @@
 2025-11-15 - 1 - 01:42:38 UTC :: perf: UC-42 Phan quyen: thiet lap quyen theo co so. — don dep code va xoa doan thua (dong bo voi BE/FE)
 2025-11-15 - 2 - 01:42:41 UTC :: docs: UC-31 Bao cao: len lich gui email/PDF hang ngay/tuan. — kiem tra tuong thich mui gio/tien te (da kiem tra lint)
 2025-11-15 - 3 - 01:42:43 UTC :: feat: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — chuan hoa ten ham/bien theo convention (can theo doi them)
+2025-11-15 - 4 - 01:42:44 UTC :: test: UC-42 Phan quyen: thiet lap quyen theo co so. — sua validate va bo sung thong bao loi (dat tieu chi toi thieu)
