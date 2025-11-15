@@ -111,3 +111,4 @@
 2025-11-15 - 1 - 01:42:38 UTC :: build: UC-01 RBAC: tao, sua, khoa tai khoan; gan vai tro. — kiem tra tuong thich mui gio/tien te (chuan bi cho tinh nang tiep theo)
 2025-11-15 - 2 - 01:42:40 UTC :: chore: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — sua validate va bo sung thong bao loi (anh huong thap)
 2025-11-15 - 3 - 01:42:43 UTC :: feat: UC-43 Mat khau: quy dinh do manh, het han phien. — cai thien hieu nang render/list (can theo doi them)
+2025-11-15 - 4 - 01:42:45 UTC :: fix: UC-06 Co so: gan quan ly phu trach va quyen truy cap. — bo sung unit test muc co ban (da kiem tra lint)
