@@ -9,7 +9,7 @@ import React from "react";
 
 export interface Option {
   value: string | number;
-  label: string;
+  label: string | React.ReactNode;
 }
 
 interface CustomSelectProps {
@@ -38,9 +38,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         value={value}
         onChange={onChange}
         startAdornment={
-          startIcon && (
-            <InputAdornment position="start">{startIcon}</InputAdornment>
-          )
+          startIcon && <InputAdornment>{startIcon}</InputAdornment>
         }
         label={label}
       >

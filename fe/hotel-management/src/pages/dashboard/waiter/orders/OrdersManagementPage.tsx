@@ -1,27 +1,17 @@
-import React, { useEffect, useState } from "react";
-import {
-  Box,
-  Stack,
-  Typography,
-  Snackbar,
-  Alert,
-  TextField,
-  Button,
-  Tabs,
-  Tab,
-} from "@mui/material";
-import PageTitle from "../../../../components/common/PageTitle";
+import { Check, Close } from "@mui/icons-material";
+import { Alert, Box, Snackbar, Tab, Tabs } from "@mui/material";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import ordersApi, {
-  type OrderSummaryDto,
   type OrderDetailsDto,
   type OrderStatus,
+  type OrderSummaryDto,
 } from "../../../../api/ordersApi";
-import OrdersFilters from "./components/OrdersFilters";
+import ConfirmModal from "../../../../components/common/ConfirmModel";
+import PageTitle from "../../../../components/common/PageTitle";
+import { useStore, type StoreState } from "../../../../hooks/useStore";
+import OrderFormModal from "./components/OrderFormModal";
 import OrdersTable from "./components/OrdersTable";
-import WalkInOrderFormModal from "./components/WalkInOrderFormModal";
-import BookingOrderFormModal from "./components/BookingOrderFormModal";
-import EditOrderFormModal from "./components/EditOrderFormModal";
-import { People, Person, Person2, Person3 } from "@mui/icons-material";
+import { useSearchParams } from "react-router-dom";
 
 // Orders Management Page (UC-28, UC-29, UC-30)
 // - Lists orders with filters (status/search)
@@ -30,9 +20,12 @@ import { People, Person, Person2, Person3 } from "@mui/icons-material";
 // - Cancel order (set status to Cancelled)
 const OrdersManagementPage: React.FC = () => {
   // Filters
-  const [status, setStatus] = useState<OrderStatus | undefined>("Serving");
+  const [status, _] = useState<OrderStatus | undefined>("0");
   const [search, setSearch] = useState<string>("");
-  const [hotelId, setHotelId] = useState<string>("");
+  const { hotelId, user } = useStore<StoreState>((state) => state);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Set a query param
 
   // Table data
   const [orders, setOrders] = useState<OrderSummaryDto[]>([]);
@@ -40,17 +33,19 @@ const OrdersManagementPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
   const [total, setTotal] = useState(0);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  const walkInOrders = orders.filter((o) => o.isWalkIn);
+  const bookingOrders = orders.filter((o) => o.isWalkIn === false);
 
   // Modals
-  const [openWalkIn, setOpenWalkIn] = useState(false);
-  const [openBooking, setOpenBooking] = useState(false);
-  const [openEdit, setOpenEdit] = useState(false);
+  const [openOrder, setOpenOrder] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<OrderDetailsDto | null>(
     null
   );
   const [value, setValue] = React.useState(0);
 
-  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleChange = (_: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
   // Feedback
@@ -98,19 +93,21 @@ const OrdersManagementPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, search, hotelId]);
 
-  const openEditModal = async (summary: OrderSummaryDto) => {
-    try {
-      const res = await ordersApi.getById(summary.id);
-      if (res.isSuccess) {
-        setSelectedOrder(res.data);
-        setOpenEdit(true);
-      }
-    } catch {}
+  const openEditModal = async (summary: OrderDetailsDto) => {
+    setSelectedOrder(summary);
+    setOpenOrder(true);
   };
 
   const cancelOrder = async (summary: OrderSummaryDto) => {
     try {
-      await ordersApi.update(summary.id, { status: "Cancelled" });
+      await ordersApi.updateWalkIn(summary.id, {
+        status: 3 as any,
+        notes: `Hủy yêu cầu đặt món bởi ${user?.fullname || "hệ thống."}`,
+        customerName: summary.customerName,
+        customerPhone: summary.customerPhone,
+        hotelId: hotelId,
+        id: summary.id,
+      });
       setSnackbar({ open: true, severity: "success", message: "Đã hủy order" });
       fetchOrders(page);
     } catch {
@@ -121,6 +118,17 @@ const OrdersManagementPage: React.FC = () => {
       });
     }
   };
+
+  useEffect(() => {
+    setSearchParams({ tabValue: value.toString() });
+  }, [value]);
+
+  useLayoutEffect(() => {
+    const tabValue = searchParams.get("tabValue");
+    if (tabValue !== null) {
+      setValue(Number(tabValue));
+    }
+  }, []);
 
   return (
     <Box>
@@ -188,43 +196,45 @@ const OrdersManagementPage: React.FC = () => {
           />
         </Tabs>
       </Box>
-      {/* Table listing */}
+
       <OrdersTable
-        data={orders}
+        data={value === 1 ? bookingOrders : walkInOrders}
         loading={loading}
         page={page}
         pageSize={pageSize}
         total={total}
         onPageChange={(p) => fetchOrders(p)}
-        onAddWalkIn={() => setOpenWalkIn(true)}
-        onAddBooking={() => setOpenBooking(true)}
-        onEdit={(o) => openEditModal(o)}
-        onCancel={(o) => cancelOrder(o)}
+        onAddOrder={() => setOpenOrder(true)}
+        onEdit={(o) => openEditModal(o as any)}
+        onCancel={(o) => {
+          setSelectedOrder(o as any);
+          setConfirmOpen(true);
+        }}
         onSearch={(e) => setSearch(e)}
       />
 
-      {/* Create walk-in */}
-      <WalkInOrderFormModal
-        open={openWalkIn}
-        onClose={() => setOpenWalkIn(false)}
+      <OrderFormModal
+        open={openOrder}
+        onClose={() => setOpenOrder(false)}
         hotelId={hotelId}
         onSubmitted={() => fetchOrders(page)}
+        initialValues={selectedOrder}
+        isWalkIn={value === 0}
       />
 
-      {/* Create booking */}
-      <BookingOrderFormModal
-        open={openBooking}
-        onClose={() => setOpenBooking(false)}
-        hotelId={hotelId}
-        onSubmitted={() => fetchOrders(page)}
-      />
-
-      {/* Edit order */}
-      <EditOrderFormModal
-        open={openEdit}
-        onClose={() => setOpenEdit(false)}
-        order={selectedOrder}
-        onSubmitted={() => fetchOrders(page)}
+      <ConfirmModal
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={() => {
+          if (selectedOrder) {
+            cancelOrder(selectedOrder);
+          }
+          setConfirmOpen(false);
+        }}
+        title="Xác nhận hủy order"
+        message={`Bạn có chắc chắn muốn hủy order được chọn không?`}
+        confirmIcon={<Check />}
+        cancelIcon={<Close />}
       />
 
       <Snackbar

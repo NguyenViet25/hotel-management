@@ -1,14 +1,15 @@
-using HotelManagement.Services.Auth;
-using HotelManagement.Services.Admin.Users;
-using HotelManagement.Services.Admin.Hotels;
 using HotelManagement.Services.Admin.Audit;
-using HotelManagement.Services.Admin.RoomTypes;
-using HotelManagement.Services.Admin.Rooms;
-using HotelManagement.Services.Admin.Menu;
+using HotelManagement.Services.Admin.Bookings;
+using HotelManagement.Services.Admin.Hotels;
 using HotelManagement.Services.Admin.Kitchen;
+using HotelManagement.Services.Admin.Menu;
+using HotelManagement.Services.Admin.Orders;
+using HotelManagement.Services.Admin.Rooms;
+using HotelManagement.Services.Admin.RoomTypes;
+using HotelManagement.Services.Admin.Users;
+using HotelManagement.Services.Auth;
 using HotelManagement.Services.Profile;
 using Microsoft.Extensions.DependencyInjection;
-using HotelManagement.Services.Admin.Bookings;
 
 namespace HotelManagement.Services;
 
@@ -26,7 +27,8 @@ public static class DependencyInjection
             services.AddScoped<IMenuService, MenuService>();
             services.AddScoped<IKitchenService, KitchenService>();
             services.AddScoped<IProfileService, ProfileService>();
-            services.AddScoped<IBookingsService,BookingsService>();
+            services.AddScoped<IBookingsService, BookingsService>();
+            services.AddScoped<IOrdersService, OrdersService>();
         return services;
     }
 }

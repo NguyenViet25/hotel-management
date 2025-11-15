@@ -9,7 +9,7 @@ public class Order
     public string? CustomerName { get; set; }
     public string? CustomerPhone { get; set; }
     public bool IsWalkIn { get; set; }
-    public OrderStatus Status { get; set; } = OrderStatus.Draft;
+    public OrderStatus Status { get; set; } = OrderStatus.InProgress;
     public string? Notes { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

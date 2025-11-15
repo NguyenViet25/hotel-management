@@ -39,8 +39,8 @@ public class OrdersService : IOrdersService
             if (query.HotelId.HasValue)
                 q = q.Where(o => o.HotelId == query.HotelId.Value);
 
-            if (query.Status.HasValue)
-                q = q.Where(o => o.Status == query.Status.Value);
+            //if (query.Status.HasValue)
+            //    q = q.Where(o => o.Status == query.Status.Value);
 
             if (query.BookingId.HasValue)
                 q = q.Where(o => o.BookingId == query.BookingId.Value);
@@ -60,26 +60,72 @@ public class OrdersService : IOrdersService
                 .Take(query.PageSize)
                 .ToListAsync();
 
-            var dtos = items.Select(o => new OrderSummaryDto
+
+
+            var dtos = new List<OrderSummaryDto>();
+
+            foreach (var o in items)
             {
-                Id = o.Id,
-                HotelId = o.HotelId,
-                BookingId = o.BookingId,
-                IsWalkIn = o.IsWalkIn,
-                CustomerName = o.CustomerName,
-                CustomerPhone = o.CustomerPhone,
-                Status = o.Status,
-                Notes = o.Notes,
-                CreatedAt = o.CreatedAt,
-                ItemsCount = o.Items.Count,
-                ItemsTotal = o.Items.Where(i => i.Status != OrderItemStatus.Voided).Sum(i => i.UnitPrice * i.Quantity)
-            }).ToList();
+                var dto = new OrderSummaryDto
+                {
+                    Id = o.Id,
+                    HotelId = o.HotelId,
+                    BookingId = o.BookingId,
+                    IsWalkIn = o.IsWalkIn,
+                    CustomerName = o.CustomerName,
+                    CustomerPhone = o.CustomerPhone,
+                    Status = o.Status,
+                    Notes = o.Notes,
+                    CreatedAt = o.CreatedAt,
+                    ItemsCount = o.Items.Count,
+                    ItemsTotal = o.Items
+                        .Where(i => i.Status != OrderItemStatus.Voided)
+                        .Sum(i => i.UnitPrice * i.Quantity),
+                    Items = await GetOrderItemsAsync(o.Id)
+                };
+
+                dtos.Add(dto);
+            }
 
             return ApiResponse<List<OrderSummaryDto>>.Ok(dtos);
         }
         catch (Exception ex)
         {
             return ApiResponse<List<OrderSummaryDto>>.Fail($"Error listing orders: {ex.Message}");
+        }
+    }
+
+    private async Task<List<OrderItemDto>> GetOrderItemsAsync(Guid id)
+    {
+        try
+        {
+            var o = await _orderRepository.Query()
+                .Include(o => o.Items)
+                .FirstOrDefaultAsync(o => o.Id == id);
+            if (o == null) return [];
+
+            var itemIds = o.Items.Select(i => i.MenuItemId).ToList();
+            var menuNames = await _menuItemRepository.Query()
+                .Where(mi => itemIds.Contains(mi.Id))
+                .Select(mi => new { mi.Id, mi.Name })
+                .ToListAsync();
+            var nameMap = menuNames.ToDictionary(x => x.Id, x => x.Name);
+
+            var items = o.Items.Select(i => new OrderItemDto
+            {
+                Id = i.Id,
+                MenuItemId = i.MenuItemId,
+                MenuItemName = nameMap.TryGetValue(i.MenuItemId, out var n) ? n : string.Empty,
+                Quantity = i.Quantity,
+                UnitPrice = i.UnitPrice,
+                Status = i.Status
+            }).ToList();
+
+            return items;
+        }
+        catch (Exception)
+        {
+            return [];
         }
     }
 
@@ -145,8 +191,9 @@ public class OrdersService : IOrdersService
                 IsWalkIn = true,
                 CustomerName = dto.CustomerName,
                 CustomerPhone = dto.CustomerPhone,
-                Status = OrderStatus.Draft,
-                CreatedAt = DateTime.UtcNow
+                Status = OrderStatus.InProgress,
+                CreatedAt = DateTime.UtcNow,
+                Notes = dto.Notes,
             };
             await _orderRepository.AddAsync(order);
 
@@ -183,7 +230,11 @@ public class OrdersService : IOrdersService
     {
         try
         {
-            var booking = await _bookingRepository.Query().FirstOrDefaultAsync(b => b.Id == dto.BookingId && b.HotelIdKey == dto.HotelId);
+            var booking = await _bookingRepository
+                .Query()
+                .Include(x => x.PrimaryGuest)
+                .Where(b => b.Id == dto.BookingId && b.HotelIdKey == dto.HotelId)
+                .FirstOrDefaultAsync();
             if (booking == null) return ApiResponse<OrderDetailsDto>.Fail("Booking not found in hotel");
 
             var order = new Order
@@ -191,9 +242,11 @@ public class OrdersService : IOrdersService
                 Id = Guid.NewGuid(),
                 HotelId = dto.HotelId,
                 BookingId = dto.BookingId,
+                CustomerName = booking.PrimaryGuest?.FullName,
+                CustomerPhone = booking.PrimaryGuest?.Phone,
                 IsWalkIn = false,
                 Notes = dto.Notes,
-                Status = OrderStatus.Draft,
+                Status = OrderStatus.InProgress,
                 CreatedAt = DateTime.UtcNow
             };
             await _orderRepository.AddAsync(order);
@@ -227,29 +280,6 @@ public class OrdersService : IOrdersService
         }
     }
 
-    public async Task<ApiResponse<OrderDetailsDto>> UpdateAsync(Guid id, UpdateOrderDto dto)
-    {
-        try
-        {
-            var order = await _orderRepository.FindAsync(id);
-            if (order == null) return ApiResponse<OrderDetailsDto>.Fail("Order not found");
-
-            if (dto.Notes != null) order.Notes = dto.Notes;
-
-            if (dto.Status.HasValue)
-            {
-                order.Status = dto.Status.Value;
-            }
-
-            await _orderRepository.UpdateAsync(order);
-            await _orderRepository.SaveChangesAsync();
-            return await GetByIdAsync(order.Id);
-        }
-        catch (Exception ex)
-        {
-            return ApiResponse<OrderDetailsDto>.Fail($"Error updating order: {ex.Message}");
-        }
-    }
 
     public async Task<ApiResponse<OrderDetailsDto>> AddItemAsync(Guid orderId, AddOrderItemDto dto)
     {
@@ -329,5 +359,111 @@ public class OrdersService : IOrdersService
         }
     }
 
-   
+    public async Task<ApiResponse<OrderDetailsDto>> UpdateWalkInAsync(Guid id, UpdateWalkInOrderDto dto)
+    {
+        try
+        {
+            var order = await _orderRepository.FindAsync(id);
+            if (order == null) return ApiResponse<OrderDetailsDto>.Fail("Order not found");
+
+            order.Notes = dto.Notes;
+            order.CustomerPhone = dto.CustomerPhone;
+            order.CustomerName = dto.CustomerName;
+            if (dto.Status.HasValue)
+            {
+                order.Status = dto.Status.Value;
+            }
+
+            var oldItems = await _orderItemRepository.Query().Where(x => x.OrderId == dto.Id).ToListAsync();
+            await _orderItemRepository.RemoveRangeAsync(oldItems);
+            await _orderItemRepository.SaveChangesAsync();
+
+            if (dto.Items != null && dto.Items.Any())
+            {
+                foreach (var item in dto.Items)
+                {
+                    var menu = await _menuItemRepository.Query().FirstOrDefaultAsync(mi => mi.Id == item.MenuItemId && mi.HotelId == dto.HotelId && mi.IsActive);
+                    if (menu == null) return ApiResponse<OrderDetailsDto>.Fail("Menu item not found or inactive");
+
+                    await _orderItemRepository.AddAsync(new OrderItem
+                    {
+                        Id = Guid.NewGuid(),
+                        OrderId = order.Id,
+                        MenuItemId = item.MenuItemId,
+                        Quantity = item.Quantity,
+                        UnitPrice = menu.UnitPrice,
+                        Status = OrderItemStatus.Pending
+                    });
+                }
+            }
+
+
+            await _orderRepository.UpdateAsync(order);
+            await _orderRepository.SaveChangesAsync();
+            return await GetByIdAsync(order.Id);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<OrderDetailsDto>.Fail($"Error updating order: {ex.Message}");
+        }
+    }
+
+    public async Task<ApiResponse<OrderDetailsDto>> UpdateForBookingAsync(Guid id, UpdateOrderForBookingDto dto)
+    {
+        try
+        {
+            var order = await _orderRepository.FindAsync(id);
+            if (order == null) return ApiResponse<OrderDetailsDto>.Fail("Order not found");
+
+            order.Notes = dto.Notes;
+            order.BookingId = dto.BookingId;
+
+            if (dto.Status.HasValue)
+            {
+                order.Status = dto.Status.Value;
+            }
+
+
+            var booking = await _bookingRepository
+                .Query()
+                .Include(x => x.PrimaryGuest)
+                .Where(b => b.Id == dto.BookingId && b.HotelIdKey == dto.HotelId)
+                .FirstOrDefaultAsync();
+            if (booking == null) return ApiResponse<OrderDetailsDto>.Fail("Booking not found in hotel");
+
+            order.CustomerPhone = booking.PrimaryGuest?.Phone;
+            order.CustomerName = booking.PrimaryGuest?.FullName;
+
+            var oldItems = await _orderItemRepository.Query().Where(x => x.OrderId == dto.Id).ToListAsync();
+            await _orderItemRepository.RemoveRangeAsync(oldItems);
+            await _orderItemRepository.SaveChangesAsync();
+
+            if (dto.Items != null && dto.Items.Any())
+            {
+                foreach (var item in dto.Items)
+                {
+                    var menu = await _menuItemRepository.Query().FirstOrDefaultAsync(mi => mi.Id == item.MenuItemId && mi.HotelId == dto.HotelId && mi.IsActive);
+                    if (menu == null) return ApiResponse<OrderDetailsDto>.Fail("Menu item not found or inactive");
+
+                    await _orderItemRepository.AddAsync(new OrderItem
+                    {
+                        Id = Guid.NewGuid(),
+                        OrderId = order.Id,
+                        MenuItemId = item.MenuItemId,
+                        Quantity = item.Quantity,
+                        UnitPrice = menu.UnitPrice,
+                        Status = OrderItemStatus.Pending
+                    });
+                }
+            }
+
+            await _orderRepository.UpdateAsync(order);
+            await _orderRepository.SaveChangesAsync();
+            return await GetByIdAsync(order.Id);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<OrderDetailsDto>.Fail($"Error updating order: {ex.Message}");
+        }
+    }
 }

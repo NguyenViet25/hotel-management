@@ -29,7 +29,7 @@ const CancelBookingModal: React.FC<Props> = ({
           <strong>xử lý tiền cọc</strong> nếu có.
         </>
       }
-      icon={<ErrorOutlineIcon color="error" />}
+      confirmIcon={<ErrorOutlineIcon color="error" />}
       confirmColor="error"
       confirmText="Xác nhận hủy"
       onConfirm={async () => {

@@ -449,6 +449,106 @@ public class BookingsService : IBookingsService
         }
     }
 
+    public async Task<ApiResponse<List<BookingDetailsDto>>> ListActiveAsync(BookingsByHotelQueryDto query)
+    {
+        try
+        {
+            var q = _bookingRepo.Query()
+                .Include(x => x.PrimaryGuest)
+                .Include(b => b.BookingRoomTypes)
+                .ThenInclude(rt => rt.BookingRooms)
+                .Where(x => true)
+                .Where(x => x.Status != BookingStatus.Pending && x.Status != BookingStatus.Cancelled);
+
+            if (query.HotelId.HasValue)
+                q = q.Where(b => b.HotelIdKey == query.HotelId.Value);
+
+            q = q.OrderByDescending(b => b.CreatedAt);
+
+            var items = await q.ToListAsync();
+
+            // Preload guests
+            var primaryGuestIds = items.Select(b => b.PrimaryGuestId).Where(id => id.HasValue).Select(id => id!.Value).Distinct().ToList();
+            var guestMap = await _guestRepo.Query()
+                .Where(g => primaryGuestIds.Contains(g.Id))
+                .ToDictionaryAsync(g => g.Id, g => g.FullName);
+
+            var dtos = items.Select(b => new BookingDetailsDto
+            {
+                Id = b.Id,
+                HotelId = b.HotelIdKey,
+                PrimaryGuestId = b.PrimaryGuestId,
+                PrimaryGuestName = b.PrimaryGuest?.FullName,
+                PhoneNumber = b.PrimaryGuest?.Phone,
+                Email = b.PrimaryGuest?.Email,
+                Status = b.Status,
+                DepositAmount = b.DepositAmount,
+                DiscountAmount = b.DiscountAmount,
+                TotalAmount = b.TotalAmount,
+                LeftAmount = b.LeftAmount,
+                CreatedAt = b.CreatedAt,
+                Notes = b.Notes,
+                BookingRoomTypes = b.BookingRoomTypes.Select(rt => new BookingRoomTypeDto
+                {
+                    BookingRoomTypeId = rt.BookingRoomTypeId,
+                    RoomTypeId = rt.RoomTypeId,
+                    RoomTypeName = rt.RoomTypeName,
+                    Capacity = rt.Capacity,
+                    Price = rt.Price,
+                    TotalRoom = rt.TotalRoom,
+                    BookingRooms = rt.BookingRooms.Select(r => new BookingRoomDto
+                    {
+                        BookingRoomId = r.BookingRoomId,
+                        RoomId = r.RoomId,
+                        RoomName = r.RoomName,
+                        StartDate = r.StartDate,
+                        EndDate = r.EndDate,
+                        BookingStatus = r.BookingStatus,
+                        Guests = new List<BookingGuestDto>()
+                    }).ToList()
+                }).ToList(),
+                CallLogs = new List<CallLogDto>()
+            }).ToList();
+
+            var list = new List<BookingDetailsDto>();
+
+            foreach (var item in dtos)
+            {
+                var roomTypes = await _bookingRoomTypeRepo.Query()
+                    .Include(x => x.RoomType).Where(x => x.BookingIdKey == item.Id).ToListAsync();
+
+                item.BookingRoomTypes = roomTypes.Select(rt => new BookingRoomTypeDto
+                {
+                    BookingRoomTypeId = rt.BookingRoomTypeId,
+                    RoomTypeId = rt.RoomTypeId,
+                    RoomTypeName = rt.RoomTypeName,
+                    Capacity = rt.Capacity,
+                    Price = rt.Price,
+                    TotalRoom = rt.TotalRoom,
+                    BookingRooms = rt.BookingRooms.Select(r => new BookingRoomDto
+                    {
+                        BookingRoomId = r.BookingRoomId,
+                        RoomId = r.RoomId,
+                        RoomName = r.RoomName,
+                        StartDate = r.StartDate,
+                        EndDate = r.EndDate,
+                        BookingStatus = r.BookingStatus,
+                        Guests = new List<BookingGuestDto>()
+                    }).ToList()
+                }).ToList();
+
+                list.Add(item);
+            }
+
+
+            return ApiResponse<List<BookingDetailsDto>>.Ok(list);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<List<BookingDetailsDto>>.Fail($"Error listing bookings: {ex.Message}");
+        }
+    }
+
     public async Task<ApiResponse<BookingDetailsDto>> UpdateAsync(Guid id, UpdateBookingDto dto)
     {
         try

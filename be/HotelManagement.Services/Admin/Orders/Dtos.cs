@@ -31,6 +31,7 @@ public class CreateWalkInOrderDto
     public string CustomerName { get; set; } = string.Empty;
     [StringLength(20)]
     public string? CustomerPhone { get; set; }
+    public string? Notes { get; set; }
     public List<OrderItemInputDto>? Items { get; set; }
 }
 
@@ -44,9 +45,14 @@ public class CreateBookingOrderDto
     public List<OrderItemInputDto>? Items { get; set; }
 }
 
-public class UpdateOrderDto
+public class UpdateOrderForBookingDto : CreateBookingOrderDto
 {
-    public string? Notes { get; set; }
+    public Guid Id { get; set; }
+    public OrderStatus? Status { get; set; }
+}
+public class UpdateWalkInOrderDto : CreateWalkInOrderDto
+{
+    public Guid Id { get; set; }
     public OrderStatus? Status { get; set; }
 }
 
@@ -84,6 +90,8 @@ public class OrderItemDto
     public OrderItemStatus Status { get; set; }
 }
 
+
+
 public class OrderSummaryDto
 {
     public Guid Id { get; set; }
@@ -97,6 +105,7 @@ public class OrderSummaryDto
     public DateTime CreatedAt { get; set; }
     public int ItemsCount { get; set; }
     public decimal ItemsTotal { get; set; }
+    public List<OrderItemDto> Items { get; set; } = new();
 }
 
 public class OrderDetailsDto : OrderSummaryDto

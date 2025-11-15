@@ -70,9 +70,9 @@ public class CreateBookingDto
     public string? Notes { get; set; }
 }
 
-public class UpdateBookingDto: CreateBookingDto
+public class UpdateBookingDto : CreateBookingDto
 {
-  
+
 }
 
 public class AddCallLogDto
@@ -168,6 +168,12 @@ public class RoomMapQueryDto
     [Required]
     public DateTime Date { get; set; }
     public Guid? HotelId { get; set; }
+}
+
+public class BookingsByHotelQueryDto
+{
+    public Guid? HotelId { get; set; }
+
 }
 
 public class BookingsQueryDto

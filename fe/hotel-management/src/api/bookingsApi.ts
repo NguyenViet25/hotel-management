@@ -201,6 +201,10 @@ export interface BookingsQueryDto {
   sortDir?: "asc" | "desc";
 }
 
+export interface BookingsByHotelQueryDto {
+  hotelId?: string;
+}
+
 export interface ApiResponse<T> {
   isSuccess: boolean;
   message?: string | null;
@@ -255,7 +259,15 @@ const bookingsApi = {
     const res = await axios.get(`/admin/bookings?${qp.toString()}`);
     return res.data;
   },
+  async listActive(
+    query: BookingsByHotelQueryDto = {}
+  ): Promise<ApiResponse<BookingDetailsDto[]>> {
+    const qp = new URLSearchParams();
+    if (query.hotelId) qp.append("hotelId", query.hotelId);
 
+    const res = await axios.get(`/admin/bookings/active?${qp.toString()}`);
+    return res.data;
+  },
   // Fetch all bookings in one call by using a large page size.
   async getAll(
     query: Partial<BookingsQueryDto> = {}

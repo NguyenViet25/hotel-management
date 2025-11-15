@@ -2,7 +2,7 @@ import axios from "./axios";
 
 // Orders API client aligned with OrdersAPI.md
 
-export type OrderStatus = "Draft" | "Serving" | "Paid" | "Cancelled";
+export type OrderStatus = "0" | "1" | "2" | "3"; // Draft, Serving, Paid, Cancelled
 export type OrderItemStatus = "Pending" | "Prepared" | "Served" | "Voided";
 
 export interface OrderItemInputDto {
@@ -10,18 +10,15 @@ export interface OrderItemInputDto {
   quantity: number; // 1..1000
 }
 
-export interface CreateWalkInOrderDto {
-  hotelId: string;
-  customerName: string;
+export interface CreateOrderDto {
+  bookingId?: string | null;
+  hotelId?: string | null;
+  customerName?: string;
   customerPhone?: string;
-  items?: OrderItemInputDto[];
-}
-
-export interface CreateBookingOrderDto {
-  hotelId: string;
-  bookingId: string;
   notes?: string;
   items?: OrderItemInputDto[];
+  status?: number;
+  isWalkIn?: boolean;
 }
 
 export interface OrdersQueryParams {
@@ -34,8 +31,8 @@ export interface OrdersQueryParams {
   pageSize?: number;
 }
 
-export interface UpdateOrderDto {
-  notes?: string;
+export interface UpdateOrderDto extends CreateOrderDto {
+  id: string;
   status?: OrderStatus;
 }
 
@@ -62,12 +59,12 @@ export interface OrderItemDto {
 export interface OrderSummaryDto {
   id: string;
   hotelId: string;
-  bookingId?: string | null;
+  bookingId?: string;
   isWalkIn: boolean;
-  customerName?: string | null;
-  customerPhone?: string | null;
+  customerName?: string;
+  customerPhone?: string;
   status: OrderStatus;
-  notes?: string | null;
+  notes?: string;
   createdAt: string; // ISO
   itemsCount: number;
   itemsTotal: number;
@@ -79,28 +76,31 @@ export interface OrderDetailsDto extends OrderSummaryDto {
 
 export interface ListResponse<T> {
   isSuccess: boolean;
-  message: string | null;
+  message: string;
   data: T[];
   meta?: {
     total?: number;
     page?: number;
     pageSize?: number;
-  } | null;
+  };
 }
 
 export interface ItemResponse<T> {
   isSuccess: boolean;
-  message: string | null;
+  message: string;
   data: T;
 }
 
 const ordersApi = {
-  async listOrders(params: OrdersQueryParams = {}): Promise<ListResponse<OrderSummaryDto>> {
+  async listOrders(
+    params: OrdersQueryParams = {}
+  ): Promise<ListResponse<OrderSummaryDto>> {
     const qp = new URLSearchParams();
     if (params.hotelId) qp.append("hotelId", params.hotelId);
     if (params.status) qp.append("status", params.status);
     if (params.bookingId) qp.append("bookingId", params.bookingId);
-    if (params.isWalkIn !== undefined) qp.append("isWalkIn", String(params.isWalkIn));
+    if (params.isWalkIn !== undefined)
+      qp.append("isWalkIn", String(params.isWalkIn));
     if (params.search) qp.append("search", params.search);
     qp.append("page", String(params.page ?? 1));
     qp.append("pageSize", String(params.pageSize ?? 10));
@@ -113,38 +113,72 @@ const ordersApi = {
     return res.data;
   },
 
-  async createWalkIn(payload: CreateWalkInOrderDto): Promise<ItemResponse<OrderDetailsDto>> {
+  async createWalkIn(
+    payload: CreateOrderDto
+  ): Promise<ItemResponse<OrderDetailsDto>> {
     const res = await axios.post(`/admin/orders/walk-in`, payload);
     return res.data;
   },
 
-  async createForBooking(payload: CreateBookingOrderDto): Promise<ItemResponse<OrderDetailsDto>> {
+  async createForBooking(
+    payload: CreateOrderDto
+  ): Promise<ItemResponse<OrderDetailsDto>> {
     const res = await axios.post(`/admin/orders/booking`, payload);
     return res.data;
   },
 
-  async update(id: string, payload: UpdateOrderDto): Promise<ItemResponse<OrderDetailsDto>> {
-    const res = await axios.put(`/admin/orders/${id}`, payload);
+  async updateWalkIn(
+    id: string,
+    payload: UpdateOrderDto
+  ): Promise<ItemResponse<OrderDetailsDto>> {
+    const res = await axios.put(`/admin/orders/walk-in/${id}`, payload);
     return res.data;
   },
 
-  async addItem(orderId: string, payload: AddOrderItemDto): Promise<ItemResponse<OrderDetailsDto>> {
+  async updateForBooking(
+    id: string,
+    payload: UpdateOrderDto
+  ): Promise<ItemResponse<OrderDetailsDto>> {
+    const res = await axios.put(`/admin/orders/booking/${id}`, payload);
+    return res.data;
+  },
+
+  async addItem(
+    orderId: string,
+    payload: AddOrderItemDto
+  ): Promise<ItemResponse<OrderDetailsDto>> {
     const res = await axios.post(`/admin/orders/${orderId}/items`, payload);
     return res.data;
   },
 
-  async updateItem(orderId: string, itemId: string, payload: UpdateOrderItemDto): Promise<ItemResponse<OrderDetailsDto>> {
-    const res = await axios.put(`/admin/orders/${orderId}/items/${itemId}`, payload);
+  async updateItem(
+    orderId: string,
+    itemId: string,
+    payload: UpdateOrderItemDto
+  ): Promise<ItemResponse<OrderDetailsDto>> {
+    const res = await axios.put(
+      `/admin/orders/${orderId}/items/${itemId}`,
+      payload
+    );
     return res.data;
   },
 
-  async removeItem(orderId: string, itemId: string): Promise<ItemResponse<OrderDetailsDto>> {
+  async removeItem(
+    orderId: string,
+    itemId: string
+  ): Promise<ItemResponse<OrderDetailsDto>> {
     const res = await axios.delete(`/admin/orders/${orderId}/items/${itemId}`);
     return res.data;
   },
 
-  async applyDiscount(orderId: string, payload: ApplyDiscountDto): Promise<ItemResponse<number>> {
-    const res = await axios.post(`/admin/orders/${orderId}/apply-discount`, payload);
+  async applyDiscount(
+    orderId: string,
+    payload: ApplyDiscountDto
+  ): Promise<ItemResponse<number>> {
+    const res = await axios.post(
+      `/admin/orders/${orderId}/apply-discount`,
+      payload
+    );
     return res.data;
   },
 };

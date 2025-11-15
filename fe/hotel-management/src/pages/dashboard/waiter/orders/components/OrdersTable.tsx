@@ -12,8 +12,7 @@ interface OrdersTableProps {
   pageSize: number;
   total: number;
   onPageChange: (page: number) => void;
-  onAddWalkIn?: () => void;
-  onAddBooking?: () => void;
+  onAddOrder?: () => void;
   onEdit?: (record: OrderSummaryDto) => void;
   onCancel?: (record: OrderSummaryDto) => void;
   onSearch?: (search: string) => void;
@@ -31,8 +30,7 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
   pageSize,
   total,
   onPageChange,
-  onAddWalkIn,
-  onAddBooking,
+  onAddOrder,
   onEdit,
   onSearch,
   onCancel,
@@ -47,10 +45,10 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
     {
       id: "isWalkIn",
       label: "Loại khách",
-      format: (v, row: OrderSummaryDto) => (
+      format: (row: string) => (
         <Chip
-          label={row.isWalkIn ? "Walk-in" : "Booking"}
-          color={row.isWalkIn ? "default" : "primary"}
+          label={row ? "Vãng lai" : "Đặt phòng"}
+          color={row ? "default" : "primary"}
           size="small"
         />
       ),
@@ -59,24 +57,36 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
     {
       id: "customerName",
       label: "Khách hàng",
-      format: (v, row: OrderSummaryDto) => (
-        <span>{row.customerName ?? "—"}</span>
-      ),
-      minWidth: 160,
+      format: (row: string) => <span>{row ?? "—"}</span>,
+      minWidth: 140,
+    },
+    {
+      id: "customerPhone",
+      label: "Số điện thoại",
+      format: (row: string) => <span>{row ?? "—"}</span>,
+      minWidth: 140,
     },
     {
       id: "status",
       label: "Trạng thái",
-      format: (v: string) => {
+      format: (v: number) => {
         const color =
-          v === "Serving"
+          v === 0
             ? "warning"
-            : v === "Paid"
+            : v === 1
+            ? "primary"
+            : v === 2
             ? "success"
-            : v === "Draft"
-            ? "default"
             : "error";
-        return <Chip label={v} color={color as any} size="small" />;
+        const label =
+          v === 0
+            ? "Đã tạo"
+            : v === 1
+            ? "Đang xử lý"
+            : v === 2
+            ? "Hoành thành"
+            : "Hủy";
+        return <Chip label={label} color={color as any} size="small" />;
       },
       minWidth: 140,
     },
@@ -90,6 +100,12 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
       label: "Tổng tiền",
       format: (v: number) => formatCurrency(v),
       minWidth: 140,
+    },
+    {
+      id: "notes",
+      label: "Ghi chú",
+      format: (v: string) => (v ? v : "—"),
+      minWidth: 180,
     },
     {
       id: "createdAt",
@@ -111,7 +127,7 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
         total,
         onPageChange,
       }}
-      onAdd={onAddWalkIn}
+      onAdd={onAddOrder}
       onEdit={onEdit}
       onDelete={onCancel}
       getRowId={(row) => row.id}
