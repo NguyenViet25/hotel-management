@@ -113,3 +113,4 @@
 2025-11-14 - 3 - 01:46:54 UTC :: fix: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — bo sung unit test muc co ban (dam bao backward-compatible)
 2025-11-14 - 4 - 01:46:56 UTC :: chore: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — toi uu truy van va bo nho (dam bao backward-compatible)
 2025-11-14 - 5 - 01:46:59 UTC :: build: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — refactor luong xu ly cho ro rang (khong doi hanh vi)
+2025-11-15 - 1 - 01:42:38 UTC :: ci: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — kiem tra tuong thich mui gio/tien te (dam bao backward-compatible)
