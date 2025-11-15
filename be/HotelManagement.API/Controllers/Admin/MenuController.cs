@@ -7,7 +7,7 @@ namespace HotelManagement.Api.Controllers.Admin;
 
 [ApiController]
 [Route("api/admin/menu")]
-[Authorize(Roles = "Admin,Manager,Staff")]
+[Authorize]
 public class MenuController : ControllerBase
 {
     private readonly IMenuService _menuService;

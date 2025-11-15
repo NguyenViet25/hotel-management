@@ -11,9 +11,9 @@ namespace HotelManagement.Api.Controllers.Admin;
 [Authorize]
 public class OrdersController : ControllerBase
 {
-    private readonly OrdersService _ordersService;
+    private readonly IOrdersService _ordersService;
 
-    public OrdersController(OrdersService ordersService)
+    public OrdersController(IOrdersService ordersService)
     {
         _ordersService = ordersService;
     }
@@ -43,6 +43,14 @@ public class OrdersController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPut("walk-in/{id}")]
+    public async Task<ActionResult<ApiResponse<OrderDetailsDto>>> UpdateWalkIn(Guid id, [FromBody] UpdateWalkInOrderDto dto)
+    {
+        var result = await _ordersService.UpdateWalkInAsync(id, dto);
+        if (!result.IsSuccess) return BadRequest(result);
+        return Ok(result);
+    }
+
     // UC-29: Create order for existing booking
     [HttpPost("booking")]
     public async Task<ActionResult<ApiResponse<OrderDetailsDto>>> CreateForBooking([FromBody] CreateBookingOrderDto dto)
@@ -53,38 +61,12 @@ public class OrdersController : ControllerBase
     }
 
     // Update order notes/status
-    [HttpPut("{id}")]
-    public async Task<ActionResult<ApiResponse<OrderDetailsDto>>> Update(Guid id, [FromBody] UpdateOrderDto dto)
+    [HttpPut("booking/{id}")]
+    public async Task<ActionResult<ApiResponse<OrderDetailsDto>>> Update(Guid id, [FromBody] UpdateOrderForBookingDto dto)
     {
-        var result = await _ordersService.UpdateAsync(id, dto);
+        var result = await _ordersService.UpdateForBookingAsync(id, dto);
         if (!result.IsSuccess) return BadRequest(result);
         return Ok(result);
     }
 
-    // Manage items
-    [HttpPost("{orderId}/items")]
-    public async Task<ActionResult<ApiResponse<OrderDetailsDto>>> AddItem(Guid orderId, [FromBody] AddOrderItemDto dto)
-    {
-        var result = await _ordersService.AddItemAsync(orderId, dto);
-        if (!result.IsSuccess) return BadRequest(result);
-        return Ok(result);
-    }
-
-    [HttpPut("{orderId}/items/{itemId}")]
-    public async Task<ActionResult<ApiResponse<OrderDetailsDto>>> UpdateItem(Guid orderId, Guid itemId, [FromBody] UpdateOrderItemDto dto)
-    {
-        var result = await _ordersService.UpdateItemAsync(orderId, itemId, dto);
-        if (!result.IsSuccess) return BadRequest(result);
-        return Ok(result);
-    }
-
-    [HttpDelete("{orderId}/items/{itemId}")]
-    public async Task<ActionResult<ApiResponse<OrderDetailsDto>>> RemoveItem(Guid orderId, Guid itemId)
-    {
-        var result = await _ordersService.RemoveItemAsync(orderId, itemId);
-        if (!result.IsSuccess) return BadRequest(result);
-        return Ok(result);
-    }
-
-   
 }

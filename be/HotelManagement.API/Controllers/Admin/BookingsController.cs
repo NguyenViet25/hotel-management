@@ -35,7 +35,14 @@ public class BookingsController : ControllerBase
         return Ok(result);
     }
 
- 
+    [HttpGet("active")]
+    public async Task<ActionResult<ApiResponse<List<BookingDetailsDto>>>> ListActiveBooking([FromQuery] BookingsQueryDto query)
+    {
+        var result = await _bookingsService.ListAsync(query);
+        if (!result.IsSuccess) return BadRequest(result);
+         
+        return Ok(result);
+    }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<ApiResponse<BookingDetailsDto>>> Get(Guid id)
