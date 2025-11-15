@@ -110,3 +110,4 @@
 2025-11-14 - 5 - 01:46:57 UTC :: perf: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — cai thien hieu nang render/list (da review so bo)
 2025-11-15 - 1 - 01:42:38 UTC :: build: UC-29 Thanh toan nha hang: thu tien, in hoa don, dong giao dich. — refactor luong xu ly cho ro rang (dong bo voi BE/FE)
 2025-11-15 - 2 - 01:42:39 UTC :: perf: UC-38 Audit Log: xem/loc thao tac, hanh dong, thoi gian. — bo sung index & toi uu DB (anh huong thap)
+2025-11-15 - 3 - 01:42:41 UTC :: refactor: UC-10 Goi gia: tao rate plan, thoi gian ap dung linh hoat. — bo sung case canh bien & no-show (can theo doi them)
