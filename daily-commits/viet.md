@@ -108,3 +108,4 @@
 2025-11-14 - 3 - 01:46:50 UTC :: feat: UC-31 Bao cao: len lich gui email/PDF hang ngay/tuan. — bo sung metrics/telemetry co ban (dat tieu chi toi thieu)
 2025-11-14 - 4 - 01:46:52 UTC :: refactor: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — refactor luong xu ly cho ro rang (khong doi hanh vi)
 2025-11-14 - 5 - 01:46:55 UTC :: refactor: UC-22 Minibar/Amenity: ghi tieu hao, post charge vao folio. — cap nhat mock data & seed test (dat tieu chi toi thieu)
+2025-11-15 - 1 - 01:42:38 UTC :: build: UC-01 RBAC: tao, sua, khoa tai khoan; gan vai tro. — kiem tra tuong thich mui gio/tien te (chuan bi cho tinh nang tiep theo)
