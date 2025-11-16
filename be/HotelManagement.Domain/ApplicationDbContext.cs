@@ -35,6 +35,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<ShoppingItem> ShoppingItems => Set<ShoppingItem>();
     public DbSet<ShoppingOrder> ShoppingOrders => Set<ShoppingOrder>();
+    public DbSet<Promotion> Promotions => Set<Promotion>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -56,6 +57,10 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
             .WithMany(h => h.Rooms)
             .HasForeignKey(r => r.HotelId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Promotion>()
+            .HasIndex(p => new { p.HotelId, p.Code })
+            .IsUnique();
 
         builder.Entity<ShoppingItem>()
           .HasOne(r => r.ShoppingOrder)
@@ -117,6 +122,9 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
 
         var menuItem = builder.Entity<MenuItem>();
         menuItem.Property(s => s.UnitPrice).HasPrecision(18, 2);
+
+        var promotion = builder.Entity<Promotion>();
+        promotion.Property(s => s.Value).HasPrecision(18, 2);
 
         var orderItem = builder.Entity<OrderItem>();
         orderItem.Property(s => s.UnitPrice).HasPrecision(18, 2);

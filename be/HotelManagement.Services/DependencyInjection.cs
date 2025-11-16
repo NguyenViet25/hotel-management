@@ -4,6 +4,7 @@ using HotelManagement.Services.Admin.Hotels;
 using HotelManagement.Services.Admin.Kitchen;
 using HotelManagement.Services.Admin.Dining;
 using HotelManagement.Services.Admin.Menu;
+using HotelManagement.Services.Admin.Invoicing;
 using HotelManagement.Services.Admin.Orders;
 using HotelManagement.Services.Admin.Rooms;
 using HotelManagement.Services.Admin.RoomTypes;
@@ -31,6 +32,7 @@ public static class DependencyInjection
         services.AddScoped<IBookingsService, BookingsService>();
         services.AddScoped<IOrdersService, OrdersService>();
         services.AddScoped<ITableService, TableService>();
+        services.AddScoped<IDiscountCodeService, DiscountCodeService>();
         return services;
     }
 }

@@ -7,7 +7,7 @@ public interface IDiscountCodeService
 {
     Task<ApiResponse<List<PromotionDto>>> ListAsync();
     Task<ApiResponse<PromotionDto>> GetByIdAsync(Guid id);
-    Task<ApiResponse<PromotionDto>> CreateAsync(dynamic dto, Guid userId);
-    Task<ApiResponse<PromotionDto>> UpdateAsync(Guid id, dynamic dto, Guid userId);
+    Task<ApiResponse<PromotionDto>> CreateAsync(PromotionDto dto, Guid userId);
+    Task<ApiResponse<PromotionDto>> UpdateAsync(Guid id, PromotionDto dto, Guid userId);
     Task<ApiResponse> DeleteAsync(Guid id, Guid userId);
 }
