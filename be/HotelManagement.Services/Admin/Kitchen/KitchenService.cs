@@ -4,7 +4,6 @@ using HotelManagement.Repository.Common;
 using HotelManagement.Services.Admin.Users;
 using HotelManagement.Services.Common;
 using Microsoft.EntityFrameworkCore;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace HotelManagement.Services.Admin.Kitchen;
 
@@ -77,7 +76,7 @@ public class KitchenService : IKitchenService
         var startDate = request.StartDate;
         var endDate = request.StartDate.AddDays(7);
         var foodsByDays = new List<FoodsByDay>();
-     
+
         for (DateTime date = startDate; date <= endDate; date = date.AddDays(1))
         {
             var startOfDay = date.Date;
@@ -97,9 +96,14 @@ public class KitchenService : IKitchenService
                 })
                 .ToListAsync();
 
+            var shoppingOrder = await _shoppingOrderRepository
+                .Query().Where(o => o.OrderDate >= startOfDay && o.OrderDate < endOfDay)
+                .FirstOrDefaultAsync();
+
             foodsByDays.Add(new FoodsByDay()
             {
                 Date = date,
+                ShoppingOrderId = shoppingOrder?.Id,
                 FoodsByDayItems = foods,
             });
         }
@@ -112,7 +116,30 @@ public class KitchenService : IKitchenService
         });
     }
 
-   
+    public async Task<ApiResponse<ShoppingDto>> GetShoppingOrderAsync(Guid id)
+    {
+        var shopping = await _shoppingOrderRepository.Query()
+              .Include(x => x.Items)
+              .Where(x => x.Id == id)
+              .Select(x => new ShoppingDto()
+              {
+                  Id = x.Id,
+                  HotelId = x.Id,
+                  Notes = x.Notes,
+                  OrderDate = x.OrderDate,
+                  ShoppingItems = x.Items.Select(x => new ShoppingItemDto()
+                  {
+                      Id = x.Id,
+                      Name = x.Name,
+                      Quantity = x.Quantity,
+                      ShoppingOrderId = x.Id,
+                      Unit = x.Unit
+                  }).ToList()
+              })
+              .FirstOrDefaultAsync();
+
+        return ApiResponse<ShoppingDto>.Ok(shopping);
+    }
 }
 
 

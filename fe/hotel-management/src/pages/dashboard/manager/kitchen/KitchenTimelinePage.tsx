@@ -23,7 +23,7 @@ import {
   Typography,
   Snackbar,
 } from "@mui/material";
-import { Add, ChevronLeft, ChevronRight } from "@mui/icons-material";
+import { Add, ChevronLeft, ChevronRight, Edit } from "@mui/icons-material";
 import PageTitle from "../../../../components/common/PageTitle";
 import kitchenApi, {
   type GetFoodsByWeekResponse,
@@ -54,9 +54,11 @@ const FoodTimeline: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [shoppingOpen, setShoppingOpen] = useState<boolean>(false);
   const [selectedOrderDate, setSelectedOrderDate] = useState(dayjs());
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: "success" | "error" }>(
-    { open: false, message: "", severity: "success" }
-  );
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: "success" | "error";
+  }>({ open: false, message: "", severity: "success" });
 
   const { start, end } = useMemo(
     () => getWeekRange(currentDate),
@@ -66,32 +68,32 @@ const FoodTimeline: React.FC = () => {
     () => Array.from({ length: 7 }, (_, i) => start.add(i, "day")),
     [start]
   );
+  const fetchWeekFoods = async () => {
+    if (!hotelId) {
+      setError("Không tìm thấy khách sạn để tải dữ liệu");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await kitchenApi.getFoodsByWeek({
+        startDate: start.toDate().toISOString(),
+        hotelId,
+      });
+      if (res.isSuccess) {
+        setData(res.data);
+      } else {
+        setError(res.message || "Không thể tải dữ liệu món ăn");
+      }
+    } catch {
+      setError("Đã xảy ra lỗi khi tải dữ liệu");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Fetch foods for the current week and hotel
   useEffect(() => {
-    const fetchWeekFoods = async () => {
-      if (!hotelId) {
-        setError("Không tìm thấy khách sạn để tải dữ liệu");
-        return;
-      }
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await kitchenApi.getFoodsByWeek({
-          startDate: start.toDate().toISOString(),
-          hotelId,
-        });
-        if (res.isSuccess) {
-          setData(res.data);
-        } else {
-          setError(res.message || "Không thể tải dữ liệu món ăn");
-        }
-      } catch {
-        setError("Đã xảy ra lỗi khi tải dữ liệu");
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchWeekFoods();
   }, [currentDate, hotelId]);
 
@@ -100,7 +102,7 @@ const FoodTimeline: React.FC = () => {
     const map = new Map<string, FoodsByDayItem[]>();
     if (data?.foodsByDays) {
       for (const day of data.foodsByDays) {
-        const key = dayjs(day.date).format("YYYY-MM-DD");
+        const key = dayjs(new Date(day.date)).format("YYYY-MM-DD");
         map.set(key, day.foodsByDayItems || []);
       }
     }
@@ -127,14 +129,36 @@ const FoodTimeline: React.FC = () => {
     try {
       const res = await kitchenApi.generateShoppingList(payload);
       if (res.isSuccess) {
-        setSnackbar({ open: true, message: "Tạo yêu cầu mua nguyên liệu thành công", severity: "success" });
+        setSnackbar({
+          open: true,
+          message: "Tạo yêu cầu mua nguyên liệu thành công",
+          severity: "success",
+        });
+
+        fetchWeekFoods();
       } else {
-        setSnackbar({ open: true, message: res.message || "Không thể tạo yêu cầu", severity: "error" });
+        setSnackbar({
+          open: true,
+          message: res.message || "Không thể tạo yêu cầu",
+          severity: "error",
+        });
       }
     } catch {
-      setSnackbar({ open: true, message: "Đã xảy ra lỗi khi tạo yêu cầu", severity: "error" });
+      setSnackbar({
+        open: true,
+        message: "Đã xảy ra lỗi khi tạo yêu cầu",
+        severity: "error",
+      });
     }
   };
+
+  useEffect(() => {
+    const todayKey = dayjs().format("YYYY-MM-DD");
+    const el = document.getElementById(`${todayKey}-foods`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [currentDate]);
 
   return (
     <Box>
@@ -172,9 +196,14 @@ const FoodTimeline: React.FC = () => {
           {weekDays.map((d) => {
             const key = d.format("YYYY-MM-DD");
             const foods = foodsMap.get(key) || [];
+            const hasShoppingOrder = data?.foodsByDays.some(
+              (item) =>
+                dayjs(new Date(item.date)).format("YYYY-MM-DD") === key &&
+                item.shoppingOrderId
+            );
             const isToday = d.isSame(dayjs(), "day");
             return (
-              <Grid size={{ xs: 12 }} key={key}>
+              <Grid size={{ xs: 12 }} key={`${key}-foods`}>
                 <Paper
                   elevation={3}
                   sx={{
@@ -197,15 +226,27 @@ const FoodTimeline: React.FC = () => {
                       {d.format("DD/MM/YYYY")}
                     </Typography>
                     <Box>
-                      <Button
-                        startIcon={<Add />}
-                        size="small"
-                        variant="contained"
-                        color="primary"
-                        onClick={() => openCreateShopping(d)}
-                      >
-                        Tạo yêu cầu mua nguyên liệu
-                      </Button>
+                      {!hasShoppingOrder ? (
+                        <Button
+                          startIcon={<Add />}
+                          size="small"
+                          variant="contained"
+                          color="primary"
+                          onClick={() => openCreateShopping(d)}
+                        >
+                          Tạo yêu cầu mua nguyên liệu
+                        </Button>
+                      ) : (
+                        <Button
+                          startIcon={<Edit />}
+                          size="small"
+                          variant="contained"
+                          color="secondary"
+                          onClick={() => openCreateShopping(d)}
+                        >
+                          Sửa yêu cầu mua nguyên liệu
+                        </Button>
+                      )}
                     </Box>
                   </Stack>
                   <List dense>

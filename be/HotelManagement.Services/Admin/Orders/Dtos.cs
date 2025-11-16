@@ -107,10 +107,10 @@ public class OrderSummaryDto
     public DateTime CreatedAt { get; set; }
     public int ItemsCount { get; set; }
     public decimal ItemsTotal { get; set; }
+    public DateTime OrderDate { get; set; }
     public List<OrderItemDto> Items { get; set; } = new();
 }
 
 public class OrderDetailsDto : OrderSummaryDto
 {
-    public List<OrderItemDto> Items { get; set; } = new();
 }

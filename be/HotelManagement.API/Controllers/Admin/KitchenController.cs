@@ -24,6 +24,13 @@ public class KitchenController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GenerateShoppingList([FromRoute] Guid id)
+    {
+        var result = await _kitchenService.GetShoppingOrderAsync(id);
+        return Ok(result);
+    }
+
     [HttpGet("foods-by-week")]
     public async Task<IActionResult> GetFoodByWeeks([FromQuery] GetFoodsByWeekRequest request)
     {

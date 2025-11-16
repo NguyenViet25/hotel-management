@@ -14,7 +14,14 @@ import {
   FormControl,
   InputLabel,
 } from "@mui/material";
-import { Close, Save, AddCircle, RemoveCircle, EventNote, ShoppingCart } from "@mui/icons-material";
+import {
+  Close,
+  Save,
+  AddCircle,
+  RemoveCircle,
+  EventNote,
+  ShoppingCart,
+} from "@mui/icons-material";
 import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,7 +29,10 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
-import type { ShoppingListRequestDto, ShoppingItemDto } from "../../../../../api/kitchenApi";
+import type {
+  ShoppingListRequestDto,
+  ShoppingItemDto,
+} from "../../../../../api/kitchenApi";
 
 // Form value types derived from API models
 type FormValues = {
@@ -94,7 +104,10 @@ const ShoppingFormModal: React.FC<ShoppingFormModalProps> = ({
   // When switching to edit mode or initialValues change, rehydrate form
   useEffect(() => {
     if (mode === "edit" && initialValues) {
-      setValue("orderDate", initialValues.orderDate ? dayjs(initialValues.orderDate) : dayjs());
+      setValue(
+        "orderDate",
+        initialValues.orderDate ? dayjs(initialValues.orderDate) : dayjs()
+      );
       setValue("notes", initialValues.notes ?? "");
       setValue(
         "shoppingItems",
@@ -130,7 +143,9 @@ const ShoppingFormModal: React.FC<ShoppingFormModalProps> = ({
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
       <DialogTitle fontWeight={600}>
-        {mode === "create" ? "Tạo yêu cầu mua nguyên liệu" : "Chỉnh sửa yêu cầu mua nguyên liệu"}
+        {mode === "create"
+          ? "Tạo yêu cầu mua nguyên liệu"
+          : "Chỉnh sửa yêu cầu mua nguyên liệu"}
       </DialogTitle>
       <DialogContent>
         <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="vi">
@@ -142,6 +157,7 @@ const ShoppingFormModal: React.FC<ShoppingFormModalProps> = ({
               render={({ field }) => (
                 <DatePicker
                   label="Ngày mua"
+                  readOnly
                   value={field.value}
                   onChange={(v) => field.onChange(v ?? dayjs())}
                 />
@@ -155,6 +171,7 @@ const ShoppingFormModal: React.FC<ShoppingFormModalProps> = ({
                 <TextField
                   label="Ghi chú"
                   fullWidth
+                  placeholder="Nhập ghi chú"
                   value={field.value}
                   onChange={field.onChange}
                   error={!!errors.notes}
@@ -173,7 +190,12 @@ const ShoppingFormModal: React.FC<ShoppingFormModalProps> = ({
             {/* Shopping items list */}
             <Stack spacing={1}>
               {fields.map((item, index) => (
-                <Stack key={item.id} direction={{ xs: "column", sm: "row" }} spacing={2} alignItems="flex-start">
+                <Stack
+                  key={item.id}
+                  direction={{ xs: "column", sm: "row" }}
+                  spacing={2}
+                  alignItems="flex-start"
+                >
                   <Controller
                     control={control}
                     name={`shoppingItems.${index}.name` as const}
@@ -181,10 +203,13 @@ const ShoppingFormModal: React.FC<ShoppingFormModalProps> = ({
                       <TextField
                         label="Tên nguyên liệu"
                         fullWidth
+                        placeholder="Nhập tên nguyên liệu"
                         value={field.value}
                         onChange={field.onChange}
                         error={!!errors.shoppingItems?.[index]?.name}
-                        helperText={errors.shoppingItems?.[index]?.name?.message}
+                        helperText={
+                          errors.shoppingItems?.[index]?.name?.message
+                        }
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
@@ -205,7 +230,9 @@ const ShoppingFormModal: React.FC<ShoppingFormModalProps> = ({
                         value={field.value}
                         onChange={field.onChange}
                         error={!!errors.shoppingItems?.[index]?.quantity}
-                        helperText={errors.shoppingItems?.[index]?.quantity?.message}
+                        helperText={
+                          errors.shoppingItems?.[index]?.quantity?.message
+                        }
                       />
                     )}
                   />
@@ -231,12 +258,19 @@ const ShoppingFormModal: React.FC<ShoppingFormModalProps> = ({
                       )}
                     />
                   </FormControl>
-                  <IconButton color="error" onClick={() => remove(index)} aria-label="Xóa dòng">
+                  <IconButton
+                    color="error"
+                    onClick={() => remove(index)}
+                    aria-label="Xóa dòng"
+                  >
                     <RemoveCircle />
                   </IconButton>
                 </Stack>
               ))}
-              <Button startIcon={<AddCircle />} onClick={() => append({ name: "", quantity: "", unit: "kg" })}>
+              <Button
+                startIcon={<AddCircle />}
+                onClick={() => append({ name: "", quantity: "", unit: "kg" })}
+              >
                 Thêm nguyên liệu
               </Button>
             </Stack>
@@ -244,11 +278,26 @@ const ShoppingFormModal: React.FC<ShoppingFormModalProps> = ({
         </LocalizationProvider>
       </DialogContent>
       <DialogActions>
-        <Stack direction="row" spacing={2} justifyContent="flex-end" sx={{ width: "100%", px: 2, pb: 2 }}>
-          <Button startIcon={<Close />} variant="outlined" color="inherit" onClick={onClose}>
+        <Stack
+          direction="row"
+          spacing={2}
+          justifyContent="flex-end"
+          sx={{ width: "100%", px: 2, pb: 2 }}
+        >
+          <Button
+            startIcon={<Close />}
+            variant="outlined"
+            color="inherit"
+            onClick={onClose}
+          >
             Hủy
           </Button>
-          <Button startIcon={<Save />} variant="contained" onClick={handleSubmit(submitHandler)} disabled={isSubmitting}>
+          <Button
+            startIcon={<Save />}
+            variant="contained"
+            onClick={handleSubmit(submitHandler)}
+            disabled={isSubmitting}
+          >
             {mode === "create" ? "Tạo" : "Lưu"}
           </Button>
         </Stack>

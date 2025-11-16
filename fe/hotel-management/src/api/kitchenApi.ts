@@ -24,6 +24,7 @@ export interface FoodsByDayItem {
 // FoodsByDay
 export interface FoodsByDay {
   date: string; // DateTime -> string
+  shoppingOrderId: string;
   foodsByDayItems: FoodsByDayItem[];
 }
 
