@@ -25,7 +25,7 @@ public class KitchenController : ControllerBase
     }
 
     [HttpGet("foods-by-week")]
-    public async Task<IActionResult> GetFoodByWeeks([FromBody] GetFoodsByWeekRequest request)
+    public async Task<IActionResult> GetFoodByWeeks([FromQuery] GetFoodsByWeekRequest request)
     {
         var result = await _kitchenService.GetFoodByWeekRequestAsync(request);
         return Ok(result);
