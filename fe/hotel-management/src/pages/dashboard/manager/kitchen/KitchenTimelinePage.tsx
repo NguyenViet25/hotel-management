@@ -21,6 +21,7 @@ import {
   TableHead,
   TableRow,
   Typography,
+  Snackbar,
 } from "@mui/material";
 import { Add, ChevronLeft, ChevronRight } from "@mui/icons-material";
 import PageTitle from "../../../../components/common/PageTitle";
@@ -30,6 +31,7 @@ import kitchenApi, {
 } from "../../../../api/kitchenApi";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
 import dayjs from "dayjs";
+import ShoppingFormModal from "./components/ShoppingFormModal";
 
 // Compute Monday → Sunday for the given date
 const getWeekRange = (date: Date) => {
@@ -50,6 +52,11 @@ const FoodTimeline: React.FC = () => {
   const [data, setData] = useState<GetFoodsByWeekResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [shoppingOpen, setShoppingOpen] = useState<boolean>(false);
+  const [selectedOrderDate, setSelectedOrderDate] = useState(dayjs());
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: "success" | "error" }>(
+    { open: false, message: "", severity: "success" }
+  );
 
   const { start, end } = useMemo(
     () => getWeekRange(currentDate),
@@ -105,6 +112,29 @@ const FoodTimeline: React.FC = () => {
   const handleNextWeek = () =>
     setCurrentDate(dayjs(currentDate).add(7, "day").toDate());
   const today = dayjs();
+
+  const openCreateShopping = (date: dayjs.Dayjs) => {
+    setSelectedOrderDate(date);
+    setShoppingOpen(true);
+  };
+
+  const handleShoppingSubmit = async (payload: {
+    orderDate: string;
+    hotelId: string;
+    notes?: string | null;
+    shoppingItems?: { name: string; quantity: string; unit: string }[] | null;
+  }) => {
+    try {
+      const res = await kitchenApi.generateShoppingList(payload);
+      if (res.isSuccess) {
+        setSnackbar({ open: true, message: "Tạo yêu cầu mua nguyên liệu thành công", severity: "success" });
+      } else {
+        setSnackbar({ open: true, message: res.message || "Không thể tạo yêu cầu", severity: "error" });
+      }
+    } catch {
+      setSnackbar({ open: true, message: "Đã xảy ra lỗi khi tạo yêu cầu", severity: "error" });
+    }
+  };
 
   return (
     <Box>
@@ -172,6 +202,7 @@ const FoodTimeline: React.FC = () => {
                         size="small"
                         variant="contained"
                         color="primary"
+                        onClick={() => openCreateShopping(d)}
                       >
                         Tạo yêu cầu mua nguyên liệu
                       </Button>
@@ -228,6 +259,24 @@ const FoodTimeline: React.FC = () => {
           })}
         </Grid>
       )}
+      <ShoppingFormModal
+        open={shoppingOpen}
+        onClose={() => setShoppingOpen(false)}
+        mode="create"
+        initialValues={{}}
+        defaultOrderDate={selectedOrderDate}
+        onSubmit={handleShoppingSubmit}
+        hotelId={hotelId || ""}
+      />
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+      >
+        <Alert severity={snackbar.severity} sx={{ width: "100%" }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
