@@ -115,3 +115,4 @@
 2025-11-15 - 5 - 01:42:47 UTC :: ci: UC-19 Lich phong: calendar trang thai phong theo ngay. — dieu chinh UI & copy cho ro (da smoke test)
 2025-11-16 - 1 - 01:51:21 UTC :: perf: UC-23 Bao tri: tao ticket, dinh anh, mo ta loi. — don dep code va xoa doan thua (chuan bi cho tinh nang tiep theo)
 2025-11-16 - 2 - 01:51:22 UTC :: test: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — fix race-condition nho trong thao tac (da kiem tra lint)
+2025-11-16 - 3 - 01:51:25 UTC :: docs: UC-47 Dashboard: gioi han xem theo vai tro va co so. — them kiem soat loi & retry nhe (dong bo voi BE/FE)
