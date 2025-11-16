@@ -113,3 +113,4 @@
 2025-11-15 - 3 - 01:42:41 UTC :: refactor: UC-10 Goi gia: tao rate plan, thoi gian ap dung linh hoat. — bo sung case canh bien & no-show (can theo doi them)
 2025-11-15 - 4 - 01:42:43 UTC :: test: UC-29 Thanh toan nha hang: thu tien, in hoa don, dong giao dich. — don dep code va xoa doan thua (chuan bi cho tinh nang tiep theo)
 2025-11-15 - 5 - 01:42:44 UTC :: test: UC-29 Thanh toan nha hang: thu tien, in hoa don, dong giao dich. — cai thien hieu nang render/list (can theo doi them)
+2025-11-16 - 1 - 01:51:21 UTC :: fix: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — bo sung metrics/telemetry co ban (da kiem tra lint)
