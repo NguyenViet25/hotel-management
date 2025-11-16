@@ -4,13 +4,11 @@ export type DiscountCode = {
   id?: string;
   hotelId: string;
   code: string;
-  name: string;
   description?: string | null;
-  conditions?: string | null;
   value: number;
   isActive: boolean;
   startDate: string; // ISO date string
-  endDate: string;   // ISO date string
+  endDate: string; // ISO date string
 };
 
 export type ApiResponse<T> = {
@@ -28,7 +26,9 @@ const discountCodesApi = {
   },
 
   async get(id: string): Promise<ApiResponse<DiscountCode>> {
-    const res = await axiosInstance.get(`/discount-codes/${encodeURIComponent(id)}`);
+    const res = await axiosInstance.get(
+      `/discount-codes/${encodeURIComponent(id)}`
+    );
     return res.data;
   },
 
@@ -37,13 +37,21 @@ const discountCodesApi = {
     return res.data;
   },
 
-  async update(id: string, payload: Partial<DiscountCode>): Promise<ApiResponse<DiscountCode>> {
-    const res = await axiosInstance.put(`/discount-codes/${encodeURIComponent(id)}`, payload);
+  async update(
+    id: string,
+    payload: Partial<DiscountCode>
+  ): Promise<ApiResponse<DiscountCode>> {
+    const res = await axiosInstance.put(
+      `/discount-codes/${encodeURIComponent(id)}`,
+      payload
+    );
     return res.data;
   },
 
   async remove(id: string): Promise<ApiResponse<unknown>> {
-    const res = await axiosInstance.delete(`/discount-codes/${encodeURIComponent(id)}`);
+    const res = await axiosInstance.delete(
+      `/discount-codes/${encodeURIComponent(id)}`
+    );
     return res.data;
   },
 };

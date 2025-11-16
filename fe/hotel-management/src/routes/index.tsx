@@ -10,7 +10,7 @@ import ManagerDashboardPage from "../pages/dashboard/manager";
 import { useStore, type StoreState } from "../hooks/useStore";
 import OrdersManagementPage from "../pages/dashboard/waiter/orders/OrdersManagementPage";
 import KitchenTimelinePage from "../pages/dashboard/manager/kitchen/KitchenTimelinePage";
-import DiscountCodesPage from "../components/admin/DiscountCodesPage";
+import DiscountCodesPage from "../pages/dashboard/manager/discounts/DiscountCodesPage";
 
 // Role-aware layout wrapper for standalone pages like /profile
 const RoleAwareLayout = () => {
