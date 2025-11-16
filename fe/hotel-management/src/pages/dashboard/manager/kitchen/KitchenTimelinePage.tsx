@@ -54,6 +54,10 @@ const FoodTimeline: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [shoppingOpen, setShoppingOpen] = useState<boolean>(false);
   const [selectedOrderDate, setSelectedOrderDate] = useState(dayjs());
+  const [modalMode, setModalMode] = useState<"create" | "edit">("create");
+  const [initialShopping, setInitialShopping] = useState<
+    import("../../../../api/kitchenApi").ShoppingDto | undefined
+  >(undefined);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -117,7 +121,41 @@ const FoodTimeline: React.FC = () => {
 
   const openCreateShopping = (date: dayjs.Dayjs) => {
     setSelectedOrderDate(date);
+    setInitialShopping(undefined);
+    setModalMode("create");
     setShoppingOpen(true);
+  };
+
+  const openEditShopping = async (shoppingId?: string) => {
+    if (!shoppingId) {
+      setSnackbar({
+        open: true,
+        message: "Không tìm thấy yêu cầu để sửa",
+        severity: "error",
+      });
+      return;
+    }
+    try {
+      const res = await kitchenApi.getShoppingOrderDetails(shoppingId);
+      if (res.isSuccess) {
+        setInitialShopping(res.data);
+        setSelectedOrderDate(dayjs(res.data.orderDate));
+        setModalMode("edit");
+        setShoppingOpen(true);
+      } else {
+        setSnackbar({
+          open: true,
+          message: res.message || "Không tải được yêu cầu",
+          severity: "error",
+        });
+      }
+    } catch {
+      setSnackbar({
+        open: true,
+        message: "Đã xảy ra lỗi khi tải yêu cầu",
+        severity: "error",
+      });
+    }
   };
 
   const handleShoppingSubmit = async (payload: {
@@ -196,11 +234,10 @@ const FoodTimeline: React.FC = () => {
           {weekDays.map((d) => {
             const key = d.format("YYYY-MM-DD");
             const foods = foodsMap.get(key) || [];
-            const hasShoppingOrder = data?.foodsByDays.some(
-              (item) =>
-                dayjs(new Date(item.date)).format("YYYY-MM-DD") === key &&
-                item.shoppingOrderId
+            const dayEntry = data?.foodsByDays.find(
+              (item) => dayjs(new Date(item.date)).format("YYYY-MM-DD") === key
             );
+            const hasShoppingOrder = !!dayEntry?.shoppingOrderId;
             const isToday = d.isSame(dayjs(), "day");
             return (
               <Grid size={{ xs: 12 }} key={`${key}-foods`}>
@@ -242,7 +279,9 @@ const FoodTimeline: React.FC = () => {
                           size="small"
                           variant="contained"
                           color="secondary"
-                          onClick={() => openCreateShopping(d)}
+                          onClick={() =>
+                            openEditShopping(dayEntry?.shoppingOrderId)
+                          }
                         >
                           Sửa yêu cầu mua nguyên liệu
                         </Button>
@@ -303,8 +342,8 @@ const FoodTimeline: React.FC = () => {
       <ShoppingFormModal
         open={shoppingOpen}
         onClose={() => setShoppingOpen(false)}
-        mode="create"
-        initialValues={{}}
+        mode={modalMode}
+        initialValues={initialShopping}
         defaultOrderDate={selectedOrderDate}
         onSubmit={handleShoppingSubmit}
         hotelId={hotelId || ""}

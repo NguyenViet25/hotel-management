@@ -32,6 +32,7 @@ import dayjs, { Dayjs } from "dayjs";
 import type {
   ShoppingListRequestDto,
   ShoppingItemDto,
+  ShoppingDto,
 } from "../../../../../api/kitchenApi";
 
 // Form value types derived from API models
@@ -62,7 +63,7 @@ export interface ShoppingFormModalProps {
   open: boolean;
   onClose: () => void;
   mode?: "create" | "edit";
-  initialValues?: Partial<ShoppingListRequestDto>;
+  initialValues?: Partial<ShoppingDto>;
   defaultOrderDate?: Dayjs; // prefill when creating from a specific day
   onSubmit: (payload: ShoppingListRequestDto) => Promise<void> | void;
   hotelId: string;

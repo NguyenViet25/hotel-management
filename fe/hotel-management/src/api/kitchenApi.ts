@@ -36,9 +36,19 @@ export interface ShoppingListRequestDto {
   shoppingItems?: ShoppingItemDto[] | null;
 }
 
+export interface ShoppingDto {
+  id: string; // Guid -> string
+  orderDate: string; // DateTime -> ISO string
+  hotelId: string; // Guid -> string
+  notes?: string | null;
+  shoppingItems?: ShoppingItemDto[] | null;
+}
+
 // ShoppingItemDto
 export interface ShoppingItemDto {
+  id?: string; // Guid -> string
   name: string;
+  shoppingOrderId?: string;
   quantity: string;
   unit: string;
 }
@@ -62,6 +72,13 @@ const kitchenApi = {
     payload: ShoppingListRequestDto
   ): Promise<ItemResponse<ShoppingListRequestDto>> {
     const res = await axios.post("/kitchen/shopping", payload);
+    return res.data;
+  },
+
+  async getShoppingOrderDetails(
+    id: string
+  ): Promise<ItemResponse<ShoppingDto>> {
+    const res = await axios.get(`/kitchen/shopping/${id}`);
     return res.data;
   },
 
