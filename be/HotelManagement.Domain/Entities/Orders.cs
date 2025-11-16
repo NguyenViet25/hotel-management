@@ -12,7 +12,7 @@ public class Order
     public OrderStatus Status { get; set; } = OrderStatus.InProgress;
     public string? Notes { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
+    public DateTime? ServingDate { get; set; }
     public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
 }
 

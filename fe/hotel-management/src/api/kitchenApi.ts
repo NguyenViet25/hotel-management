@@ -2,6 +2,7 @@ import axios from "./axios";
 
 // GetFoodsByWeekRequest
 export interface GetFoodsByWeekRequest {
+  startDate: string; // DateTime -> string (ISO format)
   hotelId: string; // Guid -> string
 }
 
@@ -59,7 +60,7 @@ const kitchenApi = {
   async generateShoppingList(
     payload: ShoppingListRequestDto
   ): Promise<ItemResponse<ShoppingListRequestDto>> {
-    const res = await axios.post("/admin/kitchen/shopping", payload);
+    const res = await axios.post("/kitchen/shopping", payload);
     return res.data;
   },
 
@@ -68,8 +69,9 @@ const kitchenApi = {
   ): Promise<ItemResponse<GetFoodsByWeekResponse>> {
     const queryParams = new URLSearchParams();
     queryParams.append("hotelId", params.hotelId.toString());
+    queryParams.append("startDate", params.startDate);
     const res = await axios.get(
-      `/admin/kitchen/foods-by-week?${queryParams.toString()}`
+      `/kitchen/foods-by-week?${queryParams.toString()}`
     );
     return res.data;
   },

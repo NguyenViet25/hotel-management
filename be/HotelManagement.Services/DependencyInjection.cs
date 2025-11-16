@@ -18,17 +18,17 @@ public static class DependencyInjection
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
         services.AddScoped<ITokenService, TokenService>();
-            services.AddScoped<IAuthService, AuthService>();
-            services.AddScoped<IUsersAdminService, UsersAdminService>();
-            services.AddScoped<IHotelsAdminService, HotelsAdminService>();
-            services.AddScoped<IAuditService, AuditService>();
-            services.AddScoped<IRoomTypeService, RoomTypeService>();
-            services.AddScoped<IRoomsService, RoomsService>();
-            services.AddScoped<IMenuService, MenuService>();
-            services.AddScoped<IKitchenService, KitchenService>();
-            services.AddScoped<IProfileService, ProfileService>();
-            services.AddScoped<IBookingsService, BookingsService>();
-            services.AddScoped<IOrdersService, OrdersService>();
+        services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IUsersAdminService, UsersAdminService>();
+        services.AddScoped<IHotelsAdminService, HotelsAdminService>();
+        services.AddScoped<IAuditService, AuditService>();
+        services.AddScoped<IRoomTypeService, RoomTypeService>();
+        services.AddScoped<IRoomsService, RoomsService>();
+        services.AddScoped<IMenuService, MenuService>();
+        services.AddScoped<IKitchenService, KitchenService>();
+        services.AddScoped<IProfileService, ProfileService>();
+        services.AddScoped<IBookingsService, BookingsService>();
+        services.AddScoped<IOrdersService, OrdersService>();
         return services;
     }
 }

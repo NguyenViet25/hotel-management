@@ -192,7 +192,8 @@ public class OrdersService : IOrdersService
                 CustomerName = dto.CustomerName,
                 CustomerPhone = dto.CustomerPhone,
                 Status = OrderStatus.InProgress,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
+                ServingDate = dto.ServingDate,
                 Notes = dto.Notes,
             };
             await _orderRepository.AddAsync(order);
@@ -248,7 +249,8 @@ public class OrdersService : IOrdersService
                 IsWalkIn = false,
                 Notes = dto.Notes,
                 Status = OrderStatus.InProgress,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now,
+                ServingDate = dto.ServingDate,
             };
             await _orderRepository.AddAsync(order);
 

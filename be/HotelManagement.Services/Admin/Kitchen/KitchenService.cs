@@ -4,6 +4,7 @@ using HotelManagement.Repository.Common;
 using HotelManagement.Services.Admin.Users;
 using HotelManagement.Services.Common;
 using Microsoft.EntityFrameworkCore;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace HotelManagement.Services.Admin.Kitchen;
 
@@ -73,13 +74,18 @@ public class KitchenService : IKitchenService
 
     public async Task<ApiResponse<GetFoodsByWeekResponse>> GetFoodByWeekRequestAsync(GetFoodsByWeekRequest request)
     {
-        var (startDate, endDate) = GetWeekRange();
+        var startDate = request.StartDate;
+        var endDate = request.StartDate.AddDays(7);
         var foodsByDays = new List<FoodsByDay>();
-
+     
         for (DateTime date = startDate; date <= endDate; date = date.AddDays(1))
         {
+            var startOfDay = date.Date;
+            var endOfDay = startOfDay.AddDays(1);
             var foods = await _orderRepository.Query()
-                .Where(o => o.CreatedAt == date)
+                .Include(x => x.Items)
+                .Where(o => o.CreatedAt >= startOfDay && o.CreatedAt < endOfDay)
+                .Where(o => o.HotelId == request.HotelId)
                 .SelectMany(o => o.Items)                   // flatten items
                 .GroupBy(i => i.Id)                         // group by Id
                 .Select(g => new FoodsByDayItem
@@ -106,17 +112,7 @@ public class KitchenService : IKitchenService
         });
     }
 
-    public static (DateTime StartDate, DateTime EndDate) GetWeekRange()
-    {
-        DateTime today = DateTime.Now;
-        int diff = today.DayOfWeek - DayOfWeek.Monday;
-        if (diff < 0) diff += 7;
-
-        DateTime startDate = today.AddDays(-diff).Date;
-        DateTime endDate = startDate.AddDays(6).Date;
-
-        return (startDate, endDate);
-    }
+   
 }
 
 

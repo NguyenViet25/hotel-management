@@ -2,6 +2,7 @@ namespace HotelManagement.Services.Admin.Kitchen;
 
 public class GetFoodsByWeekRequest
 {
+    public DateTime StartDate { get; set; }
     public Guid HotelId { get; set; }
 }
 

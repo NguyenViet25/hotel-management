@@ -32,6 +32,7 @@ public class CreateWalkInOrderDto
     [StringLength(20)]
     public string? CustomerPhone { get; set; }
     public string? Notes { get; set; }
+    public DateTime? ServingDate { get; set; }
     public List<OrderItemInputDto>? Items { get; set; }
 }
 
@@ -42,6 +43,7 @@ public class CreateBookingOrderDto
     [Required]
     public Guid BookingId { get; set; }
     public string? Notes { get; set; }
+    public DateTime? ServingDate { get; set; }
     public List<OrderItemInputDto>? Items { get; set; }
 }
 
