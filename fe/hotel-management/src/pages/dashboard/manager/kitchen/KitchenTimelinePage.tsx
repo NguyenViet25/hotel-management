@@ -1,5 +1,10 @@
-import React, { useEffect, useMemo, useState } from "react";
-import "dayjs/locale/vi"; // make sure Vietnamese locale is imported
+import {
+  Add,
+  ChevronLeft,
+  ChevronRight,
+  Edit,
+  RemoveRedEye,
+} from "@mui/icons-material";
 import {
   Alert,
   Box,
@@ -10,9 +15,8 @@ import {
   Grid,
   IconButton,
   List,
-  ListItem,
-  ListItemText,
   Paper,
+  Snackbar,
   Stack,
   Table,
   TableBody,
@@ -21,24 +25,21 @@ import {
   TableHead,
   TableRow,
   Typography,
-  Snackbar,
 } from "@mui/material";
-import {
-  Add,
-  ChevronLeft,
-  ChevronRight,
-  Edit,
-  RemoveRedEye,
-} from "@mui/icons-material";
-import PageTitle from "../../../../components/common/PageTitle";
-import kitchenApi, {
-  type GetFoodsByWeekResponse,
-  type FoodsByDayItem,
-} from "../../../../api/kitchenApi";
-import { useStore, type StoreState } from "../../../../hooks/useStore";
 import dayjs from "dayjs";
-import ShoppingFormModal from "./components/ShoppingFormModal";
+import "dayjs/locale/vi"; // make sure Vietnamese locale is imported
+import React, { useEffect, useMemo, useState } from "react";
+import kitchenApi, {
+  QualityStatus,
+  type FoodsByDayItem,
+  type GetFoodsByWeekResponse,
+  type ShoppingItemDto,
+} from "../../../../api/kitchenApi";
+import PageTitle from "../../../../components/common/PageTitle";
+import { useStore, type StoreState } from "../../../../hooks/useStore";
 import { getExactVNDate } from "../../../../utils/date-helper";
+import IngredientReviewDialog from "./components/IngredientReviewDialog";
+import ShoppingFormModal from "./components/ShoppingFormModal";
 
 // Compute Monday → Sunday for the given date
 const getWeekRange = (date: Date) => {
@@ -71,6 +72,9 @@ const FoodTimeline: React.FC = () => {
     message: string;
     severity: "success" | "error";
   }>({ open: false, message: "", severity: "success" });
+  const [reviewOpen, setReviewOpen] = useState<boolean>(false);
+  const [reviewLoading, setReviewLoading] = useState<boolean>(false);
+  const [reviewItems, setReviewItems] = useState<ShoppingItemDto[]>([]);
 
   const { start, end } = useMemo(
     () => getWeekRange(currentDate),
@@ -166,6 +170,49 @@ const FoodTimeline: React.FC = () => {
     }
   };
 
+  const openReviewIngredients = async (shoppingId?: string) => {
+    if (!shoppingId) {
+      setSnackbar({
+        open: true,
+        message: "Không tìm thấy yêu cầu để xem",
+        severity: "error",
+      });
+      return;
+    }
+    try {
+      setReviewLoading(true);
+      const res = await kitchenApi.getShoppingOrderDetails(shoppingId);
+      if (res.isSuccess) {
+        const items: ShoppingItemDto[] = (res.data.shoppingItems ?? []).map(
+          (it) => ({
+            id: it.id,
+            name: it.name,
+            quantity: it.quantity,
+            unit: it.unit,
+            qualityStatus: it.qualityStatus,
+          })
+        );
+        setInitialShopping(res.data);
+        setReviewItems(items);
+        setReviewOpen(true);
+      } else {
+        setSnackbar({
+          open: true,
+          message: res.message || "Không tải được danh sách nguyên liệu",
+          severity: "error",
+        });
+      }
+    } catch {
+      setSnackbar({
+        open: true,
+        message: "Đã xảy ra lỗi khi tải danh sách nguyên liệu",
+        severity: "error",
+      });
+    } finally {
+      setReviewLoading(false);
+    }
+  };
+
   const handleShoppingSubmit = async (payload: {
     orderDate: string;
     hotelId: string;
@@ -253,7 +300,7 @@ const FoodTimeline: React.FC = () => {
 
       {!loading && (
         <Grid container spacing={2}>
-          {weekDays.map((d) => {
+          {weekDays.map((d, index) => {
             const key = getExactVNDate(d.toDate().toDateString());
             const foods = foodsMap.get(key) || [];
             const dayEntry = data?.foodsByDays.find(
@@ -262,7 +309,7 @@ const FoodTimeline: React.FC = () => {
             const hasShoppingOrder = !!dayEntry?.shoppingOrderId;
             const isToday = d.isSame(dayjs(), "day");
             return (
-              <Grid size={{ xs: 12 }} key={`${key}-foods`}>
+              <Grid size={{ xs: 12 }} key={`${index}-foods`}>
                 <Paper
                   elevation={3}
                   sx={{
@@ -314,7 +361,7 @@ const FoodTimeline: React.FC = () => {
                             variant="contained"
                             color="inherit"
                             onClick={() =>
-                              openEditShopping(dayEntry?.shoppingOrderId)
+                              openReviewIngredients(dayEntry?.shoppingOrderId)
                             }
                           >
                             Xem và đánh giá nguyên liệu
@@ -386,6 +433,30 @@ const FoodTimeline: React.FC = () => {
         defaultOrderDate={selectedOrderDate}
         onSubmit={handleShoppingSubmit}
         hotelId={hotelId || ""}
+      />
+      <IngredientReviewDialog
+        hotelId={hotelId || ""}
+        initialValues={initialShopping}
+        open={reviewOpen}
+        loading={reviewLoading}
+        ingredients={reviewItems}
+        onClose={() => {
+          setReviewOpen(false);
+          setReviewItems([]);
+          setInitialShopping(undefined);
+        }}
+        onSubmit={async (payload) => {
+          await kitchenApi.updateShoppingList(payload);
+          setReviewOpen(false);
+          setReviewItems([]);
+          setInitialShopping(undefined);
+          setSnackbar({
+            open: true,
+            message: "Đã lưu đánh giá nguyên liệu",
+            severity: "success",
+          });
+          fetchWeekFoods();
+        }}
       />
       <Snackbar
         open={snackbar.open}

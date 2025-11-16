@@ -92,7 +92,7 @@ public class KitchenService : IKitchenService
                     Id = g.Key,
                     Name = g.First().Name,
                     Quantity = g.Sum(x => x.Quantity),       // sum quantities
-                    UnitPrice = g.First().UnitPrice
+                    UnitPrice = g.First().UnitPrice,
                 })
                 .ToListAsync();
 
@@ -133,7 +133,8 @@ public class KitchenService : IKitchenService
                       Name = x.Name,
                       Quantity = x.Quantity,
                       ShoppingOrderId = x.Id,
-                      Unit = x.Unit
+                      Unit = x.Unit,
+                      QualityStatus = x.QualityStatus,
                   }).ToList()
               })
               .FirstOrDefaultAsync();
@@ -185,7 +186,7 @@ public class KitchenService : IKitchenService
                         Name = item.Name,
                         Quantity = item.Quantity,
                         Unit = item.Unit,
-                        QualityStatus = QualityStatus.NotRated,
+                        QualityStatus = item.QualityStatus ?? QualityStatus.NotRated,
                     };
 
                     await _shoppingItemRepository.AddAsync(newShoppingItem);

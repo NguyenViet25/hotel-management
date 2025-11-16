@@ -1,3 +1,5 @@
+using HotelManagement.Domain.Entities;
+
 namespace HotelManagement.Services.Admin.Kitchen;
 
 public class GetFoodsByWeekRequest
@@ -11,7 +13,7 @@ public class GetFoodsByWeekResponse
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public List<FoodsByDay> FoodsByDays { get; set; } = [];
-   
+
 }
 
 public class FoodsByDayItem
@@ -54,4 +56,5 @@ public class ShoppingItemDto
     public string Name { get; set; } = string.Empty;
     public string Quantity { get; set; } = string.Empty;
     public string Unit { get; set; } = string.Empty;
+    public QualityStatus? QualityStatus { set; get; }
 }

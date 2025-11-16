@@ -32,7 +32,7 @@ public class KitchenController : ControllerBase
     }
 
     [HttpGet("shopping/{id}")]
-    public async Task<IActionResult> GenerateShoppingList([FromRoute] Guid id)
+    public async Task<IActionResult> GetShopping([FromRoute] Guid id)
     {
         var result = await _kitchenService.GetShoppingOrderAsync(id);
         return Ok(result);

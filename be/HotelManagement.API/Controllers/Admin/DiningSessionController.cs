@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace HotelManagement.Api.Controllers.Admin;
 
 [ApiController]
-[Route("api/admin/dining-sessions")]
-[Authorize(Roles = "Admin,Manager,Waiter")]
+[Route("api/dining-sessions")]
+[Authorize]
 public class DiningSessionController : ControllerBase
 {
     private readonly IDiningSessionService _diningSessionService;

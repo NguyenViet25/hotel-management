@@ -52,6 +52,7 @@ export interface ShoppingItemDto {
   shoppingOrderId?: string;
   quantity: string;
   unit: string;
+  qualityStatus?: QualityStatus;
 }
 
 export enum QualityStatus {
