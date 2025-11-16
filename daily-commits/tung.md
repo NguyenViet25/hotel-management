@@ -121,3 +121,4 @@
 2025-11-16 - 1 - 01:51:22 UTC :: refactor: UC-47 Dashboard: gioi han xem theo vai tro va co so. — them log chi tiet phuc vu audit (dong bo voi BE/FE)
 2025-11-16 - 2 - 01:51:23 UTC :: test: UC-43 Mat khau: quy dinh do manh, het han phien. — bo sung index & toi uu DB (da kiem tra lint)
 2025-11-16 - 3 - 01:51:24 UTC :: refactor: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — fix race-condition nho trong thao tac (dong bo voi BE/FE)
+2025-11-16 - 4 - 01:51:27 UTC :: feat: UC-11 Goi gia: bat/tam ngung goi gia dang ap dung. — chuan hoa ten ham/bien theo convention (chuan bi cho tinh nang tiep theo)
