@@ -23,8 +23,10 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ConfirmModal from "../common/ConfirmModel";
 import FormActionButtons from "../common/FormActionButtons";
-import DataTable, { Column } from "../common/DataTable";
-import discountCodesApi, { DiscountCode } from "../../api/discountCodesApi";
+import DataTable, { type Column } from "../common/DataTable";
+import discountCodesApi, {
+  type DiscountCode,
+} from "../../api/discountCodesApi";
 
 type FormValues = {
   code: string;
@@ -100,16 +102,29 @@ const DiscountCodesPage = () => {
 
   const columns: Column<DiscountCode>[] = [
     { id: "code", label: "Mã", sortable: true },
-    { id: "name", label: "Tên", sortable: true },
     { id: "value", label: "Giá trị", sortable: true, format: (v) => `${v}` },
     {
       id: "conditions",
       label: "Điều kiện",
-      format: (v) => (v ? String(v).slice(0, 50) : "") + (v && String(v).length > 50 ? "…" : ""),
+      format: (v) =>
+        (v ? String(v).slice(0, 50) : "") +
+        (v && String(v).length > 50 ? "…" : ""),
     },
-    { id: "startDate", label: "Bắt đầu", format: (v) => new Date(v).toLocaleDateString() },
-    { id: "endDate", label: "Hết hạn", format: (v) => new Date(v).toLocaleDateString() },
-    { id: "isActive", label: "Trạng thái", format: (v) => (v ? "Đang hoạt động" : "Ngưng") },
+    {
+      id: "startDate",
+      label: "Ngày bắt đầu",
+      format: (v) => new Date(v).toLocaleDateString(),
+    },
+    {
+      id: "endDate",
+      label: "Ngày hết hạn",
+      format: (v) => new Date(v).toLocaleDateString(),
+    },
+    {
+      id: "isActive",
+      label: "Trạng thái",
+      format: (v) => (v ? "Đang hoạt động" : "Ngưng"),
+    },
   ];
 
   const loadData = async () => {
@@ -117,7 +132,8 @@ const DiscountCodesPage = () => {
     setError(null);
     try {
       const res = await discountCodesApi.list();
-      if (!res.isSuccess) throw new Error(res.message || "Tải dữ liệu thất bại");
+      if (!res.isSuccess)
+        throw new Error(res.message || "Tải dữ liệu thất bại");
       setRows(res.data || []);
     } catch (e: any) {
       setError(e.message);
@@ -227,8 +243,15 @@ const DiscountCodesPage = () => {
           }}
         />
 
-        <Dialog open={openForm} onClose={() => setOpenForm(false)} maxWidth="md" fullWidth>
-          <DialogTitle>{editing ? "Sửa mã giảm giá" : "Thêm mã giảm giá"}</DialogTitle>
+        <Dialog
+          open={openForm}
+          onClose={() => setOpenForm(false)}
+          maxWidth="md"
+          fullWidth
+        >
+          <DialogTitle>
+            {editing ? "Sửa mã giảm giá" : "Thêm mã giảm giá"}
+          </DialogTitle>
           <DialogContent>
             <Card variant="outlined" sx={{ mt: 1 }}>
               <CardContent>
@@ -265,7 +288,12 @@ const DiscountCodesPage = () => {
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
-                    <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 1 }}>
+                    <Stack
+                      direction="row"
+                      alignItems="center"
+                      spacing={1}
+                      sx={{ mt: 1 }}
+                    >
                       <Typography>Hoạt động</Typography>
                       <Switch {...register("isActive")} defaultChecked />
                     </Stack>
@@ -332,7 +360,11 @@ const DiscountCodesPage = () => {
           open={openDelete}
           onClose={() => setOpenDelete(false)}
           title="Xóa mã giảm giá"
-          message={<span>Bạn có chắc muốn xóa mã <b>{deleting?.code}</b>?</span>}
+          message={
+            <span>
+              Bạn có chắc muốn xóa mã <b>{deleting?.code}</b>?
+            </span>
+          }
           confirmText="Xóa"
           confirmColor="error"
           onConfirm={confirmDelete}

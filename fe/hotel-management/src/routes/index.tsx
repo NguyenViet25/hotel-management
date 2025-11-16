@@ -10,6 +10,7 @@ import ManagerDashboardPage from "../pages/dashboard/manager";
 import { useStore, type StoreState } from "../hooks/useStore";
 import OrdersManagementPage from "../pages/dashboard/waiter/orders/OrdersManagementPage";
 import KitchenTimelinePage from "../pages/dashboard/manager/kitchen/KitchenTimelinePage";
+import DiscountCodesPage from "../components/admin/DiscountCodesPage";
 
 // Role-aware layout wrapper for standalone pages like /profile
 const RoleAwareLayout = () => {
@@ -217,6 +218,14 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<div>Loading...</div>}>
             <ManagerRoomsPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "discount-codes",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <DiscountCodesPage />
           </Suspense>
         ),
       },

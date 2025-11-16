@@ -13,6 +13,7 @@ import {
   Category,
   Bed,
   ShoppingCart,
+  Discount,
 } from "@mui/icons-material";
 
 export const menuItems = {
@@ -34,6 +35,11 @@ export const menuItems = {
     { title: "Tổng quan", path: "/manager/dashboard", icon: <DashboardIcon /> },
     { title: "Loại phòng", path: "/manager/room-types", icon: <Category /> },
     { title: "Phòng", path: "/manager/rooms", icon: <Bed /> },
+    {
+      title: "Mã giảm giá",
+      path: "/manager/discount-codes",
+      icon: <Discount />,
+    },
     { title: "Món ăn", path: "/manager/menus", icon: <DiningIcon /> },
     { title: "Bàn ăn", path: "/manager/tables", icon: <RestaurantIcon /> },
   ],
@@ -64,26 +70,6 @@ export const menuItems = {
     { title: "Tables", path: "/waiter/tables", icon: <RestaurantIcon /> },
     { title: "Orders", path: "/waiter/orders", icon: <DiningIcon /> },
     { title: "Charges", path: "/waiter/charges", icon: <PaymentsIcon /> },
-  ],
-  cashier: [
-    { title: "Dashboard", path: "/cashier/dashboard", icon: <DashboardIcon /> },
-    { title: "Payments", path: "/cashier/payments", icon: <PaymentsIcon /> },
-    { title: "Invoices", path: "/cashier/invoices", icon: <ReceiptIcon /> },
-  ],
-  accountant: [
-    {
-      title: "Dashboard",
-      path: "/accountant/dashboard",
-      icon: <DashboardIcon />,
-    },
-    { title: "Folios", path: "/accountant/folios", icon: <ReceiptIcon /> },
-    { title: "Revenue", path: "/accountant/revenue", icon: <PaymentsIcon /> },
-    { title: "Invoices", path: "/accountant/invoices", icon: <ReceiptIcon /> },
-    {
-      title: "Reports",
-      path: "/accountant/reports",
-      icon: <AccountBalanceIcon />,
-    },
   ],
   housekeeper: [
     {
