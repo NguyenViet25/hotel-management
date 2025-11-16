@@ -1,4 +1,5 @@
 using HotelManagement.Domain;
+using HotelManagement.Domain.Entities;
 using HotelManagement.Domain.Repositories;
 using HotelManagement.Repository.Common;
 using HotelManagement.Services.Common;
@@ -10,12 +11,12 @@ namespace HotelManagement.Services.Admin.Menu;
 public class MenuService : IMenuService
 {
     private readonly IRepository<MenuItem> _menuItemRepository;
-    private readonly IRepository<MenuItemIngredient> _menuItemIngredientRepository;
+    private readonly IRepository<ShoppingItem> _menuItemIngredientRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public MenuService(
         IRepository<MenuItem> menuItemRepository,
-        IRepository<MenuItemIngredient> menuItemIngredientRepository,
+        IRepository<ShoppingItem> menuItemIngredientRepository,
         IUnitOfWork unitOfWork)
     {
         _menuItemRepository = menuItemRepository;
@@ -52,7 +53,6 @@ public class MenuService : IMenuService
 
             var menuItems = await _menuItemRepository.Query()
                 .Where(filter)
-                .Include(i => i.Ingredients)
                 .ToListAsync();
 
             var result = menuItems.Select(MapToMenuItemDto).ToList();
@@ -86,28 +86,10 @@ public class MenuService : IMenuService
             await _menuItemRepository.AddAsync(menuItem);
             await _menuItemRepository.SaveChangesAsync();
 
-            // Add ingredients
-            if (dto.Ingredients != null && dto.Ingredients.Any())
-            {
-                foreach (var ingredientDto in dto.Ingredients)
-                {
-                    var ingredient = new MenuItemIngredient
-                    {
-                        Id = Guid.NewGuid(),
-                        MenuItemId = menuItem.Id,
-                        Name = ingredientDto.Name,
-                        Quantity = ingredientDto.Quantity,
-                        Unit = ingredientDto.Unit
-                    };
-                    await _menuItemIngredientRepository.AddAsync(ingredient);
-                }
-            }
-
             await _unitOfWork.SaveChangesAsync();
 
             // Reload the menu item with its relationships
             var createdMenuItem = await _menuItemRepository.Query()
-                .Include(i => i.Ingredients)
                 .FirstOrDefaultAsync(i => i.Id == menuItem.Id);
 
             return ApiResponse<MenuItemDto>.Ok(MapToMenuItemDto(createdMenuItem));
@@ -123,7 +105,6 @@ public class MenuService : IMenuService
         try
         {
             var menuItem = await _menuItemRepository.Query()
-                .Include(i => i.Ingredients)
                 .FirstOrDefaultAsync(i => i.Id == id);
 
             if (menuItem == null)
@@ -143,42 +124,11 @@ public class MenuService : IMenuService
             await _menuItemRepository.UpdateAsync(menuItem);
             await _menuItemRepository.SaveChangesAsync();
 
-            // Update ingredients if provided
-            if (dto.Ingredients != null && dto.Ingredients.Any())
-            {
-                // Handle existing ingredients
-                foreach (var ingredientDto in dto.Ingredients.Where(i => i.Id.HasValue))
-                {
-                    var existingIngredient = menuItem.Ingredients.FirstOrDefault(i => i.Id == ingredientDto.Id);
-                    if (existingIngredient != null)
-                    {
-                        if (!string.IsNullOrEmpty(ingredientDto.Name)) existingIngredient.Name = ingredientDto.Name;
-                        if (!string.IsNullOrEmpty(ingredientDto.Quantity)) existingIngredient.Quantity = ingredientDto.Quantity;
-                        if (!string.IsNullOrEmpty(ingredientDto.Unit)) existingIngredient.Unit = ingredientDto.Unit;
-                        await _menuItemIngredientRepository.UpdateAsync(existingIngredient);
-                    }
-                }
-
-                // Add new ingredients
-                foreach (var ingredientDto in dto.Ingredients.Where(i => !i.Id.HasValue))
-                {
-                    var newIngredient = new MenuItemIngredient
-                    {
-                        Id = Guid.NewGuid(),
-                        MenuItemId = menuItem.Id,
-                        Name = ingredientDto.Name ?? string.Empty,
-                        Quantity = ingredientDto.Quantity ?? string.Empty,
-                        Unit = ingredientDto.Unit ?? string.Empty
-                    };
-                    await _menuItemIngredientRepository.AddAsync(newIngredient);
-                }
-            }
-
+           
             await _unitOfWork.SaveChangesAsync();
 
             // Reload the menu item with its relationships
             var updatedMenuItem = await _menuItemRepository.Query()
-                .Include(i => i.Ingredients)
                 .FirstOrDefaultAsync(i => i.Id == menuItem.Id);
 
             return ApiResponse<MenuItemDto>.Ok(MapToMenuItemDto(updatedMenuItem));
@@ -197,20 +147,6 @@ public class MenuService : IMenuService
             if (menuItem == null)
             {
                 return ApiResponse<bool>.Fail("Menu item not found");
-            }
-
-            // TODO: Check if there are any existing orders for this menu item
-            // For now, we'll just delete it
-
-            // Delete associated ingredients first
-            var ingredients = await _menuItemIngredientRepository.Query()
-                .Where(i => i.MenuItemId == id)
-                .ToListAsync();
-
-            foreach (var ingredient in ingredients)
-            {
-                await _menuItemIngredientRepository.RemoveAsync(ingredient);
-                await _menuItemIngredientRepository.SaveChangesAsync();
             }
 
             await _menuItemRepository.RemoveAsync(menuItem);
@@ -240,13 +176,6 @@ public class MenuService : IMenuService
             ImageUrl = menuItem.ImageUrl,
             IsActive = menuItem.IsActive,
             Status = menuItem.Status,
-            Ingredients = menuItem.Ingredients?.Select(i => new MenuItemIngredientDto
-            {
-                Id = i.Id,
-                Name = i.Name,
-                Quantity = i.Quantity,
-                Unit = i.Unit
-            }).ToList() ?? new List<MenuItemIngredientDto>()
         };
     }
 }

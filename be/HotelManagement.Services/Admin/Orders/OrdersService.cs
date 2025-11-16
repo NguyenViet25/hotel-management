@@ -210,6 +210,7 @@ public class OrdersService : IOrdersService
                         OrderId = order.Id,
                         MenuItemId = item.MenuItemId,
                         Quantity = item.Quantity,
+                        Name = menu.Name,
                         UnitPrice = menu.UnitPrice,
                         Status = OrderItemStatus.Pending
                     });
@@ -264,6 +265,7 @@ public class OrdersService : IOrdersService
                         OrderId = order.Id,
                         MenuItemId = item.MenuItemId,
                         Quantity = item.Quantity,
+                        Name= menu.Name,
                         UnitPrice = menu.UnitPrice,
                         Status = OrderItemStatus.Pending
                     });
@@ -298,6 +300,7 @@ public class OrdersService : IOrdersService
                 MenuItemId = dto.MenuItemId,
                 Quantity = dto.Quantity,
                 UnitPrice = menu.UnitPrice,
+                Name = menu.Name,
                 Status = OrderItemStatus.Pending
             });
 
@@ -392,6 +395,7 @@ public class OrdersService : IOrdersService
                         MenuItemId = item.MenuItemId,
                         Quantity = item.Quantity,
                         UnitPrice = menu.UnitPrice,
+                        Name = menu.Name,
                         Status = OrderItemStatus.Pending
                     });
                 }
@@ -452,6 +456,7 @@ public class OrdersService : IOrdersService
                         MenuItemId = item.MenuItemId,
                         Quantity = item.Quantity,
                         UnitPrice = menu.UnitPrice,
+                        Name = menu.Name,
                         Status = OrderItemStatus.Pending
                     });
                 }

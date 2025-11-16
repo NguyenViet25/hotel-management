@@ -45,12 +45,9 @@ public class MinibarService : IMinibarService
         {
             Id = Guid.NewGuid(),
             HotelId = request.HotelId,
-            RoomId = request.RoomId,
             Name = request.Name,
             Price = request.Price,
             Quantity = request.Quantity,
-            Consumed = 0,
-            LastRestockedAt = DateTime.UtcNow
         };
 
         await _minibarItemRepository.AddAsync(minibarItem);
@@ -70,11 +67,7 @@ public class MinibarService : IMinibarService
         minibarItem.Name = request.Name;
         minibarItem.Price = request.Price;
         
-        // If quantity is increased, update the last restocked timestamp
-        if (request.Quantity > minibarItem.Quantity)
-        {
-            minibarItem.LastRestockedAt = DateTime.UtcNow;
-        }
+ 
         
         minibarItem.Quantity = request.Quantity;
 
@@ -104,7 +97,6 @@ public class MinibarService : IMinibarService
         }
 
         var items = await _minibarItemRepository.Query()
-            .Where(item => item.RoomId == roomId)
             .ToListAsync();
 
         var dtos = new List<MinibarItemDto>();
@@ -128,18 +120,6 @@ public class MinibarService : IMinibarService
             return ApiResponse<MinibarItemDto>.Fail("Minibar item not found");
         }
 
-        if (minibarItem.Consumed + request.ConsumedQuantity > minibarItem.Quantity)
-        {
-            return ApiResponse<MinibarItemDto>.Fail("Consumed quantity exceeds available quantity");
-        }
-
-        minibarItem.Consumed += request.ConsumedQuantity;
-        minibarItem.LastConsumedAt = DateTime.UtcNow;
-        
-        if (request.BookingId.HasValue)
-        {
-            minibarItem.BookingId = request.BookingId;
-        }
 
         await _minibarItemRepository.UpdateAsync(minibarItem);
         await _unitOfWork.SaveChangesAsync();
@@ -165,9 +145,7 @@ public class MinibarService : IMinibarService
             }
 
             minibarItem.Quantity = itemRestock.NewQuantity;
-            minibarItem.Consumed = 0;
-            minibarItem.LastRestockedAt = DateTime.UtcNow;
-            minibarItem.BookingId = null;
+   
 
             await _minibarItemRepository.UpdateAsync(minibarItem);
             updatedItems.Add(minibarItem);
@@ -186,20 +164,13 @@ public class MinibarService : IMinibarService
 
     private async Task<MinibarItemDto> MapToDto(MinibarItem item)
     {
-        var room = await _roomRepository.FindAsync(item.RoomId);
         
         return new MinibarItemDto
         {
             Id = item.Id,
-            RoomId = item.RoomId,
-            RoomNumber = room?.Number ?? "Unknown",
-            BookingId = item.BookingId,
             Name = item.Name,
             Price = item.Price,
             Quantity = item.Quantity,
-            Consumed = item.Consumed,
-            LastRestockedAt = item.LastRestockedAt,
-            LastConsumedAt = item.LastConsumedAt
         };
     }
 }

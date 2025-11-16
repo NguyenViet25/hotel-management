@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelManagement.Domain.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251113191444_Init")]
+    [Migration("20251116035251_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -340,6 +340,60 @@ namespace HotelManagement.Domain.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("HotelManagement.Domain.Entities.ShoppingItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("QualityStatus")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Quantity")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("ShoppingOrderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShoppingOrderId");
+
+                    b.ToTable("ShoppingItems");
+                });
+
+            modelBuilder.Entity("HotelManagement.Domain.Entities.ShoppingOrder", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("HotelId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("OrderDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ShoppingOrders");
+                });
+
             modelBuilder.Entity("HotelManagement.Domain.Guest", b =>
                 {
                     b.Property<Guid>("Id")
@@ -628,34 +682,6 @@ namespace HotelManagement.Domain.Migrations
                     b.ToTable("MenuItems");
                 });
 
-            modelBuilder.Entity("HotelManagement.Domain.MenuItemIngredient", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("MenuItemId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Quantity")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Unit")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MenuItemId");
-
-                    b.ToTable("MenuItemIngredient");
-                });
-
             modelBuilder.Entity("HotelManagement.Domain.Order", b =>
                 {
                     b.Property<Guid>("Id")
@@ -708,6 +734,10 @@ namespace HotelManagement.Domain.Migrations
 
                     b.Property<Guid>("MenuItemId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("OrderId")
                         .HasColumnType("uniqueidentifier");
@@ -1142,6 +1172,17 @@ namespace HotelManagement.Domain.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
                 });
 
+            modelBuilder.Entity("HotelManagement.Domain.Entities.ShoppingItem", b =>
+                {
+                    b.HasOne("HotelManagement.Domain.Entities.ShoppingOrder", "ShoppingOrder")
+                        .WithMany("Items")
+                        .HasForeignKey("ShoppingOrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ShoppingOrder");
+                });
+
             modelBuilder.Entity("HotelManagement.Domain.HotelRoom", b =>
                 {
                     b.HasOne("HotelManagement.Domain.Hotel", "Hotel")
@@ -1211,17 +1252,6 @@ namespace HotelManagement.Domain.Migrations
                         .HasForeignKey("HotelId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("HotelManagement.Domain.MenuItemIngredient", b =>
-                {
-                    b.HasOne("HotelManagement.Domain.MenuItem", "MenuItem")
-                        .WithMany("Ingredients")
-                        .HasForeignKey("MenuItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("MenuItem");
                 });
 
             modelBuilder.Entity("HotelManagement.Domain.Order", b =>
@@ -1390,6 +1420,11 @@ namespace HotelManagement.Domain.Migrations
                     b.Navigation("BookingRooms");
                 });
 
+            modelBuilder.Entity("HotelManagement.Domain.Entities.ShoppingOrder", b =>
+                {
+                    b.Navigation("Items");
+                });
+
             modelBuilder.Entity("HotelManagement.Domain.Hotel", b =>
                 {
                     b.Navigation("RoomTypes");
@@ -1405,11 +1440,6 @@ namespace HotelManagement.Domain.Migrations
             modelBuilder.Entity("HotelManagement.Domain.Invoice", b =>
                 {
                     b.Navigation("Lines");
-                });
-
-            modelBuilder.Entity("HotelManagement.Domain.MenuItem", b =>
-                {
-                    b.Navigation("Ingredients");
                 });
 
             modelBuilder.Entity("HotelManagement.Domain.Order", b =>

@@ -1,4 +1,5 @@
 using HotelManagement.Domain;
+using HotelManagement.Domain.Entities;
 using HotelManagement.Repository.Common;
 using HotelManagement.Services.Admin.Users;
 using HotelManagement.Services.Common;
@@ -9,106 +10,112 @@ namespace HotelManagement.Services.Admin.Kitchen;
 public class KitchenService : IKitchenService
 {
     private readonly IRepository<MenuItem> _menuItemRepository;
-    private readonly IRepository<MenuItemIngredient> _menuItemIngredientRepository;
+    private readonly IRepository<ShoppingItem> _shoppingItemRepository;
+    private readonly IRepository<ShoppingOrder> _shoppingOrderRepository;
+    private readonly IRepository<Order> _orderRepository;
     private readonly IUsersAdminService _userService;
 
     public KitchenService(
         IRepository<MenuItem> menuItemRepository,
-        IRepository<MenuItemIngredient> menuItemIngredientRepository,
+        IRepository<ShoppingItem> shoppingItemRepository,
+        IRepository<ShoppingOrder> shoppingOrderRepository,
+        IRepository<Order> orderRepository,
         IUsersAdminService userService)
     {
         _menuItemRepository = menuItemRepository;
-        _menuItemIngredientRepository = menuItemIngredientRepository;
+        _shoppingItemRepository = shoppingItemRepository;
+        _shoppingOrderRepository = shoppingOrderRepository;
+        _orderRepository = orderRepository;
         _userService = userService;
     }
 
-    public async Task<ApiResponse<ShoppingListDto>> GenerateShoppingListAsync(ShoppingListRequestDto request)
+    public async Task<ApiResponse> GenerateShoppingListAsync(ShoppingListRequestDto request)
     {
         try
         {
-            var query = _menuItemRepository.Query()
-                .Include(m => m.Ingredients)
-                .Where(m => m.IsActive && m.Status == MenuItemStatus.Available);
-
-            // Filter by menu item IDs if provided
-            if (request.MenuItemIds != null && request.MenuItemIds.Any())
-            {
-                query = query.Where(m => request.MenuItemIds.Contains(m.Id));
-            }
-
-            var menuItems = await query.ToListAsync();
-
-            // Group ingredients across all menu items
-            var ingredientGroups = menuItems
-                .SelectMany(m => m.Ingredients.Select(i => new
-                {
-                    Ingredient = i,
-                    MenuItem = m
-                }))
-                .GroupBy(x => new { x.Ingredient.Name, x.Ingredient.Unit })
-                .Select(g => new ShoppingListItemDto
-                {
-                    IngredientName = g.Key.Name,
-                    Unit = g.Key.Unit,
-                    // Sum quantities - assuming they can be parsed as decimal
-                    TotalQuantity = g.Sum(x => decimal.TryParse(x.Ingredient.Quantity, out var qty) ? qty : 0),
-                    RelatedMenuItems = g.Select(x => x.MenuItem.Name).Distinct().ToList()
-                })
-                .ToList();
-
-            var shoppingList = new ShoppingListDto
+            var newShoppingOrder = new ShoppingOrder()
             {
                 Id = Guid.NewGuid(),
-                GeneratedDate = DateTime.UtcNow,
-                StartDate = request.StartDate,
-                EndDate = request.EndDate,
-                Items = ingredientGroups
+                CreatedAt = DateTime.Now,
+                OrderDate = request.OrderDate,
+                Notes = request.Notes,
+                HotelId = request.HotelId,
             };
+            await _shoppingOrderRepository.AddAsync(newShoppingOrder);
+            await _shoppingOrderRepository.SaveChangesAsync();
 
-            return ApiResponse<ShoppingListDto>.Ok(shoppingList);
+            if (request.ShoppingItems?.Count > 0)
+            {
+                foreach (var item in request.ShoppingItems)
+                {
+                    var newShoppingItem = new ShoppingItem()
+                    {
+                        Id = Guid.NewGuid(),
+                        ShoppingOrderId = newShoppingOrder.Id,
+                        Name = item.Name,
+                        Quantity = item.Quantity,
+                        Unit = item.Unit,
+                        QualityStatus = QualityStatus.NotRated,
+                    };
+
+                    await _shoppingItemRepository.AddAsync(newShoppingItem);
+                    await _shoppingItemRepository.SaveChangesAsync();
+                }
+            }
+
+            return ApiResponse.Ok();
         }
         catch (Exception ex)
         {
-            return ApiResponse<ShoppingListDto>.Fail($"Failed to generate shopping list: {ex.Message}");
+            return ApiResponse.Fail($"Failed to generate shopping list: {ex.Message}");
         }
     }
 
-    public async Task<ApiResponse<IngredientQualityCheckResultDto>> CheckIngredientQualityAsync(
-        IngredientQualityCheckDto request, Guid staffUserId)
+    public async Task<ApiResponse<GetFoodsByWeekResponse>> GetFoodByWeekRequestAsync(GetFoodsByWeekRequest request)
     {
-        try
+        var (startDate, endDate) = GetWeekRange();
+        var foodsByDays = new List<FoodsByDay>();
+
+        for (DateTime date = startDate; date <= endDate; date = date.AddDays(1))
         {
-            // In a real implementation, we would store this in a database
-            // For now, we'll just return a result based on the input
-            
-            var user = await _userService.GetAsync(staffUserId);
-            if (user == null)
+            var foods = await _orderRepository.Query()
+                .Where(o => o.CreatedAt == date)
+                .SelectMany(o => o.Items)                   // flatten items
+                .GroupBy(i => i.Id)                         // group by Id
+                .Select(g => new FoodsByDayItem
+                {
+                    Id = g.Key,
+                    Name = g.First().Name,
+                    Quantity = g.Sum(x => x.Quantity),       // sum quantities
+                    UnitPrice = g.First().UnitPrice
+                })
+                .ToListAsync();
+
+            foodsByDays.Add(new FoodsByDay()
             {
-                return ApiResponse<IngredientQualityCheckResultDto>.Fail("User not found");
-            }
-
-            var result = new IngredientQualityCheckResultDto
-            {
-                Id = Guid.NewGuid(),
-                IngredientName = request.IngredientName,
-                Status = request.Status,
-                Notes = request.Notes,
-                NeedsReplacement = request.NeedsReplacement,
-                ReplacementQuantity = request.ReplacementQuantity,
-                ReplacementUnit = request.ReplacementUnit,
-                CheckedDate = DateTime.UtcNow,
-                CheckedByUserName = user.UserName ?? "Unknown"
-            };
-
-            // If the quality is poor or expired and needs replacement, we would
-            // trigger a notification or add to a shopping list in a real implementation
-
-            return ApiResponse<IngredientQualityCheckResultDto>.Ok(result);
+                Date = date,
+                FoodsByDayItems = foods,
+            });
         }
-        catch (Exception ex)
+
+        return ApiResponse<GetFoodsByWeekResponse>.Ok(new GetFoodsByWeekResponse()
         {
-            return ApiResponse<IngredientQualityCheckResultDto>.Fail($"Failed to check ingredient quality: {ex.Message}");
-        }
+            StartDate = startDate,
+            EndDate = endDate,
+            FoodsByDays = foodsByDays
+        });
+    }
+
+    public static (DateTime StartDate, DateTime EndDate) GetWeekRange()
+    {
+        DateTime today = DateTime.Now;
+        int diff = today.DayOfWeek - DayOfWeek.Monday;
+        if (diff < 0) diff += 7;
+
+        DateTime startDate = today.AddDays(-diff).Date;
+        DateTime endDate = startDate.AddDays(6).Date;
+
+        return (startDate, endDate);
     }
 }
 

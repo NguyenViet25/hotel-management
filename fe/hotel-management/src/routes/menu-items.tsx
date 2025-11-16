@@ -12,6 +12,7 @@ import {
   Home,
   Category,
   Bed,
+  ShoppingCart,
 } from "@mui/icons-material";
 
 export const menuItems = {
@@ -46,8 +47,16 @@ export const menuItems = {
   ],
   kitchen: [
     { title: "Tổng quan", path: "/kitchen/dashboard", icon: <DashboardIcon /> },
-    { title: "Yêu cầu", path: "/kitchen/orders", icon: <RestaurantIcon /> },
-    { title: "Quản lý", path: "/kitchen/management", icon: <DiningIcon /> },
+    {
+      title: "Lịch trình món ăn",
+      path: "/kitchen/timeline",
+      icon: <RestaurantIcon />,
+    },
+    {
+      title: "Danh sách mua hàng",
+      path: "/kitchen/shopping-list",
+      icon: <ShoppingCart />,
+    },
   ],
   waiter: [
     { title: "Tổng quan", path: "/waiter/dashboard", icon: <DashboardIcon /> },

@@ -33,6 +33,8 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
     public DbSet<InvoiceLine> InvoiceLines => Set<InvoiceLine>();
     public DbSet<UserPropertyRole> UserPropertyRoles => Set<UserPropertyRole>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<ShoppingItem> ShoppingItems => Set<ShoppingItem>();
+    public DbSet<ShoppingOrder> ShoppingOrders => Set<ShoppingOrder>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -54,6 +56,12 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
             .WithMany(h => h.Rooms)
             .HasForeignKey(r => r.HotelId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<ShoppingItem>()
+          .HasOne(r => r.ShoppingOrder)
+          .WithMany(h => h.Items)
+          .HasForeignKey(r => r.ShoppingOrderId)
+          .OnDelete(DeleteBehavior.Restrict);
 
         builder.Entity<RoomType>()
             .HasOne(rt => rt.Hotel)

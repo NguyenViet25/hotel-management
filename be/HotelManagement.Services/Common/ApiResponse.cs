@@ -8,12 +8,10 @@ public class ApiResponse<T>
     public IDictionary<string, string[]>? Errors { get; set; }
     public object? Meta { get; set; }
 
-    public static ApiResponse<T> Ok(T data, string? message = null, object? meta = null)
+    public static ApiResponse<T> Ok(T? data, string? message = null, object? meta = null)
         => new() { IsSuccess = true, Data = data, Message = message, Meta = meta };
-    public static ApiResponse<T> Success(T data, string? message = null, object? meta = null)
+    public static ApiResponse<T> Success(T? data, string? message = null, object? meta = null)
     => new() { IsSuccess = true, Data = data, Message = message, Meta = meta };
-
-
     public static ApiResponse<T> Fail(string message, IDictionary<string, string[]>? errors = null, object? meta = null)
         => new() { IsSuccess = false, Message = message, Errors = errors, Meta = meta };
 }

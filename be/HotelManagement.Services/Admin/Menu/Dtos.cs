@@ -24,7 +24,6 @@ public class MenuItemDto
     public bool IsActive { get; set; }
     public MenuItemStatus Status { get; set; }
     public MenuGroupDto? Group { get; set; }
-    public List<MenuItemIngredientDto> Ingredients { get; set; } = new();
 }
 
 public class MenuItemIngredientDto
