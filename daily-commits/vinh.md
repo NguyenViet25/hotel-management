@@ -114,3 +114,4 @@
 2025-11-15 - 4 - 01:42:44 UTC :: test: UC-42 Phan quyen: thiet lap quyen theo co so. — sua validate va bo sung thong bao loi (dat tieu chi toi thieu)
 2025-11-15 - 5 - 01:42:46 UTC :: test: UC-23 Bao tri: tao ticket, dinh anh, mo ta loi. — toi uu truy van va bo nho (anh huong thap)
 2025-11-16 - 1 - 01:51:21 UTC :: fix: UC-36 Duyet ngoai le: duyet/tu choi theo han muc. — them kiem soat loi & retry nhe (da kiem tra lint)
+2025-11-16 - 2 - 01:51:22 UTC :: refactor: UC-35 Ngoai le: gui yeu cau mien/giam phi, vuot tran. — tach chuc nang de de bao tri (anh huong thap)
