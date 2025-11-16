@@ -65,6 +65,9 @@ const ManagerRoomsPage = lazy(
 const ManagerMenusPage = lazy(
   () => import("../pages/dashboard/manager/menus/MenuManagementPage")
 );
+const ManagerTablesPage = lazy(
+  () => import("../pages/dashboard/manager/tables/TableManagementPage")
+);
 const KitchenManagementPage = lazy(
   () => import("../pages/dashboard/manager/kitchen/KitchenManagementPage")
 );
@@ -222,6 +225,14 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<div>Loading...</div>}>
             <ManagerMenusPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "tables",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <ManagerTablesPage />
           </Suspense>
         ),
       },
