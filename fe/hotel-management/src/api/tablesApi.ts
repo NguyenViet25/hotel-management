@@ -29,14 +29,14 @@ export interface CreateTableRequest {
   hotelId: string;
   name: string;
   capacity: number;
-  status?: TableStatus;
+  tableStatus?: TableStatus;
   isActive?: boolean;
 }
 
 export interface UpdateTableRequest {
   name?: string;
   capacity?: number;
-  status?: TableStatus;
+  tableStatus?: TableStatus;
   isActive?: boolean;
 }
 
@@ -66,14 +66,14 @@ const tablesApi = {
     if (params.page !== undefined) qp.append("page", String(params.page));
     if (params.pageSize !== undefined)
       qp.append("pageSize", String(params.pageSize));
-    const res = await axios.get(`/admin/tables?${qp.toString()}`);
+    const res = await axios.get(`/tables?${qp.toString()}`);
     return res.data;
   },
 
   async createTable(
     payload: CreateTableRequest
   ): Promise<ItemResponse<TableDto>> {
-    const res = await axios.post(`/admin/tables`, payload);
+    const res = await axios.post(`/tables`, payload);
     return res.data;
   },
 
@@ -81,12 +81,12 @@ const tablesApi = {
     id: string,
     payload: UpdateTableRequest
   ): Promise<ItemResponse<TableDto>> {
-    const res = await axios.put(`/admin/tables/${id}`, payload);
+    const res = await axios.put(`/tables/${id}`, payload);
     return res.data;
   },
 
   async deleteTable(id: string): Promise<ItemResponse<boolean>> {
-    const res = await axios.delete(`/admin/tables/${id}`);
+    const res = await axios.delete(`/tables/${id}`);
     return res.data;
   },
 };

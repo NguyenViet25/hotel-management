@@ -71,6 +71,7 @@ const TableManagementPage: React.FC = () => {
   const closeCreate = () => setCreateOpen(false);
 
   const openEdit = (record: TableDto) => {
+    console.log("record", record);
     setEditingItem(record);
     setEditOpen(true);
   };

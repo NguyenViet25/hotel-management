@@ -26,7 +26,11 @@ const statusChip = (status: TableStatus) => {
 };
 
 const activeChip = (active?: boolean) => (
-  <Chip label={active ? "Hoạt động" : "Vô hiệu"} color={active ? "info" : "default"} size="small" />
+  <Chip
+    label={active ? "Hoạt động" : "Vô hiệu"}
+    color={active ? "info" : "default"}
+    size="small"
+  />
 );
 
 const TablesTable: React.FC<TablesTableProps> = ({
@@ -54,8 +58,12 @@ const TablesTable: React.FC<TablesTableProps> = ({
   const columns: Column<TableDto>[] = [
     { id: "name", label: "Tên bàn", minWidth: 180 },
     { id: "capacity", label: "Sức chứa", minWidth: 120 },
-    { id: "status", label: "Trạng thái", minWidth: 140, format: (v) => statusChip(v as TableStatus) },
-    { id: "isActive", label: "Hoạt động", minWidth: 140, format: (v) => activeChip(Boolean(v)) },
+    {
+      id: "status",
+      label: "Trạng thái",
+      minWidth: 140,
+      format: (v) => statusChip(v as TableStatus),
+    },
   ];
 
   return (

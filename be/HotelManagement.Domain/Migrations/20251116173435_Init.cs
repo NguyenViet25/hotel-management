@@ -350,7 +350,8 @@ namespace HotelManagement.Domain.Migrations
                     HotelId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Capacity = table.Column<int>(type: "int", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false)
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    TableStatus = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {

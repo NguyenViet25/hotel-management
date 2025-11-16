@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelManagement.Domain.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251116062827_Init")]
+    [Migration("20251116173435_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -885,6 +885,9 @@ namespace HotelManagement.Domain.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TableStatus")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 

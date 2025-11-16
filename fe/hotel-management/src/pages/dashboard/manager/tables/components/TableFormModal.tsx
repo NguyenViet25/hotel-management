@@ -17,7 +17,7 @@ import {
   Switch,
   TextField,
 } from "@mui/material";
-import React from "react";
+import React, { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import type {
@@ -72,6 +72,17 @@ const TableFormModal: React.FC<TableFormModalProps> = ({
     },
   });
 
+  useEffect(() => {
+    if (mode === "edit" && initialValues) {
+      reset({
+        name: initialValues.name,
+        capacity: initialValues.capacity,
+        status: initialValues.status,
+        isActive: initialValues.isActive,
+      });
+    }
+  }, [mode, initialValues, reset]);
+
   const statusOptions = [
     { value: 0, label: "Sẵn sàng" },
     { value: 1, label: "Đang sử dụng" },
@@ -85,7 +96,7 @@ const TableFormModal: React.FC<TableFormModalProps> = ({
         hotelId,
         name: values.name,
         capacity: values.capacity,
-        status: values.status,
+        tableStatus: values.status,
         isActive: values.isActive,
       };
       await onSubmit(payload);
@@ -93,7 +104,7 @@ const TableFormModal: React.FC<TableFormModalProps> = ({
       const payload: UpdateTableRequest = {
         name: values.name,
         capacity: values.capacity,
-        status: values.status,
+        tableStatus: values.status,
         isActive: values.isActive,
       };
       await onSubmit(payload);
@@ -183,22 +194,6 @@ const TableFormModal: React.FC<TableFormModalProps> = ({
               )}
             />
           </FormControl>
-
-          <Controller
-            control={control}
-            name="isActive"
-            render={({ field }) => (
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={field.value}
-                    onChange={(e) => field.onChange(e.target.checked)}
-                  />
-                }
-                label={field.value ? "Hoạt động" : "Vô hiệu"}
-              />
-            )}
-          />
         </Stack>
       </DialogContent>
       <DialogActions>
