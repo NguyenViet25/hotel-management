@@ -80,12 +80,7 @@ public enum PaymentMethod
     MobilePayment = 4
 }
 
-public enum PromotionType
-{
-    PercentageDiscount = 0,
-    FixedAmountDiscount = 1,
-    FreeService = 2
-}
+
 
 public enum PaymentType
 {
