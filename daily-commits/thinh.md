@@ -115,3 +115,4 @@
 2025-11-15 - 5 - 01:42:44 UTC :: test: UC-29 Thanh toan nha hang: thu tien, in hoa don, dong giao dich. — cai thien hieu nang render/list (can theo doi them)
 2025-11-16 - 1 - 01:51:21 UTC :: fix: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — bo sung metrics/telemetry co ban (da kiem tra lint)
 2025-11-16 - 2 - 01:51:22 UTC :: chore: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — cap nhat mock data & seed test (dong bo voi BE/FE)
+2025-11-16 - 3 - 01:51:24 UTC :: refactor: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — chinh sua tai lieu & mo ta API (dat tieu chi toi thieu)
