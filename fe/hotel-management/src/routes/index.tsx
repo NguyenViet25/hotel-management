@@ -9,6 +9,7 @@ import { menuItems } from "./menu-items";
 import ManagerDashboardPage from "../pages/dashboard/manager";
 import { useStore, type StoreState } from "../hooks/useStore";
 import OrdersManagementPage from "../pages/dashboard/waiter/orders/OrdersManagementPage";
+import KitchenTimelinePage from "../pages/dashboard/manager/kitchen/KitchenTimelinePage";
 
 // Role-aware layout wrapper for standalone pages like /profile
 const RoleAwareLayout = () => {
@@ -289,7 +290,15 @@ const router = createBrowserRouter([
         element: <KitchenDashboard />,
       },
       {
-        path: "management",
+        path: "timeline",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <KitchenTimelinePage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "shopping-list",
         element: (
           <Suspense fallback={<div>Loading...</div>}>
             <KitchenManagementPage />

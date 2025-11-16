@@ -53,7 +53,7 @@ export const menuItems = {
       icon: <RestaurantIcon />,
     },
     {
-      title: "Danh sách mua hàng",
+      title: "Mua nguyên liệu",
       path: "/kitchen/shopping-list",
       icon: <ShoppingCart />,
     },
