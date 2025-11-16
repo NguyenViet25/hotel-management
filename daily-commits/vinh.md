@@ -116,3 +116,4 @@
 2025-11-16 - 1 - 01:51:21 UTC :: fix: UC-36 Duyet ngoai le: duyet/tu choi theo han muc. — them kiem soat loi & retry nhe (da kiem tra lint)
 2025-11-16 - 2 - 01:51:22 UTC :: refactor: UC-35 Ngoai le: gui yeu cau mien/giam phi, vuot tran. — tach chuc nang de de bao tri (anh huong thap)
 2025-11-16 - 3 - 01:51:24 UTC :: build: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — sua validate va bo sung thong bao loi (da review so bo)
+2025-11-16 - 4 - 01:51:26 UTC :: chore: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — bo sung metrics/telemetry co ban (can theo doi them)
