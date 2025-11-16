@@ -117,3 +117,4 @@
 2025-11-16 - 2 - 01:51:22 UTC :: refactor: UC-35 Ngoai le: gui yeu cau mien/giam phi, vuot tran. — tach chuc nang de de bao tri (anh huong thap)
 2025-11-16 - 3 - 01:51:24 UTC :: build: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — sua validate va bo sung thong bao loi (da review so bo)
 2025-11-16 - 4 - 01:51:26 UTC :: chore: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — bo sung metrics/telemetry co ban (can theo doi them)
+2025-11-16 - 5 - 01:51:29 UTC :: refactor: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — sua validate va bo sung thong bao loi (da smoke test)
