@@ -24,6 +24,13 @@ public class KitchenController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPut("shopping")]
+    public async Task<IActionResult> UpdateShoppingList([FromBody] ShoppingListRequestDto request)
+    {
+        var result = await _kitchenService.UpdateShoppingListAsync(request);
+        return Ok(result);
+    }
+
     [HttpGet("shopping/{id}")]
     public async Task<IActionResult> GenerateShoppingList([FromRoute] Guid id)
     {

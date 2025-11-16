@@ -30,6 +30,7 @@ export interface FoodsByDay {
 
 // ShoppingListRequestDto
 export interface ShoppingListRequestDto {
+  id?: string; // Guid -> string
   orderDate: string; // DateTime -> string
   hotelId: string; // Guid -> string
   notes?: string | null;
@@ -72,6 +73,13 @@ const kitchenApi = {
     payload: ShoppingListRequestDto
   ): Promise<ItemResponse<ShoppingListRequestDto>> {
     const res = await axios.post("/kitchen/shopping", payload);
+    return res.data;
+  },
+
+  async updateShoppingList(
+    payload: ShoppingListRequestDto
+  ): Promise<ItemResponse<ShoppingListRequestDto>> {
+    const res = await axios.put("/kitchen/shopping", payload);
     return res.data;
   },
 

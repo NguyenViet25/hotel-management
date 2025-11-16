@@ -140,6 +140,66 @@ public class KitchenService : IKitchenService
 
         return ApiResponse<ShoppingDto>.Ok(shopping);
     }
+
+    public async Task<ApiResponse> UpdateShoppingListAsync(ShoppingListRequestDto request)
+    {
+        try
+        {
+            var items = await _shoppingItemRepository.Query()
+                .Where(x => x.ShoppingOrderId == request.Id).ToListAsync();
+
+            if (items.Count > 0)
+            {
+                await _shoppingItemRepository.RemoveRangeAsync(items);
+                await _shoppingItemRepository.SaveChangesAsync();
+            }
+
+            var existShopList = await _shoppingOrderRepository.Query()
+              .Where(x => x.Id == request.Id).FirstOrDefaultAsync();
+
+            if (existShopList is not null)
+            {
+                await _shoppingOrderRepository.RemoveAsync(existShopList);
+                await _shoppingOrderRepository.SaveChangesAsync();
+            }
+
+            var newShoppingOrder = new ShoppingOrder()
+            {
+                Id = Guid.NewGuid(),
+                CreatedAt = DateTime.Now,
+                OrderDate = request.OrderDate,
+                Notes = request.Notes,
+                HotelId = request.HotelId,
+            };
+            await _shoppingOrderRepository.AddAsync(newShoppingOrder);
+            await _shoppingOrderRepository.SaveChangesAsync();
+
+            if (request.ShoppingItems?.Count > 0)
+            {
+                foreach (var item in request.ShoppingItems)
+                {
+                    var newShoppingItem = new ShoppingItem()
+                    {
+                        Id = Guid.NewGuid(),
+                        ShoppingOrderId = newShoppingOrder.Id,
+                        Name = item.Name,
+                        Quantity = item.Quantity,
+                        Unit = item.Unit,
+                        QualityStatus = QualityStatus.NotRated,
+                    };
+
+                    await _shoppingItemRepository.AddAsync(newShoppingItem);
+                    await _shoppingItemRepository.SaveChangesAsync();
+                }
+            }
+
+            return ApiResponse.Ok();
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse.Fail($"Failed to generate shopping list: {ex.Message}");
+        }
+    }
 }
 
 

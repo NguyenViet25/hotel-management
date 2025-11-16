@@ -23,7 +23,13 @@ import {
   Typography,
   Snackbar,
 } from "@mui/material";
-import { Add, ChevronLeft, ChevronRight, Edit } from "@mui/icons-material";
+import {
+  Add,
+  ChevronLeft,
+  ChevronRight,
+  Edit,
+  RemoveRedEye,
+} from "@mui/icons-material";
 import PageTitle from "../../../../components/common/PageTitle";
 import kitchenApi, {
   type GetFoodsByWeekResponse,
@@ -32,6 +38,7 @@ import kitchenApi, {
 import { useStore, type StoreState } from "../../../../hooks/useStore";
 import dayjs from "dayjs";
 import ShoppingFormModal from "./components/ShoppingFormModal";
+import { getExactVNDate } from "../../../../utils/date-helper";
 
 // Compute Monday → Sunday for the given date
 const getWeekRange = (date: Date) => {
@@ -40,7 +47,6 @@ const getWeekRange = (date: Date) => {
   const end = start.add(6, "day");
   return { start, end };
 };
-
 // Format currency for unit price (VND style)
 const formatCurrency = (value: number) =>
   value.toLocaleString("vi-VN", { maximumFractionDigits: 0 });
@@ -53,7 +59,9 @@ const FoodTimeline: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [shoppingOpen, setShoppingOpen] = useState<boolean>(false);
-  const [selectedOrderDate, setSelectedOrderDate] = useState(dayjs());
+  const [selectedOrderDate, setSelectedOrderDate] = useState<
+    dayjs.Dayjs | undefined
+  >(undefined);
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
   const [initialShopping, setInitialShopping] = useState<
     import("../../../../api/kitchenApi").ShoppingDto | undefined
@@ -81,7 +89,7 @@ const FoodTimeline: React.FC = () => {
     setError(null);
     try {
       const res = await kitchenApi.getFoodsByWeek({
-        startDate: start.toDate().toISOString(),
+        startDate: getExactVNDate(start.toDate().toDateString()),
         hotelId,
       });
       if (res.isSuccess) {
@@ -106,7 +114,7 @@ const FoodTimeline: React.FC = () => {
     const map = new Map<string, FoodsByDayItem[]>();
     if (data?.foodsByDays) {
       for (const day of data.foodsByDays) {
-        const key = dayjs(new Date(day.date)).format("YYYY-MM-DD");
+        const key = getExactVNDate(day.date);
         map.set(key, day.foodsByDayItems || []);
       }
     }
@@ -139,7 +147,7 @@ const FoodTimeline: React.FC = () => {
       const res = await kitchenApi.getShoppingOrderDetails(shoppingId);
       if (res.isSuccess) {
         setInitialShopping(res.data);
-        setSelectedOrderDate(dayjs(res.data.orderDate));
+        setSelectedOrderDate(dayjs(getExactVNDate(res.data.orderDate)));
         setModalMode("edit");
         setShoppingOpen(true);
       } else {
@@ -165,11 +173,19 @@ const FoodTimeline: React.FC = () => {
     shoppingItems?: { name: string; quantity: string; unit: string }[] | null;
   }) => {
     try {
-      const res = await kitchenApi.generateShoppingList(payload);
+      let res;
+      if (modalMode === "create") {
+        res = await kitchenApi.generateShoppingList(payload);
+      } else {
+        res = await kitchenApi.updateShoppingList(payload);
+      }
       if (res.isSuccess) {
         setSnackbar({
           open: true,
-          message: "Tạo yêu cầu mua nguyên liệu thành công",
+          message:
+            modalMode === "create"
+              ? "Tạo yêu cầu mua nguyên liệu thành công"
+              : "Cập nhật yêu cầu mua nguyên liệu thành công",
           severity: "success",
         });
 
@@ -177,21 +193,27 @@ const FoodTimeline: React.FC = () => {
       } else {
         setSnackbar({
           open: true,
-          message: res.message || "Không thể tạo yêu cầu",
+          message:
+            modalMode === "create"
+              ? res.message || "Không thể tạo yêu cầu"
+              : res.message || "Không thể cập nhật yêu cầu",
           severity: "error",
         });
       }
     } catch {
       setSnackbar({
         open: true,
-        message: "Đã xảy ra lỗi khi tạo yêu cầu",
+        message:
+          modalMode === "create"
+            ? "Đã xảy ra lỗi khi tạo yêu cầu"
+            : "Đã xảy ra lỗi khi cập nhật yêu cầu",
         severity: "error",
       });
     }
   };
 
   useEffect(() => {
-    const todayKey = dayjs().format("YYYY-MM-DD");
+    const todayKey = getExactVNDate(today.toDate().toDateString());
     const el = document.getElementById(`${todayKey}-foods`);
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -232,10 +254,10 @@ const FoodTimeline: React.FC = () => {
       {!loading && (
         <Grid container spacing={2}>
           {weekDays.map((d) => {
-            const key = d.format("YYYY-MM-DD");
+            const key = getExactVNDate(d.toDate().toDateString());
             const foods = foodsMap.get(key) || [];
             const dayEntry = data?.foodsByDays.find(
-              (item) => dayjs(new Date(item.date)).format("YYYY-MM-DD") === key
+              (item) => getExactVNDate(item.date) === key
             );
             const hasShoppingOrder = !!dayEntry?.shoppingOrderId;
             const isToday = d.isSame(dayjs(), "day");
@@ -262,7 +284,7 @@ const FoodTimeline: React.FC = () => {
                     >
                       {d.format("DD/MM/YYYY")}
                     </Typography>
-                    <Box>
+                    <Stack gap={1}>
                       {!hasShoppingOrder ? (
                         <Button
                           startIcon={<Add />}
@@ -274,19 +296,32 @@ const FoodTimeline: React.FC = () => {
                           Tạo yêu cầu mua nguyên liệu
                         </Button>
                       ) : (
-                        <Button
-                          startIcon={<Edit />}
-                          size="small"
-                          variant="contained"
-                          color="secondary"
-                          onClick={() =>
-                            openEditShopping(dayEntry?.shoppingOrderId)
-                          }
-                        >
-                          Sửa yêu cầu mua nguyên liệu
-                        </Button>
+                        <Stack gap={1}>
+                          <Button
+                            startIcon={<Edit />}
+                            size="small"
+                            variant="contained"
+                            color="success"
+                            onClick={() =>
+                              openEditShopping(dayEntry?.shoppingOrderId)
+                            }
+                          >
+                            Sửa yêu cầu mua nguyên liệu
+                          </Button>
+                          <Button
+                            startIcon={<RemoveRedEye />}
+                            size="small"
+                            variant="contained"
+                            color="inherit"
+                            onClick={() =>
+                              openEditShopping(dayEntry?.shoppingOrderId)
+                            }
+                          >
+                            Xem và đánh giá nguyên liệu
+                          </Button>
+                        </Stack>
                       )}
-                    </Box>
+                    </Stack>
                   </Stack>
                   <List dense>
                     {foods.length > 0 ? (
@@ -341,7 +376,11 @@ const FoodTimeline: React.FC = () => {
       )}
       <ShoppingFormModal
         open={shoppingOpen}
-        onClose={() => setShoppingOpen(false)}
+        onClose={() => {
+          setInitialShopping(undefined);
+          setShoppingOpen(false);
+          setSelectedOrderDate(undefined);
+        }}
         mode={modalMode}
         initialValues={initialShopping}
         defaultOrderDate={selectedOrderDate}

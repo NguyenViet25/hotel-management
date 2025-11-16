@@ -34,6 +34,7 @@ import type {
   ShoppingItemDto,
   ShoppingDto,
 } from "../../../../../api/kitchenApi";
+import { getExactVNDate } from "../../../../../utils/date-helper";
 
 // Form value types derived from API models
 type FormValues = {
@@ -97,6 +98,12 @@ const ShoppingFormModal: React.FC<ShoppingFormModalProps> = ({
     },
   });
 
+  useEffect(() => {
+    if (defaultOrderDate) {
+      setValue("orderDate", defaultOrderDate);
+    }
+  }, [defaultOrderDate]);
+
   const { fields, append, remove } = useFieldArray({
     control,
     name: "shoppingItems",
@@ -107,8 +114,11 @@ const ShoppingFormModal: React.FC<ShoppingFormModalProps> = ({
     if (mode === "edit" && initialValues) {
       setValue(
         "orderDate",
-        initialValues.orderDate ? dayjs(initialValues.orderDate) : dayjs()
+        initialValues.orderDate
+          ? dayjs(getExactVNDate(initialValues.orderDate))
+          : dayjs()
       );
+
       setValue("notes", initialValues.notes ?? "");
       setValue(
         "shoppingItems",
@@ -121,7 +131,8 @@ const ShoppingFormModal: React.FC<ShoppingFormModalProps> = ({
 
   const submitHandler = async (values: FormValues) => {
     const payload: ShoppingListRequestDto = {
-      orderDate: values.orderDate.toDate().toISOString(),
+      id: initialValues?.id || undefined,
+      orderDate: getExactVNDate(values.orderDate.toDate().toDateString()),
       hotelId,
       notes: values.notes || "",
       shoppingItems: values.shoppingItems,
@@ -142,7 +153,15 @@ const ShoppingFormModal: React.FC<ShoppingFormModalProps> = ({
   ];
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
+    <Dialog
+      open={open}
+      onClose={() => {
+        reset();
+        onClose();
+      }}
+      fullWidth
+      maxWidth="md"
+    >
       <DialogTitle fontWeight={600}>
         {mode === "create"
           ? "Tạo yêu cầu mua nguyên liệu"
@@ -289,7 +308,10 @@ const ShoppingFormModal: React.FC<ShoppingFormModalProps> = ({
             startIcon={<Close />}
             variant="outlined"
             color="inherit"
-            onClick={onClose}
+            onClick={() => {
+              onClose();
+              reset();
+            }}
           >
             Hủy
           </Button>

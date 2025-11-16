@@ -31,6 +31,7 @@ public class FoodsByDay
 
 public class ShoppingListRequestDto
 {
+    public Guid? Id { get; set; }
     public DateTime OrderDate { get; set; }
     public Guid HotelId { get; set; }
     public string? Notes { get; set; }
