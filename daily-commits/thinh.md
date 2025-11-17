@@ -120,3 +120,4 @@
 2025-11-16 - 5 - 01:51:27 UTC :: feat: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — bo sung case canh bien & no-show (da kiem tra lint)
 2025-11-17 - 1 - 01:47:24 UTC :: perf: UC-34 Cham cong: ghi nhan diem danh, ban giao ca. — bo sung index & toi uu DB (chuan bi cho tinh nang tiep theo)
 2025-11-17 - 2 - 01:47:27 UTC :: perf: UC-43 Mat khau: quy dinh do manh, het han phien. — bo sung case canh bien & no-show (da review so bo)
+2025-11-17 - 3 - 01:47:28 UTC :: chore: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — dieu chinh UI & copy cho ro (khong doi hanh vi)
