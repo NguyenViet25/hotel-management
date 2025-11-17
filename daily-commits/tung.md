@@ -126,3 +126,4 @@
 2025-11-17 - 1 - 01:47:24 UTC :: refactor: UC-26 Order: tao/chinh sua order, ghi chu, void/discount. — chinh sua tai lieu & mo ta API (da kiem tra lint)
 2025-11-17 - 2 - 01:47:25 UTC :: ci: UC-11 Goi gia: bat/tam ngung goi gia dang ap dung. — them kiem soat loi & retry nhe (dam bao backward-compatible)
 2025-11-17 - 3 - 01:47:26 UTC :: docs: UC-10 Goi gia: tao rate plan, thoi gian ap dung linh hoat. — don dep code va xoa doan thua (dam bao backward-compatible)
+2025-11-17 - 4 - 01:47:29 UTC :: chore: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — cap nhat cau hinh va kiem tra bien (anh huong thap)
