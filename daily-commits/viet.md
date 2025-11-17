@@ -121,3 +121,4 @@
 2025-11-17 - 1 - 01:47:24 UTC :: build: UC-43 Mat khau: quy dinh do manh, het han phien. — fix race-condition nho trong thao tac (da kiem tra lint)
 2025-11-17 - 2 - 01:47:26 UTC :: test: UC-18 Room Move/Extend: doi phong, gia han dem o. — them log chi tiet phuc vu audit (dam bao backward-compatible)
 2025-11-17 - 3 - 01:47:29 UTC :: perf: UC-47 Dashboard: gioi han xem theo vai tro va co so. — tach chuc nang de de bao tri (dam bao backward-compatible)
+2025-11-17 - 4 - 01:47:30 UTC :: chore: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — chinh sua tai lieu & mo ta API (anh huong thap)
