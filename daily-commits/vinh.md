@@ -121,3 +121,4 @@
 2025-11-17 - 1 - 01:47:23 UTC :: build: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — cap nhat mock data & seed test (dat tieu chi toi thieu)
 2025-11-17 - 2 - 01:47:25 UTC :: ci: UC-43 Mat khau: quy dinh do manh, het han phien. — cap nhat cau hinh va kiem tra bien (da smoke test)
 2025-11-17 - 3 - 01:47:28 UTC :: chore: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — chinh sua tai lieu & mo ta API (dat tieu chi toi thieu)
+2025-11-17 - 4 - 01:47:31 UTC :: feat: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — dieu chinh UI & copy cho ro (da review so bo)
