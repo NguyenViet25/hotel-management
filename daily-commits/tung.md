@@ -123,3 +123,4 @@
 2025-11-16 - 3 - 01:51:24 UTC :: refactor: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — fix race-condition nho trong thao tac (dong bo voi BE/FE)
 2025-11-16 - 4 - 01:51:27 UTC :: feat: UC-11 Goi gia: bat/tam ngung goi gia dang ap dung. — chuan hoa ten ham/bien theo convention (chuan bi cho tinh nang tiep theo)
 2025-11-16 - 5 - 01:51:28 UTC :: ci: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — toi uu truy van va bo nho (dam bao backward-compatible)
+2025-11-17 - 1 - 01:47:24 UTC :: refactor: UC-26 Order: tao/chinh sua order, ghi chu, void/discount. — chinh sua tai lieu & mo ta API (da kiem tra lint)
