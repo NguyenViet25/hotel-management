@@ -118,3 +118,4 @@
 2025-11-16 - 3 - 01:51:25 UTC :: docs: UC-47 Dashboard: gioi han xem theo vai tro va co so. — them kiem soat loi & retry nhe (dong bo voi BE/FE)
 2025-11-16 - 4 - 01:51:27 UTC :: chore: UC-06 Co so: gan quan ly phu trach va quyen truy cap. — fix race-condition nho trong thao tac (dat tieu chi toi thieu)
 2025-11-16 - 5 - 01:51:28 UTC :: feat: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — dieu chinh quyen truy cap theo vai tro (chuan bi cho tinh nang tiep theo)
+2025-11-17 - 1 - 01:47:24 UTC :: build: UC-43 Mat khau: quy dinh do manh, het han phien. — fix race-condition nho trong thao tac (da kiem tra lint)
