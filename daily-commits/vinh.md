@@ -118,3 +118,4 @@
 2025-11-16 - 3 - 01:51:24 UTC :: build: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — sua validate va bo sung thong bao loi (da review so bo)
 2025-11-16 - 4 - 01:51:26 UTC :: chore: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — bo sung metrics/telemetry co ban (can theo doi them)
 2025-11-16 - 5 - 01:51:29 UTC :: refactor: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — sua validate va bo sung thong bao loi (da smoke test)
+2025-11-17 - 1 - 01:47:23 UTC :: build: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — cap nhat mock data & seed test (dat tieu chi toi thieu)
