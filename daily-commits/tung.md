@@ -124,3 +124,4 @@
 2025-11-16 - 4 - 01:51:27 UTC :: feat: UC-11 Goi gia: bat/tam ngung goi gia dang ap dung. — chuan hoa ten ham/bien theo convention (chuan bi cho tinh nang tiep theo)
 2025-11-16 - 5 - 01:51:28 UTC :: ci: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — toi uu truy van va bo nho (dam bao backward-compatible)
 2025-11-17 - 1 - 01:47:24 UTC :: refactor: UC-26 Order: tao/chinh sua order, ghi chu, void/discount. — chinh sua tai lieu & mo ta API (da kiem tra lint)
+2025-11-17 - 2 - 01:47:25 UTC :: ci: UC-11 Goi gia: bat/tam ngung goi gia dang ap dung. — them kiem soat loi & retry nhe (dam bao backward-compatible)
