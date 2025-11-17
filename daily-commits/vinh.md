@@ -120,3 +120,4 @@
 2025-11-16 - 5 - 01:51:29 UTC :: refactor: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — sua validate va bo sung thong bao loi (da smoke test)
 2025-11-17 - 1 - 01:47:23 UTC :: build: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — cap nhat mock data & seed test (dat tieu chi toi thieu)
 2025-11-17 - 2 - 01:47:25 UTC :: ci: UC-43 Mat khau: quy dinh do manh, het han phien. — cap nhat cau hinh va kiem tra bien (da smoke test)
+2025-11-17 - 3 - 01:47:28 UTC :: chore: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — chinh sua tai lieu & mo ta API (dat tieu chi toi thieu)
