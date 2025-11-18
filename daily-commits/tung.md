@@ -131,3 +131,4 @@
 2025-11-18 - 1 - 01:45:22 UTC :: refactor: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — sua validate va bo sung thong bao loi (da kiem tra lint)
 2025-11-18 - 2 - 01:45:24 UTC :: build: UC-39 Xuat Audit Log: xuat CSV/PDF kiem tra tuan thu. — dieu chinh quyen truy cap theo vai tro (dam bao backward-compatible)
 2025-11-18 - 3 - 01:45:26 UTC :: chore: UC-35 Ngoai le: gui yeu cau mien/giam phi, vuot tran. — chinh sua tai lieu & mo ta API (anh huong thap)
+2025-11-18 - 4 - 01:45:29 UTC :: ci: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — sua validate va bo sung thong bao loi (dam bao backward-compatible)
