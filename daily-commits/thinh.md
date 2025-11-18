@@ -126,3 +126,4 @@
 2025-11-18 - 1 - 01:45:21 UTC :: docs: UC-07 Loai phong: dinh nghia tien nghi va gia co ban. — cai thien hieu nang render/list (da review so bo)
 2025-11-18 - 2 - 01:45:24 UTC :: feat: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — refactor luong xu ly cho ro rang (dong bo voi BE/FE)
 2025-11-18 - 3 - 01:45:26 UTC :: test: UC-09 So do: hien thi layout, loc trang thai phong. — toi uu truy van va bo nho (anh huong thap)
+2025-11-18 - 4 - 01:45:28 UTC :: feat: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — chuan hoa ten ham/bien theo convention (dam bao backward-compatible)
