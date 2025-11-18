@@ -59,7 +59,12 @@ const MediaTable: React.FC<MediaTableProps> = ({
       minWidth: 140,
       format: (v) => Math.round(Number(v) / 1024).toLocaleString(),
     },
-    { id: "createdAt", label: "Tạo lúc", minWidth: 180 },
+    {
+      id: "createdAt",
+      label: "Ngày tạo",
+      minWidth: 180,
+      format: (value: string) => new Date(value).toLocaleDateString(),
+    },
   ];
 
   return (

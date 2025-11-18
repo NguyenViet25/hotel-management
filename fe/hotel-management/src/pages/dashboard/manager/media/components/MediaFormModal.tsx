@@ -11,7 +11,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import type { MediaDto, MediaUpdateRequest } from "../../../../../api/mediaApi";
@@ -45,6 +45,10 @@ const MediaFormModal: React.FC<MediaFormModalProps> = ({
   onUpdate,
 }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [selectedName, setSelectedName] = useState<string | null>(null);
+  const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [selectedSize, setSelectedSize] = useState<number | null>(null);
 
   const {
     control,
@@ -109,6 +113,22 @@ const MediaFormModal: React.FC<MediaFormModalProps> = ({
               onChange={(e) => {
                 const f = e.target.files?.[0];
                 setValue("file", f as any, { shouldValidate: true });
+                if (f) {
+                  setSelectedName(f.name);
+                  setSelectedType(f.type);
+                  setSelectedSize(f.size);
+                  if (f.type.startsWith("image")) {
+                    const url = URL.createObjectURL(f);
+                    setPreviewUrl(url);
+                  } else {
+                    setPreviewUrl(null);
+                  }
+                } else {
+                  setPreviewUrl(null);
+                  setSelectedName(null);
+                  setSelectedType(null);
+                  setSelectedSize(null);
+                }
               }}
               style={{ display: "none" }}
             />
@@ -119,6 +139,22 @@ const MediaFormModal: React.FC<MediaFormModalProps> = ({
             >
               Chọn tệp để tải lên
             </Button>
+            {previewUrl && (
+              <Stack direction="row" spacing={2} alignItems="center">
+                <img
+                  src={previewUrl}
+                  alt="preview"
+                  style={{ width: 120, height: 120, objectFit: "cover", borderRadius: 8 }}
+                />
+                <Stack>
+                  <Typography variant="body2">{selectedName}</Typography>
+                  <Typography variant="caption">{selectedType}</Typography>
+                  <Typography variant="caption">
+                    {selectedSize ? Math.round(selectedSize / 1024) + " KB" : ""}
+                  </Typography>
+                </Stack>
+              </Stack>
+            )}
             {errors.file && (
               <Typography color="error" variant="caption">
                 {(errors.file.message as string) ?? "File không hợp lệ"}

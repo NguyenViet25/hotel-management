@@ -1,19 +1,14 @@
+import { Alert, Box, Snackbar } from "@mui/material";
 import React, { useEffect, useState } from "react";
-import {
-  Alert,
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Snackbar,
-} from "@mui/material";
-import PageTitle from "../../../../components/common/PageTitle";
-import mediaApi, { type MediaDto, type MediaUpdateRequest } from "../../../../api/mediaApi";
-import MediaTable from "./components/MediaTable";
-import MediaFormModal from "./components/MediaFormModal";
+import mediaApi, {
+  type MediaDto,
+  type MediaUpdateRequest,
+} from "../../../../api/mediaApi";
 import ConfirmModal from "../../../../components/common/ConfirmModel";
+import PageTitle from "../../../../components/common/PageTitle";
+import MediaFormModal from "./components/MediaFormModal";
+import MediaTable from "./components/MediaTable";
+import MediaPicker from "../../../../components/media/MediaPicker";
 
 const MediaManagementPage: React.FC = () => {
   const [items, setItems] = useState<MediaDto[]>([]);
@@ -22,7 +17,11 @@ const MediaManagementPage: React.FC = () => {
   const [formMode, setFormMode] = useState<"create" | "edit">("create");
   const [current, setCurrent] = useState<MediaDto | undefined>(undefined);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" as "success" | "error" | "info" | "warning" });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success" as "success" | "error" | "info" | "warning",
+  });
 
   const fetchData = async () => {
     setLoading(true);
@@ -30,7 +29,11 @@ const MediaManagementPage: React.FC = () => {
       const res = await mediaApi.list(1, 100);
       if (res.isSuccess) setItems(res.data);
     } catch {
-      setSnackbar({ open: true, message: "Không tải được danh sách media", severity: "error" });
+      setSnackbar({
+        open: true,
+        message: "Không tải được danh sách media",
+        severity: "error",
+      });
     } finally {
       setLoading(false);
     }
@@ -61,13 +64,25 @@ const MediaManagementPage: React.FC = () => {
     try {
       const res = await mediaApi.upload(file);
       if (res.isSuccess) {
-        setSnackbar({ open: true, message: "Tải lên thành công", severity: "success" });
+        setSnackbar({
+          open: true,
+          message: "Tải lên thành công",
+          severity: "success",
+        });
         fetchData();
       } else {
-        setSnackbar({ open: true, message: res.message ?? "Lỗi tải lên", severity: "error" });
+        setSnackbar({
+          open: true,
+          message: res.message ?? "Lỗi tải lên",
+          severity: "error",
+        });
       }
     } catch (err: any) {
-      setSnackbar({ open: true, message: err?.message ?? "Lỗi tải lên", severity: "error" });
+      setSnackbar({
+        open: true,
+        message: err?.message ?? "Lỗi tải lên",
+        severity: "error",
+      });
     }
   };
 
@@ -76,13 +91,25 @@ const MediaManagementPage: React.FC = () => {
     try {
       const res = await mediaApi.update(current.id, payload);
       if (res.isSuccess) {
-        setSnackbar({ open: true, message: "Cập nhật thành công", severity: "success" });
+        setSnackbar({
+          open: true,
+          message: "Cập nhật thành công",
+          severity: "success",
+        });
         fetchData();
       } else {
-        setSnackbar({ open: true, message: res.message ?? "Lỗi cập nhật", severity: "error" });
+        setSnackbar({
+          open: true,
+          message: res.message ?? "Lỗi cập nhật",
+          severity: "error",
+        });
       }
     } catch (err: any) {
-      setSnackbar({ open: true, message: err?.message ?? "Lỗi cập nhật", severity: "error" });
+      setSnackbar({
+        open: true,
+        message: err?.message ?? "Lỗi cập nhật",
+        severity: "error",
+      });
     }
   };
 
@@ -91,13 +118,25 @@ const MediaManagementPage: React.FC = () => {
     try {
       const res = await mediaApi.remove(current.id);
       if (res.isSuccess) {
-        setSnackbar({ open: true, message: "Xoá thành công", severity: "success" });
+        setSnackbar({
+          open: true,
+          message: "Xoá thành công",
+          severity: "success",
+        });
         fetchData();
       } else {
-        setSnackbar({ open: true, message: res.message ?? "Lỗi xoá", severity: "error" });
+        setSnackbar({
+          open: true,
+          message: res.message ?? "Lỗi xoá",
+          severity: "error",
+        });
       }
     } catch (err: any) {
-      setSnackbar({ open: true, message: err?.message ?? "Lỗi xoá", severity: "error" });
+      setSnackbar({
+        open: true,
+        message: err?.message ?? "Lỗi xoá",
+        severity: "error",
+      });
     } finally {
       setConfirmOpen(false);
     }
