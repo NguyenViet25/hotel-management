@@ -32,7 +32,7 @@ public class BookingsController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost]
+    [HttpPost("check-in")]
     public async Task<IActionResult> CheckIn([FromBody] CheckInRequest request)
     {
         var persons = new List<PersonDto>();
