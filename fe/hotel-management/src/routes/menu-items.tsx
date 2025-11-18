@@ -14,7 +14,9 @@ import {
   Bed,
   ShoppingCart,
   Discount,
+  InsertEmoticon,
 } from "@mui/icons-material";
+import { ListItem } from "@mui/material";
 
 export const menuItems = {
   admin: [
@@ -42,6 +44,7 @@ export const menuItems = {
     },
     { title: "Món ăn", path: "/manager/menus", icon: <DiningIcon /> },
     { title: "Bàn ăn", path: "/manager/tables", icon: <RestaurantIcon /> },
+    { title: "Minibar", path: "/manager/minibars", icon: <InsertEmoticon /> },
   ],
   frontDesk: [
     {

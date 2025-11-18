@@ -1,4 +1,4 @@
-using HotelManagement.Domain;
+﻿using HotelManagement.Domain;
 using HotelManagement.Repository.Common;
 using HotelManagement.Services.Admin.Minibar.Dtos;
 using HotelManagement.Services.Common;
@@ -19,6 +19,10 @@ public class MinibarService : IMinibarService
     {
         try
         {
+            var exist = await _minibarRepository.Query().Where(x => x.Name == request.Name && x.RoomTypeId == request.RoomTypeId).FirstOrDefaultAsync();
+            if (exist != null)
+                return ApiResponse<MinibarDto>.Fail("Đã tồn tại minibar");
+
             var entity = new Domain.Minibar
             {
                 Id = Guid.NewGuid(),
@@ -44,6 +48,12 @@ public class MinibarService : IMinibarService
     {
         try
         {
+            var exist = await _minibarRepository.Query().Where(x => x.Name == request.Name
+                && x.Id != id
+                && x.RoomTypeId == request.RoomTypeId).FirstOrDefaultAsync();
+            if (exist != null)
+                return ApiResponse<MinibarDto>.Fail("Đã tồn tại minibar");
+
             var entity = await _minibarRepository.FindAsync(id);
             if (entity == null) return ApiResponse<MinibarDto>.Fail("Minibar not found");
 
@@ -86,7 +96,7 @@ public class MinibarService : IMinibarService
     {
         try
         {
-            var q = _minibarRepository.Query().Where(x => true);
+            var q = _minibarRepository.Query().Include(x => x.RoomType).Where(x => true);
             if (hotelId.HasValue) q = q.Where(x => x.HotelId == hotelId.Value);
             if (roomTypeId.HasValue) q = q.Where(x => x.RoomTypeId == roomTypeId.Value);
             if (!string.IsNullOrWhiteSpace(search)) q = q.Where(x => x.Name.Contains(search));
@@ -105,7 +115,8 @@ public class MinibarService : IMinibarService
                 RoomTypeId = x.RoomTypeId,
                 Name = x.Name,
                 Price = x.Price,
-                Quantity = x.Quantity
+                Quantity = x.Quantity,
+                RoomTypeName = x.RoomType!.Name ?? string.Empty
             }).ToListAsync();
 
             var meta = new { total, page, pageSize };

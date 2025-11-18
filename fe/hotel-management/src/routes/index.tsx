@@ -11,6 +11,7 @@ import { useStore, type StoreState } from "../hooks/useStore";
 import OrdersManagementPage from "../pages/dashboard/waiter/orders/OrdersManagementPage";
 import KitchenTimelinePage from "../pages/dashboard/manager/kitchen/KitchenTimelinePage";
 import DiscountCodesPage from "../pages/dashboard/manager/discounts/DiscountCodesPage";
+import MinibarManagementPage from "../pages/dashboard/manager/minibars/MinibarManagementPage";
 
 // Role-aware layout wrapper for standalone pages like /profile
 const RoleAwareLayout = () => {
@@ -190,10 +191,7 @@ const router = createBrowserRouter([
     path: "/manager",
     element: (
       <RequireAuth>
-        <MainLayout
-          title="Facility Manager"
-          menuItems={menuItems.facilityManager}
-        />
+        <MainLayout title="Manager" menuItems={menuItems.facilityManager} />
       </RequireAuth>
     ),
     children: [
@@ -234,6 +232,14 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<div>Loading...</div>}>
             <ManagerMenusPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "minibars",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <MinibarManagementPage />
           </Suspense>
         ),
       },

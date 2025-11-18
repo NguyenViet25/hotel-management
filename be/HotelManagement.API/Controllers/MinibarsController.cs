@@ -22,7 +22,6 @@ public class MinibarsController : ControllerBase
     public async Task<ActionResult<ApiResponse<MinibarDto>>> Create([FromBody] MinibarCreateRequest request)
     {
         var result = await _service.CreateAsync(request);
-        if (!result.IsSuccess) return BadRequest(result);
         return Ok(result);
     }
 
@@ -30,7 +29,6 @@ public class MinibarsController : ControllerBase
     public async Task<ActionResult<ApiResponse<MinibarDto>>> Update(Guid id, [FromBody] MinibarUpdateRequest request)
     {
         var result = await _service.UpdateAsync(id, request);
-        if (!result.IsSuccess) return BadRequest(result);
         return Ok(result);
     }
 
@@ -38,7 +36,6 @@ public class MinibarsController : ControllerBase
     public async Task<ActionResult<ApiResponse<bool>>> Delete(Guid id)
     {
         var result = await _service.DeleteAsync(id);
-        if (!result.IsSuccess) return NotFound(result);
         return Ok(result);
     }
 
@@ -55,7 +52,6 @@ public class MinibarsController : ControllerBase
     public async Task<ActionResult<ApiResponse<MinibarDto>>> GetById(Guid id)
     {
         var result = await _service.GetByIdAsync(id);
-        if (!result.IsSuccess) return NotFound(result);
         return Ok(result);
     }
 }

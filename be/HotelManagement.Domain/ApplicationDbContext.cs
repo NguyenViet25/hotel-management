@@ -133,6 +133,9 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
         var invoiceLine = builder.Entity<InvoiceLine>();
         invoiceLine.Property(s => s.Amount).HasPrecision(18, 2);
 
+        var minibar = builder.Entity<Minibar>();
+        minibar.Property(s => s.Price).HasPrecision(18, 2);
+
         builder.Entity<BookingRoomType>()
             .HasOne<Booking>()
             .WithMany()
