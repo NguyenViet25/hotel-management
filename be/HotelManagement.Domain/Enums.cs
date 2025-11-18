@@ -5,7 +5,7 @@ public enum UserRole
     Admin = 1,
     Manager = 2,
     FrontDesk = 3,
-    Housekeeping = 4,
+    Housekeeper = 4,
     Kitchen = 5,
     Waiter = 6,
     Guest = 7

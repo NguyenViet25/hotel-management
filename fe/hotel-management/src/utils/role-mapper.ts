@@ -30,16 +30,6 @@ const roleMap: Record<string, RoleInfo> = {
     description:
       "Quản lý sơ đồ bàn, tạo order, chỉnh sửa, void/discount, post charge vào phòng, thu tiền và đóng hóa đơn.",
   },
-  Cashier: {
-    label: "Thu ngân",
-    description:
-      "Tiếp nhận thanh toán F&B, xử lý hóa đơn điện tử và hỗ trợ đối soát thu chi.",
-  },
-  Accountant: {
-    label: "Kế toán",
-    description:
-      "Thực hiện nghiệp vụ tài chính: kiểm tra folio, đối soát doanh thu, lập và xuất hóa đơn điện tử.",
-  },
   Housekeeper: {
     label: "Buồng phòng",
     description: "Hoạt động quản lý buồng phòng và vệ sinh.",

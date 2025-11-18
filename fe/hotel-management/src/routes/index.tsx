@@ -350,7 +350,11 @@ const router = createBrowserRouter([
     children: [
       {
         path: "",
-        element: <Navigate to="/waiter/dashboard" replace />,
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <WaiterDashboard />
+          </Suspense>
+        ),
       },
       {
         path: "dashboard",
@@ -370,7 +374,11 @@ const router = createBrowserRouter([
     children: [
       {
         path: "",
-        element: <Navigate to="/housekeeper/dashboard" replace />,
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <HousekeeperDashboard />
+          </Suspense>
+        ),
       },
       {
         path: "dashboard",

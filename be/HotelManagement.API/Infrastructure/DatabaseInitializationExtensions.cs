@@ -287,6 +287,15 @@ public static class DatabaseInitializationExtensions
             Fullname = "Hoàng Văn Phục Vụ",
             PhoneNumber = "0901000005",
             Description = "Quản lý sơ đồ bàn, tạo order, chỉnh sửa, void/discount, post charge vào phòng, thu tiền và đóng hóa đơn."
+        },
+         new {
+            Username = "housekeeping",
+            Email = "housekeeping@hotel.com",
+            Password = "Password1@",
+            Role = UserRole.Housekeeper,
+            Fullname = "Nguyễn Thùy Linh",
+            PhoneNumber = "0901000005",
+            Description = "Dọn phòng, báo cáo tình trọng phòng."
         }
     };
 

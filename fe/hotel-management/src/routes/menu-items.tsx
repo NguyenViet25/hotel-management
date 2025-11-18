@@ -69,17 +69,12 @@ export const menuItems = {
   ],
   waiter: [
     { title: "Tổng quan", path: "/waiter/dashboard", icon: <DashboardIcon /> },
-    { title: "Tables", path: "/waiter/tables", icon: <RestaurantIcon /> },
-    { title: "Orders", path: "/waiter/orders", icon: <DiningIcon /> },
-    { title: "Charges", path: "/waiter/charges", icon: <PaymentsIcon /> },
   ],
   housekeeper: [
     {
-      title: "Dashboard",
+      title: "Tổng quan",
       path: "/housekeeper/dashboard",
       icon: <DashboardIcon />,
     },
-    { title: "Room Status", path: "/housekeeper/rooms", icon: <RoomIcon /> },
-    { title: "Tasks", path: "/housekeeper/tasks", icon: <SettingsIcon /> },
   ],
 };
