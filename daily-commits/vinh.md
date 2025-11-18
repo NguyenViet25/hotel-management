@@ -123,3 +123,4 @@
 2025-11-17 - 3 - 01:47:28 UTC :: chore: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — chinh sua tai lieu & mo ta API (dat tieu chi toi thieu)
 2025-11-17 - 4 - 01:47:31 UTC :: feat: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — dieu chinh UI & copy cho ro (da review so bo)
 2025-11-17 - 5 - 01:47:33 UTC :: test: UC-07 Loai phong: dinh nghia tien nghi va gia co ban. — cai thien hieu nang render/list (khong doi hanh vi)
+2025-11-18 - 1 - 01:45:22 UTC :: test: UC-40 Thu/chi: doi soat tien mat/the/le phi PG. — bo sung unit test muc co ban (can theo doi them)
