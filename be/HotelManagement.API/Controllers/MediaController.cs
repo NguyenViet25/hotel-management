@@ -3,6 +3,7 @@ using HotelManagement.Services.Admin.Medias;
 using HotelManagement.Services.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Hosting;
 using System.ComponentModel.DataAnnotations;
 
 namespace HotelManagement.Api.Controllers;
@@ -13,10 +14,12 @@ namespace HotelManagement.Api.Controllers;
 public class MediaController : ControllerBase
 {
     private readonly IMediaService _service;
+    private readonly IWebHostEnvironment _env;
 
-    public MediaController(IMediaService service)
+    public MediaController(IMediaService service, IWebHostEnvironment env)
     {
         _service = service;
+        _env = env;
     }
 
     public class MediaUploadRequest
@@ -32,7 +35,7 @@ public class MediaController : ControllerBase
     {
         var file = request.File;
         var baseUrl = $"{Request.Scheme}://{Request.Host}";
-        var result = await _service.UploadAsync(file.OpenReadStream(), file.FileName, file.ContentType, file.Length, baseUrl);
+        var result = await _service.UploadAsync(file.OpenReadStream(), file.FileName, file.ContentType, file.Length, baseUrl, _env.WebRootPath);
         if (!result.IsSuccess) return BadRequest(result);
         return Ok(result);
     }

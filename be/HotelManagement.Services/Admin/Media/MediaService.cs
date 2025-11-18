@@ -1,9 +1,8 @@
-using HotelManagement.Domain;
 using HotelManagement.Repository.Common;
 using HotelManagement.Services.Admin.Media.Dtos;
 using HotelManagement.Services.Common;
-using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace HotelManagement.Services.Admin.Medias;
 
@@ -18,7 +17,7 @@ public class MediaService : IMediaService
         _config = config;
     }
 
-    public async Task<ApiResponse<MediaUploadResponse>> UploadAsync(Stream fileStream, string originalFileName, string contentType, long size, string baseUrl)
+    public async Task<ApiResponse<MediaUploadResponse>> UploadAsync(Stream fileStream, string originalFileName, string contentType, long size, string baseUrl, string webRootPath)
     {
         try
         {
@@ -38,7 +37,7 @@ public class MediaService : IMediaService
             if (!allowed.Contains(contentType))
                 return ApiResponse<MediaUploadResponse>.Fail("Unsupported file type");
 
-            var uploadsRoot = Path.Combine(GetWebRootPath(), "uploads", "media");
+            var uploadsRoot = Path.Combine(webRootPath, "uploads", "media");
             Directory.CreateDirectory(uploadsRoot);
 
             var ext = Path.GetExtension(originalFileName);
@@ -168,11 +167,5 @@ public class MediaService : IMediaService
         UpdatedAt = e.UpdatedAt
     };
 
-    private string GetWebRootPath()
-    {
-        var apiRoot = AppContext.BaseDirectory;
-        var wwwroot = Path.Combine(apiRoot, "wwwroot");
-        Directory.CreateDirectory(wwwroot);
-        return wwwroot;
-    }
+    // webRootPath is provided by the API layer to avoid coupling to ASP.NET types here
 }
