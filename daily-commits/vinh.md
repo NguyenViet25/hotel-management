@@ -126,3 +126,4 @@
 2025-11-18 - 1 - 01:45:22 UTC :: test: UC-40 Thu/chi: doi soat tien mat/the/le phi PG. — bo sung unit test muc co ban (can theo doi them)
 2025-11-18 - 2 - 01:45:25 UTC :: ci: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — chinh sua tai lieu & mo ta API (da smoke test)
 2025-11-18 - 3 - 01:45:28 UTC :: test: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — cap nhat mock data & seed test (anh huong thap)
+2025-11-18 - 4 - 01:45:29 UTC :: ci: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — bo sung metrics/telemetry co ban (da kiem tra lint)
