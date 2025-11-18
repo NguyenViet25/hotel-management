@@ -34,12 +34,7 @@ const RoleAwareLayout = () => {
     case "Waiter":
       items = menuItems.waiter;
       break;
-    case "Cashier":
-      items = menuItems.cashier;
-      break;
-    case "Accountant":
-      items = menuItems.accountant;
-      break;
+
     case "Housekeeper":
       items = menuItems.housekeeper;
       break;
@@ -70,6 +65,9 @@ const ManagerMenusPage = lazy(
 const ManagerTablesPage = lazy(
   () => import("../pages/dashboard/manager/tables/TableManagementPage")
 );
+const ManagerMediaPage = lazy(
+  () => import("../pages/dashboard/manager/media/MediaManagementPage")
+);
 const KitchenManagementPage = lazy(
   () => import("../pages/dashboard/manager/kitchen/KitchenManagementPage")
 );
@@ -98,7 +96,6 @@ const ManagerDashboard = () => <ManagerDashboardPage />;
 const FrontDeskDashboard = () => <div>Front Desk Dashboard</div>;
 const KitchenDashboard = () => <div>Kitchen Dashboard</div>;
 const WaiterDashboard = () => <div>Waiter Dashboard</div>;
-const AccountantDashboard = () => <div>Accountant Dashboard</div>;
 const HousekeeperDashboard = () => <div>Housekeeper Dashboard</div>;
 
 // Auth guard component
@@ -251,6 +248,14 @@ const router = createBrowserRouter([
           </Suspense>
         ),
       },
+      {
+        path: "media",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <ManagerMediaPage />
+          </Suspense>
+        ),
+      },
       // Add other manager routes here
     ],
   },
@@ -352,27 +357,6 @@ const router = createBrowserRouter([
         element: <WaiterDashboard />,
       },
       // Add other waiter routes here
-    ],
-  },
-
-  // Accountant routes
-  {
-    path: "/accountant",
-    element: (
-      <RequireAuth>
-        <MainLayout title="Accountant" menuItems={menuItems.accountant} />
-      </RequireAuth>
-    ),
-    children: [
-      {
-        path: "",
-        element: <Navigate to="/accountant/dashboard" replace />,
-      },
-      {
-        path: "dashboard",
-        element: <AccountantDashboard />,
-      },
-      // Add other accountant routes here
     ],
   },
   // Housekeeper routes

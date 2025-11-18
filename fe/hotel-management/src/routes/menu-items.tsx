@@ -1,22 +1,20 @@
 import {
+  Bed,
+  Category,
   Dashboard as DashboardIcon,
+  LocalDining as DiningIcon,
+  Discount,
   Hotel as HotelIcon,
+  Image,
+  InsertEmoticon,
+  Payments as PaymentsIcon,
   Person as PersonIcon,
+  Receipt as ReceiptIcon,
   Restaurant as RestaurantIcon,
   Room as RoomIcon,
-  Receipt as ReceiptIcon,
   Settings as SettingsIcon,
-  Payments as PaymentsIcon,
-  LocalDining as DiningIcon,
-  AccountBalance as AccountBalanceIcon,
-  Home,
-  Category,
-  Bed,
   ShoppingCart,
-  Discount,
-  InsertEmoticon,
 } from "@mui/icons-material";
-import { ListItem } from "@mui/material";
 
 export const menuItems = {
   admin: [
@@ -45,6 +43,7 @@ export const menuItems = {
     { title: "Món ăn", path: "/manager/menus", icon: <DiningIcon /> },
     { title: "Bàn ăn", path: "/manager/tables", icon: <RestaurantIcon /> },
     { title: "Minibar", path: "/manager/minibars", icon: <InsertEmoticon /> },
+    { title: "Media", path: "/manager/media", icon: <Image /> },
   ],
   frontDesk: [
     {
