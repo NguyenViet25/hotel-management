@@ -124,3 +124,4 @@
 2025-11-17 - 4 - 01:47:31 UTC :: feat: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — dieu chinh UI & copy cho ro (da review so bo)
 2025-11-17 - 5 - 01:47:33 UTC :: test: UC-07 Loai phong: dinh nghia tien nghi va gia co ban. — cai thien hieu nang render/list (khong doi hanh vi)
 2025-11-18 - 1 - 01:45:22 UTC :: test: UC-40 Thu/chi: doi soat tien mat/the/le phi PG. — bo sung unit test muc co ban (can theo doi them)
+2025-11-18 - 2 - 01:45:25 UTC :: ci: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — chinh sua tai lieu & mo ta API (da smoke test)
