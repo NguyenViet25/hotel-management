@@ -126,3 +126,4 @@
 2025-11-18 - 1 - 01:45:23 UTC :: test: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — dieu chinh quyen truy cap theo vai tro (dat tieu chi toi thieu)
 2025-11-18 - 2 - 01:45:26 UTC :: build: UC-28 Room charge F&B: ghi hoa don ban an vao folio. — cai thien hieu nang render/list (anh huong thap)
 2025-11-18 - 3 - 01:45:28 UTC :: perf: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — bo sung unit test muc co ban (can theo doi them)
+2025-11-18 - 4 - 01:45:29 UTC :: perf: UC-39 Xuat Audit Log: xuat CSV/PDF kiem tra tuan thu. — fix race-condition nho trong thao tac (dong bo voi BE/FE)
