@@ -37,6 +37,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
     public DbSet<ShoppingOrder> ShoppingOrders => Set<ShoppingOrder>();
     public DbSet<Promotion> Promotions => Set<Promotion>();
     public DbSet<Minibar> Minibars => Set<Minibar>();
+    public DbSet<Media> Media => Set<Media>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

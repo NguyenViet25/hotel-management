@@ -7,6 +7,7 @@ using HotelManagement.Services.Admin.Menu;
 using HotelManagement.Services.Admin.Invoicing;
 using HotelManagement.Services.Admin.Orders;
 using HotelManagement.Services.Admin.Minibar;
+using HotelManagement.Services.Admin.Medias;
 using HotelManagement.Services.Admin.Rooms;
 using HotelManagement.Services.Admin.RoomTypes;
 using HotelManagement.Services.Admin.Users;
@@ -35,6 +36,7 @@ public static class DependencyInjection
         services.AddScoped<ITableService, TableService>();
         services.AddScoped<IDiscountCodeService, DiscountCodeService>();
         services.AddScoped<IMinibarService, MinibarService>();
+        services.AddScoped<IMediaService, MediaService>();
         return services;
     }
 }
