@@ -127,3 +127,4 @@
 2025-11-18 - 2 - 01:45:24 UTC :: feat: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — refactor luong xu ly cho ro rang (dong bo voi BE/FE)
 2025-11-18 - 3 - 01:45:26 UTC :: test: UC-09 So do: hien thi layout, loc trang thai phong. — toi uu truy van va bo nho (anh huong thap)
 2025-11-18 - 4 - 01:45:28 UTC :: feat: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — chuan hoa ten ham/bien theo convention (dam bao backward-compatible)
+2025-11-18 - 5 - 01:45:30 UTC :: fix: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — chinh sua tai lieu & mo ta API (dam bao backward-compatible)
