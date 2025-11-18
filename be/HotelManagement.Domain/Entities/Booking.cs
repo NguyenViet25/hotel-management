@@ -47,9 +47,9 @@ public class BookingRoom
     public string? RoomName { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
+    public DateTime? ExtendedDate { get; set; }
     public BookingRoomStatus BookingStatus { get; set; } = BookingRoomStatus.Pending;
     public ICollection<BookingGuest>? Guests { get; set; } = new List<BookingGuest>();
-    public HotelRoom? HotelRoom { get; set; }
     public BookingRoomType? BookingRoomType { get; set; }
 }
 

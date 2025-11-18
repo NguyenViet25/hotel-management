@@ -87,6 +87,38 @@ public class RoomsService : IRoomsService
         }
     }
 
+    public async Task<ApiResponse<List<RoomSummaryDto>>> ListByTypeAsync(Guid id)
+    {
+        try
+        {
+            var q = _roomRepository.Query()
+                .Include(r => r.RoomType)
+                .Where(x => x.RoomTypeId == id);
+
+            var items = await q
+                .OrderBy(r => r.Floor)
+                .ThenBy(r => r.Number)
+                .ToListAsync();
+
+            var dtos = items.Select(r => new RoomSummaryDto
+            {
+                Id = r.Id,
+                HotelId = r.HotelId,
+                RoomTypeId = r.RoomTypeId,
+                RoomTypeName = r.RoomType?.Name ?? string.Empty,
+                Number = r.Number,
+                Floor = r.Floor,
+                Status = r.Status
+            }).ToList();
+
+            return ApiResponse<List<RoomSummaryDto>>.Ok(dtos);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<List<RoomSummaryDto>>.Fail($"Error listing rooms: {ex.Message}");
+        }
+    }
+
     public async Task<ApiResponse<RoomSummaryDto>> CreateAsync(CreateRoomDto dto)
     {
         try

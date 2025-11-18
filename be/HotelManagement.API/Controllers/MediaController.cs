@@ -1,9 +1,7 @@
 using HotelManagement.Services.Admin.Media.Dtos;
 using HotelManagement.Services.Admin.Medias;
 using HotelManagement.Services.Common;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Hosting;
 using System.ComponentModel.DataAnnotations;
 
 namespace HotelManagement.Api.Controllers;

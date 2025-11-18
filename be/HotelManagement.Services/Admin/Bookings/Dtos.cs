@@ -207,3 +207,18 @@ public class RoomAvailabilityQueryDto
     public DateTime? To { get; set; }
     public Guid? TypeId { get; set; }
 }
+
+public class CheckInDto
+{
+    public Guid RoomBookingId { get; set; }
+
+    public List<PersonDto> Persons { get; set; } = [];
+}
+
+public class PersonDto
+{
+    public required string Name { get; set; }
+    public required string Phone { get; set; }
+    public required string IdCardFrontImageUrl { get; set; }
+    public required string IdCardBackImageUrl { get; set; }
+}

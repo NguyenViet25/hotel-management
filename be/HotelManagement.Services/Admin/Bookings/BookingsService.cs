@@ -7,42 +7,28 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HotelManagement.Services.Admin.Bookings;
 
-public class BookingsService : IBookingsService
+public class BookingsService(
+    IRepository<Booking> bookingRepo,
+    IRepository<BookingRoomType> bookingRoomTypeRepo,
+    IRepository<BookingRoom> bookingRoomRepo,
+    IRepository<BookingGuest> bookingGuestRepo,
+    IRepository<Hotel> hotelRepo,
+    IRepository<Guest> guestRepo,
+    IRepository<HotelRoom> roomRepo,
+    IRepository<RoomType> roomTypeRepo,
+    IRepository<CallLog> callLogRepo,
+    IUnitOfWork uow) : IBookingsService
 {
-    private readonly IRepository<Booking> _bookingRepo;
-    private readonly IRepository<BookingRoomType> _bookingRoomTypeRepo;
-    private readonly IRepository<BookingRoom> _bookingRoomRepo;
-    private readonly IRepository<BookingGuest> _bookingGuestRepo;
-    private readonly IRepository<Hotel> _hotelRepo;
-    private readonly IRepository<Guest> _guestRepo;
-    private readonly IRepository<HotelRoom> _roomRepo;
-    private readonly IRepository<RoomType> _roomTypeRepo;
-    private readonly IRepository<CallLog> _callLogRepo;
-    private readonly IUnitOfWork _uow;
-
-    public BookingsService(
-        IRepository<Booking> bookingRepo,
-        IRepository<BookingRoomType> bookingRoomTypeRepo,
-        IRepository<BookingRoom> bookingRoomRepo,
-        IRepository<BookingGuest> bookingGuestRepo,
-        IRepository<Hotel> hotelRepo,
-        IRepository<Guest> guestRepo,
-        IRepository<HotelRoom> roomRepo,
-        IRepository<RoomType> roomTypeRepo,
-        IRepository<CallLog> callLogRepo,
-        IUnitOfWork uow)
-    {
-        _bookingRepo = bookingRepo;
-        _bookingRoomTypeRepo = bookingRoomTypeRepo;
-        _bookingRoomRepo = bookingRoomRepo;
-        _bookingGuestRepo = bookingGuestRepo;
-        _hotelRepo = hotelRepo;
-        _guestRepo = guestRepo;
-        _roomRepo = roomRepo;
-        _roomTypeRepo = roomTypeRepo;
-        _callLogRepo = callLogRepo;
-        _uow = uow;
-    }
+    private readonly IRepository<Booking> _bookingRepo = bookingRepo;
+    private readonly IRepository<BookingRoomType> _bookingRoomTypeRepo = bookingRoomTypeRepo;
+    private readonly IRepository<BookingRoom> _bookingRoomRepo = bookingRoomRepo;
+    private readonly IRepository<BookingGuest> _bookingGuestRepo = bookingGuestRepo;
+    private readonly IRepository<Hotel> _hotelRepo = hotelRepo;
+    private readonly IRepository<Guest> _guestRepo = guestRepo;
+    private readonly IRepository<HotelRoom> _roomRepo = roomRepo;
+    private readonly IRepository<RoomType> _roomTypeRepo = roomTypeRepo;
+    private readonly IRepository<CallLog> _callLogRepo = callLogRepo;
+    private readonly IUnitOfWork _uow = uow;
 
     public async Task<ApiResponse<BookingDetailsDto>> CreateAsync(CreateBookingDto dto)
     {
@@ -877,5 +863,52 @@ public class BookingsService : IBookingsService
             });
         }
         return segments;
+    }
+
+    public async Task<ApiResponse> AddRoomToBookingAsync(Guid bookingRoomTypeId, Guid roomId)
+    {
+        var bookingRoomType = await _bookingRoomTypeRepo.Query().Where(x => x.BookingRoomTypeId == bookingRoomTypeId).FirstOrDefaultAsync();
+
+        if (bookingRoomType == null)
+            return ApiResponse.Fail("Không tìm thấy booking");
+        await _bookingRoomRepo.AddAsync(new BookingRoom()
+        {
+            BookingRoomId = Guid.NewGuid(),
+            BookingRoomTypeIdKey = bookingRoomTypeId,
+            RoomId = roomId,
+            StartDate = bookingRoomType.StartDate,
+            EndDate = bookingRoomType.EndDate,
+            BookingStatus = BookingRoomStatus.Pending
+        });
+        await _bookingRoomRepo.SaveChangesAsync();
+
+        return ApiResponse.Ok("Thêm phòng thành công");
+    }
+
+    public async Task<ApiResponse> CheckInAsync(CheckInDto dto)
+    {
+        foreach (var guest in dto.Persons)
+        {
+            var newGuest = new Guest()
+            {
+                Id = Guid.NewGuid(),
+                FullName = guest.Name,
+                Phone = guest.Phone,
+                IdCardFrontImageUrl = guest.IdCardFrontImageUrl,
+                IdCardBackImageUrl = guest.IdCardBackImageUrl
+            };
+            await _guestRepo.AddAsync(newGuest);
+            await _guestRepo.SaveChangesAsync();
+
+            var bookingGuest = new BookingGuest()
+            {
+                BookingRoomId = dto.RoomBookingId,
+                GuestId = newGuest.Id,
+            };
+            await _bookingGuestRepo.AddAsync(bookingGuest);
+            await _bookingGuestRepo.SaveChangesAsync();
+        }
+
+        return ApiResponse.Ok("Check in thành công");
     }
 }

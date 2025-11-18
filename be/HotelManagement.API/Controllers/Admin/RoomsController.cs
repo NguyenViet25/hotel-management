@@ -26,6 +26,14 @@ public class RoomsController : ControllerBase
         return Ok(result);
     }
 
+
+    [HttpGet("by-type/{id}")]
+    public async Task<ActionResult<ApiResponse<List<RoomSummaryDto>>>> ListRoomByType([FromRoute] Guid id)
+    {
+        var result = await _roomsService.ListByTypeAsync(id);
+        return Ok(result);
+    }
+
     [HttpGet("{id}")]
     public async Task<ActionResult<ApiResponse<RoomSummaryDto>>> Get(Guid id)
     {
