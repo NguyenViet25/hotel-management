@@ -124,3 +124,4 @@
 2025-11-17 - 4 - 01:47:30 UTC :: chore: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — chinh sua tai lieu & mo ta API (anh huong thap)
 2025-11-17 - 5 - 01:47:31 UTC :: docs: UC-47 Dashboard: gioi han xem theo vai tro va co so. — toi uu truy van va bo nho (can theo doi them)
 2025-11-18 - 1 - 01:45:23 UTC :: test: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — dieu chinh quyen truy cap theo vai tro (dat tieu chi toi thieu)
+2025-11-18 - 2 - 01:45:26 UTC :: build: UC-28 Room charge F&B: ghi hoa don ban an vao folio. — cai thien hieu nang render/list (anh huong thap)
