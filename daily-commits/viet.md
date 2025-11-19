@@ -129,3 +129,4 @@
 2025-11-18 - 4 - 01:45:29 UTC :: perf: UC-39 Xuat Audit Log: xuat CSV/PDF kiem tra tuan thu. — fix race-condition nho trong thao tac (dong bo voi BE/FE)
 2025-11-18 - 5 - 01:45:31 UTC :: fix: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — chinh sua tai lieu & mo ta API (anh huong thap)
 2025-11-19 - 1 - 01:45:34 UTC :: perf: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — bo sung index & toi uu DB (da review so bo)
+2025-11-19 - 2 - 01:45:36 UTC :: refactor: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — toi uu truy van va bo nho (da kiem tra lint)
