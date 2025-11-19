@@ -136,3 +136,4 @@
 2025-11-19 - 1 - 01:45:35 UTC :: chore: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — them kiem soat loi & retry nhe (da review so bo)
 2025-11-19 - 2 - 01:45:38 UTC :: perf: UC-18 Room Move/Extend: doi phong, gia han dem o. — them log chi tiet phuc vu audit (khong doi hanh vi)
 2025-11-19 - 3 - 01:45:39 UTC :: test: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — them kiem soat loi & retry nhe (khong doi hanh vi)
+2025-11-19 - 4 - 01:45:42 UTC :: ci: UC-26 Order: tao/chinh sua order, ghi chu, void/discount. — dieu chinh UI & copy cho ro (da review so bo)
