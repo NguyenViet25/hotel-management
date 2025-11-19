@@ -129,3 +129,4 @@
 2025-11-18 - 4 - 01:45:28 UTC :: feat: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — chuan hoa ten ham/bien theo convention (dam bao backward-compatible)
 2025-11-18 - 5 - 01:45:30 UTC :: fix: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — chinh sua tai lieu & mo ta API (dam bao backward-compatible)
 2025-11-19 - 1 - 01:45:35 UTC :: chore: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — chinh sua tai lieu & mo ta API (can theo doi them)
+2025-11-19 - 2 - 01:45:38 UTC :: perf: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — toi uu truy van va bo nho (da kiem tra lint)
