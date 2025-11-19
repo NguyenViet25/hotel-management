@@ -132,3 +132,4 @@
 2025-11-19 - 2 - 01:45:37 UTC :: fix: UC-31 Bao cao: len lich gui email/PDF hang ngay/tuan. — cap nhat cau hinh va kiem tra bien (chuan bi cho tinh nang tiep theo)
 2025-11-19 - 3 - 01:45:40 UTC :: chore: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — bo sung index & toi uu DB (chuan bi cho tinh nang tiep theo)
 2025-11-19 - 4 - 01:45:41 UTC :: fix: UC-33 Phan ca: gan ca, duyet doi ca/ngi phep. — bo sung case canh bien & no-show (da kiem tra lint)
+2025-11-19 - 5 - 01:45:43 UTC :: perf: UC-22 Minibar/Amenity: ghi tieu hao, post charge vao folio. — chinh sua tai lieu & mo ta API (chuan bi cho tinh nang tiep theo)
