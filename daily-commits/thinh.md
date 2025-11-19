@@ -132,3 +132,4 @@
 2025-11-19 - 2 - 01:45:38 UTC :: perf: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — toi uu truy van va bo nho (da kiem tra lint)
 2025-11-19 - 3 - 01:45:39 UTC :: build: UC-11 Goi gia: bat/tam ngung goi gia dang ap dung. — toi uu truy van va bo nho (dong bo voi BE/FE)
 2025-11-19 - 4 - 01:45:40 UTC :: perf: UC-07 Loai phong: dinh nghia tien nghi va gia co ban. — chuan hoa ten ham/bien theo convention (da kiem tra lint)
+2025-11-19 - 5 - 01:45:41 UTC :: feat: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — cai thien hieu nang render/list (dong bo voi BE/FE)
