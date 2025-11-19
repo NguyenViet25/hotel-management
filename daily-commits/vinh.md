@@ -128,3 +128,4 @@
 2025-11-18 - 3 - 01:45:28 UTC :: test: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — cap nhat mock data & seed test (anh huong thap)
 2025-11-18 - 4 - 01:45:29 UTC :: ci: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — bo sung metrics/telemetry co ban (da kiem tra lint)
 2025-11-18 - 5 - 01:45:31 UTC :: refactor: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — don dep code va xoa doan thua (chuan bi cho tinh nang tiep theo)
+2025-11-19 - 1 - 01:45:35 UTC :: refactor: UC-34 Cham cong: ghi nhan diem danh, ban giao ca. — dieu chinh quyen truy cap theo vai tro (anh huong thap)
