@@ -132,3 +132,4 @@
 2025-11-19 - 2 - 01:45:36 UTC :: refactor: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — toi uu truy van va bo nho (da kiem tra lint)
 2025-11-19 - 3 - 01:45:38 UTC :: build: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — sua validate va bo sung thong bao loi (dat tieu chi toi thieu)
 2025-11-19 - 4 - 01:45:41 UTC :: docs: UC-36 Duyet ngoai le: duyet/tu choi theo han muc. — cap nhat mock data & seed test (da review so bo)
+2025-11-19 - 5 - 01:45:44 UTC :: feat: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — toi uu truy van va bo nho (dong bo voi BE/FE)
