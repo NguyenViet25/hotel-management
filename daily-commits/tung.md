@@ -133,3 +133,4 @@
 2025-11-18 - 3 - 01:45:26 UTC :: chore: UC-35 Ngoai le: gui yeu cau mien/giam phi, vuot tran. — chinh sua tai lieu & mo ta API (anh huong thap)
 2025-11-18 - 4 - 01:45:29 UTC :: ci: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — sua validate va bo sung thong bao loi (dam bao backward-compatible)
 2025-11-18 - 5 - 01:45:30 UTC :: refactor: UC-43 Mat khau: quy dinh do manh, het han phien. — refactor luong xu ly cho ro rang (anh huong thap)
+2025-11-19 - 1 - 01:45:35 UTC :: chore: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — them kiem soat loi & retry nhe (da review so bo)
