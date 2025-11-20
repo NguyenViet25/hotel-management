@@ -142,3 +142,4 @@
 2025-11-20 - 2 - 01:44:13 UTC :: chore: UC-19 Lich phong: calendar trang thai phong theo ngay. — bo sung unit test muc co ban (dat tieu chi toi thieu)
 2025-11-20 - 3 - 01:44:14 UTC :: perf: UC-47 Dashboard: gioi han xem theo vai tro va co so. — refactor luong xu ly cho ro rang (dong bo voi BE/FE)
 2025-11-20 - 4 - 01:44:17 UTC :: test: UC-37 Night Audit: kiem tra folio chua chot, khoa giao dich. — bo sung metrics/telemetry co ban (da smoke test)
+2025-11-20 - 5 - 01:44:19 UTC :: ci: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — tach chuc nang de de bao tri (khong doi hanh vi)
