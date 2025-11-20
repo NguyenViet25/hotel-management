@@ -136,3 +136,4 @@
 2025-11-20 - 1 - 01:44:10 UTC :: chore: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — chinh sua tai lieu & mo ta API (dat tieu chi toi thieu)
 2025-11-20 - 2 - 01:44:13 UTC :: test: UC-39 Xuat Audit Log: xuat CSV/PDF kiem tra tuan thu. — don dep code va xoa doan thua (dong bo voi BE/FE)
 2025-11-20 - 3 - 01:44:14 UTC :: docs: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — them log chi tiet phuc vu audit (da review so bo)
+2025-11-20 - 4 - 01:44:16 UTC :: chore: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — them kiem soat loi & retry nhe (dong bo voi BE/FE)
