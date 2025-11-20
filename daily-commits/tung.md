@@ -140,3 +140,4 @@
 2025-11-19 - 5 - 01:45:45 UTC :: refactor: UC-35 Ngoai le: gui yeu cau mien/giam phi, vuot tran. — them kiem soat loi & retry nhe (da kiem tra lint)
 2025-11-20 - 1 - 01:44:11 UTC :: feat: UC-18 Room Move/Extend: doi phong, gia han dem o. — tach chuc nang de de bao tri (da review so bo)
 2025-11-20 - 2 - 01:44:13 UTC :: chore: UC-19 Lich phong: calendar trang thai phong theo ngay. — bo sung unit test muc co ban (dat tieu chi toi thieu)
+2025-11-20 - 3 - 01:44:14 UTC :: perf: UC-47 Dashboard: gioi han xem theo vai tro va co so. — refactor luong xu ly cho ro rang (dong bo voi BE/FE)
