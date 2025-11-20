@@ -136,3 +136,4 @@
 2025-11-20 - 1 - 01:44:12 UTC :: fix: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — bo sung index & toi uu DB (dong bo voi BE/FE)
 2025-11-20 - 2 - 01:44:15 UTC :: chore: UC-36 Duyet ngoai le: duyet/tu choi theo han muc. — bo sung index & toi uu DB (khong doi hanh vi)
 2025-11-20 - 3 - 01:44:18 UTC :: build: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — fix race-condition nho trong thao tac (da kiem tra lint)
+2025-11-20 - 4 - 01:44:21 UTC :: fix: UC-34 Cham cong: ghi nhan diem danh, ban giao ca. — bo sung unit test muc co ban (da review so bo)
