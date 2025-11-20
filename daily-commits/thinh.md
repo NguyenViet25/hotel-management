@@ -134,3 +134,4 @@
 2025-11-19 - 4 - 01:45:40 UTC :: perf: UC-07 Loai phong: dinh nghia tien nghi va gia co ban. — chuan hoa ten ham/bien theo convention (da kiem tra lint)
 2025-11-19 - 5 - 01:45:41 UTC :: feat: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — cai thien hieu nang render/list (dong bo voi BE/FE)
 2025-11-20 - 1 - 01:44:10 UTC :: chore: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — chinh sua tai lieu & mo ta API (dat tieu chi toi thieu)
+2025-11-20 - 2 - 01:44:13 UTC :: test: UC-39 Xuat Audit Log: xuat CSV/PDF kiem tra tuan thu. — don dep code va xoa doan thua (dong bo voi BE/FE)
