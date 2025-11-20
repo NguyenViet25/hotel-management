@@ -134,3 +134,4 @@
 2025-11-19 - 4 - 01:45:41 UTC :: docs: UC-36 Duyet ngoai le: duyet/tu choi theo han muc. — cap nhat mock data & seed test (da review so bo)
 2025-11-19 - 5 - 01:45:44 UTC :: feat: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — toi uu truy van va bo nho (dong bo voi BE/FE)
 2025-11-20 - 1 - 01:44:10 UTC :: build: UC-07 Loai phong: dinh nghia tien nghi va gia co ban. — chuan hoa ten ham/bien theo convention (da review so bo)
+2025-11-20 - 2 - 01:44:13 UTC :: ci: UC-36 Duyet ngoai le: duyet/tu choi theo han muc. — cap nhat cau hinh va kiem tra bien (dat tieu chi toi thieu)
