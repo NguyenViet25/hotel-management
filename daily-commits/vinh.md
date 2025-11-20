@@ -133,3 +133,4 @@
 2025-11-19 - 3 - 01:45:40 UTC :: chore: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — bo sung index & toi uu DB (chuan bi cho tinh nang tiep theo)
 2025-11-19 - 4 - 01:45:41 UTC :: fix: UC-33 Phan ca: gan ca, duyet doi ca/ngi phep. — bo sung case canh bien & no-show (da kiem tra lint)
 2025-11-19 - 5 - 01:45:43 UTC :: perf: UC-22 Minibar/Amenity: ghi tieu hao, post charge vao folio. — chinh sua tai lieu & mo ta API (chuan bi cho tinh nang tiep theo)
+2025-11-20 - 1 - 01:44:12 UTC :: fix: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — bo sung index & toi uu DB (dong bo voi BE/FE)
