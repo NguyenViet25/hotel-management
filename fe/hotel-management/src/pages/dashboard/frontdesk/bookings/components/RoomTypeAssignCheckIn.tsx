@@ -6,11 +6,18 @@ import {
   CardHeader,
   Chip,
   Grid,
+  IconButton,
   Snackbar,
   Stack,
-  TextField,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
   Typography,
 } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import React, { useEffect, useState } from "react";
 import bookingsApi, {
   type BookingDetailsDto,
@@ -18,7 +25,7 @@ import bookingsApi, {
   type BookingRoomTypeDto,
 } from "../../../../../api/bookingsApi";
 import AssignRoomDialog from "./AssignRoomDialog";
-import UploadCCCD from "./UploadCCCD";
+import GuestDialog from "./GuestDialog";
 
 type Props = {
   booking: BookingDetailsDto | null;
@@ -66,27 +73,18 @@ const RoomTypeBlock: React.FC<{
 
   // Check-in state per assigned room
   const [forms, setForms] = useState<Record<string, GuestForm[]>>({});
+  const [guestOpen, setGuestOpen] = useState(false);
+  const [guestInitial, setGuestInitial] = useState<GuestForm | null>(null);
+  const [guestEditIndex, setGuestEditIndex] = useState<number | null>(null);
+  const [guestRoomId, setGuestRoomId] = useState<string | null>(null);
 
   useEffect(() => {
-    // initialize forms for each assigned room up to capacity
     const next: Record<string, GuestForm[]> = {};
     assignedRooms.forEach((br) => {
       const existing = forms[br.bookingRoomId] || [];
-      if (existing.length) {
-        next[br.bookingRoomId] = existing;
-      } else {
-        const cap = rt.capacity || 0;
-        const base: GuestForm[] = (br.guests || []).map((g) => ({
-          name: g.fullname || "",
-          phone: g.phone || "",
-        }));
-        if (cap > 0) {
-          while (base.length < cap) base.push({ name: "", phone: "" });
-        }
-        next[br.bookingRoomId] = base.length ? base : [{ name: "", phone: "" }];
-      }
+      next[br.bookingRoomId] = existing;
     });
-    setForms((prev) => ({ ...prev, ...next }));
+    setForms(() => ({ ...next }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rt.bookingRooms?.length]);
 
@@ -104,10 +102,15 @@ const RoomTypeBlock: React.FC<{
     });
   };
 
+  const getAssignedRoom = (roomId: string) =>
+    assignedRooms.find((r) => r.bookingRoomId === roomId);
+
   const addGuest = (roomId: string) => {
+    const assigned = getAssignedRoom(roomId);
+    const existingCount = (assigned?.guests || []).length;
     setForms((prev) => {
       const arr = prev[roomId] || [];
-      if (arr.length >= (rt.capacity || 0)) return prev;
+      if (existingCount + arr.length >= (rt.capacity || 0)) return prev;
       return { ...prev, [roomId]: [...arr, { name: "", phone: "" }] };
     });
   };
@@ -116,17 +119,41 @@ const RoomTypeBlock: React.FC<{
     setForms((prev) => {
       const arr = prev[roomId] || [];
       const next = arr.filter((_, i) => i !== idx);
-      return {
-        ...prev,
-        [roomId]: next.length ? next : [{ name: "", phone: "" }],
-      };
+      return { ...prev, [roomId]: next };
     });
   };
 
-  const setFront = (roomId: string, idx: number, url?: string) =>
-    updateGuest(roomId, idx, { idCardFrontImageUrl: url });
-  const setBack = (roomId: string, idx: number, url?: string) =>
-    updateGuest(roomId, idx, { idCardBackImageUrl: url });
+  const openAddGuest = (roomId: string) => {
+    setGuestRoomId(roomId);
+    setGuestInitial({ name: "", phone: "" });
+    setGuestEditIndex(null);
+    setGuestOpen(true);
+  };
+
+  const openEditGuest = (roomId: string, idx: number) => {
+    const arr = forms[roomId] || [];
+    const current = arr[idx];
+    setGuestRoomId(roomId);
+    setGuestInitial(current || { name: "", phone: "" });
+    setGuestEditIndex(idx);
+    setGuestOpen(true);
+  };
+
+  const handleGuestSubmit = (g: GuestForm) => {
+    if (!guestRoomId) return;
+    const assigned = getAssignedRoom(guestRoomId);
+    const existingCount = (assigned?.guests || []).length;
+    if (guestEditIndex === null) {
+      setForms((prev) => {
+        const arr = prev[guestRoomId] || [];
+        if (existingCount + arr.length >= (rt.capacity || 0)) return prev;
+        return { ...prev, [guestRoomId]: [...arr, g] };
+      });
+    } else {
+      updateGuest(guestRoomId, guestEditIndex, g);
+    }
+    setGuestOpen(false);
+  };
 
   const submitCheckIn = async (roomId: string) => {
     try {
@@ -146,6 +173,7 @@ const RoomTypeBlock: React.FC<{
           message: "Check-in thành công",
           severity: "success",
         });
+        setForms((prev) => ({ ...prev, [roomId]: [] }));
         await onRefresh?.();
       } else {
         setSnackbar({
@@ -225,7 +253,22 @@ const RoomTypeBlock: React.FC<{
               {assignedRooms.map((br) => (
                 <Grid item xs={12} md={6} key={br.bookingRoomId}>
                   <Card variant="outlined" sx={{ borderRadius: 2 }}>
-                    <CardHeader title={`Phòng ${br.roomName || br.roomId}`} />
+                    <CardHeader
+                      title={`Phòng ${br.roomName || br.roomId}`}
+                      subheader={
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <Chip label={`Sức chứa: ${rt.capacity || 0}`} size="small" />
+                          <Chip
+                            label={`Nhận: ${br.startDate ? new Date(br.startDate).toLocaleDateString() : "—"}`}
+                            size="small"
+                          />
+                          <Chip
+                            label={`Trả: ${br.endDate ? new Date(br.endDate).toLocaleDateString() : "—"}`}
+                            size="small"
+                          />
+                        </Stack>
+                      }
+                    />
                     <CardContent>
                       <Stack spacing={1.5}>
                         {(br.guests || []).length > 0 && (
@@ -233,98 +276,69 @@ const RoomTypeBlock: React.FC<{
                             <Typography variant="subtitle2" fontWeight={700}>
                               Khách hiện tại
                             </Typography>
-                            {(br.guests || []).map((g) => (
-                              <Typography
-                                key={g.guestId || `${g.fullname}-${g.phone}`}
-                                variant="body2"
-                              >
-                                {g.fullname || "—"} — {g.phone || "—"}
-                              </Typography>
-                            ))}
+                            <Table size="small">
+                              <TableHead>
+                                <TableRow>
+                                  <TableCell>Họ tên</TableCell>
+                                  <TableCell>Số điện thoại</TableCell>
+                                </TableRow>
+                              </TableHead>
+                              <TableBody>
+                                {(br.guests || []).map((g) => (
+                                  <TableRow key={g.guestId || `${g.fullname}-${g.phone}`}>
+                                    <TableCell>{g.fullname || "—"}</TableCell>
+                                    <TableCell>{g.phone || "—"}</TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
                           </Stack>
                         )}
-                        {(forms[br.bookingRoomId] || []).map((g, idx) => (
-                          <Card
-                            key={idx}
-                            variant="outlined"
-                            sx={{ borderRadius: 2 }}
-                          >
-                            <CardContent>
-                              <Stack spacing={1}>
-                                <Stack
-                                  direction="row"
-                                  spacing={1}
-                                  alignItems="center"
-                                >
-                                  <TextField
-                                    label="Họ và tên"
-                                    value={g.name}
-                                    onChange={(e) =>
-                                      updateGuest(br.bookingRoomId, idx, {
-                                        name: e.target.value,
-                                      })
-                                    }
-                                    size="small"
-                                    fullWidth
-                                  />
-                                  <TextField
-                                    label="Số điện thoại"
-                                    value={g.phone}
-                                    onChange={(e) =>
-                                      updateGuest(br.bookingRoomId, idx, {
-                                        phone: e.target.value,
-                                      })
-                                    }
-                                    size="small"
-                                    fullWidth
-                                  />
-                                </Stack>
-                                <UploadCCCD
-                                  label="Mặt trước"
-                                  value={g.idCardFrontImageUrl}
-                                  onChange={(url) =>
-                                    setFront(br.bookingRoomId, idx, url)
-                                  }
-                                />
-                                <UploadCCCD
-                                  label="Mặt sau"
-                                  value={g.idCardBackImageUrl}
-                                  onChange={(url) =>
-                                    setBack(br.bookingRoomId, idx, url)
-                                  }
-                                />
-                                <Stack
-                                  direction="row"
-                                  spacing={1}
-                                  justifyContent="flex-end"
-                                >
-                                  {(forms[br.bookingRoomId] || []).length >
-                                    1 && (
-                                    <Button
-                                      color="error"
-                                      onClick={() =>
-                                        removeGuest(br.bookingRoomId, idx)
-                                      }
-                                    >
-                                      Xóa khách
-                                    </Button>
-                                  )}
-                                </Stack>
-                              </Stack>
-                            </CardContent>
-                          </Card>
-                        ))}
+
+                        <Stack spacing={0.5}>
+                          <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
+                            <Typography variant="subtitle2" fontWeight={700}>
+                              Khách mới
+                            </Typography>
+                            <Button
+                              variant="outlined"
+                              onClick={() => openAddGuest(br.bookingRoomId)}
+                              disabled={
+                                ((forms[br.bookingRoomId] || []).length + (br.guests || []).length) >=
+                                (rt.capacity || 0)
+                              }
+                            >
+                              Thêm khách
+                            </Button>
+                          </Stack>
+                          <Table size="small">
+                            <TableHead>
+                              <TableRow>
+                                <TableCell>Họ tên</TableCell>
+                                <TableCell>Số điện thoại</TableCell>
+                                <TableCell align="right">Thao tác</TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {(forms[br.bookingRoomId] || []).map((g, idx) => (
+                                <TableRow key={`${g.name}-${g.phone}-${idx}`}>
+                                  <TableCell>{g.name || "—"}</TableCell>
+                                  <TableCell>{g.phone || "—"}</TableCell>
+                                  <TableCell align="right">
+                                    <IconButton size="small" onClick={() => openEditGuest(br.bookingRoomId, idx)}>
+                                      <EditIcon fontSize="small" />
+                                    </IconButton>
+                                    <IconButton size="small" color="error" onClick={() => removeGuest(br.bookingRoomId, idx)}>
+                                      <DeleteIcon fontSize="small" />
+                                    </IconButton>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </Stack>
+
                         <Stack direction="row" spacing={1}>
-                          <Button
-                            variant="outlined"
-                            onClick={() => addGuest(br.bookingRoomId)}
-                            disabled={
-                              (forms[br.bookingRoomId] || []).length >=
-                              (rt.capacity || 0)
-                            }
-                          >
-                            Thêm khách
-                          </Button>
                           <Button
                             variant="contained"
                             color="primary"
@@ -341,6 +355,13 @@ const RoomTypeBlock: React.FC<{
               ))}
             </Grid>
           )}
+          <GuestDialog
+            open={guestOpen}
+            initial={guestInitial || undefined}
+            onClose={() => setGuestOpen(false)}
+            onSubmit={handleGuestSubmit}
+          />
+
         </Stack>
 
         <AssignRoomDialog
