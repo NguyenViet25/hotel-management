@@ -92,7 +92,7 @@ public class BookingsController : ControllerBase
     [HttpGet("active")]
     public async Task<ActionResult<ApiResponse<List<BookingDetailsDto>>>> ListActiveBooking([FromQuery] BookingsQueryDto query)
     {
-        var result = await _bookingsService.ListAsync(query);
+        var result = await _bookingsService.ListActiveAsync(new BookingsByHotelQueryDto { HotelId = query.HotelId });
         return Ok(result);
     }
 
