@@ -145,3 +145,4 @@
 2025-11-20 - 5 - 01:44:19 UTC :: ci: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — tach chuc nang de de bao tri (khong doi hanh vi)
 2025-11-21 - 1 - 01:45:05 UTC :: feat: UC-10 Goi gia: tao rate plan, thoi gian ap dung linh hoat. — them log chi tiet phuc vu audit (da kiem tra lint)
 2025-11-21 - 2 - 01:45:08 UTC :: build: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — kiem tra tuong thich mui gio/tien te (da smoke test)
+2025-11-21 - 3 - 01:45:09 UTC :: feat: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — fix race-condition nho trong thao tac (da kiem tra lint)
