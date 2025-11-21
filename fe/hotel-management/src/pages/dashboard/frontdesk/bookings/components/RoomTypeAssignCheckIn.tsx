@@ -18,7 +18,7 @@ import bookingsApi, {
 } from "../../../../../api/bookingsApi";
 import AssignRoomDialog from "./AssignRoomDialog";
 import GuestList from "./GuestList";
-import GuestForm from "./GuestForm";
+import GuestDialog from "./GuestDialog";
 
 type Props = {
   booking: BookingDetailsDto | null;
@@ -289,16 +289,31 @@ const RoomTypeBlock: React.FC<{
                           />
                         )}
 
-                        <GuestList
-                          title="Danh sách khách"
-                          guests={(forms[br.bookingRoomId] || []).map((g) => ({
-                            name: g.name,
-                            phone: g.phone,
-                          }))}
-                          editable
-                          onEdit={(idx) => openEditGuest(br.bookingRoomId, idx)}
-                          onDelete={(idx) => removeGuest(br.bookingRoomId, idx)}
-                        />
+                        <Stack spacing={1}>
+                          <GuestList
+                            title="Danh sách khách"
+                            guests={(forms[br.bookingRoomId] || []).map(
+                              (g) => ({ name: g.name, phone: g.phone })
+                            )}
+                            editable
+                            onEdit={(idx) =>
+                              openEditGuest(br.bookingRoomId, idx)
+                            }
+                            onDelete={(idx) =>
+                              removeGuest(br.bookingRoomId, idx)
+                            }
+                          />
+                          <Button
+                            variant="outlined"
+                            onClick={() => openAddGuest(br.bookingRoomId)}
+                            // disabled={
+                            //   ((forms[br.bookingRoomId] || []).length + (br.guests || []).length) >=
+                            //   (rt.capacity || 0)
+                            // }
+                          >
+                            Thêm Khách
+                          </Button>
+                        </Stack>
                       </Stack>
                     </CardContent>
                   </Card>
@@ -306,9 +321,8 @@ const RoomTypeBlock: React.FC<{
               ))}
             </Grid>
           )}
-          <GuestForm
+          <GuestDialog
             open={guestOpen}
-            mode={guestEditIndex === null ? "create" : "update"}
             initial={guestInitial || undefined}
             onClose={() => setGuestOpen(false)}
             onSubmit={handleGuestSubmit}

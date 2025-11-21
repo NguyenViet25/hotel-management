@@ -21,16 +21,31 @@ type Props = {
   onDelete?: (idx: number, guest: GuestItem) => void;
 };
 
-const GuestList: React.FC<Props> = ({ title, guests, editable = false, onEdit, onDelete }) => {
+const GuestList: React.FC<Props> = ({
+  title,
+  guests,
+  editable = false,
+  onEdit,
+  onDelete,
+}) => {
   return (
     <Stack spacing={0.5}>
-      <Typography variant="subtitle2" fontWeight={700}>{title}</Typography>
+      <Typography variant="subtitle2" fontWeight={700}>
+        {title}
+      </Typography>
       {!guests?.length ? (
-        <Typography variant="body2" color="text.secondary">Không có khách</Typography>
+        <Typography variant="body2" color="text.secondary">
+          Chưa có danh sách khách
+        </Typography>
       ) : (
         <Grid container spacing={1.5}>
           {guests.map((g, idx) => (
-            <Grid item xs={12} sm={6} key={g.id || `${g.fullname || g.name}-${g.phone}-${idx}`}>
+            <Grid
+              item
+              xs={12}
+              sm={6}
+              key={g.id || `${g.fullname || g.name}-${g.phone}-${idx}`}
+            >
               <GuestCard
                 name={g.fullname ?? g.name}
                 phone={g.phone}
