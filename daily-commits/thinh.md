@@ -133,3 +133,8 @@
 2025-11-19 - 3 - 01:45:39 UTC :: build: UC-11 Goi gia: bat/tam ngung goi gia dang ap dung. — toi uu truy van va bo nho (dong bo voi BE/FE)
 2025-11-19 - 4 - 01:45:40 UTC :: perf: UC-07 Loai phong: dinh nghia tien nghi va gia co ban. — chuan hoa ten ham/bien theo convention (da kiem tra lint)
 2025-11-19 - 5 - 01:45:41 UTC :: feat: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — cai thien hieu nang render/list (dong bo voi BE/FE)
+2025-11-20 - 1 - 01:44:10 UTC :: chore: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — chinh sua tai lieu & mo ta API (dat tieu chi toi thieu)
+2025-11-20 - 2 - 01:44:13 UTC :: test: UC-39 Xuat Audit Log: xuat CSV/PDF kiem tra tuan thu. — don dep code va xoa doan thua (dong bo voi BE/FE)
+2025-11-20 - 3 - 01:44:14 UTC :: docs: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — them log chi tiet phuc vu audit (da review so bo)
+2025-11-20 - 4 - 01:44:16 UTC :: chore: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — them kiem soat loi & retry nhe (dong bo voi BE/FE)
+2025-11-20 - 5 - 01:44:19 UTC :: fix: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — refactor luong xu ly cho ro rang (can theo doi them)
