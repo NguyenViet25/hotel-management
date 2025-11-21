@@ -141,3 +141,4 @@
 2025-11-21 - 1 - 01:45:05 UTC :: refactor: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — bo sung metrics/telemetry co ban (dat tieu chi toi thieu)
 2025-11-21 - 2 - 01:45:06 UTC :: test: UC-11 Goi gia: bat/tam ngung goi gia dang ap dung. — chuan hoa ten ham/bien theo convention (dat tieu chi toi thieu)
 2025-11-21 - 3 - 01:45:08 UTC :: build: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — cai thien hieu nang render/list (da review so bo)
+2025-11-21 - 4 - 01:45:09 UTC :: ci: UC-39 Xuat Audit Log: xuat CSV/PDF kiem tra tuan thu. — sua validate va bo sung thong bao loi (dat tieu chi toi thieu)
