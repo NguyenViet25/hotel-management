@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelManagement.Domain.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251118183757_Init")]
+    [Migration("20251121014714_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -128,6 +128,12 @@ namespace HotelManagement.Domain.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime?>("ActualCheckInAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ActualCheckOutAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<Guid?>("BookingRoomTypeId")
                         .HasColumnType("uniqueidentifier");
 
@@ -140,8 +146,8 @@ namespace HotelManagement.Domain.Migrations
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid?>("HotelRoomId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<DateTime?>("ExtendedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<Guid>("RoomId")
                         .HasColumnType("uniqueidentifier");
@@ -157,8 +163,6 @@ namespace HotelManagement.Domain.Migrations
                     b.HasIndex("BookingRoomTypeId");
 
                     b.HasIndex("BookingRoomTypeIdKey");
-
-                    b.HasIndex("HotelRoomId");
 
                     b.ToTable("BookingRooms");
                 });
@@ -407,7 +411,10 @@ namespace HotelManagement.Domain.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("IdCardImageUrl")
+                    b.Property<string>("IdCardBackImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IdCardFrontImageUrl")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Phone")
@@ -750,6 +757,43 @@ namespace HotelManagement.Domain.Migrations
                     b.HasIndex("RoomTypeId");
 
                     b.ToTable("Minibars");
+                });
+
+            modelBuilder.Entity("HotelManagement.Domain.MinibarBooking", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BookingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("BookingId1")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("ComsumedQuantity")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("MinibarId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("MinibarId1")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("OriginalQuantity")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookingId");
+
+                    b.HasIndex("BookingId1");
+
+                    b.HasIndex("MinibarId");
+
+                    b.HasIndex("MinibarId1");
+
+                    b.ToTable("MinibarBookings");
                 });
 
             modelBuilder.Entity("HotelManagement.Domain.Order", b =>
@@ -1227,13 +1271,7 @@ namespace HotelManagement.Domain.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("HotelManagement.Domain.HotelRoom", "HotelRoom")
-                        .WithMany()
-                        .HasForeignKey("HotelRoomId");
-
                     b.Navigation("BookingRoomType");
-
-                    b.Navigation("HotelRoom");
                 });
 
             modelBuilder.Entity("HotelManagement.Domain.BookingRoomType", b =>
@@ -1387,6 +1425,33 @@ namespace HotelManagement.Domain.Migrations
                     b.Navigation("Hotel");
 
                     b.Navigation("RoomType");
+                });
+
+            modelBuilder.Entity("HotelManagement.Domain.MinibarBooking", b =>
+                {
+                    b.HasOne("HotelManagement.Domain.Booking", null)
+                        .WithMany()
+                        .HasForeignKey("BookingId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HotelManagement.Domain.Booking", "Booking")
+                        .WithMany()
+                        .HasForeignKey("BookingId1");
+
+                    b.HasOne("HotelManagement.Domain.Minibar", null)
+                        .WithMany()
+                        .HasForeignKey("MinibarId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HotelManagement.Domain.Minibar", "Minibar")
+                        .WithMany()
+                        .HasForeignKey("MinibarId1");
+
+                    b.Navigation("Booking");
+
+                    b.Navigation("Minibar");
                 });
 
             modelBuilder.Entity("HotelManagement.Domain.Order", b =>

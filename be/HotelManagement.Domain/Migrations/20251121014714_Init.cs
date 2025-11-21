@@ -59,7 +59,8 @@ namespace HotelManagement.Domain.Migrations
                     FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    IdCardImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    IdCardFrontImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IdCardBackImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -610,8 +611,10 @@ namespace HotelManagement.Domain.Migrations
                     RoomName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ExtendedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ActualCheckInAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ActualCheckOutAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     BookingStatus = table.Column<int>(type: "int", nullable: false),
-                    HotelRoomId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     BookingRoomTypeId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
                 constraints: table =>
@@ -628,10 +631,44 @@ namespace HotelManagement.Domain.Migrations
                         principalTable: "BookingRoomTypes",
                         principalColumn: "BookingRoomTypeId",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MinibarBookings",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    MinibarId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    BookingId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ComsumedQuantity = table.Column<int>(type: "int", nullable: false),
+                    OriginalQuantity = table.Column<int>(type: "int", nullable: false),
+                    BookingId1 = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    MinibarId1 = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MinibarBookings", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_BookingRooms_Rooms_HotelRoomId",
-                        column: x => x.HotelRoomId,
-                        principalTable: "Rooms",
+                        name: "FK_MinibarBookings_Bookings_BookingId",
+                        column: x => x.BookingId,
+                        principalTable: "Bookings",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_MinibarBookings_Bookings_BookingId1",
+                        column: x => x.BookingId1,
+                        principalTable: "Bookings",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_MinibarBookings_Minibars_MinibarId",
+                        column: x => x.MinibarId,
+                        principalTable: "Minibars",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_MinibarBookings_Minibars_MinibarId1",
+                        column: x => x.MinibarId1,
+                        principalTable: "Minibars",
                         principalColumn: "Id");
                 });
 
@@ -928,11 +965,6 @@ namespace HotelManagement.Domain.Migrations
                 column: "BookingRoomTypeIdKey");
 
             migrationBuilder.CreateIndex(
-                name: "IX_BookingRooms_HotelRoomId",
-                table: "BookingRooms",
-                column: "HotelRoomId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_BookingRoomTypes_BookingId",
                 table: "BookingRoomTypes",
                 column: "BookingId");
@@ -1022,6 +1054,26 @@ namespace HotelManagement.Domain.Migrations
                 name: "IX_MenuItems_HotelId",
                 table: "MenuItems",
                 column: "HotelId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MinibarBookings_BookingId",
+                table: "MinibarBookings",
+                column: "BookingId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MinibarBookings_BookingId1",
+                table: "MinibarBookings",
+                column: "BookingId1");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MinibarBookings_MinibarId",
+                table: "MinibarBookings",
+                column: "MinibarId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MinibarBookings_MinibarId1",
+                table: "MinibarBookings",
+                column: "MinibarId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Minibars_HotelId",
@@ -1158,7 +1210,7 @@ namespace HotelManagement.Domain.Migrations
                 name: "Media");
 
             migrationBuilder.DropTable(
-                name: "Minibars");
+                name: "MinibarBookings");
 
             migrationBuilder.DropTable(
                 name: "OrderItems");
@@ -1188,16 +1240,19 @@ namespace HotelManagement.Domain.Migrations
                 name: "Invoices");
 
             migrationBuilder.DropTable(
+                name: "Minibars");
+
+            migrationBuilder.DropTable(
                 name: "MenuItems");
+
+            migrationBuilder.DropTable(
+                name: "Rooms");
 
             migrationBuilder.DropTable(
                 name: "ShoppingOrders");
 
             migrationBuilder.DropTable(
                 name: "BookingRoomTypes");
-
-            migrationBuilder.DropTable(
-                name: "Rooms");
 
             migrationBuilder.DropTable(
                 name: "Orders");

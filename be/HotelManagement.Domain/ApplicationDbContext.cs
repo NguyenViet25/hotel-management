@@ -37,6 +37,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
     public DbSet<ShoppingOrder> ShoppingOrders => Set<ShoppingOrder>();
     public DbSet<Promotion> Promotions => Set<Promotion>();
     public DbSet<Minibar> Minibars => Set<Minibar>();
+    public DbSet<MinibarBooking> MinibarBookings => Set<MinibarBooking>();
     public DbSet<Media> Media => Set<Media>();
 
     protected override void OnModelCreating(ModelBuilder builder)
@@ -136,6 +137,18 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
 
         var minibar = builder.Entity<Minibar>();
         minibar.Property(s => s.Price).HasPrecision(18, 2);
+
+        builder.Entity<MinibarBooking>()
+            .HasOne<Booking>()
+            .WithMany()
+            .HasForeignKey(mb => mb.BookingId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<MinibarBooking>()
+            .HasOne<Minibar>()
+            .WithMany()
+            .HasForeignKey(mb => mb.MinibarId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.Entity<BookingRoomType>()
             .HasOne<Booking>()
