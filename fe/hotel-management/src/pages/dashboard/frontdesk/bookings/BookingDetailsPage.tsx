@@ -1,44 +1,32 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import {
-  Container,
-  Card,
-  CardContent,
-  CardHeader,
-  Grid,
-  Stack,
-  Typography,
-  Divider,
-  Button,
-  Chip,
-  Paper,
-} from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
+import { Check, Edit } from "@mui/icons-material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import CancelIcon from "@mui/icons-material/Cancel";
 import PhoneIcon from "@mui/icons-material/Phone";
-import SupportAgentIcon from "@mui/icons-material/SupportAgent";
+import {
+  Button,
+  Card,
+  CardHeader,
+  Chip,
+  Stack,
+  Typography,
+} from "@mui/material";
+import dayjs from "dayjs";
+import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "react-toastify";
 import bookingsApi, {
-  BookingRoomStatus,
   EBookingStatus,
   type BookingDetailsDto,
   type UpdateBookingDto,
 } from "../../../../api/bookingsApi";
-import BookingFormModal from "./components/BookingFormModal";
-import CancelBookingModal from "./components/CancelBookingModal";
-import CallLogModal from "./components/CallLogModal";
-import dayjs from "dayjs";
 import PageTitle from "../../../../components/common/PageTitle";
+import BookingFormModal from "./components/BookingFormModal";
 import { BookingSummary } from "./components/BookingSummary";
-import type { IBookingSummary } from "./components/types";
-import theme from "../../../../theme";
-import RoomTypeCard from "./components/RoomTypeCard";
 import CallLogsDisplay from "./components/CallLogDIsplay";
-import { Camera, CameraEnhance, Check, Edit } from "@mui/icons-material";
-import { toast } from "react-toastify";
-import AssignRoomSection from "./components/AssignRoomSection";
-import CheckInForm from "./components/CheckInForm";
-import BookingDetailsPanel from "./components/BookingDetailsPanel";
+import CallLogModal from "./components/CallLogModal";
+import CancelBookingModal from "./components/CancelBookingModal";
+import RoomTypeAssignCheckIn from "./components/RoomTypeAssignCheckIn";
+import type { IBookingSummary } from "./components/types";
 
 const BookingDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -47,7 +35,6 @@ const BookingDetailsPage: React.FC = () => {
   const [openEdit, setOpenEdit] = useState(false);
   const [openCancel, setOpenCancel] = useState(false);
   const [openCall, setOpenCall] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
 
   const fetch = async () => {
     if (!id) return;
@@ -200,7 +187,7 @@ const BookingDetailsPage: React.FC = () => {
         />
       </Stack>
 
-      {/* Room Details: one card per room type */}
+      {/* Chi tiết phòng: gán phòng & check-in theo từng phòng của loại */}
       <Stack spacing={1}>
         <Typography
           variant="subtitle1"
@@ -210,16 +197,7 @@ const BookingDetailsPage: React.FC = () => {
         >
           Chi tiết phòng
         </Typography>
-
-        <RoomTypeCard
-          bookingRoomTypes={data?.bookingRoomTypes || []}
-          formatCurrency={(amount) =>
-            amount.toLocaleString("vi-VN", {
-              style: "currency",
-              currency: "VND",
-            })
-          }
-        />
+        <RoomTypeAssignCheckIn booking={data as any} onRefresh={fetch} />
       </Stack>
 
       {/* Call logs */}
@@ -253,36 +231,7 @@ const BookingDetailsPage: React.FC = () => {
         />
         <CallLogsDisplay data={data?.callLogs || []} />
       </Card>
-      <Stack spacing={1.5}>
-        <Typography variant="h6" fontWeight={800}>
-          Gán Phòng & Check-in Khách
-        </Typography>
-        <Grid container spacing={2}>
-          <Grid item xs={12} md={5}>
-            <BookingDetailsPanel booking={data} />
-          </Grid>
-          <Grid item xs={12} md={7}>
-            {data && (
-              <AssignRoomSection
-                booking={data}
-                onAssigned={async () => {
-                  await fetch();
-                  setRefreshKey((k) => k + 1);
-                }}
-              />
-            )}
-          </Grid>
-        </Grid>
-        {data && (
-          <CheckInForm
-            key={refreshKey}
-            booking={data}
-            onCheckedIn={async () => {
-              await fetch();
-            }}
-          />
-        )}
-      </Stack>
+
       {/* Update Booking Modal */}
       <BookingFormModal
         open={openEdit}
