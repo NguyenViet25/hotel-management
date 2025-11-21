@@ -6,18 +6,10 @@ import {
   CardHeader,
   Chip,
   Grid,
-  IconButton,
   Snackbar,
   Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
   Typography,
 } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
 import React, { useEffect, useState } from "react";
 import bookingsApi, {
   type BookingDetailsDto,
@@ -25,7 +17,8 @@ import bookingsApi, {
   type BookingRoomTypeDto,
 } from "../../../../../api/bookingsApi";
 import AssignRoomDialog from "./AssignRoomDialog";
-import GuestDialog from "./GuestDialog";
+import GuestList from "./GuestList";
+import GuestForm from "./GuestForm";
 
 type Props = {
   booking: BookingDetailsDto | null;
@@ -272,27 +265,11 @@ const RoomTypeBlock: React.FC<{
                     <CardContent>
                       <Stack spacing={1.5}>
                         {(br.guests || []).length > 0 && (
-                          <Stack spacing={0.5}>
-                            <Typography variant="subtitle2" fontWeight={700}>
-                              Khách hiện tại
-                            </Typography>
-                            <Table size="small">
-                              <TableHead>
-                                <TableRow>
-                                  <TableCell>Họ tên</TableCell>
-                                  <TableCell>Số điện thoại</TableCell>
-                                </TableRow>
-                              </TableHead>
-                              <TableBody>
-                                {(br.guests || []).map((g) => (
-                                  <TableRow key={g.guestId || `${g.fullname}-${g.phone}`}>
-                                    <TableCell>{g.fullname || "—"}</TableCell>
-                                    <TableCell>{g.phone || "—"}</TableCell>
-                                  </TableRow>
-                                ))}
-                              </TableBody>
-                            </Table>
-                          </Stack>
+                          <GuestList
+                            title="Khách hiện tại"
+                            guests={(br.guests || []).map((g) => ({ id: g.guestId, fullname: g.fullname, phone: g.phone, email: g.email }))}
+                            editable={false}
+                          />
                         )}
 
                         <Stack spacing={0.5}>
@@ -308,34 +285,16 @@ const RoomTypeBlock: React.FC<{
                                 (rt.capacity || 0)
                               }
                             >
-                              Thêm khách
+                              Thêm Khách Mới
                             </Button>
                           </Stack>
-                          <Table size="small">
-                            <TableHead>
-                              <TableRow>
-                                <TableCell>Họ tên</TableCell>
-                                <TableCell>Số điện thoại</TableCell>
-                                <TableCell align="right">Thao tác</TableCell>
-                              </TableRow>
-                            </TableHead>
-                            <TableBody>
-                              {(forms[br.bookingRoomId] || []).map((g, idx) => (
-                                <TableRow key={`${g.name}-${g.phone}-${idx}`}>
-                                  <TableCell>{g.name || "—"}</TableCell>
-                                  <TableCell>{g.phone || "—"}</TableCell>
-                                  <TableCell align="right">
-                                    <IconButton size="small" onClick={() => openEditGuest(br.bookingRoomId, idx)}>
-                                      <EditIcon fontSize="small" />
-                                    </IconButton>
-                                    <IconButton size="small" color="error" onClick={() => removeGuest(br.bookingRoomId, idx)}>
-                                      <DeleteIcon fontSize="small" />
-                                    </IconButton>
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
+                          <GuestList
+                            title="Khách mới"
+                            guests={(forms[br.bookingRoomId] || []).map((g) => ({ name: g.name, phone: g.phone }))}
+                            editable
+                            onEdit={(idx) => openEditGuest(br.bookingRoomId, idx)}
+                            onDelete={(idx) => removeGuest(br.bookingRoomId, idx)}
+                          />
                         </Stack>
 
                         <Stack direction="row" spacing={1}>
@@ -355,8 +314,9 @@ const RoomTypeBlock: React.FC<{
               ))}
             </Grid>
           )}
-          <GuestDialog
+          <GuestForm
             open={guestOpen}
+            mode={guestEditIndex === null ? "create" : "update"}
             initial={guestInitial || undefined}
             onClose={() => setGuestOpen(false)}
             onSubmit={handleGuestSubmit}
