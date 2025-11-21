@@ -187,15 +187,6 @@ const BookingDetailsPage: React.FC = () => {
         />
       </Stack>
 
-      {/* Chi tiết phòng: gán phòng & check-in theo từng phòng của loại */}
-      <Stack spacing={1}>
-        <Typography variant="h6" fontWeight={800}>Gán Phòng & Check-in Khách</Typography>
-        <Typography variant="subtitle1" fontWeight={600} color="primary" gutterBottom>
-          Chi tiết phòng
-        </Typography>
-        <RoomTypeAssignCheckIn booking={data as any} onRefresh={fetch} />
-      </Stack>
-
       {/* Call logs */}
       <Card variant="outlined" sx={{ borderRadius: 2, mb: 2 }}>
         <CardHeader
@@ -227,6 +218,15 @@ const BookingDetailsPage: React.FC = () => {
         />
         <CallLogsDisplay data={data?.callLogs || []} />
       </Card>
+
+      {/* Chi tiết phòng: gán phòng & check-in theo từng phòng của loại */}
+      <Stack spacing={1}>
+        <Typography variant="h6" fontWeight={800}>
+          Gán Phòng & Check-in, Check-out
+        </Typography>
+
+        <RoomTypeAssignCheckIn booking={data as any} onRefresh={fetch} />
+      </Stack>
 
       {/* Update Booking Modal */}
       <BookingFormModal
