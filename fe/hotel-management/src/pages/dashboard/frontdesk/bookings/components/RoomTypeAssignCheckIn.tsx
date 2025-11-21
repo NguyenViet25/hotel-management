@@ -5,21 +5,19 @@ import {
   CardContent,
   CardHeader,
   Chip,
-  Divider,
   Grid,
   Snackbar,
   Stack,
   TextField,
   Typography,
 } from "@mui/material";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import bookingsApi, {
   type BookingDetailsDto,
   type BookingRoomDto,
   type BookingRoomTypeDto,
-  type RoomMapItemDto,
 } from "../../../../../api/bookingsApi";
-import RoomCard from "./RoomCard";
+import AssignRoomDialog from "./AssignRoomDialog";
 import UploadCCCD from "./UploadCCCD";
 
 type Props = {
@@ -56,9 +54,7 @@ const RoomTypeBlock: React.FC<{
   rt: BookingRoomTypeDto;
   onRefresh?: () => Promise<void> | void;
 }> = ({ booking, rt, onRefresh }) => {
-  const [mapRooms, setMapRooms] = useState<RoomMapItemDto[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [assignOpen, setAssignOpen] = useState(false);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -67,77 +63,6 @@ const RoomTypeBlock: React.FC<{
 
   const assignedRooms: BookingRoomDto[] = rt.bookingRooms || [];
   const remaining = Math.max(0, (rt.totalRoom || 0) - assignedRooms.length);
-
-  const fetchMap = async () => {
-    setLoading(true);
-    try {
-      const res = await bookingsApi.getRoomMap({
-        date: rt.startDate,
-        hotelId: booking.hotelId,
-      });
-      if (res.isSuccess && res.data)
-        setMapRooms(res.data.filter((r) => r.roomTypeId === rt.roomTypeId));
-    } catch {}
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    fetchMap();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [booking.id, rt.roomTypeId, rt.startDate]);
-
-  const toggleSelect = (roomId: string) => {
-    setSelectedIds((prev) => {
-      const exists = prev.includes(roomId);
-      if (exists) return prev.filter((id) => id !== roomId);
-      const next = [...prev, roomId];
-      const allowed = next.slice(0, remaining); // cap to remaining slots
-      return allowed;
-    });
-  };
-
-  const isAvailable = (room: RoomMapItemDto) => {
-    const seg = room.timeline?.[0];
-    const s = (seg?.status || "").toLowerCase();
-    return s === "available";
-  };
-
-  const statusUi = (room: RoomMapItemDto) => {
-    const seg = room.timeline?.[0];
-    const s = (seg?.status || "").toLowerCase();
-    if (s === "available") return { label: "Trống", color: "#2e7d32" };
-    if (s === "occupied" || s === "booked")
-      return { label: "Đã Có Khách", color: "#c62828" };
-    if (s === "cleaning") return { label: "Đang Dọn Dẹp", color: "#f9a825" };
-    if (s === "maintenance") return { label: "Bảo Trì", color: "#424242" };
-    return { label: seg?.status || "—", color: "#9e9e9e" };
-  };
-
-  const assignSelected = async () => {
-    if (!selectedIds.length || remaining === 0) return;
-    try {
-      for (const roomId of selectedIds) {
-        await bookingsApi.addRoom({
-          bookingRoomTypeId: rt.bookingRoomTypeId,
-          roomId,
-        });
-      }
-      setSelectedIds([]);
-      setSnackbar({
-        open: true,
-        message: "Gán phòng thành công",
-        severity: "success",
-      });
-      await onRefresh?.();
-      await fetchMap();
-    } catch {
-      setSnackbar({
-        open: true,
-        message: "Không thể gán phòng",
-        severity: "error",
-      });
-    }
-  };
 
   // Check-in state per assigned room
   const [forms, setForms] = useState<Record<string, GuestForm[]>>({});
@@ -247,18 +172,6 @@ const RoomTypeBlock: React.FC<{
     );
   };
 
-  // Group rooms by floor using first digit heuristic if floor not provided
-  const floorGroups = useMemo(() => {
-    const byFloor: Record<string, RoomMapItemDto[]> = {};
-    (mapRooms || []).forEach((r) => {
-      const num = r.roomNumber || "";
-      const f = /^[0-9]/.test(num) ? num.charAt(0) : "?";
-      if (!byFloor[f]) byFloor[f] = [];
-      byFloor[f].push(r);
-    });
-    return Object.entries(byFloor).sort((a, b) => Number(a[0]) - Number(b[0]));
-  }, [mapRooms]);
-
   return (
     <Card
       variant="outlined"
@@ -289,51 +202,13 @@ const RoomTypeBlock: React.FC<{
       />
       <CardContent>
         <Stack spacing={1.5}>
-          <Typography variant="subtitle2" fontWeight={700}>
-            Chọn Phòng (chỉ phòng Trống)
-          </Typography>
-          <Stack spacing={2}>
-            {floorGroups.map(([floor, rooms]) => (
-              <Stack key={floor} spacing={1}>
-                <Typography
-                  variant="subtitle2"
-                  fontWeight={700}
-                >{`Tầng ${floor}`}</Typography>
-                <Grid container spacing={2}>
-                  {rooms.map((r) => {
-                    const ui = statusUi(r);
-                    const alreadyAssigned = assignedRooms.some(
-                      (br) => br.roomId === r.roomId
-                    );
-                    const disabled =
-                      !isAvailable(r) || alreadyAssigned || remaining === 0;
-                    return (
-                      <Grid item key={r.roomId}>
-                        <RoomCard
-                          room={r}
-                          selected={selectedIds.includes(r.roomId)}
-                          disabled={disabled}
-                          statusLabel={ui.label}
-                          statusColor={ui.color}
-                          onClick={() => toggleSelect(r.roomId)}
-                        />
-                      </Grid>
-                    );
-                  })}
-                </Grid>
-                <Divider sx={{ my: 1 }} />
-              </Stack>
-            ))}
-          </Stack>
-
           <Stack direction="row" spacing={1} justifyContent="flex-end">
             <Button
-              variant="contained"
-              color="primary"
-              disabled={!selectedIds.length || remaining === 0}
-              onClick={assignSelected}
+              variant="outlined"
+              onClick={() => setAssignOpen(true)}
+              disabled={remaining === 0}
             >
-              Gán Phòng
+              Chọn phòng
             </Button>
           </Stack>
 
@@ -353,6 +228,21 @@ const RoomTypeBlock: React.FC<{
                     <CardHeader title={`Phòng ${br.roomName || br.roomId}`} />
                     <CardContent>
                       <Stack spacing={1.5}>
+                        {(br.guests || []).length > 0 && (
+                          <Stack spacing={0.5}>
+                            <Typography variant="subtitle2" fontWeight={700}>
+                              Khách hiện tại
+                            </Typography>
+                            {(br.guests || []).map((g) => (
+                              <Typography
+                                key={g.guestId || `${g.fullname}-${g.phone}`}
+                                variant="body2"
+                              >
+                                {g.fullname || "—"} — {g.phone || "—"}
+                              </Typography>
+                            ))}
+                          </Stack>
+                        )}
                         {(forms[br.bookingRoomId] || []).map((g, idx) => (
                           <Card
                             key={idx}
@@ -452,6 +342,22 @@ const RoomTypeBlock: React.FC<{
             </Grid>
           )}
         </Stack>
+
+        <AssignRoomDialog
+          open={assignOpen}
+          booking={booking}
+          roomType={rt}
+          onClose={() => setAssignOpen(false)}
+          onAssigned={async () => {
+            setSnackbar({
+              open: true,
+              message: "Gán phòng thành công",
+              severity: "success",
+            });
+            setAssignOpen(false);
+            await onRefresh?.();
+          }}
+        />
 
         <Snackbar
           open={snackbar.open}
