@@ -36,6 +36,9 @@ import RoomTypeCard from "./components/RoomTypeCard";
 import CallLogsDisplay from "./components/CallLogDIsplay";
 import { Camera, CameraEnhance, Check, Edit } from "@mui/icons-material";
 import { toast } from "react-toastify";
+import AssignRoomSection from "./components/AssignRoomSection";
+import CheckInForm from "./components/CheckInForm";
+import BookingDetailsPanel from "./components/BookingDetailsPanel";
 
 const BookingDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -44,6 +47,7 @@ const BookingDetailsPage: React.FC = () => {
   const [openEdit, setOpenEdit] = useState(false);
   const [openCancel, setOpenCancel] = useState(false);
   const [openCall, setOpenCall] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const fetch = async () => {
     if (!id) return;
@@ -145,18 +149,6 @@ const BookingDetailsPage: React.FC = () => {
           {statusChip}
         </Stack>
         <Stack direction="row" spacing={1}>
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<CameraEnhance />}
-            onClick={() => {
-              toast.warning("Tính năng đang trong quá trình hoàn thành");
-            }}
-            aria-label="Check-in booking"
-          >
-            Check in/out
-          </Button>
-
           <Button
             variant="outlined"
             color="primary"
@@ -261,7 +253,36 @@ const BookingDetailsPage: React.FC = () => {
         />
         <CallLogsDisplay data={data?.callLogs || []} />
       </Card>
-
+      <Stack spacing={1.5}>
+        <Typography variant="h6" fontWeight={800}>
+          Gán Phòng & Check-in Khách
+        </Typography>
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={5}>
+            <BookingDetailsPanel booking={data} />
+          </Grid>
+          <Grid item xs={12} md={7}>
+            {data && (
+              <AssignRoomSection
+                booking={data}
+                onAssigned={async () => {
+                  await fetch();
+                  setRefreshKey((k) => k + 1);
+                }}
+              />
+            )}
+          </Grid>
+        </Grid>
+        {data && (
+          <CheckInForm
+            key={refreshKey}
+            booking={data}
+            onCheckedIn={async () => {
+              await fetch();
+            }}
+          />
+        )}
+      </Stack>
       {/* Update Booking Modal */}
       <BookingFormModal
         open={openEdit}

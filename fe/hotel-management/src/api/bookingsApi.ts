@@ -144,6 +144,11 @@ export interface RoomMapQueryDto {
   hotelId?: string;
 }
 
+export interface AddRoomToBookingDto {
+  bookingRoomTypeId: string;
+  roomId: string;
+}
+
 export enum BookingRoomStatus {
   Pending = "Pending",
   Occupied = "Occupied",
@@ -380,6 +385,23 @@ const bookingsApi = {
     payload: ChangeRoomDto
   ): Promise<ApiResponse<BookingDetailsDto>> {
     const res = await axios.post(`/admin/bookings/${id}/change-room`, payload);
+    return res.data;
+  },
+
+  async addRoom(
+    payload: AddRoomToBookingDto
+  ): Promise<ApiResponse<BookingDetailsDto>> {
+    const res = await axios.post(`/admin/bookings/add-room`, payload);
+    return res.data;
+  },
+
+  async getRoomMap(
+    query: RoomMapQueryDto
+  ): Promise<ApiResponse<RoomMapItemDto[]>> {
+    const qp = new URLSearchParams();
+    qp.append("date", query.date);
+    if (query.hotelId) qp.append("hotelId", query.hotelId);
+    const res = await axios.get(`/admin/bookings/room-map?${qp.toString()}`);
     return res.data;
   },
 
