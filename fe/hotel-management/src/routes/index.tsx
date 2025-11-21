@@ -9,6 +9,8 @@ import { menuItems } from "./menu-items";
 import ManagerDashboardPage from "../pages/dashboard/manager";
 import { useStore, type StoreState } from "../hooks/useStore";
 import OrdersManagementPage from "../pages/dashboard/waiter/orders/OrdersManagementPage";
+import SessionBoardPage from "../pages/dashboard/waiter/sessions/SessionBoardPage";
+import SessionDetailsPage from "../pages/dashboard/waiter/sessions/SessionDetailsPage";
 import KitchenTimelinePage from "../pages/dashboard/manager/kitchen/KitchenTimelinePage";
 import DiscountCodesPage from "../pages/dashboard/manager/discounts/DiscountCodesPage";
 import MinibarManagementPage from "../pages/dashboard/manager/minibars/MinibarManagementPage";
@@ -359,6 +361,22 @@ const router = createBrowserRouter([
       {
         path: "dashboard",
         element: <WaiterDashboard />,
+      },
+      {
+        path: "sessions",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <SessionBoardPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "sessions/:id",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <SessionDetailsPage />
+          </Suspense>
+        ),
       },
       // Add other waiter routes here
     ],

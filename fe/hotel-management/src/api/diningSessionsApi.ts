@@ -1,0 +1,76 @@
+import axios from "./axios";
+
+export interface DiningSessionDto {
+  id: string;
+  hotelId: string;
+  tableId: string;
+  tableName: string;
+  waiterUserId?: string | null;
+  waiterName?: string | null;
+  startedAt: string;
+  endedAt?: string | null;
+  status: string;
+}
+
+export interface CreateDiningSessionRequest {
+  hotelId: string;
+  tableId: string;
+  waiterUserId?: string;
+  guestId?: string;
+}
+
+export interface UpdateDiningSessionRequest {
+  waiterUserId?: string;
+  status?: string;
+}
+
+export interface DiningSessionListResponse {
+  sessions: DiningSessionDto[];
+  totalCount: number;
+}
+
+export interface ItemResponse<T> {
+  isSuccess: boolean;
+  message: string | null;
+  data: T;
+}
+
+export interface ListResponse<T> {
+  isSuccess: boolean;
+  message: string | null;
+  data: T;
+}
+
+const diningSessionsApi = {
+  async createSession(payload: CreateDiningSessionRequest): Promise<ItemResponse<DiningSessionDto>> {
+    const res = await axios.post(`/dining-sessions`, payload);
+    return res.data;
+  },
+  async getSession(id: string): Promise<ItemResponse<DiningSessionDto>> {
+    const res = await axios.get(`/dining-sessions/${id}`);
+    return res.data;
+  },
+  async getSessions(params: { hotelId: string; page?: number; pageSize?: number; status?: string }): Promise<ListResponse<DiningSessionListResponse>> {
+    const qp = new URLSearchParams();
+    qp.append("hotelId", params.hotelId);
+    if (params.page) qp.append("page", String(params.page));
+    if (params.pageSize) qp.append("pageSize", String(params.pageSize));
+    if (params.status) qp.append("status", params.status);
+    const res = await axios.get(`/dining-sessions?${qp.toString()}`);
+    return res.data;
+  },
+  async updateSession(id: string, payload: UpdateDiningSessionRequest): Promise<ItemResponse<DiningSessionDto>> {
+    const res = await axios.put(`/dining-sessions/${id}`, payload);
+    return res.data;
+  },
+  async endSession(id: string): Promise<ItemResponse<boolean>> {
+    const res = await axios.post(`/dining-sessions/${id}/end`);
+    return res.data;
+  },
+  async assignOrder(sessionId: string, orderId: string): Promise<ItemResponse<boolean>> {
+    const res = await axios.post(`/dining-sessions/${sessionId}/orders/${orderId}`);
+    return res.data;
+  },
+};
+
+export default diningSessionsApi;

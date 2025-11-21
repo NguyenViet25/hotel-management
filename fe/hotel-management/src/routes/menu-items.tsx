@@ -69,6 +69,7 @@ export const menuItems = {
   ],
   waiter: [
     { title: "Tổng quan", path: "/waiter/dashboard", icon: <DashboardIcon /> },
+    { title: "Phiên phục vụ", path: "/waiter/sessions", icon: <RestaurantIcon /> },
   ],
   housekeeper: [
     {
