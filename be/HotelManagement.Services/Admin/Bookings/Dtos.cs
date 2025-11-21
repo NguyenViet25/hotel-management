@@ -91,6 +91,8 @@ public class BookingGuestDto
     public string? Fullname { get; set; }
     public string? Phone { get; set; }
     public string? Email { get; set; }
+    public string? IdCardFrontImageUrl { get; set; }
+    public string? IdCardBackImageUrl { get; set; }
 }
 
 public class BookingRoomDto
