@@ -53,6 +53,7 @@ public class BookingRoom
     public BookingRoomStatus BookingStatus { get; set; } = BookingRoomStatus.Pending;
     public ICollection<BookingGuest>? Guests { get; set; } = new List<BookingGuest>();
     public BookingRoomType? BookingRoomType { get; set; }
+    public HotelRoom? HotelRoom { get; set; }
 }
 
 

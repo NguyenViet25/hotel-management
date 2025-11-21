@@ -36,7 +36,7 @@ const RoomTypeAssignCheckIn: React.FC<Props> = ({ booking, onRefresh }) => {
   if (!booking) return null;
   const rtList = booking.bookingRoomTypes || [];
   return (
-    <Stack direction={{ xs: "column", md: "row" }} spacing={2} flexWrap="wrap">
+    <Stack spacing={2}>
       {rtList.map((rt) => (
         <RoomTypeBlock
           key={rt.bookingRoomTypeId}
@@ -194,10 +194,7 @@ const RoomTypeBlock: React.FC<{
   };
 
   return (
-    <Card
-      variant="outlined"
-      sx={{ borderRadius: 2, flex: "1 1 600px", minWidth: 320 }}
-    >
+    <Card variant="outlined" sx={{ borderRadius: 2, minWidth: 320 }}>
       <CardHeader
         title={
           <Typography variant="h6" fontWeight={700}>
@@ -205,34 +202,38 @@ const RoomTypeBlock: React.FC<{
           </Typography>
         }
         subheader={
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Chip
-              label={`Cần gán: ${rt.totalRoom || 0}`}
-              size="small"
-              color="primary"
-            />
-            <Chip
-              label={`Đã gán: ${assignedRooms.length}`}
-              size="small"
-              color="secondary"
-            />
-            <Chip label={`Còn lại: ${remaining}`} size="small" />
-            <Chip label={`Sức chứa/Phòng: ${rt.capacity || 0}`} size="small" />
+          <Stack direction="row" spacing={2} justifyContent={"space-between"}>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Chip
+                label={`Cần gán: ${rt.totalRoom || 0}`}
+                size="small"
+                color="primary"
+              />
+              <Chip
+                label={`Đã gán: ${assignedRooms.length}`}
+                size="small"
+                color="secondary"
+              />
+              <Chip label={`Còn lại: ${remaining}`} size="small" />
+              <Chip
+                label={`Sức chứa/Phòng: ${rt.capacity || 0}`}
+                size="small"
+              />
+            </Stack>
+            <Stack direction="row" spacing={1} justifyContent="flex-end">
+              <Button
+                variant="outlined"
+                onClick={() => setAssignOpen(true)}
+                disabled={remaining === 0}
+              >
+                Chọn phòng
+              </Button>
+            </Stack>
           </Stack>
         }
       />
       <CardContent>
         <Stack spacing={1.5}>
-          <Stack direction="row" spacing={1} justifyContent="flex-end">
-            <Button
-              variant="outlined"
-              onClick={() => setAssignOpen(true)}
-              disabled={remaining === 0}
-            >
-              Chọn phòng
-            </Button>
-          </Stack>
-
           <Typography variant="subtitle2" fontWeight={700}>
             Check-in theo phòng
           </Typography>
@@ -247,16 +248,27 @@ const RoomTypeBlock: React.FC<{
                 <Grid item xs={12} md={6} key={br.bookingRoomId}>
                   <Card variant="outlined" sx={{ borderRadius: 2 }}>
                     <CardHeader
-                      title={`Phòng ${br.roomName || br.roomId}`}
+                      title={`Phòng ${br.roomName ?? ""}`}
                       subheader={
                         <Stack direction="row" spacing={1} alignItems="center">
-                          <Chip label={`Sức chứa: ${rt.capacity || 0}`} size="small" />
                           <Chip
-                            label={`Nhận: ${br.startDate ? new Date(br.startDate).toLocaleDateString() : "—"}`}
+                            label={`Sức chứa: ${rt.capacity || 0}`}
                             size="small"
                           />
                           <Chip
-                            label={`Trả: ${br.endDate ? new Date(br.endDate).toLocaleDateString() : "—"}`}
+                            label={`Nhận: ${
+                              br.startDate
+                                ? new Date(br.startDate).toLocaleDateString()
+                                : "—"
+                            }`}
+                            size="small"
+                          />
+                          <Chip
+                            label={`Trả: ${
+                              br.endDate
+                                ? new Date(br.endDate).toLocaleDateString()
+                                : "—"
+                            }`}
                             size="small"
                           />
                         </Stack>
@@ -267,46 +279,26 @@ const RoomTypeBlock: React.FC<{
                         {(br.guests || []).length > 0 && (
                           <GuestList
                             title="Khách hiện tại"
-                            guests={(br.guests || []).map((g) => ({ id: g.guestId, fullname: g.fullname, phone: g.phone, email: g.email }))}
+                            guests={(br.guests || []).map((g) => ({
+                              id: g.guestId,
+                              fullname: g.fullname,
+                              phone: g.phone,
+                              email: g.email,
+                            }))}
                             editable={false}
                           />
                         )}
 
-                        <Stack spacing={0.5}>
-                          <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
-                            <Typography variant="subtitle2" fontWeight={700}>
-                              Khách mới
-                            </Typography>
-                            <Button
-                              variant="outlined"
-                              onClick={() => openAddGuest(br.bookingRoomId)}
-                              disabled={
-                                ((forms[br.bookingRoomId] || []).length + (br.guests || []).length) >=
-                                (rt.capacity || 0)
-                              }
-                            >
-                              Thêm Khách Mới
-                            </Button>
-                          </Stack>
-                          <GuestList
-                            title="Khách mới"
-                            guests={(forms[br.bookingRoomId] || []).map((g) => ({ name: g.name, phone: g.phone }))}
-                            editable
-                            onEdit={(idx) => openEditGuest(br.bookingRoomId, idx)}
-                            onDelete={(idx) => removeGuest(br.bookingRoomId, idx)}
-                          />
-                        </Stack>
-
-                        <Stack direction="row" spacing={1}>
-                          <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={() => submitCheckIn(br.bookingRoomId)}
-                            disabled={!canCheckIn(br.bookingRoomId)}
-                          >
-                            Check-in Khách
-                          </Button>
-                        </Stack>
+                        <GuestList
+                          title="Danh sách khách"
+                          guests={(forms[br.bookingRoomId] || []).map((g) => ({
+                            name: g.name,
+                            phone: g.phone,
+                          }))}
+                          editable
+                          onEdit={(idx) => openEditGuest(br.bookingRoomId, idx)}
+                          onDelete={(idx) => removeGuest(br.bookingRoomId, idx)}
+                        />
                       </Stack>
                     </CardContent>
                   </Card>
@@ -321,7 +313,6 @@ const RoomTypeBlock: React.FC<{
             onClose={() => setGuestOpen(false)}
             onSubmit={handleGuestSubmit}
           />
-
         </Stack>
 
         <AssignRoomDialog

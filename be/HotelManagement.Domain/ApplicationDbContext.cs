@@ -162,6 +162,12 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
             .HasForeignKey(b => b.BookingRoomTypeIdKey)
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.Entity<BookingRoom>()
+            .HasOne<HotelRoom>()
+            .WithMany()
+            .HasForeignKey(b => b.RoomId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         builder.Entity<Booking>()
             .HasOne(b => b.PrimaryGuest)
             .WithMany()

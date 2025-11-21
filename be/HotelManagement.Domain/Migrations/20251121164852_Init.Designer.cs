@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelManagement.Domain.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251121015111_Init")]
+    [Migration("20251121164852_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -149,6 +149,9 @@ namespace HotelManagement.Domain.Migrations
                     b.Property<DateTime?>("ExtendedDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid?>("HotelRoomId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("RoomId")
                         .HasColumnType("uniqueidentifier");
 
@@ -163,6 +166,10 @@ namespace HotelManagement.Domain.Migrations
                     b.HasIndex("BookingRoomTypeId");
 
                     b.HasIndex("BookingRoomTypeIdKey");
+
+                    b.HasIndex("HotelRoomId");
+
+                    b.HasIndex("RoomId");
 
                     b.ToTable("BookingRooms");
                 });
@@ -1271,7 +1278,19 @@ namespace HotelManagement.Domain.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("HotelManagement.Domain.HotelRoom", "HotelRoom")
+                        .WithMany("BookingRooms")
+                        .HasForeignKey("HotelRoomId");
+
+                    b.HasOne("HotelManagement.Domain.HotelRoom", null)
+                        .WithMany()
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("BookingRoomType");
+
+                    b.Navigation("HotelRoom");
                 });
 
             modelBuilder.Entity("HotelManagement.Domain.BookingRoomType", b =>
@@ -1634,6 +1653,8 @@ namespace HotelManagement.Domain.Migrations
 
             modelBuilder.Entity("HotelManagement.Domain.HotelRoom", b =>
                 {
+                    b.Navigation("BookingRooms");
+
                     b.Navigation("StatusLogs");
                 });
 

@@ -261,6 +261,7 @@ public class BookingsService(
             foreach (var rt in roomTypes)
             {
                 var bookingRooms = await _bookingRoomRepo.Query()
+                    .Include(x => x.HotelRoom)
                     .Where(x => x.BookingRoomTypeIdKey == rt.BookingRoomTypeId)
                     .ToListAsync();
 
@@ -280,6 +281,7 @@ public class BookingsService(
                 foreach (var br in bookingRooms)
                 {
                     var bookingGuests = await _bookingGuestRepo.Query()
+                        .Include(x => x.BookingRoom)
                         .Include(x => x.Guest)
                         .Where(x => x.BookingRoomId == br.BookingRoomId).ToListAsync();
 
@@ -287,7 +289,7 @@ public class BookingsService(
                     {
                         BookingRoomId = br.BookingRoomId,
                         RoomId = br.RoomId,
-                        RoomName = br.RoomName,
+                        RoomName = br.HotelRoom?.Number,
                         StartDate = br.StartDate,
                         EndDate = br.EndDate,
                         BookingStatus = br.BookingStatus,

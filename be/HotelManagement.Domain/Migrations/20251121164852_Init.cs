@@ -602,38 +602,6 @@ namespace HotelManagement.Domain.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "BookingRooms",
-                columns: table => new
-                {
-                    BookingRoomId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RoomId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    BookingRoomTypeIdKey = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RoomName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ExtendedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    ActualCheckInAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    ActualCheckOutAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    BookingStatus = table.Column<int>(type: "int", nullable: false),
-                    BookingRoomTypeId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_BookingRooms", x => x.BookingRoomId);
-                    table.ForeignKey(
-                        name: "FK_BookingRooms_BookingRoomTypes_BookingRoomTypeId",
-                        column: x => x.BookingRoomTypeId,
-                        principalTable: "BookingRoomTypes",
-                        principalColumn: "BookingRoomTypeId");
-                    table.ForeignKey(
-                        name: "FK_BookingRooms_BookingRoomTypes_BookingRoomTypeIdKey",
-                        column: x => x.BookingRoomTypeIdKey,
-                        principalTable: "BookingRoomTypes",
-                        principalColumn: "BookingRoomTypeId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "MinibarBookings",
                 columns: table => new
                 {
@@ -670,6 +638,50 @@ namespace HotelManagement.Domain.Migrations
                         column: x => x.MinibarId1,
                         principalTable: "Minibars",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "BookingRooms",
+                columns: table => new
+                {
+                    BookingRoomId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    RoomId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    BookingRoomTypeIdKey = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    RoomName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ExtendedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ActualCheckInAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ActualCheckOutAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    BookingStatus = table.Column<int>(type: "int", nullable: false),
+                    BookingRoomTypeId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    HotelRoomId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BookingRooms", x => x.BookingRoomId);
+                    table.ForeignKey(
+                        name: "FK_BookingRooms_BookingRoomTypes_BookingRoomTypeId",
+                        column: x => x.BookingRoomTypeId,
+                        principalTable: "BookingRoomTypes",
+                        principalColumn: "BookingRoomTypeId");
+                    table.ForeignKey(
+                        name: "FK_BookingRooms_BookingRoomTypes_BookingRoomTypeIdKey",
+                        column: x => x.BookingRoomTypeIdKey,
+                        principalTable: "BookingRoomTypes",
+                        principalColumn: "BookingRoomTypeId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_BookingRooms_Rooms_HotelRoomId",
+                        column: x => x.HotelRoomId,
+                        principalTable: "Rooms",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_BookingRooms_Rooms_RoomId",
+                        column: x => x.RoomId,
+                        principalTable: "Rooms",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -965,6 +977,16 @@ namespace HotelManagement.Domain.Migrations
                 column: "BookingRoomTypeIdKey");
 
             migrationBuilder.CreateIndex(
+                name: "IX_BookingRooms_HotelRoomId",
+                table: "BookingRooms",
+                column: "HotelRoomId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BookingRooms_RoomId",
+                table: "BookingRooms",
+                column: "RoomId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_BookingRoomTypes_BookingId",
                 table: "BookingRoomTypes",
                 column: "BookingId");
@@ -1246,13 +1268,13 @@ namespace HotelManagement.Domain.Migrations
                 name: "MenuItems");
 
             migrationBuilder.DropTable(
-                name: "Rooms");
-
-            migrationBuilder.DropTable(
                 name: "ShoppingOrders");
 
             migrationBuilder.DropTable(
                 name: "BookingRoomTypes");
+
+            migrationBuilder.DropTable(
+                name: "Rooms");
 
             migrationBuilder.DropTable(
                 name: "Orders");
