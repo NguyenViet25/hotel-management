@@ -141,3 +141,4 @@
 2025-11-21 - 1 - 01:45:04 UTC :: chore: UC-37 Night Audit: kiem tra folio chua chot, khoa giao dich. — bo sung index & toi uu DB (can theo doi them)
 2025-11-21 - 2 - 01:45:07 UTC :: refactor: UC-37 Night Audit: kiem tra folio chua chot, khoa giao dich. — tach chuc nang de de bao tri (dat tieu chi toi thieu)
 2025-11-21 - 3 - 01:45:08 UTC :: refactor: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — dieu chinh UI & copy cho ro (da kiem tra lint)
+2025-11-21 - 4 - 01:45:09 UTC :: build: UC-09 So do: hien thi layout, loc trang thai phong. — them log chi tiet phuc vu audit (dat tieu chi toi thieu)
