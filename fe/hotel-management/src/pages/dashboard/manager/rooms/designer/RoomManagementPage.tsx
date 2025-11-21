@@ -14,12 +14,11 @@ import roomsApi, {
   type CreateRoomRequest,
   type RoomDto,
   type UpdateRoomRequest,
-} from "../../../../api/roomsApi";
-import roomTypesApi, { type RoomType } from "../../../../api/roomTypesApi";
-import PageTitle from "../../../../components/common/PageTitle";
-import ChangeRoomStatusModal from "./components/ChangeRoomStatusModal";
-import RoomFormModal from "./components/RoomFormModal";
-import RoomTable from "./components/RoomTable";
+} from "../../../../../api/roomsApi";
+import roomTypesApi, { type RoomType } from "../../../../../api/roomTypesApi";
+import ChangeRoomStatusModal from "../components/ChangeRoomStatusModal";
+import RoomFormModal from "../components/RoomFormModal";
+import RoomTable from "../components/RoomTable";
 
 // Status options and chips have been moved into dedicated components
 
@@ -189,11 +188,6 @@ const RoomManagementPage: React.FC = () => {
 
   return (
     <Box>
-      <PageTitle
-        title="Quản lý phòng"
-        subtitle="Xem danh sách phòng, thêm/sửa/xóa và cập nhật trạng thái"
-      />
-
       {/* Rooms table */}
       <RoomTable
         rooms={rooms}

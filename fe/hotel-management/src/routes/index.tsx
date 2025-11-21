@@ -57,7 +57,7 @@ const ManagerRoomTypesPage = lazy(
   () => import("../pages/dashboard/manager/room-types")
 );
 const ManagerRoomsPage = lazy(
-  () => import("../pages/dashboard/manager/rooms/RoomManagementPage")
+  () => import("../pages/dashboard/manager/rooms/RoomPage")
 );
 const ManagerMenusPage = lazy(
   () => import("../pages/dashboard/manager/menus/MenuManagementPage")
