@@ -143,3 +143,4 @@
 2025-11-20 - 3 - 01:44:14 UTC :: perf: UC-47 Dashboard: gioi han xem theo vai tro va co so. — refactor luong xu ly cho ro rang (dong bo voi BE/FE)
 2025-11-20 - 4 - 01:44:17 UTC :: test: UC-37 Night Audit: kiem tra folio chua chot, khoa giao dich. — bo sung metrics/telemetry co ban (da smoke test)
 2025-11-20 - 5 - 01:44:19 UTC :: ci: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — tach chuc nang de de bao tri (khong doi hanh vi)
+2025-11-21 - 1 - 01:45:05 UTC :: feat: UC-10 Goi gia: tao rate plan, thoi gian ap dung linh hoat. — them log chi tiet phuc vu audit (da kiem tra lint)
