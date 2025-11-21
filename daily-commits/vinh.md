@@ -139,3 +139,4 @@
 2025-11-20 - 4 - 01:44:21 UTC :: fix: UC-34 Cham cong: ghi nhan diem danh, ban giao ca. — bo sung unit test muc co ban (da review so bo)
 2025-11-20 - 5 - 01:44:22 UTC :: test: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — dieu chinh UI & copy cho ro (anh huong thap)
 2025-11-21 - 1 - 01:45:04 UTC :: chore: UC-37 Night Audit: kiem tra folio chua chot, khoa giao dich. — bo sung index & toi uu DB (can theo doi them)
+2025-11-21 - 2 - 01:45:07 UTC :: refactor: UC-37 Night Audit: kiem tra folio chua chot, khoa giao dich. — tach chuc nang de de bao tri (dat tieu chi toi thieu)
