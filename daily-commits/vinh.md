@@ -138,3 +138,4 @@
 2025-11-20 - 3 - 01:44:18 UTC :: build: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — fix race-condition nho trong thao tac (da kiem tra lint)
 2025-11-20 - 4 - 01:44:21 UTC :: fix: UC-34 Cham cong: ghi nhan diem danh, ban giao ca. — bo sung unit test muc co ban (da review so bo)
 2025-11-20 - 5 - 01:44:22 UTC :: test: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — dieu chinh UI & copy cho ro (anh huong thap)
+2025-11-21 - 1 - 01:45:04 UTC :: chore: UC-37 Night Audit: kiem tra folio chua chot, khoa giao dich. — bo sung index & toi uu DB (can theo doi them)
