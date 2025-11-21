@@ -139,3 +139,4 @@
 2025-11-20 - 4 - 01:44:15 UTC :: perf: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — bo sung index & toi uu DB (da review so bo)
 2025-11-20 - 5 - 01:44:16 UTC :: build: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — dieu chinh UI & copy cho ro (anh huong thap)
 2025-11-21 - 1 - 01:45:05 UTC :: feat: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — tach chuc nang de de bao tri (khong doi hanh vi)
+2025-11-21 - 2 - 01:45:07 UTC :: ci: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — refactor luong xu ly cho ro rang (anh huong thap)
