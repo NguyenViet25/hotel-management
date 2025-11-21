@@ -194,6 +194,26 @@ export interface ExtendStayResultDto {
   price: number;
 }
 
+export interface MinibarConsumptionItemDto {
+  minibarId: string;
+  quantity: number;
+}
+
+export interface MinibarConsumptionDto {
+  items: MinibarConsumptionItemDto[];
+}
+
+export interface AdditionalChargeLineDto {
+  description: string;
+  amount: number;
+  sourceType: number;
+}
+
+export interface AdditionalChargesDto {
+  lines: AdditionalChargeLineDto[];
+  total: number;
+}
+
 export interface BookingsQueryDto {
   hotelId?: string;
   status?: BookingStatus;
@@ -330,7 +350,9 @@ const bookingsApi = {
   async additionalChargesPreview(
     id: string
   ): Promise<ApiResponse<AdditionalChargesDto>> {
-    const res = await axios.get(`/admin/bookings/${id}/additional-charges/preview`);
+    const res = await axios.get(
+      `/admin/bookings/${id}/additional-charges/preview`
+    );
     return res.data;
   },
 
@@ -338,7 +360,10 @@ const bookingsApi = {
     id: string,
     payload: MinibarConsumptionDto
   ): Promise<ApiResponse<any>> {
-    const res = await axios.post(`/admin/bookings/${id}/minibar-consumption`, payload);
+    const res = await axios.post(
+      `/admin/bookings/${id}/minibar-consumption`,
+      payload
+    );
     return res.data;
   },
 
