@@ -189,12 +189,8 @@ const BookingDetailsPage: React.FC = () => {
 
       {/* Chi tiết phòng: gán phòng & check-in theo từng phòng của loại */}
       <Stack spacing={1}>
-        <Typography
-          variant="subtitle1"
-          fontWeight={600}
-          color="primary"
-          gutterBottom
-        >
+        <Typography variant="h6" fontWeight={800}>Gán Phòng & Check-in Khách</Typography>
+        <Typography variant="subtitle1" fontWeight={600} color="primary" gutterBottom>
           Chi tiết phòng
         </Typography>
         <RoomTypeAssignCheckIn booking={data as any} onRefresh={fetch} />

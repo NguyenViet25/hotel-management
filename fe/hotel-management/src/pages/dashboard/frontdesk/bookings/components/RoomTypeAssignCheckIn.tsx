@@ -337,116 +337,119 @@ const RoomTypeBlock: React.FC<{
             </Button>
           </Stack>
 
-          {!!assignedRooms.length && (
-            <>
-              <Typography variant="subtitle2" fontWeight={700}>
-                Check-in theo phòng
-              </Typography>
-              <Grid container spacing={2}>
-                {assignedRooms.map((br) => (
-                  <Grid item xs={12} md={6} key={br.bookingRoomId}>
-                    <Card variant="outlined" sx={{ borderRadius: 2 }}>
-                      <CardHeader title={`Phòng ${br.roomName || br.roomId}`} />
-                      <CardContent>
-                        <Stack spacing={1.5}>
-                          {(forms[br.bookingRoomId] || []).map((g, idx) => (
-                            <Card
-                              key={idx}
-                              variant="outlined"
-                              sx={{ borderRadius: 2 }}
-                            >
-                              <CardContent>
-                                <Stack spacing={1}>
-                                  <Stack
-                                    direction="row"
-                                    spacing={1}
-                                    alignItems="center"
-                                  >
-                                    <TextField
-                                      label="Họ và tên"
-                                      value={g.name}
-                                      onChange={(e) =>
-                                        updateGuest(br.bookingRoomId, idx, {
-                                          name: e.target.value,
-                                        })
-                                      }
-                                      size="small"
-                                      fullWidth
-                                    />
-                                    <TextField
-                                      label="Số điện thoại"
-                                      value={g.phone}
-                                      onChange={(e) =>
-                                        updateGuest(br.bookingRoomId, idx, {
-                                          phone: e.target.value,
-                                        })
-                                      }
-                                      size="small"
-                                      fullWidth
-                                    />
-                                  </Stack>
-                                  <UploadCCCD
-                                    label="Mặt trước"
-                                    value={g.idCardFrontImageUrl}
-                                    onChange={(url) =>
-                                      setFront(br.bookingRoomId, idx, url)
+          <Typography variant="subtitle2" fontWeight={700}>
+            Check-in theo phòng
+          </Typography>
+          {!assignedRooms.length ? (
+            <Typography variant="body2" color="text.secondary">
+              Chưa có phòng được gán cho loại này. Vui lòng gán phòng để hiển
+              thị form check-in.
+            </Typography>
+          ) : (
+            <Grid container spacing={2}>
+              {assignedRooms.map((br) => (
+                <Grid item xs={12} md={6} key={br.bookingRoomId}>
+                  <Card variant="outlined" sx={{ borderRadius: 2 }}>
+                    <CardHeader title={`Phòng ${br.roomName || br.roomId}`} />
+                    <CardContent>
+                      <Stack spacing={1.5}>
+                        {(forms[br.bookingRoomId] || []).map((g, idx) => (
+                          <Card
+                            key={idx}
+                            variant="outlined"
+                            sx={{ borderRadius: 2 }}
+                          >
+                            <CardContent>
+                              <Stack spacing={1}>
+                                <Stack
+                                  direction="row"
+                                  spacing={1}
+                                  alignItems="center"
+                                >
+                                  <TextField
+                                    label="Họ và tên"
+                                    value={g.name}
+                                    onChange={(e) =>
+                                      updateGuest(br.bookingRoomId, idx, {
+                                        name: e.target.value,
+                                      })
                                     }
+                                    size="small"
+                                    fullWidth
                                   />
-                                  <UploadCCCD
-                                    label="Mặt sau"
-                                    value={g.idCardBackImageUrl}
-                                    onChange={(url) =>
-                                      setBack(br.bookingRoomId, idx, url)
+                                  <TextField
+                                    label="Số điện thoại"
+                                    value={g.phone}
+                                    onChange={(e) =>
+                                      updateGuest(br.bookingRoomId, idx, {
+                                        phone: e.target.value,
+                                      })
                                     }
+                                    size="small"
+                                    fullWidth
                                   />
-                                  <Stack
-                                    direction="row"
-                                    spacing={1}
-                                    justifyContent="flex-end"
-                                  >
-                                    {(forms[br.bookingRoomId] || []).length >
-                                      1 && (
-                                      <Button
-                                        color="error"
-                                        onClick={() =>
-                                          removeGuest(br.bookingRoomId, idx)
-                                        }
-                                      >
-                                        Xóa khách
-                                      </Button>
-                                    )}
-                                  </Stack>
                                 </Stack>
-                              </CardContent>
-                            </Card>
-                          ))}
-                          <Stack direction="row" spacing={1}>
-                            <Button
-                              variant="outlined"
-                              onClick={() => addGuest(br.bookingRoomId)}
-                              disabled={
-                                (forms[br.bookingRoomId] || []).length >=
-                                (rt.capacity || 0)
-                              }
-                            >
-                              Thêm khách
-                            </Button>
-                            <Button
-                              variant="contained"
-                              color="primary"
-                              onClick={() => submitCheckIn(br.bookingRoomId)}
-                              disabled={!canCheckIn(br.bookingRoomId)}
-                            >
-                              Check-in Khách
-                            </Button>
-                          </Stack>
+                                <UploadCCCD
+                                  label="Mặt trước"
+                                  value={g.idCardFrontImageUrl}
+                                  onChange={(url) =>
+                                    setFront(br.bookingRoomId, idx, url)
+                                  }
+                                />
+                                <UploadCCCD
+                                  label="Mặt sau"
+                                  value={g.idCardBackImageUrl}
+                                  onChange={(url) =>
+                                    setBack(br.bookingRoomId, idx, url)
+                                  }
+                                />
+                                <Stack
+                                  direction="row"
+                                  spacing={1}
+                                  justifyContent="flex-end"
+                                >
+                                  {(forms[br.bookingRoomId] || []).length >
+                                    1 && (
+                                    <Button
+                                      color="error"
+                                      onClick={() =>
+                                        removeGuest(br.bookingRoomId, idx)
+                                      }
+                                    >
+                                      Xóa khách
+                                    </Button>
+                                  )}
+                                </Stack>
+                              </Stack>
+                            </CardContent>
+                          </Card>
+                        ))}
+                        <Stack direction="row" spacing={1}>
+                          <Button
+                            variant="outlined"
+                            onClick={() => addGuest(br.bookingRoomId)}
+                            disabled={
+                              (forms[br.bookingRoomId] || []).length >=
+                              (rt.capacity || 0)
+                            }
+                          >
+                            Thêm khách
+                          </Button>
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() => submitCheckIn(br.bookingRoomId)}
+                            disabled={!canCheckIn(br.bookingRoomId)}
+                          >
+                            Check-in Khách
+                          </Button>
                         </Stack>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                ))}
-              </Grid>
-            </>
+                      </Stack>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
           )}
         </Stack>
 
