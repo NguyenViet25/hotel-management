@@ -147,3 +147,4 @@
 2025-11-21 - 2 - 01:45:08 UTC :: build: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — kiem tra tuong thich mui gio/tien te (da smoke test)
 2025-11-21 - 3 - 01:45:09 UTC :: feat: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — fix race-condition nho trong thao tac (da kiem tra lint)
 2025-11-21 - 4 - 01:45:10 UTC :: test: UC-40 Thu/chi: doi soat tien mat/the/le phi PG. — chinh sua tai lieu & mo ta API (dat tieu chi toi thieu)
+2025-11-21 - 5 - 01:45:12 UTC :: ci: UC-23 Bao tri: tao ticket, dinh anh, mo ta loi. — chuan hoa ten ham/bien theo convention (da kiem tra lint)
