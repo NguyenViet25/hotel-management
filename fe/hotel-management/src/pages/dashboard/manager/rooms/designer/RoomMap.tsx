@@ -1,38 +1,37 @@
-import React, { useEffect, useMemo, useState } from "react";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import ChangeCircleIcon from "@mui/icons-material/ChangeCircle";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import EditIcon from "@mui/icons-material/Edit";
 import {
+  Alert,
   Box,
+  Button,
   Card,
   CardContent,
   CardHeader,
   Chip,
-  Grid,
-  Stack,
-  Typography,
-  IconButton,
-  Tooltip,
-  Snackbar,
-  Alert,
   Dialog,
-  DialogTitle,
-  DialogContent,
   DialogActions,
-  Button,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  IconButton,
+  Snackbar,
+  Stack,
+  Tooltip,
+  Typography,
 } from "@mui/material";
-import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import ChangeCircleIcon from "@mui/icons-material/ChangeCircle";
+import React, { useEffect, useMemo, useState } from "react";
 import roomsApi, {
-  type RoomDto,
-  type RoomStatus,
   getRoomStatusString,
   type CreateRoomRequest,
+  type RoomDto,
+  type RoomStatus,
   type UpdateRoomRequest,
 } from "../../../../../api/roomsApi";
 import roomTypesApi, { type RoomType } from "../../../../../api/roomTypesApi";
-import RoomFormModal from "../components/RoomFormModal";
 import ChangeRoomStatusModal from "../components/ChangeRoomStatusModal";
-import { ROOM_TYPE_META } from "./types";
+import RoomFormModal from "../components/RoomFormModal";
 
 const RoomMap: React.FC = () => {
   const [rooms, setRooms] = useState<RoomDto[]>([]);
@@ -135,15 +134,6 @@ const RoomMap: React.FC = () => {
 
   return (
     <Box>
-      <Stack spacing={0.5} sx={{ mb: 2 }}>
-        <Typography variant="h5" fontWeight={700}>
-          Sơ Đồ Phòng
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Quản lý phòng theo dạng sơ đồ trực quan
-        </Typography>
-      </Stack>
-
       <Card
         onClick={openCreate}
         sx={{
