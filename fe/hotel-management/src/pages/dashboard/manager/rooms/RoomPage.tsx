@@ -10,8 +10,12 @@ export default function RoomPage() {
   return (
     <>
       <PageTitle
-        title="Quản lý phòng"
-        subtitle="Xem danh sách phòng, thêm/sửa/xóa và cập nhật trạng thái"
+        title={view === "map" ? "Sơ Đồ Phòng" : "Quản lý phòng"}
+        subtitle={
+          view === "map"
+            ? "Quản lý phòng theo dạng sơ đồ trực quan"
+            : "Xem danh sách phòng, thêm/sửa/xóa và cập nhật trạng thái"
+        }
       />
       <ViewSwitcher view={view} onChange={setView} />
       {view === "map" ? <RoomMap /> : <RoomManagementPage />}
