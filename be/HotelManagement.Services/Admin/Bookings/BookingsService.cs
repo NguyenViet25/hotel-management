@@ -17,6 +17,12 @@ public class BookingsService(
     IRepository<HotelRoom> roomRepo,
     IRepository<RoomType> roomTypeRepo,
     IRepository<CallLog> callLogRepo,
+    IRepository<RoomStatusLog> roomStatusLogRepo,
+    IRepository<SurchargeRule> surchargeRuleRepo,
+    IRepository<Invoice> invoiceRepo,
+    IRepository<InvoiceLine> invoiceLineRepo,
+    IRepository<HotelManagement.Domain.Minibar> minibarRepo,
+    IRepository<HotelManagement.Domain.MinibarBooking> minibarBookingRepo,
     IUnitOfWork uow) : IBookingsService
 {
     private readonly IRepository<Booking> _bookingRepo = bookingRepo;
@@ -28,6 +34,12 @@ public class BookingsService(
     private readonly IRepository<HotelRoom> _roomRepo = roomRepo;
     private readonly IRepository<RoomType> _roomTypeRepo = roomTypeRepo;
     private readonly IRepository<CallLog> _callLogRepo = callLogRepo;
+    private readonly IRepository<RoomStatusLog> _roomStatusLogRepo = roomStatusLogRepo;
+    private readonly IRepository<SurchargeRule> _surchargeRuleRepo = surchargeRuleRepo;
+    private readonly IRepository<Invoice> _invoiceRepo = invoiceRepo;
+    private readonly IRepository<InvoiceLine> _invoiceLineRepo = invoiceLineRepo;
+    private readonly IRepository<HotelManagement.Domain.Minibar> _minibarRepo = minibarRepo;
+    private readonly IRepository<HotelManagement.Domain.MinibarBooking> _minibarBookingRepo = minibarBookingRepo;
     private readonly IUnitOfWork _uow = uow;
 
     public async Task<ApiResponse<BookingDetailsDto>> CreateAsync(CreateBookingDto dto)
@@ -909,6 +921,341 @@ public class BookingsService(
             await _bookingGuestRepo.SaveChangesAsync();
         }
 
+        var bookingRoom = await _bookingRoomRepo.FindAsync(dto.RoomBookingId);
+        if (bookingRoom != null)
+        {
+            bookingRoom.BookingStatus = BookingRoomStatus.CheckedIn;
+            bookingRoom.ActualCheckInAt = DateTime.UtcNow;
+            await _bookingRoomRepo.UpdateAsync(bookingRoom);
+            await _bookingRoomRepo.SaveChangesAsync();
+
+            var room = await _roomRepo.FindAsync(bookingRoom.RoomId);
+            if (room != null)
+            {
+                room.Status = RoomStatus.Occupied;
+                await _roomRepo.UpdateAsync(room);
+                await _roomRepo.SaveChangesAsync();
+
+                await _roomStatusLogRepo.AddAsync(new RoomStatusLog
+                {
+                    Id = Guid.NewGuid(),
+                    HotelId = room.HotelId,
+                    RoomId = room.Id,
+                    Status = RoomStatus.Occupied,
+                    Timestamp = DateTime.UtcNow
+                });
+                await _roomStatusLogRepo.SaveChangesAsync();
+            }
+        }
+
         return ApiResponse.Ok("Check in thành công");
+    }
+
+    public async Task<ApiResponse<BookingDetailsDto>> ChangeRoomAsync(Guid bookingRoomId, Guid newRoomId)
+    {
+        var bookingRoom = await _bookingRoomRepo.Query().Include(br => br.BookingRoomType).FirstOrDefaultAsync(br => br.BookingRoomId == bookingRoomId);
+        if (bookingRoom == null) return ApiResponse<BookingDetailsDto>.Fail("Không tìm thấy booking");
+
+        var booking = await _bookingRepo.FindAsync(bookingRoom.BookingRoomType!.BookingIdKey);
+        if (booking == null) return ApiResponse<BookingDetailsDto>.Fail("Không tìm thấy booking");
+
+        var targetRoom = await _roomRepo.FindAsync(newRoomId);
+        if (targetRoom == null || targetRoom.HotelId != booking.HotelIdKey) return ApiResponse<BookingDetailsDto>.Fail("Phòng không hợp lệ");
+
+        var overlap = await _bookingRoomRepo.Query()
+            .Where(br => br.RoomId == newRoomId && br.BookingStatus != BookingRoomStatus.Cancelled && br.BookingRoomId != bookingRoomId)
+            .AnyAsync(br => bookingRoom.StartDate < br.EndDate && bookingRoom.EndDate > br.StartDate);
+        if (overlap) return ApiResponse<BookingDetailsDto>.Fail("Phòng không trống trong khoảng thời gian");
+
+        var oldRoom = await _roomRepo.FindAsync(bookingRoom.RoomId);
+
+        bookingRoom.RoomId = newRoomId;
+        bookingRoom.RoomName = targetRoom.Number;
+        await _bookingRoomRepo.UpdateAsync(bookingRoom);
+        await _bookingRoomRepo.SaveChangesAsync();
+
+        if (oldRoom != null)
+        {
+            oldRoom.Status = RoomStatus.Dirty;
+            await _roomRepo.UpdateAsync(oldRoom);
+            await _roomRepo.SaveChangesAsync();
+
+            await _roomStatusLogRepo.AddAsync(new RoomStatusLog
+            {
+                Id = Guid.NewGuid(),
+                HotelId = oldRoom.HotelId,
+                RoomId = oldRoom.Id,
+                Status = RoomStatus.Dirty,
+                Timestamp = DateTime.UtcNow
+            });
+            await _roomStatusLogRepo.SaveChangesAsync();
+        }
+
+        targetRoom.Status = bookingRoom.BookingStatus == BookingRoomStatus.CheckedIn ? RoomStatus.Occupied : targetRoom.Status;
+        await _roomRepo.UpdateAsync(targetRoom);
+        await _roomRepo.SaveChangesAsync();
+
+        await _roomStatusLogRepo.AddAsync(new RoomStatusLog
+        {
+            Id = Guid.NewGuid(),
+            HotelId = targetRoom.HotelId,
+            RoomId = targetRoom.Id,
+            Status = targetRoom.Status,
+            Timestamp = DateTime.UtcNow
+        });
+        await _roomStatusLogRepo.SaveChangesAsync();
+
+        return await GetByIdAsync(booking.Id);
+    }
+
+    public async Task<ApiResponse<ExtendStayResultDto>> ExtendStayAsync(Guid bookingRoomId, DateTime newEndDate, string? discountCode)
+    {
+        var bookingRoom = await _bookingRoomRepo.Query().Include(br => br.BookingRoomType).FirstOrDefaultAsync(br => br.BookingRoomId == bookingRoomId);
+        if (bookingRoom == null) return ApiResponse<ExtendStayResultDto>.Fail("Không tìm thấy booking");
+
+        if (newEndDate.Date <= bookingRoom.EndDate.Date) return ApiResponse<ExtendStayResultDto>.Fail("Ngày kết thúc không hợp lệ");
+
+        var overlap = await _bookingRoomRepo.Query()
+            .Where(br => br.RoomId == bookingRoom.RoomId && br.BookingStatus != BookingRoomStatus.Cancelled && br.BookingRoomId != bookingRoomId)
+            .AnyAsync(br => bookingRoom.EndDate < br.EndDate && newEndDate > br.StartDate);
+        if (overlap) return ApiResponse<ExtendStayResultDto>.Fail("Không thể gia hạn do trùng lịch");
+
+        var nights = (newEndDate.Date - bookingRoom.EndDate.Date).Days;
+        var pricePerNight = bookingRoom.BookingRoomType!.Price;
+        var delta = pricePerNight * nights;
+
+        bookingRoom.ExtendedDate = newEndDate;
+        bookingRoom.EndDate = newEndDate;
+        await _bookingRoomRepo.UpdateAsync(bookingRoom);
+        await _bookingRoomRepo.SaveChangesAsync();
+
+        var booking = await _bookingRepo.FindAsync(bookingRoom.BookingRoomType.BookingIdKey);
+        if (booking != null)
+        {
+            booking.TotalAmount += delta;
+            booking.LeftAmount += delta;
+            await _bookingRepo.UpdateAsync(booking);
+            await _bookingRepo.SaveChangesAsync();
+        }
+
+        var details = await GetByIdAsync(bookingRoom.BookingRoomType.BookingIdKey);
+        if (!details.IsSuccess) return ApiResponse<ExtendStayResultDto>.Fail(details.Message ?? "");
+
+        return ApiResponse<ExtendStayResultDto>.Ok(new ExtendStayResultDto { Booking = details.Data!, Price = delta });
+    }
+
+    public async Task<ApiResponse<CheckoutResultDto>> CheckOutAsync(Guid bookingId, CheckoutRequestDto dto)
+    {
+        var booking = await _bookingRepo.Query().Include(b => b.BookingRoomTypes).ThenInclude(rt => rt.BookingRooms).FirstOrDefaultAsync(b => b.Id == bookingId);
+        if (booking == null) return ApiResponse<CheckoutResultDto>.Fail("Không tìm thấy booking");
+
+        var lines = new List<InvoiceLine>();
+
+        foreach (var rt in booking.BookingRoomTypes)
+        {
+            var totalNights = (rt.EndDate.Date - rt.StartDate.Date).Days;
+            var amount = rt.Price * totalNights * Math.Max(rt.BookingRooms.Count, 1);
+            lines.Add(new InvoiceLine
+            {
+                Id = Guid.NewGuid(),
+                Description = rt.RoomTypeName ?? "Room charge",
+                Amount = amount,
+                SourceType = InvoiceLineSourceType.RoomCharge,
+                SourceId = rt.BookingRoomTypeId
+            });
+        }
+
+        var rules = await _surchargeRuleRepo.Query().Where(x => x.HotelId == booking.HotelIdKey).ToListAsync();
+
+        if (dto.EarlyCheckIn == true)
+        {
+            var rule = rules.FirstOrDefault(r => r.Type == SurchargeType.EarlyCheckIn);
+            if (rule != null)
+            {
+                var amt = rule.IsPercentage ? Math.Round(lines.Sum(l => l.Amount) * rule.Amount / 100m, 2) : rule.Amount;
+                lines.Add(new InvoiceLine
+                {
+                    Id = Guid.NewGuid(),
+                    Description = "Early check-in",
+                    Amount = amt,
+                    SourceType = InvoiceLineSourceType.Surcharge
+                });
+            }
+        }
+
+        if (dto.LateCheckOut == true)
+        {
+            var rule = rules.FirstOrDefault(r => r.Type == SurchargeType.LateCheckOut);
+            if (rule != null)
+            {
+                var amt = rule.IsPercentage ? Math.Round(lines.Sum(l => l.Amount) * rule.Amount / 100m, 2) : rule.Amount;
+                lines.Add(new InvoiceLine
+                {
+                    Id = Guid.NewGuid(),
+                    Description = "Late check-out",
+                    Amount = amt,
+                    SourceType = InvoiceLineSourceType.Surcharge
+                });
+            }
+        }
+
+        var capacityTotal = booking.BookingRoomTypes.Sum(rt => rt.Capacity * Math.Max(rt.BookingRooms.Count, 1));
+        var guestCount = await _bookingGuestRepo.Query().Where(bg => booking.BookingRoomTypes.SelectMany(rt => rt.BookingRooms).Select(r => r.BookingRoomId).Contains(bg.BookingRoomId)).CountAsync();
+        var extraGuests = Math.Max(guestCount - capacityTotal, 0);
+        if (extraGuests > 0)
+        {
+            var rule = rules.FirstOrDefault(r => r.Type == SurchargeType.ExtraGuest);
+            if (rule != null)
+            {
+                var amt = rule.IsPercentage ? Math.Round(lines.Sum(l => l.Amount) * rule.Amount / 100m, 2) : rule.Amount * extraGuests;
+                lines.Add(new InvoiceLine
+                {
+                    Id = Guid.NewGuid(),
+                    Description = "Extra guests",
+                    Amount = amt,
+                    SourceType = InvoiceLineSourceType.Surcharge
+                });
+            }
+        }
+
+        if (booking.DepositAmount > 0)
+        {
+            lines.Add(new InvoiceLine
+            {
+                Id = Guid.NewGuid(),
+                Description = "Deposit deduction",
+                Amount = -booking.DepositAmount,
+                SourceType = InvoiceLineSourceType.Discount
+            });
+        }
+
+        var invoice = new Invoice
+        {
+            Id = Guid.NewGuid(),
+            HotelId = booking.HotelIdKey,
+            BookingId = booking.Id,
+            InvoiceNumber = $"INV-{DateTime.UtcNow:yyMM}-{new Random().Next(100000, 999999)}",
+            Status = InvoiceStatus.Draft,
+            CreatedById = Guid.Empty,
+            CreatedAt = DateTime.UtcNow,
+            VatIncluded = true
+        };
+
+        foreach (var l in lines)
+        {
+            l.InvoiceId = invoice.Id;
+            invoice.Lines.Add(l);
+        }
+
+        invoice.SubTotal = invoice.Lines.Where(x => x.Amount > 0).Sum(x => x.Amount);
+        invoice.DiscountAmount = Math.Abs(invoice.Lines.Where(x => x.Amount < 0).Sum(x => x.Amount));
+        invoice.TaxAmount = Math.Round(invoice.SubTotal * 0.1m, 2);
+        invoice.TotalAmount = invoice.SubTotal - invoice.DiscountAmount + invoice.TaxAmount;
+
+        await _invoiceRepo.AddAsync(invoice);
+        await _invoiceRepo.SaveChangesAsync();
+
+        var totalPaid = booking.DepositAmount + (dto.FinalPayment?.Amount ?? 0);
+        invoice.PaidAmount = totalPaid;
+        invoice.Status = totalPaid >= invoice.TotalAmount ? InvoiceStatus.Paid : InvoiceStatus.Issued;
+        invoice.PaidAt = totalPaid >= invoice.TotalAmount ? DateTime.UtcNow : null;
+        await _invoiceRepo.UpdateAsync(invoice);
+        await _invoiceRepo.SaveChangesAsync();
+
+        foreach (var br in booking.BookingRoomTypes.SelectMany(rt => rt.BookingRooms))
+        {
+            br.BookingStatus = BookingRoomStatus.CheckedOut;
+            br.ActualCheckOutAt = DateTime.UtcNow;
+            await _bookingRoomRepo.UpdateAsync(br);
+        }
+        await _bookingRoomRepo.SaveChangesAsync();
+
+        booking.Status = BookingStatus.Completed;
+        await _bookingRepo.UpdateAsync(booking);
+        await _bookingRepo.SaveChangesAsync();
+
+        var rooms = booking.BookingRoomTypes.SelectMany(rt => rt.BookingRooms).Select(r => r.RoomId).Distinct().ToList();
+        foreach (var roomId in rooms)
+        {
+            var room = await _roomRepo.FindAsync(roomId);
+            if (room != null)
+            {
+                room.Status = RoomStatus.Dirty;
+                await _roomRepo.UpdateAsync(room);
+                await _roomRepo.SaveChangesAsync();
+
+                await _roomStatusLogRepo.AddAsync(new RoomStatusLog
+                {
+                    Id = Guid.NewGuid(),
+                    HotelId = room.HotelId,
+                    RoomId = room.Id,
+                    Status = RoomStatus.Dirty,
+                    Timestamp = DateTime.UtcNow
+                });
+                await _roomStatusLogRepo.SaveChangesAsync();
+            }
+        }
+
+        var details = await GetByIdAsync(bookingId);
+        if (!details.IsSuccess) return ApiResponse<CheckoutResultDto>.Fail(details.Message ?? "");
+
+        return ApiResponse<CheckoutResultDto>.Ok(new CheckoutResultDto { TotalPaid = totalPaid, Booking = details.Data, CheckoutTime = DateTime.UtcNow });
+    }
+
+    public async Task<ApiResponse<AdditionalChargesDto>> GetAdditionalChargesPreviewAsync(Guid bookingId)
+    {
+        var booking = await _bookingRepo.Query().Include(b => b.BookingRoomTypes).ThenInclude(rt => rt.BookingRooms).FirstOrDefaultAsync(b => b.Id == bookingId);
+        if (booking == null) return ApiResponse<AdditionalChargesDto>.Fail("Không tìm thấy booking");
+
+        var rules = await _surchargeRuleRepo.Query().Where(x => x.HotelId == booking.HotelIdKey).ToListAsync();
+        var lines = new List<AdditionalChargeLineDto>();
+
+        var earlyRule = rules.FirstOrDefault(r => r.Type == SurchargeType.EarlyCheckIn);
+        if (earlyRule != null)
+        {
+            var amt = earlyRule.IsPercentage ? 0 : earlyRule.Amount;
+            lines.Add(new AdditionalChargeLineDto { Description = "Early check-in", Amount = amt, SourceType = InvoiceLineSourceType.Surcharge });
+        }
+
+        var lateRule = rules.FirstOrDefault(r => r.Type == SurchargeType.LateCheckOut);
+        if (lateRule != null)
+        {
+            var amt = lateRule.IsPercentage ? 0 : lateRule.Amount;
+            lines.Add(new AdditionalChargeLineDto { Description = "Late check-out", Amount = amt, SourceType = InvoiceLineSourceType.Surcharge });
+        }
+
+        var capacityTotal = booking.BookingRoomTypes.Sum(rt => rt.Capacity * Math.Max(rt.BookingRooms.Count, 1));
+        var guestCount = await _bookingGuestRepo.Query().Where(bg => booking.BookingRoomTypes.SelectMany(rt => rt.BookingRooms).Select(r => r.BookingRoomId).Contains(bg.BookingRoomId)).CountAsync();
+        var extraGuests = Math.Max(guestCount - capacityTotal, 0);
+        var extraRule = rules.FirstOrDefault(r => r.Type == SurchargeType.ExtraGuest);
+        if (extraRule != null && extraGuests > 0)
+        {
+            var amt = extraRule.IsPercentage ? 0 : extraRule.Amount * extraGuests;
+            lines.Add(new AdditionalChargeLineDto { Description = "Extra guests", Amount = amt, SourceType = InvoiceLineSourceType.Surcharge });
+        }
+
+        var total = lines.Sum(l => l.Amount);
+        return ApiResponse<AdditionalChargesDto>.Ok(new AdditionalChargesDto { Lines = lines, Total = total });
+    }
+
+    public async Task<ApiResponse> RecordMinibarConsumptionAsync(Guid bookingId, MinibarConsumptionDto dto)
+    {
+        var booking = await _bookingRepo.FindAsync(bookingId);
+        if (booking == null) return ApiResponse.Fail("Không tìm thấy booking");
+
+        foreach (var item in dto.Items)
+        {
+            var e = new MinibarBooking
+            {
+                Id = Guid.NewGuid(),
+                BookingId = bookingId,
+                MinibarId = item.MinibarId,
+                ComsumedQuantity = item.Quantity
+            };
+            await _minibarBookingRepo.AddAsync(e);
+        }
+        await _minibarBookingRepo.SaveChangesAsync();
+
+        return ApiResponse.Ok("Đã ghi nhận minibar");
     }
 }

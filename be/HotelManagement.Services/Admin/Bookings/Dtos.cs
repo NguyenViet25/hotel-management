@@ -222,3 +222,65 @@ public class PersonDto
     public required string IdCardFrontImageUrl { get; set; }
     public required string IdCardBackImageUrl { get; set; }
 }
+
+public class ChangeRoomDto
+{
+    public Guid NewRoomId { get; set; }
+}
+
+public class ExtendStayDto
+{
+    public DateTime NewEndDate { get; set; }
+    public string? DiscountCode { get; set; }
+}
+
+public class ExtendStayResultDto
+{
+    public BookingDetailsDto Booking { get; set; } = new();
+    public decimal Price { get; set; }
+}
+
+public class CheckoutRequestDto
+{
+    public bool? EarlyCheckIn { get; set; }
+    public bool? LateCheckOut { get; set; }
+    public string? DiscountCode { get; set; }
+    public PaymentDto? FinalPayment { get; set; }
+}
+
+public class PaymentDto
+{
+    public decimal Amount { get; set; }
+    public PaymentType Type { get; set; }
+}
+
+public class CheckoutResultDto
+{
+    public decimal TotalPaid { get; set; }
+    public BookingDetailsDto? Booking { get; set; }
+    public DateTime? CheckoutTime { get; set; }
+}
+
+public class MinibarConsumptionItemDto
+{
+    public Guid MinibarId { get; set; }
+    public int Quantity { get; set; }
+}
+
+public class MinibarConsumptionDto
+{
+    public List<MinibarConsumptionItemDto> Items { get; set; } = new();
+}
+
+public class AdditionalChargesDto
+{
+    public List<AdditionalChargeLineDto> Lines { get; set; } = new();
+    public decimal Total { get; set; }
+}
+
+public class AdditionalChargeLineDto
+{
+    public string Description { get; set; } = string.Empty;
+    public decimal Amount { get; set; }
+    public InvoiceLineSourceType SourceType { get; set; }
+}

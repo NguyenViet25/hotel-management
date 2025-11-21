@@ -61,6 +61,13 @@ public class BookingsController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("{id}/check-in")]
+    public async Task<ActionResult<ApiResponse>> CheckInJson(Guid id, [FromBody] CheckInDto dto)
+    {
+        var result = await _bookingsService.CheckInAsync(dto);
+        return Ok(result);
+    }
+
     private async Task<string> UploadFileAsync(IFormFile file)
     {
         var baseUrl = $"{Request.Scheme}://{Request.Host}";
@@ -163,6 +170,41 @@ public class BookingsController : ControllerBase
     public async Task<IActionResult> AddRoomToBooking([FromBody] AddRoomToBooking request)
     {
         var result = await _bookingsService.AddRoomToBookingAsync(request.BookingRoomTypeId, request.RoomId);
+        return Ok(result);
+    }
+
+    [HttpPost("{id}/change-room")]
+    public async Task<ActionResult<ApiResponse<BookingDetailsDto>>> ChangeRoom(Guid id, [FromBody] ChangeRoomDto dto)
+    {
+        var result = await _bookingsService.ChangeRoomAsync(id, dto.NewRoomId);
+        return Ok(result);
+    }
+
+    [HttpPost("{id}/extend-stay")]
+    public async Task<ActionResult<ApiResponse<ExtendStayResultDto>>> ExtendStay(Guid id, [FromBody] ExtendStayDto dto)
+    {
+        var result = await _bookingsService.ExtendStayAsync(id, dto.NewEndDate, dto.DiscountCode);
+        return Ok(result);
+    }
+
+    [HttpPost("{id}/check-out")]
+    public async Task<ActionResult<ApiResponse<CheckoutResultDto>>> CheckOut(Guid id, [FromBody] CheckoutRequestDto dto)
+    {
+        var result = await _bookingsService.CheckOutAsync(id, dto);
+        return Ok(result);
+    }
+
+    [HttpGet("{id}/additional-charges/preview")]
+    public async Task<ActionResult<ApiResponse<AdditionalChargesDto>>> AdditionalChargesPreview(Guid id)
+    {
+        var result = await _bookingsService.GetAdditionalChargesPreviewAsync(id);
+        return Ok(result);
+    }
+
+    [HttpPost("{id}/minibar-consumption")]
+    public async Task<ActionResult<ApiResponse>> RecordMinibar(Guid id, [FromBody] MinibarConsumptionDto dto)
+    {
+        var result = await _bookingsService.RecordMinibarConsumptionAsync(id, dto);
         return Ok(result);
     }
 }

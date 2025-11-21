@@ -158,7 +158,13 @@ export enum EBookingStatus {
 }
 
 export interface CheckInDto {
-  guests: { guestId: string; idCardImageUrl?: string }[];
+  roomBookingId: string;
+  persons: {
+    name: string;
+    phone: string;
+    idCardFrontImageUrl: string;
+    idCardBackImageUrl: string;
+  }[];
 }
 
 export interface ChangeRoomDto {
@@ -318,6 +324,21 @@ const bookingsApi = {
     payload: CheckInDto
   ): Promise<ApiResponse<BookingDetailsDto>> {
     const res = await axios.post(`/admin/bookings/${id}/check-in`, payload);
+    return res.data;
+  },
+
+  async additionalChargesPreview(
+    id: string
+  ): Promise<ApiResponse<AdditionalChargesDto>> {
+    const res = await axios.get(`/admin/bookings/${id}/additional-charges/preview`);
+    return res.data;
+  },
+
+  async recordMinibarConsumption(
+    id: string,
+    payload: MinibarConsumptionDto
+  ): Promise<ApiResponse<any>> {
+    const res = await axios.post(`/admin/bookings/${id}/minibar-consumption`, payload);
     return res.data;
   },
 
