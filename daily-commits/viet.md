@@ -141,3 +141,4 @@
 2025-11-21 - 1 - 01:45:05 UTC :: feat: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — tach chuc nang de de bao tri (khong doi hanh vi)
 2025-11-21 - 2 - 01:45:07 UTC :: ci: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — refactor luong xu ly cho ro rang (anh huong thap)
 2025-11-21 - 3 - 01:45:08 UTC :: ci: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — chuan hoa ten ham/bien theo convention (dong bo voi BE/FE)
+2025-11-21 - 4 - 01:45:11 UTC :: chore: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — toi uu truy van va bo nho (can theo doi them)
