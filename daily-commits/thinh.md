@@ -140,3 +140,4 @@
 2025-11-20 - 5 - 01:44:19 UTC :: fix: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — refactor luong xu ly cho ro rang (can theo doi them)
 2025-11-21 - 1 - 01:45:05 UTC :: refactor: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — bo sung metrics/telemetry co ban (dat tieu chi toi thieu)
 2025-11-21 - 2 - 01:45:06 UTC :: test: UC-11 Goi gia: bat/tam ngung goi gia dang ap dung. — chuan hoa ten ham/bien theo convention (dat tieu chi toi thieu)
+2025-11-21 - 3 - 01:45:08 UTC :: build: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — cai thien hieu nang render/list (da review so bo)
