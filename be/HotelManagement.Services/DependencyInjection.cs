@@ -13,6 +13,8 @@ using HotelManagement.Services.Admin.RoomTypes;
 using HotelManagement.Services.Admin.Users;
 using HotelManagement.Services.Auth;
 using HotelManagement.Services.Profile;
+using HotelManagement.Services.Admin.Dining;
+using HotelManagement.Services.Admin.Kitchen;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace HotelManagement.Services;
@@ -34,6 +36,9 @@ public static class DependencyInjection
         services.AddScoped<IBookingsService, BookingsService>();
         services.AddScoped<IOrdersService, OrdersService>();
         services.AddScoped<ITableService, TableService>();
+        services.AddScoped<IDiningSessionService, DiningSessionService>();
+        services.AddScoped<IServiceRequestService, ServiceRequestService>();
+        services.AddScoped<IOrderItemStatusService, OrderItemStatusService>();
         services.AddScoped<IDiscountCodeService, DiscountCodeService>();
         services.AddScoped<IMinibarService, MinibarService>();
         services.AddScoped<IMediaService, MediaService>();

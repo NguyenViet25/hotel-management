@@ -14,6 +14,7 @@ public class DiningSessionService : IDiningSessionService
     private readonly IRepository<Table> _tableRepository;
     private readonly IRepository<Order> _orderRepository;
     private readonly IRepository<AppUser> _userRepository;
+    private readonly IRepository<Guest> _guestRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public DiningSessionService(
@@ -21,12 +22,14 @@ public class DiningSessionService : IDiningSessionService
         IRepository<Table> tableRepository,
         IRepository<Order> orderRepository,
         IRepository<AppUser> userRepository,
+        IRepository<Guest> guestRepository,
         IUnitOfWork unitOfWork)
     {
         _diningSessionRepository = diningSessionRepository;
         _tableRepository = tableRepository;
         _orderRepository = orderRepository;
         _userRepository = userRepository;
+        _guestRepository = guestRepository;
         _unitOfWork = unitOfWork;
     }
 
@@ -64,6 +67,7 @@ public class DiningSessionService : IDiningSessionService
         // If guest ID is provided, create an order for this guest
         if (request.GuestId.HasValue)
         {
+            var guest = await _guestRepository.FindAsync(request.GuestId.Value);
             var order = new Order
             {
                 Id = Guid.NewGuid(),
@@ -72,6 +76,12 @@ public class DiningSessionService : IDiningSessionService
                 Status = OrderStatus.Draft,
                 CreatedAt = DateTime.UtcNow
             };
+
+            if (guest != null)
+            {
+                order.CustomerName = guest.FullName;
+                order.CustomerPhone = guest.Phone;
+            }
 
             await _orderRepository.AddAsync(order);
             await _unitOfWork.SaveChangesAsync();

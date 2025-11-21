@@ -52,7 +52,8 @@ public enum OrderItemStatus
     Pending = 0,
     Cooking = 1,
     Served = 2,
-    Voided = 3
+    Voided = 3,
+    Ready = 4
 }
 
 public enum InvoiceStatus
