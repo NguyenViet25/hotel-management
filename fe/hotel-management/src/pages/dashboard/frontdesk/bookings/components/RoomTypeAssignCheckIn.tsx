@@ -78,6 +78,7 @@ const RoomTypeBlock: React.FC<{
   const [guestInitial, setGuestInitial] = useState<GuestForm | null>(null);
   const [guestEditIndex, setGuestEditIndex] = useState<number | null>(null);
   const [guestRoomId, setGuestRoomId] = useState<string | null>(null);
+  const [updatingGuestId, setUpdatingGuestId] = useState<string | null>(null);
 
   const openAddGuest = (roomId: string) => {
     setGuestRoomId(roomId);
@@ -86,38 +87,47 @@ const RoomTypeBlock: React.FC<{
     setGuestOpen(true);
   };
 
-  const openEditGuest = (roomId: string, idx: number) => {
+  const openEditGuest = (roomId: string, idx: number, initial?: GuestForm & { id?: string }) => {
     setGuestRoomId(roomId);
     setGuestEditIndex(idx);
+    setUpdatingGuestId(initial?.id || null);
+    setGuestInitial(initial ? { name: initial.name, phone: initial.phone, idCardFrontImageUrl: initial.idCardFrontImageUrl, idCardBackImageUrl: initial.idCardBackImageUrl } : null);
     setGuestOpen(true);
   };
 
   const submitCheckIn = async (g: GuestForm) => {
     try {
-      const persons = [g];
-      console.log("persons", persons);
-      const res = await bookingsApi.checkIn(booking.id, {
-        roomBookingId: guestRoomId,
-        persons,
-      } as any);
-      if (res.isSuccess) {
-        setSnackbar({
-          open: true,
-          message: "Check-in thành công",
-          severity: "success",
+      if (guestEditIndex !== null && updatingGuestId && guestRoomId) {
+        const res = await bookingsApi.updateGuestInRoom(guestRoomId, updatingGuestId, {
+          fullname: g.name,
+          phone: g.phone,
+          idCardFrontImageUrl: g.idCardFrontImageUrl,
+          idCardBackImageUrl: g.idCardBackImageUrl,
         });
-        await onRefresh?.();
+        if (res.isSuccess) {
+          setSnackbar({ open: true, message: "Cập nhật khách thành công", severity: "success" });
+          setGuestOpen(false);
+          setUpdatingGuestId(null);
+          setGuestEditIndex(null);
+          await onRefresh?.();
+        } else {
+          setSnackbar({ open: true, message: res.message || "Không thể cập nhật khách", severity: "error" });
+        }
       } else {
-        setSnackbar({
-          open: true,
-          message: res.message || "Không thể check-in",
-          severity: "error",
-        });
+        const persons = [g];
+        const res = await bookingsApi.checkIn(booking.id, { roomBookingId: guestRoomId, persons } as any);
+        if (res.isSuccess) {
+          setSnackbar({ open: true, message: "Check-in thành công", severity: "success" });
+          setGuestOpen(false);
+          await onRefresh?.();
+        } else {
+          setSnackbar({ open: true, message: res.message || "Không thể check-in", severity: "error" });
+        }
       }
     } catch {
       setSnackbar({
         open: true,
-        message: "Đã xảy ra lỗi khi check-in",
+        message: guestEditIndex !== null ? "Đã xảy ra lỗi khi cập nhật khách" : "Đã xảy ra lỗi khi check-in",
         severity: "error",
       });
     }
@@ -209,8 +219,24 @@ const RoomTypeBlock: React.FC<{
                               fullname: g.fullname,
                               phone: g.phone,
                               email: g.email,
+                              idCardFrontImageUrl: g.idCardFrontImageUrl,
+                              idCardBackImageUrl: g.idCardBackImageUrl,
                             }))}
-                            // editable={false}
+                            editable={true}
+                            onEdit={(idx, gi) => openEditGuest(br.bookingRoomId, idx, { ...gi, name: gi.fullname || "" })}
+                            onDelete={async (_idx, gi) => {
+                              try {
+                                const res = await bookingsApi.removeGuestFromRoom(br.bookingRoomId, gi.id!);
+                                if (res.isSuccess) {
+                                  setSnackbar({ open: true, message: "Xoá khách khỏi phòng thành công", severity: "success" });
+                                  await onRefresh?.();
+                                } else {
+                                  setSnackbar({ open: true, message: res.message || "Không thể xoá khách", severity: "error" });
+                                }
+                              } catch {
+                                setSnackbar({ open: true, message: "Đã xảy ra lỗi khi xoá khách", severity: "error" });
+                              }
+                            }}
                           />
                         ) : (
                           <Typography variant="body2" color="text.secondary">

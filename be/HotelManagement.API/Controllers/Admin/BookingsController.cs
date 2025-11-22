@@ -207,6 +207,20 @@ public class BookingsController : ControllerBase
         var result = await _bookingsService.RecordMinibarConsumptionAsync(id, dto);
         return Ok(result);
     }
+
+    [HttpPut("rooms/{bookingRoomId}/guests/{guestId}")]
+    public async Task<ActionResult<ApiResponse<BookingDetailsDto>>> UpdateGuestInRoom(Guid bookingRoomId, Guid guestId, [FromBody] UpdateGuestDto dto)
+    {
+        var result = await _bookingsService.UpdateGuestInRoomAsync(bookingRoomId, guestId, dto);
+        return Ok(result);
+    }
+
+    [HttpDelete("rooms/{bookingRoomId}/guests/{guestId}")]
+    public async Task<ActionResult<ApiResponse<BookingDetailsDto>>> RemoveGuestFromRoom(Guid bookingRoomId, Guid guestId)
+    {
+        var result = await _bookingsService.RemoveGuestFromRoomAsync(bookingRoomId, guestId);
+        return Ok(result);
+    }
 }
 
 public class AddRoomToBooking

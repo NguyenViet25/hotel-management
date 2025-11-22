@@ -59,6 +59,8 @@ export interface BookingGuestDto {
   fullname?: string;
   phone?: string;
   email?: string;
+  idCardFrontImageUrl?: string;
+  idCardBackImageUrl?: string;
 }
 
 export interface BookingRoomDto {
@@ -385,6 +387,34 @@ const bookingsApi = {
     payload: ChangeRoomDto
   ): Promise<ApiResponse<BookingDetailsDto>> {
     const res = await axios.post(`/admin/bookings/${id}/change-room`, payload);
+    return res.data;
+  },
+
+  async updateGuestInRoom(
+    bookingRoomId: string,
+    guestId: string,
+    payload: {
+      fullname?: string;
+      phone?: string;
+      email?: string;
+      idCardFrontImageUrl?: string;
+      idCardBackImageUrl?: string;
+    }
+  ): Promise<ApiResponse<BookingDetailsDto>> {
+    const res = await axios.put(
+      `/admin/bookings/rooms/${bookingRoomId}/guests/${guestId}`,
+      payload
+    );
+    return res.data;
+  },
+
+  async removeGuestFromRoom(
+    bookingRoomId: string,
+    guestId: string
+  ): Promise<ApiResponse<BookingDetailsDto>> {
+    const res = await axios.delete(
+      `/admin/bookings/rooms/${bookingRoomId}/guests/${guestId}`
+    );
     return res.data;
   },
 

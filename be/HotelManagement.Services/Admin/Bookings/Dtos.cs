@@ -225,6 +225,15 @@ public class PersonDto
     public required string IdCardBackImageUrl { get; set; }
 }
 
+public class UpdateGuestDto
+{
+    public string? Fullname { get; set; }
+    public string? Phone { get; set; }
+    public string? Email { get; set; }
+    public string? IdCardFrontImageUrl { get; set; }
+    public string? IdCardBackImageUrl { get; set; }
+}
+
 public class ChangeRoomDto
 {
     public Guid NewRoomId { get; set; }

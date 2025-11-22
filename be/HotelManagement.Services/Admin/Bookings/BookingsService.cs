@@ -957,6 +957,56 @@ public class BookingsService(
         return ApiResponse.Ok("Check in thành công");
     }
 
+    public async Task<ApiResponse> UpdateGuestInRoomAsync(Guid bookingRoomId, Guid guestId, UpdateGuestDto dto)
+    {
+        try
+        {
+            var bookingRoom = await _bookingRoomRepo.Query().Include(br => br.BookingRoomType).FirstOrDefaultAsync(br => br.BookingRoomId == bookingRoomId);
+            if (bookingRoom == null) return ApiResponse.Fail("Không tìm thấy phòng trong booking");
+
+            var bg = await _bookingGuestRepo.Query().FirstOrDefaultAsync(x => x.BookingRoomId == bookingRoomId && x.GuestId == guestId);
+            if (bg == null) return ApiResponse.Fail("Không tìm thấy khách trong phòng");
+
+            var guest = await _guestRepo.FindAsync(guestId);
+            if (guest == null) return ApiResponse.Fail("Không tìm thấy khách");
+
+            guest.FullName = dto.Fullname ?? guest.FullName;
+            guest.Phone = dto.Phone ?? guest.Phone;
+            guest.Email = dto.Email ?? guest.Email;
+            guest.IdCardFrontImageUrl = dto.IdCardFrontImageUrl ?? guest.IdCardFrontImageUrl;
+            guest.IdCardBackImageUrl = dto.IdCardBackImageUrl ?? guest.IdCardBackImageUrl;
+            await _guestRepo.UpdateAsync(guest);
+            await _guestRepo.SaveChangesAsync();
+
+            return ApiResponse.Ok();
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse.Fail($"Error updating guest: {ex.Message}");
+        }
+    }
+
+    public async Task<ApiResponse> RemoveGuestFromRoomAsync(Guid bookingRoomId, Guid guestId)
+    {
+        try
+        {
+            var bookingRoom = await _bookingRoomRepo.Query().Include(br => br.BookingRoomType).FirstOrDefaultAsync(br => br.BookingRoomId == bookingRoomId);
+            if (bookingRoom == null) return ApiResponse.Fail("Không tìm thấy phòng trong booking");
+
+            var bg = await _bookingGuestRepo.Query().FirstOrDefaultAsync(x => x.BookingRoomId == bookingRoomId && x.GuestId == guestId);
+            if (bg == null) return ApiResponse.Fail("Không tìm thấy khách trong phòng");
+
+            await _bookingGuestRepo.RemoveAsync(bg);
+            await _bookingGuestRepo.SaveChangesAsync();
+
+            return ApiResponse.Ok();
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse.Fail($"Error removing guest: {ex.Message}");
+        }
+    }
+
     public async Task<ApiResponse<BookingDetailsDto>> ChangeRoomAsync(Guid bookingRoomId, Guid newRoomId)
     {
         var bookingRoom = await _bookingRoomRepo.Query().Include(br => br.BookingRoomType).FirstOrDefaultAsync(br => br.BookingRoomId == bookingRoomId);
