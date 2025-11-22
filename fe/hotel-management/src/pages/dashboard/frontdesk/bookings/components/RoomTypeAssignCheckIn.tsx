@@ -10,15 +10,24 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import bookingsApi, {
   type BookingDetailsDto,
   type BookingRoomDto,
   type BookingRoomTypeDto,
 } from "../../../../../api/bookingsApi";
 import AssignRoomDialog from "./AssignRoomDialog";
-import GuestList from "./GuestList";
 import GuestDialog from "./GuestDialog";
+import GuestList from "./GuestList";
+import {
+  Check,
+  DockRounded,
+  DoorBack,
+  DoorSliding,
+  Login,
+  Logout,
+  OfflinePin,
+} from "@mui/icons-material";
 
 type Props = {
   booking: BookingDetailsDto | null;
@@ -65,56 +74,10 @@ const RoomTypeBlock: React.FC<{
   const remaining = Math.max(0, (rt.totalRoom || 0) - assignedRooms.length);
 
   // Check-in state per assigned room
-  const [forms, setForms] = useState<Record<string, GuestForm[]>>({});
   const [guestOpen, setGuestOpen] = useState(false);
   const [guestInitial, setGuestInitial] = useState<GuestForm | null>(null);
   const [guestEditIndex, setGuestEditIndex] = useState<number | null>(null);
   const [guestRoomId, setGuestRoomId] = useState<string | null>(null);
-
-  useEffect(() => {
-    const next: Record<string, GuestForm[]> = {};
-    assignedRooms.forEach((br) => {
-      const existing = forms[br.bookingRoomId] || [];
-      next[br.bookingRoomId] = existing;
-    });
-    setForms(() => ({ ...next }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rt.bookingRooms?.length]);
-
-  const updateGuest = (
-    roomId: string,
-    idx: number,
-    patch: Partial<GuestForm>
-  ) => {
-    setForms((prev) => {
-      const arr = prev[roomId] || [];
-      return {
-        ...prev,
-        [roomId]: arr.map((g, i) => (i === idx ? { ...g, ...patch } : g)),
-      };
-    });
-  };
-
-  const getAssignedRoom = (roomId: string) =>
-    assignedRooms.find((r) => r.bookingRoomId === roomId);
-
-  const addGuest = (roomId: string) => {
-    const assigned = getAssignedRoom(roomId);
-    const existingCount = (assigned?.guests || []).length;
-    setForms((prev) => {
-      const arr = prev[roomId] || [];
-      if (existingCount + arr.length >= (rt.capacity || 0)) return prev;
-      return { ...prev, [roomId]: [...arr, { name: "", phone: "" }] };
-    });
-  };
-
-  const removeGuest = (roomId: string, idx: number) => {
-    setForms((prev) => {
-      const arr = prev[roomId] || [];
-      const next = arr.filter((_, i) => i !== idx);
-      return { ...prev, [roomId]: next };
-    });
-  };
 
   const openAddGuest = (roomId: string) => {
     setGuestRoomId(roomId);
@@ -124,40 +87,17 @@ const RoomTypeBlock: React.FC<{
   };
 
   const openEditGuest = (roomId: string, idx: number) => {
-    const arr = forms[roomId] || [];
-    const current = arr[idx];
     setGuestRoomId(roomId);
-    setGuestInitial(current || { name: "", phone: "" });
     setGuestEditIndex(idx);
     setGuestOpen(true);
   };
 
-  const handleGuestSubmit = (g: GuestForm) => {
-    if (!guestRoomId) return;
-    const assigned = getAssignedRoom(guestRoomId);
-    const existingCount = (assigned?.guests || []).length;
-    if (guestEditIndex === null) {
-      setForms((prev) => {
-        const arr = prev[guestRoomId] || [];
-        if (existingCount + arr.length >= (rt.capacity || 0)) return prev;
-        return { ...prev, [guestRoomId]: [...arr, g] };
-      });
-    } else {
-      updateGuest(guestRoomId, guestEditIndex, g);
-    }
-    setGuestOpen(false);
-  };
-
-  const submitCheckIn = async (roomId: string) => {
+  const submitCheckIn = async (g: GuestForm) => {
     try {
-      const persons = (forms[roomId] || []).map((g) => ({
-        name: g.name,
-        phone: g.phone,
-        idCardFrontImageUrl: g.idCardFrontImageUrl || "",
-        idCardBackImageUrl: g.idCardBackImageUrl || "",
-      }));
+      const persons = [g];
+      console.log("persons", persons);
       const res = await bookingsApi.checkIn(booking.id, {
-        roomBookingId: roomId,
+        roomBookingId: guestRoomId,
         persons,
       } as any);
       if (res.isSuccess) {
@@ -166,7 +106,6 @@ const RoomTypeBlock: React.FC<{
           message: "Check-in thành công",
           severity: "success",
         });
-        setForms((prev) => ({ ...prev, [roomId]: [] }));
         await onRefresh?.();
       } else {
         setSnackbar({
@@ -182,15 +121,6 @@ const RoomTypeBlock: React.FC<{
         severity: "error",
       });
     }
-  };
-
-  const canCheckIn = (roomId: string) => {
-    const arr = forms[roomId] || [];
-    if (!arr.length) return false;
-    return arr.every(
-      (g) =>
-        (g.name || "").trim().length > 0 && (g.phone || "").trim().length > 0
-    );
   };
 
   return (
@@ -214,7 +144,6 @@ const RoomTypeBlock: React.FC<{
                 size="small"
                 color="secondary"
               />
-              <Chip label={`Còn lại: ${remaining}`} size="small" />
               <Chip
                 label={`Sức chứa/Phòng: ${rt.capacity || 0}`}
                 size="small"
@@ -245,16 +174,12 @@ const RoomTypeBlock: React.FC<{
           ) : (
             <Grid container spacing={2}>
               {assignedRooms.map((br) => (
-                <Grid item xs={12} md={6} key={br.bookingRoomId}>
+                <Grid size={{ xs: 12, md: 4 }} key={br.bookingRoomId}>
                   <Card variant="outlined" sx={{ borderRadius: 2 }}>
                     <CardHeader
                       title={`Phòng ${br.roomName ?? ""}`}
                       subheader={
                         <Stack direction="row" spacing={1} alignItems="center">
-                          <Chip
-                            label={`Sức chứa: ${rt.capacity || 0}`}
-                            size="small"
-                          />
                           <Chip
                             label={`Nhận: ${
                               br.startDate
@@ -276,7 +201,7 @@ const RoomTypeBlock: React.FC<{
                     />
                     <CardContent>
                       <Stack spacing={1.5}>
-                        {(br.guests || []).length > 0 && (
+                        {(br.guests || []).length > 0 ? (
                           <GuestList
                             title="Khách hiện tại"
                             guests={(br.guests || []).map((g) => ({
@@ -285,33 +210,42 @@ const RoomTypeBlock: React.FC<{
                               phone: g.phone,
                               email: g.email,
                             }))}
-                            editable={false}
+                            // editable={false}
                           />
+                        ) : (
+                          <Typography variant="body2" color="text.secondary">
+                            Chưa có khách nào trong phòng này.
+                          </Typography>
                         )}
 
-                        <Stack spacing={1}>
-                          <GuestList
-                            title="Danh sách khách"
-                            guests={(forms[br.bookingRoomId] || []).map(
-                              (g) => ({ name: g.name, phone: g.phone })
-                            )}
-                            editable
-                            onEdit={(idx) =>
-                              openEditGuest(br.bookingRoomId, idx)
-                            }
-                            onDelete={(idx) =>
-                              removeGuest(br.bookingRoomId, idx)
-                            }
-                          />
+                        <Stack
+                          direction={{ xs: "column", md: "row" }}
+                          spacing={1}
+                        >
                           <Button
-                            variant="outlined"
+                            variant="contained"
+                            fullWidth
+                            startIcon={<Login />}
                             onClick={() => openAddGuest(br.bookingRoomId)}
                             // disabled={
                             //   ((forms[br.bookingRoomId] || []).length + (br.guests || []).length) >=
                             //   (rt.capacity || 0)
                             // }
                           >
-                            Thêm Khách
+                            Check in
+                          </Button>
+                          <Button
+                            fullWidth
+                            startIcon={<Logout />}
+                            variant="contained"
+                            color="success"
+                            onClick={() => openAddGuest(br.bookingRoomId)}
+                            // disabled={
+                            //   ((forms[br.bookingRoomId] || []).length + (br.guests || []).length) >=
+                            //   (rt.capacity || 0)
+                            // }
+                          >
+                            Check out
                           </Button>
                         </Stack>
                       </Stack>
@@ -325,7 +259,7 @@ const RoomTypeBlock: React.FC<{
             open={guestOpen}
             initial={guestInitial || undefined}
             onClose={() => setGuestOpen(false)}
-            onSubmit={handleGuestSubmit}
+            onSubmit={submitCheckIn}
           />
         </Stack>
 

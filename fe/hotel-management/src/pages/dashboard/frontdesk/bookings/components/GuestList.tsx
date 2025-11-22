@@ -24,7 +24,7 @@ type Props = {
 const GuestList: React.FC<Props> = ({
   title,
   guests,
-  editable = false,
+  editable = true,
   onEdit,
   onDelete,
 }) => {
@@ -41,9 +41,7 @@ const GuestList: React.FC<Props> = ({
         <Grid container spacing={1.5}>
           {guests.map((g, idx) => (
             <Grid
-              item
-              xs={12}
-              sm={6}
+              size={12}
               key={g.id || `${g.fullname || g.name}-${g.phone}-${idx}`}
             >
               <GuestCard
