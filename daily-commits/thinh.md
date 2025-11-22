@@ -147,3 +147,4 @@
 2025-11-22 - 2 - 01:41:26 UTC :: ci: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — chinh sua tai lieu & mo ta API (can theo doi them)
 2025-11-22 - 3 - 01:41:27 UTC :: ci: UC-40 Thu/chi: doi soat tien mat/the/le phi PG. — tach chuc nang de de bao tri (dong bo voi BE/FE)
 2025-11-22 - 4 - 01:41:30 UTC :: build: UC-02 RBAC: thiet lap quyen thao tac theo vai tro/pham vi. — bo sung index & toi uu DB (khong doi hanh vi)
+2025-11-22 - 5 - 01:41:33 UTC :: docs: UC-02 RBAC: thiet lap quyen thao tac theo vai tro/pham vi. — dieu chinh quyen truy cap theo vai tro (can theo doi them)
