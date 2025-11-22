@@ -150,3 +150,4 @@
 2025-11-21 - 5 - 01:45:12 UTC :: ci: UC-23 Bao tri: tao ticket, dinh anh, mo ta loi. — chuan hoa ten ham/bien theo convention (da kiem tra lint)
 2025-11-22 - 1 - 01:41:29 UTC :: docs: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — them kiem soat loi & retry nhe (anh huong thap)
 2025-11-22 - 2 - 01:41:30 UTC :: fix: UC-37 Night Audit: kiem tra folio chua chot, khoa giao dich. — bo sung index & toi uu DB (can theo doi them)
+2025-11-22 - 3 - 01:41:31 UTC :: ci: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — bo sung index & toi uu DB (dong bo voi BE/FE)
