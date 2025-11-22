@@ -913,7 +913,8 @@ public class BookingsService(
                 FullName = guest.Name,
                 Phone = guest.Phone,
                 IdCardFrontImageUrl = guest.IdCardFrontImageUrl,
-                IdCardBackImageUrl = guest.IdCardBackImageUrl
+                IdCardBackImageUrl = guest.IdCardBackImageUrl,
+                IdCard = guest.IdCard,
             };
             await _guestRepo.AddAsync(newGuest);
             await _guestRepo.SaveChangesAsync();
@@ -975,6 +976,8 @@ public class BookingsService(
             guest.Email = dto.Email ?? guest.Email;
             guest.IdCardFrontImageUrl = dto.IdCardFrontImageUrl ?? guest.IdCardFrontImageUrl;
             guest.IdCardBackImageUrl = dto.IdCardBackImageUrl ?? guest.IdCardBackImageUrl;
+            guest.IdCard = dto.IdCard ?? guest.IdCard;
+
             await _guestRepo.UpdateAsync(guest);
             await _guestRepo.SaveChangesAsync();
 

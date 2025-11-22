@@ -15,6 +15,7 @@ type GuestForm = {
   phone: string;
   idCardFrontImageUrl?: string;
   idCardBackImageUrl?: string;
+  idCard?: string;
 };
 
 type Props = {
@@ -30,6 +31,7 @@ const GuestDialog: React.FC<Props> = ({ open, initial, onClose, onSubmit }) => {
     phone: "",
     idCardBackImageUrl: "",
     idCardFrontImageUrl: "",
+    idCard: "",
   });
 
   useEffect(() => {
@@ -40,6 +42,7 @@ const GuestDialog: React.FC<Props> = ({ open, initial, onClose, onSubmit }) => {
           phone: "",
           idCardBackImageUrl: "",
           idCardFrontImageUrl: "",
+          idCard: "",
         }
       );
   }, [open, initial]);
@@ -57,6 +60,13 @@ const GuestDialog: React.FC<Props> = ({ open, initial, onClose, onSubmit }) => {
             label="Họ và tên"
             value={guest.name}
             onChange={(e) => setGuest({ ...guest, name: e.target.value })}
+            size="small"
+            fullWidth
+          />
+          <TextField
+            label="Căn cước công dân"
+            value={guest.idCard}
+            onChange={(e) => setGuest({ ...guest, idCard: e.target.value })}
             size="small"
             fullWidth
           />

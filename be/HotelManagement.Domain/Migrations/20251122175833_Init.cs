@@ -58,6 +58,7 @@ namespace HotelManagement.Domain.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IdCard = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IdCardFrontImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IdCardBackImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true)

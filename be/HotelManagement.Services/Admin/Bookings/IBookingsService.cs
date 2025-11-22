@@ -23,6 +23,6 @@ public interface IBookingsService
     Task<ApiResponse<CheckoutResultDto>> CheckOutAsync(Guid bookingId, CheckoutRequestDto dto);
     Task<ApiResponse<AdditionalChargesDto>> GetAdditionalChargesPreviewAsync(Guid bookingId);
     Task<ApiResponse> RecordMinibarConsumptionAsync(Guid bookingId, MinibarConsumptionDto dto);
-    Task<ApiResponse<BookingDetailsDto>> UpdateGuestInRoomAsync(Guid bookingRoomId, Guid guestId, UpdateGuestDto dto);
-    Task<ApiResponse<BookingDetailsDto>> RemoveGuestFromRoomAsync(Guid bookingRoomId, Guid guestId);
+    Task<ApiResponse> UpdateGuestInRoomAsync(Guid bookingRoomId, Guid guestId, UpdateGuestDto dto);
+    Task<ApiResponse> RemoveGuestFromRoomAsync(Guid bookingRoomId, Guid guestId);
 }

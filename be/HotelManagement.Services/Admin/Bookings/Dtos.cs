@@ -223,6 +223,7 @@ public class PersonDto
     public required string Phone { get; set; }
     public required string IdCardFrontImageUrl { get; set; }
     public required string IdCardBackImageUrl { get; set; }
+    public required string IdCard { get; set; }
 }
 
 public class UpdateGuestDto
@@ -232,6 +233,7 @@ public class UpdateGuestDto
     public string? Email { get; set; }
     public string? IdCardFrontImageUrl { get; set; }
     public string? IdCardBackImageUrl { get; set; }
+    public string? IdCard { get; set; }
 }
 
 public class ChangeRoomDto

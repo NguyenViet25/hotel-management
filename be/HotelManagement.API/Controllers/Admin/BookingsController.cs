@@ -11,18 +11,11 @@ namespace HotelManagement.Api.Controllers.Admin;
 [ApiController]
 [Route("api/admin/bookings")]
 [Authorize]
-public class BookingsController : ControllerBase
+public class BookingsController(IBookingsService bookingsService, IWebHostEnvironment env, IMediaService service) : ControllerBase
 {
-    private readonly IBookingsService _bookingsService;
-    private readonly IWebHostEnvironment _env;
-    private readonly IMediaService _service;
-
-    public BookingsController(IBookingsService bookingsService, IWebHostEnvironment env, IMediaService service)
-    {
-        _bookingsService = bookingsService;
-        _env = env;
-        _service = service;
-    }
+    private readonly IBookingsService _bookingsService = bookingsService;
+    private readonly IWebHostEnvironment _env = env;
+    private readonly IMediaService _service = service;
 
     // UC-31: Create a booking with deposit
     [HttpPost]
@@ -32,54 +25,11 @@ public class BookingsController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost("check-in")]
-    public async Task<IActionResult> CheckIn([FromBody] CheckInRequest request)
-    {
-        var persons = new List<PersonDto>();
-
-        foreach (var person in request.Persons)
-        {
-            var idCardFrontImgUrl = await UploadFileAsync(person.IdCardFront);
-            var idCardBackImgUrl = await UploadFileAsync(person.IdCardBack);
-
-            persons.Add(new PersonDto()
-            {
-                IdCardBackImageUrl = idCardBackImgUrl,
-                IdCardFrontImageUrl = idCardFrontImgUrl,
-                Name = person.Name,
-                Phone = person.Phone,
-            });
-        }
-
-        var dto = new CheckInDto()
-        {
-            RoomBookingId = request.RoomBookingId,
-            Persons = persons,
-        };
-
-        var result = await _bookingsService.CheckInAsync(dto);
-        return Ok(result);
-    }
-
     [HttpPost("{id}/check-in")]
     public async Task<ActionResult<ApiResponse>> CheckInJson(Guid id, [FromBody] CheckInDto dto)
     {
         var result = await _bookingsService.CheckInAsync(dto);
         return Ok(result);
-    }
-
-    private async Task<string> UploadFileAsync(IFormFile file)
-    {
-        var baseUrl = $"{Request.Scheme}://{Request.Host}";
-
-        var result = await _service.UploadAsync(
-            file.OpenReadStream(),
-            file.FileName,
-            file.ContentType,
-            file.Length,
-            baseUrl,
-            _env.WebRootPath);
-        return result.Data?.FileUrl ?? string.Empty;
     }
 
     [HttpGet]

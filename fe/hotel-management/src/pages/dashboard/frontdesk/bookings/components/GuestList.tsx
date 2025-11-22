@@ -1,6 +1,7 @@
 import React from "react";
-import { Grid, Stack, Typography } from "@mui/material";
+import { Button, Grid, IconButton, Stack, Typography } from "@mui/material";
 import GuestCard from "./GuestCard";
+import { Add, AddCircle } from "@mui/icons-material";
 
 export type GuestItem = {
   id?: string;
@@ -19,6 +20,7 @@ type Props = {
   editable?: boolean;
   onEdit?: (idx: number, guest: GuestItem) => void;
   onDelete?: (idx: number, guest: GuestItem) => void;
+  onAddGuestClick?: () => void;
 };
 
 const GuestList: React.FC<Props> = ({
@@ -27,12 +29,28 @@ const GuestList: React.FC<Props> = ({
   editable = true,
   onEdit,
   onDelete,
+  onAddGuestClick,
 }) => {
   return (
     <Stack spacing={0.5}>
-      <Typography variant="subtitle2" fontWeight={700}>
-        {title}
-      </Typography>
+      <Stack
+        direction={{ xs: "column", md: "row" }}
+        spacing={1}
+        justifyContent={"space-between"}
+        alignItems={"center"}
+      >
+        <Typography variant="subtitle2" fontWeight={700}>
+          {title}
+        </Typography>
+        <Button
+          onClick={onAddGuestClick}
+          variant="outlined"
+          startIcon={<AddCircle />}
+          size="small"
+        >
+          Thêm khách
+        </Button>
+      </Stack>
       {!guests?.length ? (
         <Typography variant="body2" color="text.secondary">
           Chưa có danh sách khách

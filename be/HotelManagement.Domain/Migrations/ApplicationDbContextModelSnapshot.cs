@@ -415,6 +415,10 @@ namespace HotelManagement.Domain.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("IdCard")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("IdCardBackImageUrl")
                         .HasColumnType("nvarchar(max)");
 
