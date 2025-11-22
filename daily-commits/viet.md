@@ -144,3 +144,4 @@
 2025-11-21 - 4 - 01:45:11 UTC :: chore: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — toi uu truy van va bo nho (can theo doi them)
 2025-11-21 - 5 - 01:45:14 UTC :: refactor: UC-29 Thanh toan nha hang: thu tien, in hoa don, dong giao dich. — cai thien hieu nang render/list (chuan bi cho tinh nang tiep theo)
 2025-11-22 - 1 - 01:41:24 UTC :: build: UC-21 Housekeeping: cap nhat Dirty/In-progress/Cleaned/Inspected. — kiem tra tuong thich mui gio/tien te (chuan bi cho tinh nang tiep theo)
+2025-11-22 - 2 - 01:41:25 UTC :: refactor: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — cap nhat cau hinh va kiem tra bien (dat tieu chi toi thieu)
