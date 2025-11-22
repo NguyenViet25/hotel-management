@@ -152,3 +152,4 @@
 2025-11-22 - 2 - 01:41:30 UTC :: fix: UC-37 Night Audit: kiem tra folio chua chot, khoa giao dich. — bo sung index & toi uu DB (can theo doi them)
 2025-11-22 - 3 - 01:41:31 UTC :: ci: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — bo sung index & toi uu DB (dong bo voi BE/FE)
 2025-11-22 - 4 - 01:41:34 UTC :: fix: UC-31 Bao cao: len lich gui email/PDF hang ngay/tuan. — bo sung case canh bien & no-show (da review so bo)
+2025-11-22 - 5 - 01:41:35 UTC :: test: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — fix race-condition nho trong thao tac (dong bo voi BE/FE)
