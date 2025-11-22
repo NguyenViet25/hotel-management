@@ -143,3 +143,4 @@
 2025-11-21 - 3 - 01:45:08 UTC :: refactor: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — dieu chinh UI & copy cho ro (da kiem tra lint)
 2025-11-21 - 4 - 01:45:09 UTC :: build: UC-09 So do: hien thi layout, loc trang thai phong. — them log chi tiet phuc vu audit (dat tieu chi toi thieu)
 2025-11-21 - 5 - 01:45:12 UTC :: docs: UC-39 Xuat Audit Log: xuat CSV/PDF kiem tra tuan thu. — bo sung case canh bien & no-show (dam bao backward-compatible)
+2025-11-22 - 1 - 01:41:26 UTC :: docs: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — bo sung index & toi uu DB (can theo doi them)
