@@ -146,3 +146,4 @@
 2025-11-22 - 1 - 01:41:26 UTC :: docs: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — bo sung index & toi uu DB (can theo doi them)
 2025-11-22 - 2 - 01:41:28 UTC :: chore: UC-23 Bao tri: tao ticket, dinh anh, mo ta loi. — dieu chinh UI & copy cho ro (da kiem tra lint)
 2025-11-22 - 3 - 01:41:30 UTC :: chore: UC-43 Mat khau: quy dinh do manh, het han phien. — chinh sua tai lieu & mo ta API (da kiem tra lint)
+2025-11-22 - 4 - 01:41:32 UTC :: perf: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — refactor luong xu ly cho ro rang (chuan bi cho tinh nang tiep theo)
