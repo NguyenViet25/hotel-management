@@ -147,3 +147,4 @@
 2025-11-22 - 2 - 01:41:25 UTC :: refactor: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — cap nhat cau hinh va kiem tra bien (dat tieu chi toi thieu)
 2025-11-22 - 3 - 01:41:28 UTC :: chore: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — them kiem soat loi & retry nhe (da kiem tra lint)
 2025-11-22 - 4 - 01:41:29 UTC :: docs: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — them log chi tiet phuc vu audit (anh huong thap)
+2025-11-22 - 5 - 01:41:31 UTC :: test: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — chinh sua tai lieu & mo ta API (can theo doi them)
