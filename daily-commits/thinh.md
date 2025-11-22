@@ -143,3 +143,4 @@
 2025-11-21 - 3 - 01:45:08 UTC :: build: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — cai thien hieu nang render/list (da review so bo)
 2025-11-21 - 4 - 01:45:09 UTC :: ci: UC-39 Xuat Audit Log: xuat CSV/PDF kiem tra tuan thu. — sua validate va bo sung thong bao loi (dat tieu chi toi thieu)
 2025-11-21 - 5 - 01:45:11 UTC :: perf: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — dieu chinh quyen truy cap theo vai tro (can theo doi them)
+2025-11-22 - 1 - 01:41:24 UTC :: build: UC-09 So do: hien thi layout, loc trang thai phong. — chinh sua tai lieu & mo ta API (khong doi hanh vi)
