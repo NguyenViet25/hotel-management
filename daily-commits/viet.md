@@ -145,3 +145,4 @@
 2025-11-21 - 5 - 01:45:14 UTC :: refactor: UC-29 Thanh toan nha hang: thu tien, in hoa don, dong giao dich. — cai thien hieu nang render/list (chuan bi cho tinh nang tiep theo)
 2025-11-22 - 1 - 01:41:24 UTC :: build: UC-21 Housekeeping: cap nhat Dirty/In-progress/Cleaned/Inspected. — kiem tra tuong thich mui gio/tien te (chuan bi cho tinh nang tiep theo)
 2025-11-22 - 2 - 01:41:25 UTC :: refactor: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — cap nhat cau hinh va kiem tra bien (dat tieu chi toi thieu)
+2025-11-22 - 3 - 01:41:28 UTC :: chore: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — them kiem soat loi & retry nhe (da kiem tra lint)
