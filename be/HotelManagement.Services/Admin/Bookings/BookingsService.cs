@@ -23,6 +23,7 @@ public class BookingsService(
     IRepository<InvoiceLine> invoiceLineRepo,
     IRepository<HotelManagement.Domain.Minibar> minibarRepo,
     IRepository<HotelManagement.Domain.MinibarBooking> minibarBookingRepo,
+    IRepository<Promotion> promotionRepo,
     IUnitOfWork uow) : IBookingsService
 {
     private readonly IRepository<Booking> _bookingRepo = bookingRepo;
@@ -40,6 +41,7 @@ public class BookingsService(
     private readonly IRepository<InvoiceLine> _invoiceLineRepo = invoiceLineRepo;
     private readonly IRepository<HotelManagement.Domain.Minibar> _minibarRepo = minibarRepo;
     private readonly IRepository<HotelManagement.Domain.MinibarBooking> _minibarBookingRepo = minibarBookingRepo;
+    private readonly IRepository<Promotion> _promotionRepo = promotionRepo;
     private readonly IUnitOfWork _uow = uow;
 
     public async Task<ApiResponse<BookingDetailsDto>> CreateAsync(CreateBookingDto dto)
@@ -1363,6 +1365,31 @@ public class BookingsService(
                 Amount = -booking.DepositAmount,
                 SourceType = InvoiceLineSourceType.Discount
             });
+        }
+
+        if (!string.IsNullOrWhiteSpace(dto.DiscountCode))
+        {
+            var now = DateTime.UtcNow;
+            var promo = await _promotionRepo.Query()
+                .FirstOrDefaultAsync(p => p.HotelId == booking.HotelId && p.Code == dto.DiscountCode && p.IsActive && p.StartDate <= now && p.EndDate >= now);
+            if (promo == null)
+            {
+                return ApiResponse<CheckoutResultDto>.Fail("Mã giảm giá không hợp lệ hoặc hết hạn");
+            }
+
+            var baseAmount = lines.Where(l => l.Amount > 0).Sum(l => l.Amount);
+            var discountAmt = Math.Round(baseAmount * promo.Value / 100m, 2);
+            if (discountAmt > 0)
+            {
+                lines.Add(new InvoiceLine
+                {
+                    Id = Guid.NewGuid(),
+                    Description = $"Discount code {promo.Code}",
+                    Amount = -discountAmt,
+                    SourceType = InvoiceLineSourceType.Discount,
+                    SourceId = promo.Id
+                });
+            }
         }
 
         var invoice = new Invoice

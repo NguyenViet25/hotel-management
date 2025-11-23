@@ -9,6 +9,15 @@ import {
   Chip,
   Stack,
   Typography,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Grid,
+  MenuItem,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import dayjs from "dayjs";
 import React, { useEffect, useMemo, useState } from "react";
@@ -35,6 +44,12 @@ const BookingDetailsPage: React.FC = () => {
   const [openEdit, setOpenEdit] = useState(false);
   const [openCancel, setOpenCancel] = useState(false);
   const [openCall, setOpenCall] = useState(false);
+  const [openCheckout, setOpenCheckout] = useState(false);
+  const [discountCode, setDiscountCode] = useState("");
+  const [paymentAmount, setPaymentAmount] = useState<number>(0);
+  const [paymentType, setPaymentType] = useState<0 | 1 | 2 | 3>(0);
+  const [earlyCheckIn, setEarlyCheckIn] = useState(false);
+  const [lateCheckOut, setLateCheckOut] = useState(false);
 
   const fetch = async () => {
     if (!id) return;
@@ -171,6 +186,13 @@ const BookingDetailsPage: React.FC = () => {
               Xác nhận
             </Button>
           )}
+          <Button
+            variant="contained"
+            color="success"
+            onClick={() => setOpenCheckout(true)}
+          >
+            Thanh toán & xuất hóa đơn
+          </Button>
         </Stack>
       </Stack>
 
@@ -252,6 +274,86 @@ const BookingDetailsPage: React.FC = () => {
         booking={data as any}
         onSubmitted={fetch}
       />
+
+      <Dialog open={openCheckout} onClose={() => setOpenCheckout(false)} fullWidth maxWidth="sm">
+        <DialogTitle>Thanh toán & xuất hóa đơn</DialogTitle>
+        <DialogContent>
+          <Grid container spacing={2} sx={{ mt: 0.5 }}>
+            <Grid item xs={12}>
+              <TextField
+                label="Mã giảm giá"
+                fullWidth
+                value={discountCode}
+                onChange={(e) => setDiscountCode(e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={8}>
+              <TextField
+                label="Số tiền thanh toán"
+                type="number"
+                fullWidth
+                value={paymentAmount}
+                onChange={(e) => setPaymentAmount(Number(e.target.value) || 0)}
+                InputProps={{ inputProps: { min: 0 } }}
+              />
+            </Grid>
+            <Grid item xs={4}>
+              <TextField
+                select
+                label="Hình thức"
+                fullWidth
+                value={paymentType}
+                onChange={(e) => setPaymentType(Number(e.target.value) as any)}
+              >
+                <MenuItem value={0}>Tiền mặt</MenuItem>
+                <MenuItem value={1}>Thẻ</MenuItem>
+                <MenuItem value={2}>Chuyển khoản</MenuItem>
+                <MenuItem value={3}>Khác</MenuItem>
+              </TextField>
+            </Grid>
+            <Grid item xs={12}>
+              <Stack direction="row" spacing={2}>
+                <FormControlLabel
+                  control={<Checkbox checked={earlyCheckIn} onChange={(e) => setEarlyCheckIn(e.target.checked)} />}
+                  label="Early check-in"
+                />
+                <FormControlLabel
+                  control={<Checkbox checked={lateCheckOut} onChange={(e) => setLateCheckOut(e.target.checked)} />}
+                  label="Late check-out"
+                />
+              </Stack>
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenCheckout(false)}>Hủy</Button>
+          <Button
+            variant="contained"
+            onClick={async () => {
+              if (!id) return;
+              try {
+                const res = await bookingsApi.checkOut(id, {
+                  discountCode: discountCode || undefined,
+                  finalPayment: paymentAmount > 0 ? { amount: paymentAmount, type: paymentType } : undefined,
+                  earlyCheckIn,
+                  lateCheckOut,
+                });
+                if (res.isSuccess) {
+                  toast.success("Xuất hóa đơn thành công");
+                  setOpenCheckout(false);
+                  await fetch();
+                } else {
+                  toast.error(res.message || "Không thể xuất hóa đơn");
+                }
+              } catch {
+                toast.error("Đã xảy ra lỗi khi xuất hóa đơn");
+              }
+            }}
+          >
+            Xác nhận
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Stack>
   );
 };

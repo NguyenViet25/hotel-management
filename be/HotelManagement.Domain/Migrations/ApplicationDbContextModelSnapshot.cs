@@ -900,6 +900,49 @@ namespace HotelManagement.Domain.Migrations
                     b.ToTable("OrderItems");
                 });
 
+            modelBuilder.Entity("HotelManagement.Domain.OrderItemHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("ChangedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("NewMenuItemId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("NewOrderItemId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("OldMenuItemId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("OldOrderItemId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Reason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NewOrderItemId");
+
+                    b.HasIndex("OldOrderItemId");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("OrderItemHistories");
+                });
+
             modelBuilder.Entity("HotelManagement.Domain.Promotion", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1516,6 +1559,32 @@ namespace HotelManagement.Domain.Migrations
                     b.HasOne("HotelManagement.Domain.MenuItem", null)
                         .WithMany()
                         .HasForeignKey("ProposedReplacementMenuItemId")
+                        .OnDelete(DeleteBehavior.SetNull);
+                });
+
+            modelBuilder.Entity("HotelManagement.Domain.OrderItemHistory", b =>
+                {
+                    b.HasOne("HotelManagement.Domain.OrderItem", null)
+                        .WithMany()
+                        .HasForeignKey("NewOrderItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HotelManagement.Domain.OrderItem", null)
+                        .WithMany()
+                        .HasForeignKey("OldOrderItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HotelManagement.Domain.Order", null)
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HotelManagement.Domain.Entities.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.SetNull);
                 });
 

@@ -914,6 +914,49 @@ namespace HotelManagement.Domain.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "OrderItemHistories",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    OrderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    OldOrderItemId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    NewOrderItemId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    OldMenuItemId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    NewMenuItemId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ChangedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    Reason = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OrderItemHistories", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_OrderItemHistories_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_OrderItemHistories_OrderItems_NewOrderItemId",
+                        column: x => x.NewOrderItemId,
+                        principalTable: "OrderItems",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_OrderItemHistories_OrderItems_OldOrderItemId",
+                        column: x => x.OldOrderItemId,
+                        principalTable: "OrderItems",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_OrderItemHistories_Orders_OrderId",
+                        column: x => x.OrderId,
+                        principalTable: "Orders",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -1115,6 +1158,26 @@ namespace HotelManagement.Domain.Migrations
                 column: "RoomTypeId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_OrderItemHistories_NewOrderItemId",
+                table: "OrderItemHistories",
+                column: "NewOrderItemId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OrderItemHistories_OldOrderItemId",
+                table: "OrderItemHistories",
+                column: "OldOrderItemId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OrderItemHistories_OrderId",
+                table: "OrderItemHistories",
+                column: "OrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OrderItemHistories_UserId",
+                table: "OrderItemHistories",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_OrderItems_MenuItemId",
                 table: "OrderItems",
                 column: "MenuItemId");
@@ -1242,7 +1305,7 @@ namespace HotelManagement.Domain.Migrations
                 name: "MinibarBookings");
 
             migrationBuilder.DropTable(
-                name: "OrderItems");
+                name: "OrderItemHistories");
 
             migrationBuilder.DropTable(
                 name: "Promotions");
@@ -1272,7 +1335,7 @@ namespace HotelManagement.Domain.Migrations
                 name: "Minibars");
 
             migrationBuilder.DropTable(
-                name: "MenuItems");
+                name: "OrderItems");
 
             migrationBuilder.DropTable(
                 name: "ShoppingOrders");
@@ -1282,6 +1345,9 @@ namespace HotelManagement.Domain.Migrations
 
             migrationBuilder.DropTable(
                 name: "Rooms");
+
+            migrationBuilder.DropTable(
+                name: "MenuItems");
 
             migrationBuilder.DropTable(
                 name: "Orders");
