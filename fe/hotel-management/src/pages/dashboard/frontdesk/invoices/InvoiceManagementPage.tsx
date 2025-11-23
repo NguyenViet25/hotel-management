@@ -14,11 +14,7 @@ import {
   Typography,
 } from "@mui/material";
 import React, { useEffect, useMemo, useState } from "react";
-import bookingsApi, {
-  type BookingDetailsDto,
-  type BookingsQueryDto,
-} from "../../../../api/bookingsApi";
-import ordersApi, { type OrderSummaryDto } from "../../../../api/ordersApi";
+import invoicesApi, { type InvoiceDto } from "../../../../api/invoicesApi";
 import DataTable, {
   type Column,
 } from "../../../../components/common/DataTable";
@@ -26,6 +22,7 @@ import PageTitle from "../../../../components/common/PageTitle";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
 import OrderFormModal from "../../waiter/orders/components/OrderFormModal";
 import PromotionDialog from "./components/PromotionDialog";
+import ordersApi from "../../../../api/ordersApi";
 
 type InvoiceRow = {
   id: string;
@@ -105,75 +102,32 @@ const InvoiceManagementPage: React.FC = () => {
   const fetchList = async (nextPage = 1) => {
     setLoading(true);
     try {
-      const q: BookingsQueryDto = {
+      const res = await invoicesApi.list({
         hotelId: hotelId || undefined,
         page: nextPage,
         pageSize,
-        sortBy: "createdAt",
-        sortDir: "desc",
-        guestName: search || undefined,
-      };
-      const [bookingRes, ordersRes] = await Promise.all([
-        bookingsApi.list(q),
-        ordersApi.listOrders({
-          hotelId: hotelId || undefined,
-          page: nextPage,
-          pageSize,
-          search: search || undefined,
-        }),
-      ]);
+      });
 
-      const bookingRows: InvoiceRow[] = (bookingRes.data || []).map(
-        (b: BookingDetailsDto) => {
-          const room = b.bookingRoomTypes?.[0]?.bookingRooms?.[0]?.roomName;
-          return {
-            id: `BK-${b.id}`,
-            invoiceNumber: `BK-${b.id.substring(0, 8)}`,
-            guestName: b.primaryGuestName || "",
-            roomNumber: room || "",
-            type: "Booking",
-            totalAmount: b.totalAmount || 0,
-            status:
-              b.status === 2
-                ? "Checked-in"
-                : b.status === 3
-                ? "Checked-out"
-                : "Pending",
-            createdAt: b.createdAt,
-          };
-        }
-      );
-
-      const orderRows: InvoiceRow[] = (ordersRes.data || []).map(
-        (o: OrderSummaryDto) => ({
-          id: `OD-${o.id}`,
-          invoiceNumber: `OD-${o.id.substring(0, 8)}`,
-          guestName: o.customerName || "",
-          roomNumber: "",
-          type: o.isWalkIn ? "Walk-in" : "Booking",
-          totalAmount: o.itemsTotal || 0,
-          status:
-            o.status === "2"
-              ? "Completed"
-              : o.status === "1"
-              ? "Serving"
-              : o.status === "0"
-              ? "Draft"
-              : "Cancelled",
-          createdAt: o.createdAt,
+      const invRows: InvoiceRow[] = (res.data?.items || []).map(
+        (i: InvoiceDto) => ({
+          id: i.id,
+          invoiceNumber: i.invoiceNumber,
+          guestName: i.guestId || "",
+          roomNumber: i.bookingId ? "" : "",
+          type: i.isWalkIn ? "Walk-in" : "Booking",
+          totalAmount: i.totalAmount || 0,
+          status: (i.statusName as string) || String(i.status),
+          createdAt: i.createdAt,
         })
       );
 
-      const combined = [...bookingRows, ...orderRows].sort(
+      const combined = invRows.sort(
         (a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
       setRows(combined);
       setPage(nextPage);
-      const totalCount =
-        (bookingRes.meta?.total ?? bookingRes.data?.length ?? 0) +
-        (ordersRes.meta?.total ?? ordersRes.data?.length ?? 0);
-      setTotal(totalCount);
+      setTotal(res.data?.totalCount ?? combined.length);
     } catch (err: any) {
       setSnackbar({
         open: true,
@@ -217,17 +171,6 @@ const InvoiceManagementPage: React.FC = () => {
           <Button size="small" variant="contained" onClick={() => onPrint(r)}>
             In
           </Button>
-          {String(r.id).startsWith("OD-") && (
-            <Button
-              size="small"
-              onClick={() => {
-                setPromoOrderId(String(r.id).replace("OD-", ""));
-                setPromoOpen(true);
-              }}
-            >
-              Khuyến mãi
-            </Button>
-          )}
         </Stack>
       ),
     }));
@@ -407,7 +350,8 @@ const InvoiceManagementPage: React.FC = () => {
             onClick={async () => {
               if (!selectedBookingId) return;
               try {
-                const res = await bookingsApi.checkOut(selectedBookingId, {
+                const res = await invoicesApi.createBooking({
+                  bookingId: selectedBookingId,
                   discountCode: discountCode || undefined,
                   finalPayment:
                     paymentAmount > 0

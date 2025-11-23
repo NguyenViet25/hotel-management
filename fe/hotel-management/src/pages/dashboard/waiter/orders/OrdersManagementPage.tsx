@@ -31,6 +31,7 @@ import ordersApi, {
   type OrderStatus,
   type OrderSummaryDto,
 } from "../../../../api/ordersApi";
+import invoicesApi from "../../../../api/invoicesApi";
 import ConfirmModal from "../../../../components/common/ConfirmModel";
 import PageTitle from "../../../../components/common/PageTitle";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
@@ -164,18 +165,9 @@ const OrdersManagementPage: React.FC = () => {
   const onCreateInvoice = async () => {
     if (!selectedForInvoice) return;
     try {
-      if (discountCode) {
-        await ordersApi.applyDiscount(selectedForInvoice.id, {
-          code: discountCode,
-        });
-      }
-      await ordersApi.updateWalkIn(selectedForInvoice.id, {
-        id: selectedForInvoice.id,
-        hotelId: hotelId,
-        customerName: selectedForInvoice.customerName,
-        customerPhone: selectedForInvoice.customerPhone,
-        status: 2 as any,
-        notes: "Thanh toán và xuất hóa đơn",
+      await invoicesApi.createWalkIn({
+        orderId: selectedForInvoice.id,
+        discountCode: discountCode || undefined,
       });
       setSnackbar({
         open: true,
