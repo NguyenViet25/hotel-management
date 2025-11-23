@@ -1012,6 +1012,98 @@ public class BookingsService(
         }
     }
 
+    public async Task<ApiResponse<BookingDetailsDto>> UpdateRoomDatesAsync(Guid bookingRoomId, DateTime startDate, DateTime endDate)
+    {
+        var bookingRoom = await _bookingRoomRepo.Query().Include(br => br.BookingRoomType).FirstOrDefaultAsync(br => br.BookingRoomId == bookingRoomId);
+        if (bookingRoom == null) return ApiResponse<BookingDetailsDto>.Fail("Không tìm thấy phòng trong booking");
+        if (endDate <= startDate) return ApiResponse<BookingDetailsDto>.Fail("Khoảng thời gian không hợp lệ");
+
+        var typeStart = bookingRoom.BookingRoomType!.StartDate;
+        var typeEnd = bookingRoom.BookingRoomType!.EndDate;
+        if (startDate < typeStart || endDate > typeEnd) return ApiResponse<BookingDetailsDto>.Fail("Thời gian nằm ngoài khoảng của loại phòng");
+
+        var hasOverlap = await _bookingRoomRepo.Query()
+            .Where(br => br.RoomId == bookingRoom.RoomId && br.BookingRoomId != bookingRoomId && br.BookingStatus != BookingRoomStatus.Cancelled)
+            .AnyAsync(br => startDate < br.EndDate && endDate > br.StartDate);
+        if (hasOverlap) return ApiResponse<BookingDetailsDto>.Fail("Trùng lịch với booking khác");
+
+        bookingRoom.StartDate = startDate;
+        bookingRoom.EndDate = endDate;
+        await _bookingRoomRepo.UpdateAsync(bookingRoom);
+        await _bookingRoomRepo.SaveChangesAsync();
+
+        var bookingId = bookingRoom.BookingRoomType!.BookingIdKey;
+        return await GetByIdAsync(bookingId);
+    }
+
+    public async Task<ApiResponse<BookingDetailsDto>> UpdateRoomActualTimesAsync(Guid bookingRoomId, DateTime? actualCheckInAt, DateTime? actualCheckOutAt)
+    {
+        var bookingRoom = await _bookingRoomRepo.Query().Include(br => br.BookingRoomType).FirstOrDefaultAsync(br => br.BookingRoomId == bookingRoomId);
+        if (bookingRoom == null) return ApiResponse<BookingDetailsDto>.Fail("Không tìm thấy phòng trong booking");
+
+        if (actualCheckInAt.HasValue && actualCheckOutAt.HasValue && actualCheckOutAt.Value <= actualCheckInAt.Value)
+            return ApiResponse<BookingDetailsDto>.Fail("Check-out phải sau Check-in");
+
+        var start = bookingRoom.StartDate;
+        var end = bookingRoom.EndDate;
+        if (actualCheckInAt.HasValue && (actualCheckInAt.Value < start || actualCheckInAt.Value > end))
+            return ApiResponse<BookingDetailsDto>.Fail("Thời gian check-in nằm ngoài khoảng dự kiến");
+        if (actualCheckOutAt.HasValue && (actualCheckOutAt.Value < start || actualCheckOutAt.Value > end))
+            return ApiResponse<BookingDetailsDto>.Fail("Thời gian check-out nằm ngoài khoảng dự kiến");
+
+        if (actualCheckInAt.HasValue)
+        {
+            bookingRoom.ActualCheckInAt = actualCheckInAt.Value;
+            bookingRoom.BookingStatus = BookingRoomStatus.CheckedIn;
+            var room = await _roomRepo.FindAsync(bookingRoom.RoomId);
+            if (room != null)
+            {
+                room.Status = RoomStatus.Occupied;
+                await _roomRepo.UpdateAsync(room);
+                await _roomRepo.SaveChangesAsync();
+
+                await _roomStatusLogRepo.AddAsync(new RoomStatusLog
+                {
+                    Id = Guid.NewGuid(),
+                    HotelId = room.HotelId,
+                    RoomId = room.Id,
+                    Status = RoomStatus.Occupied,
+                    Timestamp = actualCheckInAt.Value
+                });
+                await _roomStatusLogRepo.SaveChangesAsync();
+            }
+        }
+
+        if (actualCheckOutAt.HasValue)
+        {
+            bookingRoom.ActualCheckOutAt = actualCheckOutAt.Value;
+            bookingRoom.BookingStatus = BookingRoomStatus.CheckedOut;
+            var room = await _roomRepo.FindAsync(bookingRoom.RoomId);
+            if (room != null)
+            {
+                room.Status = RoomStatus.Dirty;
+                await _roomRepo.UpdateAsync(room);
+                await _roomRepo.SaveChangesAsync();
+
+                await _roomStatusLogRepo.AddAsync(new RoomStatusLog
+                {
+                    Id = Guid.NewGuid(),
+                    HotelId = room.HotelId,
+                    RoomId = room.Id,
+                    Status = RoomStatus.Dirty,
+                    Timestamp = actualCheckOutAt.Value
+                });
+                await _roomStatusLogRepo.SaveChangesAsync();
+            }
+        }
+
+        await _bookingRoomRepo.UpdateAsync(bookingRoom);
+        await _bookingRoomRepo.SaveChangesAsync();
+
+        var bookingId = bookingRoom.BookingRoomType!.BookingIdKey;
+        return await GetByIdAsync(bookingId);
+    }
+
     public async Task<ApiResponse<BookingDetailsDto>> ChangeRoomAsync(Guid bookingRoomId, Guid newRoomId)
     {
         var bookingRoom = await _bookingRoomRepo.Query().Include(br => br.BookingRoomType).FirstOrDefaultAsync(br => br.BookingRoomId == bookingRoomId);

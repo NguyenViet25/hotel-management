@@ -171,6 +171,20 @@ public class BookingsController(IBookingsService bookingsService, IWebHostEnviro
         var result = await _bookingsService.RemoveGuestFromRoomAsync(bookingRoomId, guestId);
         return Ok(result);
     }
+
+    [HttpPut("rooms/{bookingRoomId}/dates")]
+    public async Task<ActionResult<ApiResponse<BookingDetailsDto>>> UpdateRoomDates(Guid bookingRoomId, [FromBody] UpdateBookingRoomDatesDto dto)
+    {
+        var result = await _bookingsService.UpdateRoomDatesAsync(bookingRoomId, dto.StartDate, dto.EndDate);
+        return Ok(result);
+    }
+
+    [HttpPut("rooms/{bookingRoomId}/actual-times")]
+    public async Task<ActionResult<ApiResponse<BookingDetailsDto>>> UpdateRoomActualTimes(Guid bookingRoomId, [FromBody] UpdateBookingRoomActualTimesDto dto)
+    {
+        var result = await _bookingsService.UpdateRoomActualTimesAsync(bookingRoomId, dto.ActualCheckInAt, dto.ActualCheckOutAt);
+        return Ok(result);
+    }
 }
 
 public class AddRoomToBooking

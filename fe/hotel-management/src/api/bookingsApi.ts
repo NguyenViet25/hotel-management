@@ -448,6 +448,28 @@ const bookingsApi = {
     return res.data;
   },
 
+  async updateRoomDates(
+    bookingRoomId: string,
+    payload: { startDate: string; endDate: string }
+  ): Promise<ApiResponse<BookingDetailsDto>> {
+    const res = await axios.put(
+      `/admin/bookings/rooms/${bookingRoomId}/dates`,
+      payload
+    );
+    return res.data;
+  },
+
+  async updateRoomActualTimes(
+    bookingRoomId: string,
+    payload: { actualCheckInAt?: string; actualCheckOutAt?: string }
+  ): Promise<ApiResponse<BookingDetailsDto>> {
+    const res = await axios.put(
+      `/admin/bookings/rooms/${bookingRoomId}/actual-times`,
+      payload
+    );
+    return res.data;
+  },
+
   async createCallLog(
     id: string,
     payload: { callTime?: string; result: CallResult; notes?: string }

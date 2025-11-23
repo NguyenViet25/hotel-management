@@ -22,6 +22,7 @@ import bookingsApi, {
 import AssignRoomDialog from "./AssignRoomDialog";
 import CheckInTimeDialog from "./CheckInTimeDialog";
 import CheckOutTimeDialog from "./CheckOutTimeDialog";
+import PlannedDatesDialog from "./PlannedDatesDialog";
 import GuestDialog from "./GuestDialog";
 import GuestList from "./GuestList";
 import StripedLabelWrapper from "../../../../../components/LabelStripedWrapper";
@@ -80,6 +81,9 @@ const RoomTypeBlock: React.FC<{
   const [checkInOpen, setCheckInOpen] = useState(false);
   const [checkOutOpen, setCheckOutOpen] = useState(false);
   const [activeRoom, setActiveRoom] = useState<BookingRoomDto | null>(null);
+  const [plannedOpen, setPlannedOpen] = useState(false);
+  const [editActualInOpen, setEditActualInOpen] = useState(false);
+  const [editActualOutOpen, setEditActualOutOpen] = useState(false);
 
   const openAddGuest = (roomId: string) => {
     setGuestRoomId(roomId);
@@ -268,20 +272,55 @@ const RoomTypeBlock: React.FC<{
                           </StripedLabelWrapper>
                           <StripedLabelWrapper label="Thời gian dự kiến">
                             <Stack direction={"row"} spacing={1}>
-                              <Chip
-                                label={`Nhận: ${
-                                  br.startDate
-                                    ? formatDateTime(br.startDate)
-                                    : "—"
-                                }`}
+                              <Stack
+                                direction={"row"}
+                                spacing={1}
+                                sx={{ width: "100%" }}
+                              >
+                                <Chip
+                                  label={`Nhận: ${
+                                    br.startDate
+                                      ? formatDateTime(br.startDate)
+                                      : "—"
+                                  }`}
+                                  size="small"
+                                  sx={{
+                                    width: "100%",
+                                    justifyContent: "flex-start", // <-- The key
+                                    "& .MuiChip-label": {
+                                      pl: 2, // remove default padding
+                                      textAlign: "left",
+                                      width: "100%",
+                                    },
+                                  }}
+                                />
+                                <Chip
+                                  label={`Trả: ${
+                                    br.endDate
+                                      ? formatDateTime(br.endDate)
+                                      : "—"
+                                  }`}
+                                  size="small"
+                                  sx={{
+                                    width: "100%",
+                                    justifyContent: "flex-start", // <-- The key
+                                    "& .MuiChip-label": {
+                                      pl: 2, // remove default padding
+                                      textAlign: "left",
+                                      width: "100%",
+                                    },
+                                  }}
+                                />{" "}
+                              </Stack>
+                              <IconButton
                                 size="small"
-                              />
-                              <Chip
-                                label={`Trả: ${
-                                  br.endDate ? formatDateTime(br.endDate) : "—"
-                                }`}
-                                size="small"
-                              />{" "}
+                                onClick={() => {
+                                  setActiveRoom(br);
+                                  setPlannedOpen(true);
+                                }}
+                              >
+                                <Edit fontSize="small" />
+                              </IconButton>
                             </Stack>
                           </StripedLabelWrapper>
                           <StripedLabelWrapper label="Thời gian thực tế">
@@ -308,7 +347,15 @@ const RoomTypeBlock: React.FC<{
                                     },
                                   }}
                                 />
-                                <Edit />
+                                <IconButton
+                                  size="small"
+                                  onClick={() => {
+                                    setActiveRoom(br);
+                                    setEditActualInOpen(true);
+                                  }}
+                                >
+                                  <Edit fontSize="small" />
+                                </IconButton>
                               </Stack>
                               <Stack
                                 direction={"row"}
@@ -332,7 +379,15 @@ const RoomTypeBlock: React.FC<{
                                     },
                                   }}
                                 />
-                                <Edit />
+                                <IconButton
+                                  size="small"
+                                  onClick={() => {
+                                    setActiveRoom(br);
+                                    setEditActualOutOpen(true);
+                                  }}
+                                >
+                                  <Edit fontSize="small" />
+                                </IconButton>
                               </Stack>
                             </Stack>
                           </StripedLabelWrapper>
@@ -492,10 +547,10 @@ const RoomTypeBlock: React.FC<{
           onClose={() => setCheckOutOpen(false)}
           onConfirm={async (iso, info) => {
             try {
-              const res = await bookingsApi.checkOut(booking.id, {
-                lateCheckOut: info.isLate,
-                checkoutTime: iso,
-              } as any);
+              const res = await bookingsApi.updateRoomActualTimes(
+                activeRoom!.bookingRoomId,
+                { actualCheckOutAt: iso }
+              );
               if (res.isSuccess) {
                 setSnackbar({
                   open: true,
@@ -517,6 +572,120 @@ const RoomTypeBlock: React.FC<{
               setSnackbar({
                 open: true,
                 message: "Đã xảy ra lỗi khi check-out",
+                severity: "error",
+              });
+            }
+          }}
+        />
+
+        <PlannedDatesDialog
+          open={plannedOpen}
+          initialStart={activeRoom?.startDate || rt.startDate}
+          initialEnd={activeRoom?.endDate || rt.endDate}
+          minStart={rt.startDate}
+          maxEnd={rt.endDate}
+          onClose={() => setPlannedOpen(false)}
+          onConfirm={async (startIso, endIso) => {
+            try {
+              const res = await bookingsApi.updateRoomDates(
+                activeRoom!.bookingRoomId,
+                { startDate: startIso, endDate: endIso }
+              );
+              if (res.isSuccess) {
+                setSnackbar({
+                  open: true,
+                  message: "Cập nhật thời gian dự kiến thành công",
+                  severity: "success",
+                });
+                setPlannedOpen(false);
+                await onRefresh?.();
+              } else {
+                setSnackbar({
+                  open: true,
+                  message: res.message || "Không thể cập nhật thời gian",
+                  severity: "error",
+                });
+              }
+            } catch {
+              setSnackbar({
+                open: true,
+                message: "Đã xảy ra lỗi khi cập nhật thời gian",
+                severity: "error",
+              });
+            }
+          }}
+        />
+
+        <CheckInTimeDialog
+          open={editActualInOpen}
+          scheduledStart={activeRoom?.startDate || ""}
+          scheduledEnd={activeRoom?.endDate || undefined}
+          onClose={() => setEditActualInOpen(false)}
+          onConfirm={async (iso, info) => {
+            try {
+              const res = await bookingsApi.updateRoomActualTimes(
+                activeRoom!.bookingRoomId,
+                { actualCheckInAt: iso }
+              );
+              if (res.isSuccess) {
+                setSnackbar({
+                  open: true,
+                  message: info.isEarly
+                    ? `Check-in early ${info.days}d ${info.hours}h ${info.minutes}m`
+                    : "Cập nhật Check-in thành công",
+                  severity: "success",
+                });
+                setEditActualInOpen(false);
+                await onRefresh?.();
+              } else {
+                setSnackbar({
+                  open: true,
+                  message: res.message || "Không thể cập nhật check-in",
+                  severity: "error",
+                });
+              }
+            } catch {
+              setSnackbar({
+                open: true,
+                message: "Đã xảy ra lỗi khi cập nhật check-in",
+                severity: "error",
+              });
+            }
+          }}
+        />
+
+        <CheckOutTimeDialog
+          open={editActualOutOpen}
+          scheduledEnd={activeRoom?.endDate || ""}
+          scheduledStart={activeRoom?.startDate || undefined}
+          onClose={() => setEditActualOutOpen(false)}
+          onConfirm={async (iso, info) => {
+            try {
+              const res = await bookingsApi.updateRoomActualTimes(
+                activeRoom!.bookingRoomId,
+                { actualCheckOutAt: iso }
+              );
+              if (res.isSuccess) {
+                setSnackbar({
+                  open: true,
+                  message: info.isLate
+                    ? `Late check-out ${info.days}d ${info.hours}h ${info.minutes}m`
+                    : "Cập nhật Check-out thành công",
+                  severity: "success",
+                });
+                setEditActualOutOpen(false);
+                await onRefresh?.();
+              } else {
+                setSnackbar({
+                  open: true,
+                  message: res.message || "Không thể cập nhật check-out",
+                  severity: "error",
+                });
+              }
+            } catch {
+              setSnackbar({
+                open: true,
+                message: "Đã xảy ra lỗi khi cập nhật check-out",
                 severity: "error",
               });
             }

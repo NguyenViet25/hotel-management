@@ -267,6 +267,18 @@ public class CheckoutRequestDto
     public DateTime? CheckoutTime { get; set; }
 }
 
+public class UpdateBookingRoomDatesDto
+{
+    public DateTime StartDate { get; set; }
+    public DateTime EndDate { get; set; }
+}
+
+public class UpdateBookingRoomActualTimesDto
+{
+    public DateTime? ActualCheckInAt { get; set; }
+    public DateTime? ActualCheckOutAt { get; set; }
+}
+
 public class PaymentDto
 {
     public decimal Amount { get; set; }
