@@ -155,3 +155,4 @@
 2025-11-22 - 5 - 01:41:35 UTC :: test: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — fix race-condition nho trong thao tac (dong bo voi BE/FE)
 2025-11-23 - 1 - 01:58:26 UTC :: fix: UC-18 Room Move/Extend: doi phong, gia han dem o. — dieu chinh quyen truy cap theo vai tro (chuan bi cho tinh nang tiep theo)
 2025-11-23 - 2 - 01:58:28 UTC :: feat: UC-23 Bao tri: tao ticket, dinh anh, mo ta loi. — them kiem soat loi & retry nhe (dam bao backward-compatible)
+2025-11-23 - 3 - 01:58:29 UTC :: build: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — toi uu truy van va bo nho (can theo doi them)
