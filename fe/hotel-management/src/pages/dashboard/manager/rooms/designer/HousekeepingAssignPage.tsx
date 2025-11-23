@@ -1,4 +1,4 @@
-import { Edit, Info, Note, Person, PersonAdd } from "@mui/icons-material";
+import { Edit, Info, Person, PersonAdd } from "@mui/icons-material";
 import KingBedIcon from "@mui/icons-material/KingBed";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import {
@@ -21,9 +21,7 @@ import roomsApi, {
   RoomStatus,
   getRoomStatusString,
 } from "../../../../../api/roomsApi";
-import DataTable, {
-  type Column,
-} from "../../../../../components/common/DataTable";
+import HousekeepingTasksTable from "../../../../../components/housekeeping/HousekeepingTasksTable";
 import { useStore } from "../../../../../hooks/useStore";
 import AssignHousekeepingDialog from "../components/AssignHousekeepingDialog";
 
@@ -106,36 +104,6 @@ export default function HousekeepingAssignPage() {
     for (const t of tasks) map[t.roomId] = t;
     return map;
   }, [tasks]);
-
-  const taskColumns: Column<HousekeepingTaskDto>[] = [
-    { id: "roomNumber", label: "Phòng", minWidth: 90 },
-    { id: "floor", label: "Tầng", minWidth: 60, format: (v) => String(v) },
-    {
-      id: "assignedToName",
-      label: "Nhân viên",
-      minWidth: 140,
-      format: (v) => v || "—",
-    },
-    { id: "notes", label: "Ghi chú", minWidth: 220, format: (v) => v || "—" },
-    {
-      id: "createdAt",
-      label: "Tạo lúc",
-      minWidth: 140,
-      format: (v) => new Date(v).toLocaleString(),
-    },
-    {
-      id: "startedAt",
-      label: "Bắt đầu",
-      minWidth: 140,
-      format: (v) => (v ? new Date(v).toLocaleString() : "—"),
-    },
-    {
-      id: "completedAt",
-      label: "Hoàn tất",
-      minWidth: 140,
-      format: (v) => (v ? new Date(v).toLocaleString() : "—"),
-    },
-  ];
 
   return (
     <Box>
@@ -297,18 +265,7 @@ export default function HousekeepingAssignPage() {
         }}
       />
 
-      <Box sx={{ mt: 3 }}>
-        <Typography variant="h6" fontWeight={700} sx={{ mb: 1 }}>
-          Danh sách nhiệm vụ dọn dẹp
-        </Typography>
-        <DataTable
-          columns={taskColumns}
-          data={tasks}
-          loading={tasksLoading}
-          getRowId={(t) => t.id}
-          actionColumn={false}
-        />
-      </Box>
+      <HousekeepingTasksTable tasks={tasks} loading={tasksLoading} />
     </Box>
   );
 }

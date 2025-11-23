@@ -40,6 +40,7 @@ import roomsApi, {
   RoomStatus,
   type RoomDto,
 } from "../../../api/roomsApi";
+import PageTitle from "../../../components/common/PageTitle";
 import { useStore, type StoreState } from "../../../hooks/useStore";
 
 const HK = {
@@ -78,8 +79,6 @@ export default function HousekeepingPage() {
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [search, setSearch] = useState<string>("");
 
-  const [view, setView] = useState<"tasks" | "map" | "minibar">("tasks");
-
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [bulkStatus, setBulkStatus] = useState<number>(RoomStatus.Clean);
 
@@ -109,7 +108,12 @@ export default function HousekeepingPage() {
       : 3;
 
   const filteredRooms = useMemo(() => {
-    let rs = rooms;
+    const myTaskRoomIds = new Set(tasks.map((t) => t.roomId));
+    let rs = rooms.filter(
+      (r) =>
+        myTaskRoomIds.has(r.id) &&
+        (r.status === RoomStatus.Dirty || r.status === RoomStatus.Cleaning)
+    );
     if (floorFilter) rs = rs.filter((r) => String(r.floor) === floorFilter);
     if (statusFilter) rs = rs.filter((r) => String(r.status) === statusFilter);
     if (search)
@@ -122,7 +126,7 @@ export default function HousekeepingPage() {
         (a.floor ?? 0) - (b.floor ?? 0) ||
         (a.number || "").localeCompare(b.number || "")
     );
-  }, [rooms, floorFilter, statusFilter, search]);
+  }, [rooms, tasks, floorFilter, statusFilter, search]);
 
   const floors = useMemo(
     () =>
@@ -213,7 +217,7 @@ export default function HousekeepingPage() {
           borderRadius: 2,
           fontWeight: 700,
         }}
-        icon={cfg.icon}
+        icon={cfg.icon as any}
       />
     );
   };
@@ -268,23 +272,66 @@ export default function HousekeepingPage() {
     setMinibarRoom(null);
   };
 
+  const refreshTasks = async () => {
+    if (!hotelId || !user?.id) return;
+    setTasksLoading(true);
+    try {
+      const res = await housekeepingTasksApi.list({
+        hotelId,
+        assignedToUserId: user.id,
+        onlyActive: true,
+      });
+      if (res.isSuccess && Array.isArray(res.data)) setTasks(res.data);
+    } finally {
+      setTasksLoading(false);
+    }
+  };
+
+  const startTask = async (taskId: string) => {
+    await housekeepingTasksApi.start({ taskId });
+    await refresh();
+  };
+
+  const openComplete = (taskId: string) => {
+    setCompleteTaskId(taskId);
+    setCompleteNotes("");
+    setCompleteEvidence([]);
+    setCompleteOpen(true);
+  };
+
+  const uploadEvidence = async (file: File) => {
+    setUploading(true);
+    try {
+      const res = await mediaApi.upload(file);
+      const dto = res.data as MediaDto;
+      setCompleteEvidence((prev) => [...prev, dto]);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const completeTask = async () => {
+    const urls = completeEvidence.map((m) => m.fileUrl).filter(Boolean);
+    await housekeepingTasksApi.complete({
+      taskId: completeTaskId,
+      notes: completeNotes || undefined,
+      evidenceUrls: urls,
+    });
+    setCompleteOpen(false);
+    setCompleteTaskId("");
+    setCompleteEvidence([]);
+    await refresh();
+  };
+
   return (
     <Box>
-      <Stack
-        direction="row"
-        alignItems="center"
-        justifyContent="space-between"
-        sx={{ mb: 2 }}
-      >
-        <Stack>
-          <Typography variant="h5" fontWeight={800}>
-            Buồng phòng
-          </Typography>
-        </Stack>
-      </Stack>
+      <PageTitle
+        title={"Buồng phòng"}
+        subtitle={"Xem danh sách nhiệm vụ, cập nhật trạng thái dọn phòng"}
+      />
 
       <Grid container spacing={2} sx={{ mb: 2 }}>
-        <Grid item xs={6} md={3}>
+        <Grid size={{ xs: 12, md: 3 }}>
           <Card>
             <CardContent>
               <Stack spacing={0.5}>
@@ -296,7 +343,7 @@ export default function HousekeepingPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={6} md={3}>
+        <Grid size={{ xs: 12, md: 3 }}>
           <Card>
             <CardContent>
               <Stack spacing={0.5}>
@@ -308,7 +355,7 @@ export default function HousekeepingPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={6} md={3}>
+        <Grid size={{ xs: 12, md: 3 }}>
           <Card>
             <CardContent>
               <Stack spacing={0.5}>
@@ -320,7 +367,7 @@ export default function HousekeepingPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={6} md={3}>
+        <Grid size={{ xs: 12, md: 3 }}>
           <Card>
             <CardContent>
               <Stack spacing={0.5}>
@@ -822,53 +869,3 @@ export default function HousekeepingPage() {
     </Box>
   );
 }
-const refreshTasks = async () => {
-  if (!hotelId || !user?.id) return;
-  setTasksLoading(true);
-  try {
-    const res = await housekeepingTasksApi.list({
-      hotelId,
-      assignedToUserId: user.id,
-      onlyActive: true,
-    });
-    if (res.isSuccess && Array.isArray(res.data)) setTasks(res.data);
-  } finally {
-    setTasksLoading(false);
-  }
-};
-
-const startTask = async (taskId: string) => {
-  await housekeepingTasksApi.start({ taskId });
-  await refresh();
-};
-
-const openComplete = (taskId: string) => {
-  setCompleteTaskId(taskId);
-  setCompleteNotes("");
-  setCompleteEvidence([]);
-  setCompleteOpen(true);
-};
-
-const uploadEvidence = async (file: File) => {
-  setUploading(true);
-  try {
-    const res = await mediaApi.upload(file);
-    const dto = res.data as MediaDto;
-    setCompleteEvidence((prev) => [...prev, dto]);
-  } finally {
-    setUploading(false);
-  }
-};
-
-const completeTask = async () => {
-  const urls = completeEvidence.map((m) => m.fileUrl).filter(Boolean);
-  await housekeepingTasksApi.complete({
-    taskId: completeTaskId,
-    notes: completeNotes || undefined,
-    evidenceUrls: urls,
-  });
-  setCompleteOpen(false);
-  setCompleteTaskId("");
-  setCompleteEvidence([]);
-  await refresh();
-};

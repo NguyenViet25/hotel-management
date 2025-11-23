@@ -14,6 +14,7 @@ import SessionDetailsPage from "../pages/dashboard/waiter/sessions/SessionDetail
 import KitchenTimelinePage from "../pages/dashboard/manager/kitchen/KitchenTimelinePage";
 import DiscountCodesPage from "../pages/dashboard/manager/discounts/DiscountCodesPage";
 import MinibarManagementPage from "../pages/dashboard/manager/minibars/MinibarManagementPage";
+import MyTask from "../pages/dashboard/housekeeper/MyTask";
 
 // Role-aware layout wrapper for standalone pages like /profile
 const RoleAwareLayout = () => {
@@ -98,7 +99,9 @@ const ManagerDashboard = () => <ManagerDashboardPage />;
 const FrontDeskDashboard = () => <div>Front Desk Dashboard</div>;
 const KitchenDashboard = () => <div>Kitchen Dashboard</div>;
 const WaiterDashboard = () => <div>Waiter Dashboard</div>;
-const HousekeeperPage = lazy(() => import("../pages/dashboard/housekeeper/HousekeepingPage"));
+const HousekeeperPage = lazy(
+  () => import("../pages/dashboard/housekeeper/HousekeepingPage")
+);
 
 // Auth guard component
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
@@ -406,7 +409,22 @@ const router = createBrowserRouter([
           </Suspense>
         ),
       },
-      // Add other housekeeper routes here
+      {
+        path: "rooms",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <RoomNeedCleaningPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "my-tasks",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <MyTask />
+          </Suspense>
+        ),
+      },
     ],
   },
   // 404 route

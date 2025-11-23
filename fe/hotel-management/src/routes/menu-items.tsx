@@ -1,9 +1,12 @@
 import {
   Bed,
   Category,
+  CleanHands,
   Dashboard as DashboardIcon,
   LocalDining as DiningIcon,
   Discount,
+  Gamepad,
+  History,
   Hotel as HotelIcon,
   Image,
   InsertEmoticon,
@@ -69,13 +72,27 @@ export const menuItems = {
   ],
   waiter: [
     { title: "Tổng quan", path: "/waiter/dashboard", icon: <DashboardIcon /> },
-    { title: "Phiên phục vụ", path: "/waiter/sessions", icon: <RestaurantIcon /> },
+    {
+      title: "Phiên phục vụ",
+      path: "/waiter/sessions",
+      icon: <RestaurantIcon />,
+    },
   ],
   housekeeper: [
     {
       title: "Tổng quan",
       path: "/housekeeper/dashboard",
       icon: <DashboardIcon />,
+    },
+    {
+      title: "Phòng cần dọn",
+      path: "/housekeeper/room-need-cleaning",
+      icon: <CleanHands />,
+    },
+    {
+      title: "Lịch sử",
+      path: "/housekeeper/my-tasks",
+      icon: <History />,
     },
   ],
 };
