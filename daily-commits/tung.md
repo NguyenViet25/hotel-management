@@ -157,3 +157,4 @@
 2025-11-23 - 2 - 01:58:28 UTC :: feat: UC-23 Bao tri: tao ticket, dinh anh, mo ta loi. — them kiem soat loi & retry nhe (dam bao backward-compatible)
 2025-11-23 - 3 - 01:58:29 UTC :: build: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — toi uu truy van va bo nho (can theo doi them)
 2025-11-23 - 4 - 01:58:30 UTC :: test: UC-02 RBAC: thiet lap quyen thao tac theo vai tro/pham vi. — sua validate va bo sung thong bao loi (anh huong thap)
+2025-11-23 - 5 - 01:58:32 UTC :: ci: UC-20 Keo-tha: gan/doi phong truc quan, tranh trung. — them kiem soat loi & retry nhe (da kiem tra lint)
