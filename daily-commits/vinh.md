@@ -152,3 +152,4 @@
 2025-11-23 - 2 - 01:58:30 UTC :: refactor: UC-19 Lich phong: calendar trang thai phong theo ngay. — them log chi tiet phuc vu audit (da kiem tra lint)
 2025-11-23 - 3 - 01:58:32 UTC :: fix: UC-39 Xuat Audit Log: xuat CSV/PDF kiem tra tuan thu. — fix race-condition nho trong thao tac (chuan bi cho tinh nang tiep theo)
 2025-11-23 - 4 - 01:58:33 UTC :: perf: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — tach chuc nang de de bao tri (khong doi hanh vi)
+2025-11-23 - 5 - 01:58:34 UTC :: test: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — sua validate va bo sung thong bao loi (anh huong thap)
