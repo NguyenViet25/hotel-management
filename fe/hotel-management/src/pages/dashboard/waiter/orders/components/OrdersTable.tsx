@@ -1,10 +1,10 @@
+import { Receipt } from "@mui/icons-material";
+import { Button, Chip, Stack } from "@mui/material";
 import React from "react";
-import { Chip, Avatar, Stack, Button } from "@mui/material";
+import type { OrderSummaryDto } from "../../../../../api/ordersApi";
 import DataTable, {
   type Column,
 } from "../../../../../components/common/DataTable";
-import type { OrderSummaryDto } from "../../../../../api/ordersApi";
-import { Receipt } from "@mui/icons-material";
 
 interface OrdersTableProps {
   data: OrderSummaryDto[];
