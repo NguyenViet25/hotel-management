@@ -153,3 +153,4 @@
 2025-11-22 - 3 - 01:41:31 UTC :: ci: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — bo sung index & toi uu DB (dong bo voi BE/FE)
 2025-11-22 - 4 - 01:41:34 UTC :: fix: UC-31 Bao cao: len lich gui email/PDF hang ngay/tuan. — bo sung case canh bien & no-show (da review so bo)
 2025-11-22 - 5 - 01:41:35 UTC :: test: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — fix race-condition nho trong thao tac (dong bo voi BE/FE)
+2025-11-23 - 1 - 01:58:26 UTC :: fix: UC-18 Room Move/Extend: doi phong, gia han dem o. — dieu chinh quyen truy cap theo vai tro (chuan bi cho tinh nang tiep theo)
