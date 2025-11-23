@@ -15,6 +15,8 @@ import {
   RoomStatus,
   type RoomDto,
 } from "../../../../../api/roomsApi";
+import { useStore } from "../../../../../hooks/useStore";
+import AssignHousekeepingDialog from "./AssignHousekeepingDialog";
 
 type Props = {
   rooms: RoomDto[];
@@ -38,6 +40,9 @@ const HK = {
 
 export default function RoomHygieneList({ rooms, onStatusUpdated }: Props) {
   const [updatingId, setUpdatingId] = useState<string>("");
+  const { hotelId } = useStore();
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [assignRoom, setAssignRoom] = useState<RoomDto | null>(null);
 
   const dirtyRooms = useMemo(() => {
     const pri = (s: number) =>
@@ -118,8 +123,8 @@ export default function RoomHygieneList({ rooms, onStatusUpdated }: Props) {
                   p: 1.2,
                   borderRadius: 2,
                   border: "1px solid",
-                  borderColor: highlight ? "error.main" : "divider",
-                  bgcolor: highlight ? "error.light" : "background.default",
+                  borderColor: highlight ? "#F1999E" : "#E6E8EF",
+                  bgcolor: highlight ? "#FFF5F5" : "background.default",
                 }}
               >
                 <Chip label={`#${r.number}`} sx={{ bgcolor: HK.colors.chipGreyBg, color: HK.colors.chipGreyText }} />
@@ -136,11 +141,20 @@ export default function RoomHygieneList({ rooms, onStatusUpdated }: Props) {
                   <MenuItem value={RoomStatus.Maintenance}>Bảo trì</MenuItem>
                 </Select>
                 <Button size="small" variant="outlined" sx={{ borderRadius: 999 }} onClick={() => quickUpdate(r, RoomStatus.Clean)} disabled={updatingId === r.id}>Đánh dấu sạch</Button>
+                <Button size="small" variant="outlined" sx={{ borderRadius: 999 }} onClick={() => { setAssignRoom(r); setAssignOpen(true); }}>Phân công</Button>
               </Stack>
             </Grid>
           );
         })}
       </Grid>
+      <AssignHousekeepingDialog
+        open={assignOpen}
+        hotelId={hotelId || ""}
+        roomId={assignRoom?.id || ""}
+        roomNumber={assignRoom?.number || ""}
+        onClose={() => { setAssignOpen(false); setAssignRoom(null); }}
+        onAssigned={onStatusUpdated}
+      />
     </Box>
   );
 }

@@ -25,13 +25,15 @@ import {
   Select,
   Stack,
   TextField,
-  ToggleButton,
-  ToggleButtonGroup,
   Typography,
 } from "@mui/material";
 import React, { useEffect, useMemo, useState } from "react";
 import bookingsApi, { type BookingIntervalDto } from "../../../api/bookingsApi";
 import housekeepingApi from "../../../api/housekeepingApi";
+import housekeepingTasksApi, {
+  type HousekeepingTaskDto,
+} from "../../../api/housekeepingTasksApi";
+import mediaApi, { type MediaDto } from "../../../api/mediaApi";
 import minibarApi, { type Minibar } from "../../../api/minibarApi";
 import roomsApi, {
   getRoomStatusString,
@@ -59,7 +61,7 @@ const HK = {
 };
 
 export default function HousekeepingPage() {
-  const { hotelId } = useStore<StoreState>((s) => s);
+  const { hotelId, user } = useStore<StoreState>((s) => s);
 
   const [rooms, setRooms] = useState<RoomDto[]>([]);
   const [loading, setLoading] = useState(false);
@@ -88,6 +90,14 @@ export default function HousekeepingPage() {
   >([]);
   const [minibarLoading, setMinibarLoading] = useState(false);
   const [minibarBookingId, setMinibarBookingId] = useState<string>("");
+
+  const [tasks, setTasks] = useState<HousekeepingTaskDto[]>([]);
+  const [tasksLoading, setTasksLoading] = useState(false);
+  const [completeOpen, setCompleteOpen] = useState(false);
+  const [completeNotes, setCompleteNotes] = useState("");
+  const [completeEvidence, setCompleteEvidence] = useState<MediaDto[]>([]);
+  const [completeTaskId, setCompleteTaskId] = useState<string>("");
+  const [uploading, setUploading] = useState(false);
 
   const statusPriority = (s: number) =>
     s === RoomStatus.Dirty
@@ -130,6 +140,7 @@ export default function HousekeepingPage() {
       if (res.isSuccess) setRooms(res.data);
       const sum = await housekeepingApi.getSummary(hotelId);
       if (sum.isSuccess && sum.data) setSummary(sum.data);
+      await refreshTasks();
     } finally {
       setLoading(false);
     }
@@ -322,6 +333,110 @@ export default function HousekeepingPage() {
           </Card>
         </Grid>
       </Grid>
+
+      <Box sx={{ mb: 2 }}>
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+          sx={{ mb: 1 }}
+        >
+          <Typography variant="h6" fontWeight={700}>
+            Nhiệm vụ hôm nay
+          </Typography>
+          {tasksLoading && (
+            <Typography variant="body2" color="text.secondary">
+              Đang tải…
+            </Typography>
+          )}
+        </Stack>
+        <Grid container spacing={2}>
+          {tasks.map((t) => (
+            <Grid item xs={12} md={6} lg={4} key={t.id}>
+              <Card
+                sx={{
+                  borderRadius: 3,
+                  border: "1px solid",
+                  borderColor: HK.colors.panelBorder,
+                }}
+              >
+                <CardContent>
+                  <Stack spacing={1.2}>
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      <Chip
+                        label={`Phòng ${t.roomNumber}`}
+                        icon={<KingBedIcon />}
+                        sx={{
+                          bgcolor: HK.colors.chipGreyBg,
+                          color: HK.colors.chipGreyText,
+                          borderRadius: 2,
+                        }}
+                      />
+                      <Chip
+                        label={`Tầng ${t.floor}`}
+                        sx={{
+                          bgcolor: HK.colors.chipGreyBg,
+                          color: HK.colors.chipGreyText,
+                          borderRadius: 2,
+                        }}
+                      />
+                      {t.assignedToName && <Chip label={t.assignedToName} />}
+                    </Stack>
+                    {t.notes && (
+                      <Box
+                        sx={{
+                          bgcolor: "#F4F6FA",
+                          borderRadius: 2,
+                          px: 1.5,
+                          py: 1,
+                        }}
+                      >
+                        <Typography variant="caption" color="text.secondary">
+                          Ghi chú: {t.notes}
+                        </Typography>
+                      </Box>
+                    )}
+                    <Stack direction="row" spacing={1}>
+                      <Button
+                        size="small"
+                        startIcon={<PlayCircleFilledWhiteIcon />}
+                        sx={{
+                          bgcolor: HK.colors.primaryDark,
+                          color: "#fff",
+                          borderRadius: 999,
+                          "&:hover": { bgcolor: "#0B1324" },
+                        }}
+                        onClick={() => startTask(t.id)}
+                      >
+                        Bắt đầu dọn
+                      </Button>
+                      <Button
+                        size="small"
+                        startIcon={<DoneAllIcon />}
+                        sx={{
+                          borderRadius: 999,
+                          bgcolor: "#EEF6F1",
+                          color: HK.colors.cleanText,
+                        }}
+                        onClick={() => openComplete(t.id)}
+                      >
+                        Hoàn tất
+                      </Button>
+                    </Stack>
+                  </Stack>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+          {tasks.length === 0 && !tasksLoading && (
+            <Grid item xs={12}>
+              <Typography variant="body2" color="text.secondary">
+                Không có nhiệm vụ
+              </Typography>
+            </Grid>
+          )}
+        </Grid>
+      </Box>
 
       <Stack
         direction={{ xs: "column", md: "row" }}
@@ -657,6 +772,103 @@ export default function HousekeepingPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Dialog
+        open={completeOpen}
+        onClose={() => setCompleteOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Hoàn tất dọn phòng</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <TextField
+              size="small"
+              label="Ghi chú"
+              value={completeNotes}
+              onChange={(e) => setCompleteNotes(e.target.value)}
+              multiline
+              minRows={2}
+            />
+            <Button variant="outlined" component="label" disabled={uploading}>
+              Tải ảnh minh chứng
+              <input
+                type="file"
+                hidden
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) uploadEvidence(f);
+                }}
+              />
+            </Button>
+            <Stack direction="row" spacing={1}>
+              {completeEvidence.map((m) => (
+                <Chip key={m.id} label={m.fileName || "Ảnh"} />
+              ))}
+            </Stack>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCompleteOpen(false)}>Hủy</Button>
+          <Button
+            variant="contained"
+            onClick={completeTask}
+            disabled={uploading}
+          >
+            Lưu
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
+const refreshTasks = async () => {
+  if (!hotelId || !user?.id) return;
+  setTasksLoading(true);
+  try {
+    const res = await housekeepingTasksApi.list({
+      hotelId,
+      assignedToUserId: user.id,
+      onlyActive: true,
+    });
+    if (res.isSuccess && Array.isArray(res.data)) setTasks(res.data);
+  } finally {
+    setTasksLoading(false);
+  }
+};
+
+const startTask = async (taskId: string) => {
+  await housekeepingTasksApi.start({ taskId });
+  await refresh();
+};
+
+const openComplete = (taskId: string) => {
+  setCompleteTaskId(taskId);
+  setCompleteNotes("");
+  setCompleteEvidence([]);
+  setCompleteOpen(true);
+};
+
+const uploadEvidence = async (file: File) => {
+  setUploading(true);
+  try {
+    const res = await mediaApi.upload(file);
+    const dto = res.data as MediaDto;
+    setCompleteEvidence((prev) => [...prev, dto]);
+  } finally {
+    setUploading(false);
+  }
+};
+
+const completeTask = async () => {
+  const urls = completeEvidence.map((m) => m.fileUrl).filter(Boolean);
+  await housekeepingTasksApi.complete({
+    taskId: completeTaskId,
+    notes: completeNotes || undefined,
+    evidenceUrls: urls,
+  });
+  setCompleteOpen(false);
+  setCompleteTaskId("");
+  setCompleteEvidence([]);
+  await refresh();
+};

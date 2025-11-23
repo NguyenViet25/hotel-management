@@ -32,6 +32,7 @@ public static class DatabaseInitializationExtensions
             SeedPromotionsAsync(dbContext).GetAwaiter().GetResult();
             SeedMinibarsAsync(dbContext).GetAwaiter().GetResult();
             SeedTablesAsync(dbContext).GetAwaiter().GetResult();
+            SeedHousekeepingTasksAsync(dbContext).GetAwaiter().GetResult();
         }
 
         return app;
@@ -520,6 +521,32 @@ public static class DatabaseInitializationExtensions
         }
 
         dbContext.Set<Table>().AddRange(tables);
+        await dbContext.SaveChangesAsync();
+    }
+
+    public static async Task SeedHousekeepingTasksAsync(DbContext dbContext)
+    {
+        var hotelId = DEFAULT_HOTEL_ID;
+        // If tasks already exist, skip
+        if (await dbContext.Set<HousekeepingTask>().AnyAsync(t => t.HotelId == hotelId)) return;
+
+        var anyRooms = await dbContext.Set<HotelRoom>().Where(r => r.HotelId == hotelId).Take(3).ToListAsync();
+        if (!anyRooms.Any()) return;
+
+        var tasks = new List<HousekeepingTask>();
+        for (int i = 0; i < anyRooms.Count; i++)
+        {
+            var room = anyRooms[i];
+            tasks.Add(new HousekeepingTask
+            {
+                Id = Guid.NewGuid(),
+                HotelId = hotelId,
+                RoomId = room.Id,
+                Notes = i == 0 ? "Ưu tiên dọn trước 15:00" : (i == 1 ? "Lưu ý ga giường" : "Kiểm tra vòi nước"),
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+        dbContext.Set<HousekeepingTask>().AddRange(tasks);
         await dbContext.SaveChangesAsync();
     }
 

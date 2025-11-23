@@ -42,6 +42,8 @@ public static class DependencyInjection
         services.AddScoped<IDiscountCodeService, DiscountCodeService>();
         services.AddScoped<IMinibarService, MinibarService>();
         services.AddScoped<IMediaService, MediaService>();
+        services.AddScoped<HotelManagement.Services.Admin.Housekeeping.IRoomStatusService, HotelManagement.Services.Admin.Housekeeping.RoomStatusService>();
+        services.AddScoped<HotelManagement.Services.Admin.Housekeeping.IHousekeepingTaskService, HotelManagement.Services.Admin.Housekeeping.HousekeepingTaskService>();
         return services;
     }
 }
