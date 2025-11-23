@@ -27,13 +27,13 @@ const statusChip = (status: RoomStatus) => {
   const s = getRoomStatusString(status);
 
   const map: Record<string, { color: string; label: string }> = {
-    Available: { color: "#4CAF50", label: "Sẵn sàng" }, // green
-    Occupied: { color: "#F44336", label: "Đang sử dụng" }, // red
-    Cleaning: { color: "#2196F3", label: "Đang dọn dẹp" }, // blue
-    OutOfService: { color: "#FF9800", label: "Ngừng phục vụ" }, // orange
-    Dirty: { color: "#795548", label: "Bẩn" }, // brown
-    Clean: { color: "#00BCD4", label: "Đã dọn sạch" }, // teal
-    Maintenance: { color: "#9C27B0", label: "Bảo trì" }, // purple
+    Available: { color: "#4CAF50", label: "Sẵn sàng" },
+    Occupied: { color: "#607D8B", label: "Đang sử dụng" },
+    Cleaning: { color: "#2196F3", label: "Đang dọn dẹp" },
+    OutOfService: { color: "#9E9E9E", label: "Ngừng phục vụ" },
+    Dirty: { color: "#F44336", label: "Bẩn" },
+    Clean: { color: "#4CAF50", label: "Đã dọn sạch" },
+    Maintenance: { color: "#FF9800", label: "Bảo trì" },
   };
   const cfg = map[s] || { color: "default", label: String(status) };
   return (

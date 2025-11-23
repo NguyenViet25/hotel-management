@@ -1,22 +1,23 @@
+import { Info } from "@mui/icons-material";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import BlockIcon from "@mui/icons-material/Block";
 import ChangeCircleIcon from "@mui/icons-material/ChangeCircle";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import EditIcon from "@mui/icons-material/Edit";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import HotelIcon from "@mui/icons-material/Hotel";
 import CleaningServicesIcon from "@mui/icons-material/CleaningServices";
 import ConstructionIcon from "@mui/icons-material/Construction";
-import BlockIcon from "@mui/icons-material/Block";
-import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
+import EditIcon from "@mui/icons-material/Edit";
 import GroupsIcon from "@mui/icons-material/Groups";
+import HotelIcon from "@mui/icons-material/Hotel";
+import LocalBarIcon from "@mui/icons-material/LocalBar";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import {
   Alert,
   Box,
   Button,
   Card,
   CardContent,
-  CardHeader,
   Chip,
   Dialog,
   DialogActions,
@@ -24,16 +25,24 @@ import {
   DialogTitle,
   Grid,
   IconButton,
-  Snackbar,
-  Stack,
-  Tooltip,
-  Typography,
-  TextField,
   InputAdornment,
   MenuItem,
+  Snackbar,
+  Stack,
+  TextField,
+  Tooltip,
+  Typography,
 } from "@mui/material";
-import React, { useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
+import React, { useEffect, useMemo, useState } from "react";
+import bookingsApi, {
+  type BookingDetailsDto,
+  type BookingIntervalDto,
+  type BookingRoomDto,
+} from "../../../../../api/bookingsApi";
+import housekeepingApi from "../../../../../api/housekeepingApi";
+import mediaApi, { type MediaDto } from "../../../../../api/mediaApi";
+import minibarApi, { type Minibar } from "../../../../../api/minibarApi";
 import roomsApi, {
   getRoomStatusString,
   type CreateRoomRequest,
@@ -41,20 +50,10 @@ import roomsApi, {
   type RoomStatus,
   type UpdateRoomRequest,
 } from "../../../../../api/roomsApi";
-import bookingsApi, {
-  type BookingDetailsDto,
-  type BookingIntervalDto,
-  type BookingRoomDto,
-} from "../../../../../api/bookingsApi";
-import minibarApi, { type Minibar } from "../../../../../api/minibarApi";
-import mediaApi, { type MediaDto } from "../../../../../api/mediaApi";
-import axios from "../../../../../api/axios";
-import { ROOM_STATUS_OPTIONS } from "../components/roomsConstants";
-import LocalBarIcon from "@mui/icons-material/LocalBar";
 import roomTypesApi, { type RoomType } from "../../../../../api/roomTypesApi";
 import ChangeRoomStatusModal from "../components/ChangeRoomStatusModal";
 import RoomFormModal from "../components/RoomFormModal";
-import { Info } from "@mui/icons-material";
+import { ROOM_STATUS_OPTIONS } from "../components/roomsConstants";
 
 const RoomMap: React.FC = () => {
   const [rooms, setRooms] = useState<RoomDto[]>([]);
@@ -146,21 +145,39 @@ const RoomMap: React.FC = () => {
       if (!map[f]) map[f] = [];
       map[f].push(r);
     }
+    const statusPriority = (s: number) =>
+      s === 4 /* Dirty */
+        ? 0
+        : s === 2 /* Cleaning */
+        ? 1
+        : s === 6 /* Maintenance */
+        ? 2
+        : 3;
     return Object.entries(map)
       .sort((a, b) => Number(a[0]) - Number(b[0]))
-      .map(([floor, rs]) => ({ floor: Number(floor), rooms: rs }));
+      .map(([floor, rs]) => ({
+        floor: Number(floor),
+        rooms: rs.sort((a, b) => {
+          const pa = statusPriority(a.status as number);
+          const pb = statusPriority(b.status as number);
+          if (pa !== pb) return pa - pb;
+          if ((a.number || "") < (b.number || "")) return -1;
+          if ((a.number || "") > (b.number || "")) return 1;
+          return 0;
+        }),
+      }));
   }, [rooms]);
 
   const statusChip = (status: RoomStatus) => {
     const s = getRoomStatusString(status);
     const map: Record<string, { color: string; label: string }> = {
       Available: { color: "#4CAF50", label: "Trống" },
-      Occupied: { color: "#FF9800", label: "Đã Có Khách" },
+      Occupied: { color: "#607D8B", label: "Đã Có Khách" },
       Cleaning: { color: "#2196F3", label: "Đang Dọn Dẹp" },
-      Maintenance: { color: "#9C27B0", label: "Bảo Trì" },
-      OutOfService: { color: "#FF9800", label: "Ngừng phục vụ" },
-      Dirty: { color: "red", label: "Bẩn" },
-      Clean: { color: "#00BCD4", label: "Đã dọn sạch" },
+      Maintenance: { color: "#FF9800", label: "Bảo Trì" },
+      OutOfService: { color: "#9E9E9E", label: "Ngừng phục vụ" },
+      Dirty: { color: "#F44336", label: "Bẩn" },
+      Clean: { color: "#4CAF50", label: "Đã dọn sạch" },
     };
     const cfg = map[s] || { color: "default", label: String(status) };
     const icon =
@@ -323,13 +340,12 @@ const RoomMap: React.FC = () => {
       ? `${hkNotes} | Evidence: ${urls.join(", ")}`
       : hkNotes;
     try {
-      const res = await axios.put(`/admin/room-status/update`, {
+      const res = await housekeepingApi.updateRoomStatus({
         roomId: hkRoom.id,
         status: hkStatus,
         notes,
       });
-      const body = res.data as any;
-      if (body?.isSuccess) {
+      if (res?.isSuccess) {
         setSnackbar({
           open: true,
           message: "Cập nhật buồng phòng thành công",
@@ -342,7 +358,7 @@ const RoomMap: React.FC = () => {
       } else {
         setSnackbar({
           open: true,
-          message: body?.message || "Không thể cập nhật buồng phòng",
+          message: res?.message || "Không thể cập nhật buồng phòng",
           severity: "error",
         });
       }
@@ -377,7 +393,11 @@ const RoomMap: React.FC = () => {
     const bid = await getActiveBookingIdForRoom(room);
     setMinibarBookingId(bid);
     try {
-      const res = await minibarApi.list({ roomTypeId: room.roomTypeId, page: 1, pageSize: 200 });
+      const res = await minibarApi.list({
+        roomTypeId: room.roomTypeId,
+        page: 1,
+        pageSize: 200,
+      });
       const items = (res.data || []).map((it) => ({ item: it, qty: 0 }));
       setMinibarItems(items);
     } catch {
@@ -389,27 +409,58 @@ const RoomMap: React.FC = () => {
 
   const submitMinibar = async () => {
     if (!minibarRoom || !minibarBookingId) {
-      setSnackbar({ open: true, message: "Không tìm thấy booking đang ở", severity: "warning" });
+      setSnackbar({
+        open: true,
+        message: "Không tìm thấy booking đang ở",
+        severity: "warning",
+      });
       return;
     }
     const items = minibarItems
       .filter((x) => x.qty > 0)
       .map((x) => ({ minibarId: x.item.id, quantity: x.qty }));
+    const hasDiscrepancy = minibarItems.some((x) => x.qty > x.item.quantity);
+    if (hasDiscrepancy) {
+      setSnackbar({
+        open: true,
+        message: "Số lượng vượt quá tồn minibar",
+        severity: "warning",
+      });
+      return;
+    }
     if (items.length === 0) {
-      setSnackbar({ open: true, message: "Chưa chọn hao hụt minibar", severity: "info" });
+      setSnackbar({
+        open: true,
+        message: "Chưa chọn hao hụt minibar",
+        severity: "info",
+      });
       return;
     }
     try {
-      const res = await bookingsApi.recordMinibarConsumption(minibarBookingId, { items });
+      const res = await bookingsApi.recordMinibarConsumption(minibarBookingId, {
+        items,
+      });
       if (res.isSuccess) {
-        setSnackbar({ open: true, message: "Đã ghi nhận minibar", severity: "success" });
+        setSnackbar({
+          open: true,
+          message: "Đã ghi nhận minibar",
+          severity: "success",
+        });
         setMinibarOpen(false);
         setMinibarRoom(null);
       } else {
-        setSnackbar({ open: true, message: res.message || "Không thể ghi nhận minibar", severity: "error" });
+        setSnackbar({
+          open: true,
+          message: res.message || "Không thể ghi nhận minibar",
+          severity: "error",
+        });
       }
     } catch {
-      setSnackbar({ open: true, message: "Đã xảy ra lỗi khi ghi nhận minibar", severity: "error" });
+      setSnackbar({
+        open: true,
+        message: "Đã xảy ra lỗi khi ghi nhận minibar",
+        severity: "error",
+      });
     }
   };
 
@@ -511,6 +562,8 @@ const RoomMap: React.FC = () => {
                         boxShadow: "0 3px 12px rgba(0,0,0,0.1)",
                         position: "relative",
                         border: "1px solid rgba(0,0,0,0.08)",
+                        borderLeft: '6px solid',
+                        borderLeftColor: (r.status as number) === 4 ? 'error.main' : 'transparent',
                         transition: "all 0.2s ease",
                         "&:hover": {
                           boxShadow: "0px 6px 20px rgba(0,0,0,0.18)",
@@ -780,7 +833,12 @@ const RoomMap: React.FC = () => {
         }}
       />
 
-      <Dialog open={hkOpen} onClose={() => setHkOpen(false)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={hkOpen}
+        onClose={() => setHkOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>Cập nhật buồng phòng</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
@@ -793,7 +851,9 @@ const RoomMap: React.FC = () => {
               SelectProps={{ native: false }}
             >
               {ROOM_STATUS_OPTIONS.map((opt) => (
-                <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+                <MenuItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </MenuItem>
               ))}
             </TextField>
             <TextField
@@ -812,9 +872,18 @@ const RoomMap: React.FC = () => {
             />
             <Stack spacing={1}>
               <Stack direction="row" spacing={1} alignItems="center">
-                <Button variant="outlined" component="label" disabled={hkUploading}>
+                <Button
+                  variant="outlined"
+                  component="label"
+                  disabled={hkUploading}
+                >
                   Tải lên bằng chứng
-                  <input hidden type="file" multiple onChange={(e) => uploadEvidenceFiles(e.target.files)} />
+                  <input
+                    hidden
+                    type="file"
+                    multiple
+                    onChange={(e) => uploadEvidenceFiles(e.target.files)}
+                  />
                 </Button>
                 <Chip label={`${hkEvidence.length} tệp`} />
               </Stack>
@@ -828,11 +897,22 @@ const RoomMap: React.FC = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setHkOpen(false)}>Đóng</Button>
-          <Button variant="contained" onClick={submitHousekeeping} disabled={hkUploading}>Lưu</Button>
+          <Button
+            variant="contained"
+            onClick={submitHousekeeping}
+            disabled={hkUploading}
+          >
+            Lưu
+          </Button>
         </DialogActions>
       </Dialog>
 
-      <Dialog open={minibarOpen} onClose={() => setMinibarOpen(false)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={minibarOpen}
+        onClose={() => setMinibarOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>Ghi nhận minibar</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
@@ -842,7 +922,12 @@ const RoomMap: React.FC = () => {
               <Typography>Không có mặt hàng minibar</Typography>
             ) : (
               minibarItems.map((mi, idx) => (
-                <Stack key={mi.item.id} direction="row" spacing={1} alignItems="center">
+                <Stack
+                  key={mi.item.id}
+                  direction="row"
+                  spacing={1}
+                  alignItems="center"
+                >
                   <Chip label={mi.item.name} />
                   <Chip label={`${mi.item.price.toLocaleString()}₫`} />
                   <TextField
@@ -859,6 +944,9 @@ const RoomMap: React.FC = () => {
                       });
                     }}
                   />
+                  {mi.qty > mi.item.quantity && (
+                    <Chip color="warning" label="Vượt tồn" />
+                  )}
                 </Stack>
               ))
             )}
@@ -866,7 +954,9 @@ const RoomMap: React.FC = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setMinibarOpen(false)}>Đóng</Button>
-          <Button variant="contained" onClick={submitMinibar}>Ghi nhận</Button>
+          <Button variant="contained" onClick={submitMinibar}>
+            Ghi nhận
+          </Button>
         </DialogActions>
       </Dialog>
 

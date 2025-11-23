@@ -46,6 +46,7 @@ public class RoomStatusService : IRoomStatusService
         var statusLog = new RoomStatusLog
         {
             Id = Guid.NewGuid(),
+            HotelId = room.HotelId,
             RoomId = room.Id,
             Status = request.Status,
             Timestamp = DateTime.UtcNow,

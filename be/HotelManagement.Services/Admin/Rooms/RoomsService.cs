@@ -62,7 +62,8 @@ public class RoomsService : IRoomsService
             }
 
             var items = await q
-                .OrderBy(r => r.Floor)
+                .OrderBy(r => r.Status == RoomStatus.Dirty ? 0 : (r.Status == RoomStatus.Cleaning ? 1 : (r.Status == RoomStatus.Maintenance ? 2 : 3)))
+                .ThenBy(r => r.Floor)
                 .ThenBy(r => r.Number)
                 .Skip((query.Page - 1) * query.PageSize)
                 .Take(query.PageSize)

@@ -1479,19 +1479,76 @@ public class BookingsService(
         var booking = await _bookingRepo.FindAsync(bookingId);
         if (booking == null) return ApiResponse.Fail("Không tìm thấy booking");
 
+        var totalCharge = 0m;
+
+        var invoice = await _invoiceRepo.Query()
+            .FirstOrDefaultAsync(i => i.BookingId == bookingId && i.Status != InvoiceStatus.Paid);
+        if (invoice == null)
+        {
+            invoice = new Invoice
+            {
+                Id = Guid.NewGuid(),
+                HotelId = booking.HotelId,
+                BookingId = bookingId,
+                InvoiceNumber = $"BK-{bookingId.ToString().Substring(0, 8)}-{DateTime.UtcNow:yyyyMMddHHmmss}",
+                SubTotal = 0,
+                TaxAmount = 0,
+                DiscountAmount = 0,
+                TotalAmount = 0,
+                PaidAmount = 0,
+                VatIncluded = true,
+                Status = InvoiceStatus.Draft,
+                CreatedById = Guid.Empty,
+                CreatedAt = DateTime.UtcNow
+            };
+            await _invoiceRepo.AddAsync(invoice);
+            await _invoiceRepo.SaveChangesAsync();
+        }
+
         foreach (var item in dto.Items)
         {
-            var e = new MinibarBooking
+            var minibar = await _minibarRepo.FindAsync(item.MinibarId);
+            if (minibar == null) continue;
+
+            var consumed = Math.Max(0, item.Quantity);
+
+            var mb = new MinibarBooking
             {
                 Id = Guid.NewGuid(),
                 BookingId = bookingId,
                 MinibarId = item.MinibarId,
-                ComsumedQuantity = item.Quantity
+                ComsumedQuantity = consumed,
+                OriginalQuantity = minibar.Quantity
             };
-            await _minibarBookingRepo.AddAsync(e);
+            await _minibarBookingRepo.AddAsync(mb);
+
+            var amount = minibar.Price * consumed;
+            totalCharge += amount;
+
+            var line = new InvoiceLine
+            {
+                Id = Guid.NewGuid(),
+                InvoiceId = invoice.Id,
+                Description = $"Minibar - {minibar.Name}",
+                Amount = amount,
+                SourceType = InvoiceLineSourceType.Fnb,
+                SourceId = mb.Id
+            };
+            await _invoiceLineRepo.AddAsync(line);
         }
+
+        invoice.SubTotal += totalCharge;
+        invoice.TotalAmount = invoice.SubTotal + invoice.TaxAmount - invoice.DiscountAmount;
+        await _invoiceRepo.UpdateAsync(invoice);
+        await _invoiceRepo.SaveChangesAsync();
+
+        booking.TotalAmount += totalCharge;
+        booking.LeftAmount += totalCharge;
+        await _bookingRepo.UpdateAsync(booking);
+        await _bookingRepo.SaveChangesAsync();
+
         await _minibarBookingRepo.SaveChangesAsync();
 
-        return ApiResponse.Ok("Đã ghi nhận minibar");
+        return ApiResponse.Ok("Đã ghi nhận minibar và post vào hóa đơn");
     }
 }

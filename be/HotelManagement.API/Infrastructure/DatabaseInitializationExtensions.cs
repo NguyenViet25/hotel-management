@@ -72,16 +72,17 @@ public static class DatabaseInitializationExtensions
             if (exists) continue;
 
             var rooms = new List<HotelRoom>();
-
+            var floor = 1;
             for (int i = index; i <= 5; i++)
             {
+                floor = (i - 1) / 2 + 1;
                 rooms.Add(new HotelRoom
                 {
                     Id = Guid.NewGuid(),
                     HotelId = hotelId,
                     RoomTypeId = roomType.Id,
-                    Number = $"P-{(i + index):D3}", // e.g., STD-001
-                    Floor = (i - 1) / 2 + 1, // simple floor calculation
+                    Number = $"P-{floor}{(i + index):D2}", // e.g., STD-001
+                    Floor = floor, // simple floor calculation
                     Status = RoomStatus.Available
                 });
 

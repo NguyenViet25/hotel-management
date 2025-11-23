@@ -19,6 +19,7 @@ import roomTypesApi, { type RoomType } from "../../../../../api/roomTypesApi";
 import ChangeRoomStatusModal from "../components/ChangeRoomStatusModal";
 import RoomFormModal from "../components/RoomFormModal";
 import RoomTable from "../components/RoomTable";
+import RoomHygieneList from "../components/RoomHygieneList";
 
 // Status options and chips have been moved into dedicated components
 
@@ -188,6 +189,7 @@ const RoomManagementPage: React.FC = () => {
 
   return (
     <Box>
+      <RoomHygieneList rooms={rooms} onStatusUpdated={() => fetchRooms(page)} />
       {/* Rooms table */}
       <RoomTable
         rooms={rooms}
