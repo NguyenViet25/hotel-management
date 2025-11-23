@@ -28,6 +28,9 @@ import {
   Stack,
   Tooltip,
   Typography,
+  TextField,
+  InputAdornment,
+  MenuItem,
 } from "@mui/material";
 import React, { useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
@@ -43,6 +46,11 @@ import bookingsApi, {
   type BookingIntervalDto,
   type BookingRoomDto,
 } from "../../../../../api/bookingsApi";
+import minibarApi, { type Minibar } from "../../../../../api/minibarApi";
+import mediaApi, { type MediaDto } from "../../../../../api/mediaApi";
+import axios from "../../../../../api/axios";
+import { ROOM_STATUS_OPTIONS } from "../components/roomsConstants";
+import LocalBarIcon from "@mui/icons-material/LocalBar";
 import roomTypesApi, { type RoomType } from "../../../../../api/roomTypesApi";
 import ChangeRoomStatusModal from "../components/ChangeRoomStatusModal";
 import RoomFormModal from "../components/RoomFormModal";
@@ -81,6 +89,21 @@ const RoomMap: React.FC = () => {
   const [occupancySchedule, setOccupancySchedule] = useState<
     BookingIntervalDto[]
   >([]);
+
+  const [hkOpen, setHkOpen] = useState(false);
+  const [hkRoom, setHkRoom] = useState<RoomDto | null>(null);
+  const [hkStatus, setHkStatus] = useState<number | null>(null);
+  const [hkNotes, setHkNotes] = useState("");
+  const [hkEvidence, setHkEvidence] = useState<MediaDto[]>([]);
+  const [hkUploading, setHkUploading] = useState(false);
+
+  const [minibarOpen, setMinibarOpen] = useState(false);
+  const [minibarRoom, setMinibarRoom] = useState<RoomDto | null>(null);
+  const [minibarItems, setMinibarItems] = useState<
+    { item: Minibar; qty: number }[]
+  >([]);
+  const [minibarLoading, setMinibarLoading] = useState(false);
+  const [minibarBookingId, setMinibarBookingId] = useState<string>("");
 
   useEffect(() => {
     const fetchRoomTypes = async () => {
@@ -269,6 +292,126 @@ const RoomMap: React.FC = () => {
     setStatusOpen(true);
   };
   const askDelete = (room: RoomDto) => setDeleteTarget(room);
+
+  const openHousekeeping = (room: RoomDto) => {
+    setHkRoom(room);
+    setHkStatus(room.status as number);
+    setHkNotes("");
+    setHkEvidence([]);
+    setHkOpen(true);
+  };
+
+  const uploadEvidenceFiles = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setHkUploading(true);
+    const added: MediaDto[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const f = files[i];
+      try {
+        const res = await mediaApi.upload(f);
+        if (res.isSuccess && res.data) added.push(res.data);
+      } catch {}
+    }
+    setHkEvidence((prev) => [...prev, ...added]);
+    setHkUploading(false);
+  };
+
+  const submitHousekeeping = async () => {
+    if (!hkRoom || hkStatus === null) return;
+    const urls = hkEvidence.map((m) => m.fileUrl).filter(Boolean);
+    const notes = urls.length
+      ? `${hkNotes} | Evidence: ${urls.join(", ")}`
+      : hkNotes;
+    try {
+      const res = await axios.put(`/admin/room-status/update`, {
+        roomId: hkRoom.id,
+        status: hkStatus,
+        notes,
+      });
+      const body = res.data as any;
+      if (body?.isSuccess) {
+        setSnackbar({
+          open: true,
+          message: "Cập nhật buồng phòng thành công",
+          severity: "success",
+        });
+        setHkOpen(false);
+        setHkRoom(null);
+        setHkEvidence([]);
+        await refreshRooms();
+      } else {
+        setSnackbar({
+          open: true,
+          message: body?.message || "Không thể cập nhật buồng phòng",
+          severity: "error",
+        });
+      }
+    } catch {
+      setSnackbar({
+        open: true,
+        message: "Đã xảy ra lỗi khi cập nhật buồng phòng",
+        severity: "error",
+      });
+    }
+  };
+
+  const getActiveBookingIdForRoom = async (room: RoomDto) => {
+    try {
+      const todayStart = dayjs().startOf("day").toISOString();
+      const todayEnd = dayjs().endOf("day").toISOString();
+      const schedRes = await bookingsApi.roomSchedule(
+        room.id,
+        todayStart,
+        todayEnd
+      );
+      const intervals = (schedRes.data || []) as BookingIntervalDto[];
+      return intervals[0]?.bookingId || "";
+    } catch {
+      return "";
+    }
+  };
+
+  const openMinibar = async (room: RoomDto) => {
+    setMinibarRoom(room);
+    setMinibarLoading(true);
+    const bid = await getActiveBookingIdForRoom(room);
+    setMinibarBookingId(bid);
+    try {
+      const res = await minibarApi.list({ roomTypeId: room.roomTypeId, page: 1, pageSize: 200 });
+      const items = (res.data || []).map((it) => ({ item: it, qty: 0 }));
+      setMinibarItems(items);
+    } catch {
+      setMinibarItems([]);
+    }
+    setMinibarLoading(false);
+    setMinibarOpen(true);
+  };
+
+  const submitMinibar = async () => {
+    if (!minibarRoom || !minibarBookingId) {
+      setSnackbar({ open: true, message: "Không tìm thấy booking đang ở", severity: "warning" });
+      return;
+    }
+    const items = minibarItems
+      .filter((x) => x.qty > 0)
+      .map((x) => ({ minibarId: x.item.id, quantity: x.qty }));
+    if (items.length === 0) {
+      setSnackbar({ open: true, message: "Chưa chọn hao hụt minibar", severity: "info" });
+      return;
+    }
+    try {
+      const res = await bookingsApi.recordMinibarConsumption(minibarBookingId, { items });
+      if (res.isSuccess) {
+        setSnackbar({ open: true, message: "Đã ghi nhận minibar", severity: "success" });
+        setMinibarOpen(false);
+        setMinibarRoom(null);
+      } else {
+        setSnackbar({ open: true, message: res.message || "Không thể ghi nhận minibar", severity: "error" });
+      }
+    } catch {
+      setSnackbar({ open: true, message: "Đã xảy ra lỗi khi ghi nhận minibar", severity: "error" });
+    }
+  };
 
   const refreshRooms = async () => {
     try {
@@ -480,6 +623,32 @@ const RoomMap: React.FC = () => {
                           </IconButton>
                         </Tooltip>
 
+                        <Tooltip title="Buồng phòng">
+                          <IconButton
+                            size="small"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openHousekeeping(r);
+                            }}
+                            sx={{ bgcolor: "white" }}
+                          >
+                            <CleaningServicesIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+
+                        <Tooltip title="Minibar">
+                          <IconButton
+                            size="small"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openMinibar(r);
+                            }}
+                            sx={{ bgcolor: "white" }}
+                          >
+                            <LocalBarIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+
                         <Tooltip title="Xoá Phòng">
                           <IconButton
                             size="small"
@@ -610,6 +779,96 @@ const RoomMap: React.FC = () => {
           }
         }}
       />
+
+      <Dialog open={hkOpen} onClose={() => setHkOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Cập nhật buồng phòng</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <TextField
+              select
+              label="Trạng thái"
+              size="small"
+              value={hkStatus ?? ROOM_STATUS_OPTIONS[0].value}
+              onChange={(e) => setHkStatus(Number(e.target.value))}
+              SelectProps={{ native: false }}
+            >
+              {ROOM_STATUS_OPTIONS.map((opt) => (
+                <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              label="Ghi chú"
+              size="small"
+              value={hkNotes}
+              onChange={(e) => setHkNotes(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Info />
+                  </InputAdornment>
+                ),
+              }}
+              fullWidth
+            />
+            <Stack spacing={1}>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Button variant="outlined" component="label" disabled={hkUploading}>
+                  Tải lên bằng chứng
+                  <input hidden type="file" multiple onChange={(e) => uploadEvidenceFiles(e.target.files)} />
+                </Button>
+                <Chip label={`${hkEvidence.length} tệp`} />
+              </Stack>
+              <Stack direction="row" spacing={1} flexWrap="wrap">
+                {hkEvidence.map((m) => (
+                  <Chip key={m.id} size="small" label={m.fileName} />
+                ))}
+              </Stack>
+            </Stack>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setHkOpen(false)}>Đóng</Button>
+          <Button variant="contained" onClick={submitHousekeeping} disabled={hkUploading}>Lưu</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={minibarOpen} onClose={() => setMinibarOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Ghi nhận minibar</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            {minibarLoading ? (
+              <Typography>Đang tải...</Typography>
+            ) : minibarItems.length === 0 ? (
+              <Typography>Không có mặt hàng minibar</Typography>
+            ) : (
+              minibarItems.map((mi, idx) => (
+                <Stack key={mi.item.id} direction="row" spacing={1} alignItems="center">
+                  <Chip label={mi.item.name} />
+                  <Chip label={`${mi.item.price.toLocaleString()}₫`} />
+                  <TextField
+                    type="number"
+                    size="small"
+                    inputProps={{ min: 0 }}
+                    value={mi.qty}
+                    onChange={(e) => {
+                      const v = Number(e.target.value);
+                      setMinibarItems((prev) => {
+                        const arr = [...prev];
+                        arr[idx] = { ...arr[idx], qty: isNaN(v) ? 0 : v };
+                        return arr;
+                      });
+                    }}
+                  />
+                </Stack>
+              ))
+            )}
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setMinibarOpen(false)}>Đóng</Button>
+          <Button variant="contained" onClick={submitMinibar}>Ghi nhận</Button>
+        </DialogActions>
+      </Dialog>
 
       <Dialog open={!!deleteTarget} onClose={() => setDeleteTarget(null)}>
         <DialogTitle>Xóa phòng</DialogTitle>
