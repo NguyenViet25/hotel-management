@@ -98,7 +98,7 @@ const ManagerDashboard = () => <ManagerDashboardPage />;
 const FrontDeskDashboard = () => <div>Front Desk Dashboard</div>;
 const KitchenDashboard = () => <div>Kitchen Dashboard</div>;
 const WaiterDashboard = () => <div>Waiter Dashboard</div>;
-const HousekeeperDashboard = () => <div>Housekeeper Dashboard</div>;
+const HousekeeperPage = lazy(() => import("../pages/dashboard/housekeeper/HousekeepingPage"));
 
 // Auth guard component
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
@@ -394,13 +394,17 @@ const router = createBrowserRouter([
         path: "",
         element: (
           <Suspense fallback={<div>Loading...</div>}>
-            <HousekeeperDashboard />
+            <HousekeeperPage />
           </Suspense>
         ),
       },
       {
         path: "dashboard",
-        element: <HousekeeperDashboard />,
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <HousekeeperPage />
+          </Suspense>
+        ),
       },
       // Add other housekeeper routes here
     ],
