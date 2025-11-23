@@ -1,4 +1,4 @@
-import { Receipt } from "@mui/icons-material";
+import { Receipt, RemoveRedEye } from "@mui/icons-material";
 import { Button, Chip, Stack } from "@mui/material";
 import React from "react";
 import type { OrderSummaryDto } from "../../../../../api/ordersApi";
@@ -133,13 +133,13 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
           <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
             {existing ? (
               <Button
-                startIcon={<Receipt />}
+                startIcon={<RemoveRedEye />}
                 size="small"
                 variant="contained"
                 color="success"
                 onClick={() => onPrintInvoice?.(row, existing.id)}
               >
-                In hóa đơn
+                Xem hóa đơn
               </Button>
             ) : (
               <>

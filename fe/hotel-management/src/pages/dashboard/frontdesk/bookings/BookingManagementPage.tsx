@@ -428,26 +428,7 @@ const BookingManagementPage: React.FC = () => {
       />
 
       {/* Room map timeline dialog */}
-      <RoomMapDialog
-        open={openRoomMap}
-        onClose={() => setOpenRoomMap(false)}
-        from={fromDate}
-        to={toDate}
-        onFromChange={setFromDate}
-        onToChange={setToDate}
-        roomTypeId={roomTypeId}
-        onRoomTypeIdChange={setRoomTypeId}
-        roomTypes={roomTypes}
-        onSelectBooking={(bid) => {
-          setOpenRoomMap(false);
-          bookingsApi.getById(bid).then((res: any) => {
-            if (res?.isSuccess && res.data) {
-              setSelectedBooking(res.data);
-              setOpenEdit(true);
-            }
-          });
-        }}
-      />
+      <RoomMapDialog open={openRoomMap} onClose={() => setOpenRoomMap(false)} />
 
       {/* Snackbar */}
       <Snackbar

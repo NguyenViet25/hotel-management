@@ -27,6 +27,7 @@ import {
   IconButton,
   InputAdornment,
   MenuItem,
+  Paper,
   Snackbar,
   Stack,
   TextField,
@@ -55,7 +56,11 @@ import ChangeRoomStatusModal from "../components/ChangeRoomStatusModal";
 import RoomFormModal from "../components/RoomFormModal";
 import { ROOM_STATUS_OPTIONS } from "../components/roomsConstants";
 
-const RoomMap: React.FC = () => {
+interface IProps {
+  allowAddNew?: boolean;
+}
+
+const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
   const [rooms, setRooms] = useState<RoomDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
@@ -171,13 +176,13 @@ const RoomMap: React.FC = () => {
   const statusChip = (status: RoomStatus) => {
     const s = getRoomStatusString(status);
     const map: Record<string, { bg: string; text: string; label: string }> = {
-      Available: { bg: "#F2F4F7", text: "#344054", label: "Trống" },
-      Occupied: { bg: "#E8ECF7", text: "#1F2A44", label: "Đã Có Khách" },
-      Cleaning: { bg: "#FEF3C7", text: "#92400E", label: "Đang Dọn Dẹp" },
-      Maintenance: { bg: "#E8ECF7", text: "#1F2A44", label: "Bảo Trì" },
-      OutOfService: { bg: "#EDEDED", text: "#555", label: "Ngừng phục vụ" },
-      Dirty: { bg: "#FDECEC", text: "#C62828", label: "Bẩn" },
-      Clean: { bg: "#DDF7E5", text: "#1B5E20", label: "Đã dọn sạch" },
+      "Sẵn sàng": { bg: "#F2F4F7", text: "#344054", label: "Trống" },
+      "Đang sử dụng": { bg: "#E8ECF7", text: "#1F2A44", label: "Đã Có Khách" },
+      "Đang dọn dẹp": { bg: "#FEF3C7", text: "#92400E", label: "Đang Dọn Dẹp" },
+      "Bảo trì": { bg: "#E8ECF7", text: "#1F2A44", label: "Bảo Trì" },
+      "Ngừng phục vụ": { bg: "#EDEDED", text: "#555", label: "Ngừng phục vụ" },
+      Bẩn: { bg: "#FDECEC", text: "#C62828", label: "Bẩn" },
+      "Đã dọn sạch": { bg: "#DDF7E5", text: "#1B5E20", label: "Đã dọn sạch" },
     };
     const cfg = map[s] || {
       bg: "#F2F4F7",
@@ -185,19 +190,19 @@ const RoomMap: React.FC = () => {
       label: String(status),
     };
     const icon =
-      s === "Available" ? (
+      s === "Sẵn sàng" ? (
         <CheckCircleIcon />
       ) : s === "Occupied" ? (
         <HotelIcon />
-      ) : s === "Cleaning" ? (
+      ) : s === "Đang dọn dẹp" ? (
         <CleaningServicesIcon />
       ) : s === "Maintenance" ? (
         <ConstructionIcon />
-      ) : s === "OutOfService" ? (
+      ) : s === "Ngừng phục vụ" ? (
         <BlockIcon />
-      ) : s === "Dirty" ? (
+      ) : s === "Bẩn" ? (
         <WarningAmberIcon />
-      ) : s === "Clean" ? (
+      ) : s === "Đã dọn sạch" ? (
         <DoneAllIcon />
       ) : undefined;
     return (
@@ -312,14 +317,6 @@ const RoomMap: React.FC = () => {
     setStatusOpen(true);
   };
   const askDelete = (room: RoomDto) => setDeleteTarget(room);
-
-  const openHousekeeping = (room: RoomDto) => {
-    setHkRoom(room);
-    setHkStatus(room.status as number);
-    setHkNotes("");
-    setHkEvidence([]);
-    setHkOpen(true);
-  };
 
   const uploadEvidenceFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -476,26 +473,28 @@ const RoomMap: React.FC = () => {
 
   return (
     <Box>
-      <Card
-        onClick={openCreate}
-        sx={{
-          mb: 2,
-          borderRadius: 3,
-          border: "2px dashed",
-          borderColor: "primary.main",
-          boxShadow: 0,
-          cursor: "pointer",
-          transition: "all 150ms ease",
-          "&:hover": { boxShadow: 3 },
-        }}
-      >
-        <Stack p={2} direction="row" spacing={1.5} alignItems="center">
-          <AddCircleOutlineIcon color="primary" />
-          <Typography variant="h6" fontWeight={600}>
-            Thêm Phòng Mới
-          </Typography>
-        </Stack>
-      </Card>
+      {allowAddNew && (
+        <Card
+          onClick={openCreate}
+          sx={{
+            mb: 2,
+            borderRadius: 3,
+            border: "2px dashed",
+            borderColor: "primary.main",
+            boxShadow: 0,
+            cursor: "pointer",
+            transition: "all 150ms ease",
+            "&:hover": { boxShadow: 3 },
+          }}
+        >
+          <Stack p={2} direction="row" spacing={1.5} alignItems="center">
+            <AddCircleOutlineIcon color="primary" />
+            <Typography variant="h6" fontWeight={600}>
+              Thêm Phòng Mới
+            </Typography>
+          </Stack>
+        </Card>
+      )}
 
       {floors.length === 0 && (
         <Typography variant="body2" color="text.secondary">
@@ -643,46 +642,47 @@ const RoomMap: React.FC = () => {
                       </CardContent>
 
                       {/* ROOM CARD ACTIONS */}
-                      <Box
-                        className="room-actions"
-                        sx={{
-                          position: "absolute",
-                          top: 8,
-                          right: 8,
-                          display: "flex",
-                          gap: 0.7,
-                          opacity: 0,
-                          transition: "opacity 150ms ease",
-                          pointerEvents: "none",
-                        }}
-                      >
-                        <Tooltip title="Chỉnh sửa">
-                          <IconButton
-                            size="small"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openEdit(r);
-                            }}
-                            sx={{ bgcolor: "white" }}
-                          >
-                            <EditIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
+                      {allowAddNew && (
+                        <Box
+                          className="room-actions"
+                          sx={{
+                            position: "absolute",
+                            top: 8,
+                            right: 8,
+                            display: "flex",
+                            gap: 0.7,
+                            opacity: 0,
+                            transition: "opacity 150ms ease",
+                            pointerEvents: "none",
+                          }}
+                        >
+                          <Tooltip title="Chỉnh sửa">
+                            <IconButton
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openEdit(r);
+                              }}
+                              sx={{ bgcolor: "white" }}
+                            >
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
 
-                        <Tooltip title="Đổi trạng thái">
-                          <IconButton
-                            size="small"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openStatus(r);
-                            }}
-                            sx={{ bgcolor: "white" }}
-                          >
-                            <ChangeCircleIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
+                          <Tooltip title="Đổi trạng thái">
+                            <IconButton
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openStatus(r);
+                              }}
+                              sx={{ bgcolor: "white" }}
+                            >
+                              <ChangeCircleIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
 
-                        <Tooltip title="Minibar">
+                          {/* <Tooltip title="Minibar">
                           <IconButton
                             size="small"
                             onClick={(e) => {
@@ -693,22 +693,23 @@ const RoomMap: React.FC = () => {
                           >
                             <LocalBarIcon fontSize="small" />
                           </IconButton>
-                        </Tooltip>
+                        </Tooltip> */}
 
-                        <Tooltip title="Xoá Phòng">
-                          <IconButton
-                            size="small"
-                            color="error"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              askDelete(r);
-                            }}
-                            sx={{ bgcolor: "white" }}
-                          >
-                            <DeleteOutlineIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      </Box>
+                          <Tooltip title="Xoá Phòng">
+                            <IconButton
+                              size="small"
+                              color="error"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                askDelete(r);
+                              }}
+                              sx={{ bgcolor: "white" }}
+                            >
+                              <DeleteOutlineIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+                      )}
                     </Card>
                   </Grid>
                 ))}
@@ -799,7 +800,7 @@ const RoomMap: React.FC = () => {
             if (!editingRoom) return;
             const res = await roomsApi.updateRoom(editingRoom.id, {
               status: newStatus,
-            });
+            } as any);
             if (res.isSuccess) {
               setSnackbar({
                 open: true,
