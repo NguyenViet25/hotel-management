@@ -13,11 +13,13 @@ import {
   IconButton,
   Stack,
   Typography,
+  Tooltip,
 } from "@mui/material";
 import EditOutlined from "@mui/icons-material/EditOutlined";
 import DeleteOutline from "@mui/icons-material/DeleteOutline";
 import BadgeIcon from "@mui/icons-material/Badge";
 import type { BookingGuestDto } from "../../../../../api/bookingsApi";
+import { MoveToInbox, MoveUp, Recycling } from "@mui/icons-material";
 
 type Props = {
   guest: BookingGuestDto;
@@ -56,7 +58,6 @@ const GuestCard: React.FC<Props> = ({
         overflow: "hidden",
         transition: "all .15s",
         "&:hover": { borderColor: "primary.main", boxShadow: 2 },
-        "&:hover .actions": { opacity: 1 },
       }}
     >
       <CardContent>
@@ -144,27 +145,50 @@ const GuestCard: React.FC<Props> = ({
           right: 6,
           display: "flex",
           gap: 0.5,
-          opacity: 0,
-          transition: "opacity 0.2s",
         }}
       >
-        <IconButton
-          size="small"
-          onClick={onEdit}
-          disabled={disabledEdit}
-          aria-label="Chỉnh sửa"
-        >
-          <EditOutlined fontSize="small" />
-        </IconButton>
-        <IconButton
-          size="small"
-          color="error"
-          onClick={onDelete}
-          disabled={disabledDelete}
-          aria-label="Xoá"
-        >
-          <DeleteOutline fontSize="small" />
-        </IconButton>
+        {/* Change Room */}
+        <Tooltip title="Đổi phòng">
+          <span>
+            <IconButton
+              color="primary"
+              size="small"
+              onClick={() => {}}
+              aria-label="Đổi phòng"
+            >
+              <MoveUp fontSize="small" />
+            </IconButton>
+          </span>
+        </Tooltip>
+
+        {/* Edit */}
+        <Tooltip title="Chỉnh sửa">
+          <span>
+            <IconButton
+              size="small"
+              onClick={onEdit}
+              disabled={disabledEdit}
+              aria-label="Chỉnh sửa"
+            >
+              <EditOutlined fontSize="small" />
+            </IconButton>
+          </span>
+        </Tooltip>
+
+        {/* Delete */}
+        <Tooltip title="Xoá">
+          <span>
+            <IconButton
+              size="small"
+              color="error"
+              onClick={onDelete}
+              disabled={disabledDelete}
+              aria-label="Xoá"
+            >
+              <DeleteOutline fontSize="small" />
+            </IconButton>
+          </span>
+        </Tooltip>
       </Box>
     </Card>
   );

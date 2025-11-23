@@ -1,4 +1,10 @@
-import { Edit, Login, Logout } from "@mui/icons-material";
+import {
+  CalendarMonth,
+  Edit,
+  Expand,
+  Login,
+  Logout,
+} from "@mui/icons-material";
 import {
   Alert,
   Button,
@@ -390,6 +396,14 @@ const RoomTypeBlock: React.FC<{
                                 </IconButton>
                               </Stack>
                             </Stack>
+                            <Button
+                              startIcon={<CalendarMonth />}
+                              variant="outlined"
+                              size="small"
+                              color="primary"
+                            >
+                              Gia hạn thêm
+                            </Button>
                           </StripedLabelWrapper>
                         </Stack>
                       }

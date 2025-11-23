@@ -1,5 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, TextField, Typography } from "@mui/material";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { LocalizationProvider, DateTimePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
@@ -14,7 +23,15 @@ type Props = {
   onConfirm: (startIso: string, endIso: string) => void;
 };
 
-export default function PlannedDatesDialog({ open, initialStart, initialEnd, minStart, maxEnd, onClose, onConfirm }: Props) {
+export default function PlannedDatesDialog({
+  open,
+  initialStart,
+  initialEnd,
+  minStart,
+  maxEnd,
+  onClose,
+  onConfirm,
+}: Props) {
   const [start, setStart] = useState<Dayjs>(dayjs(initialStart));
   const [end, setEnd] = useState<Dayjs>(dayjs(initialEnd));
   const [error, setError] = useState<string>("");
@@ -27,17 +44,20 @@ export default function PlannedDatesDialog({ open, initialStart, initialEnd, min
     }
   }, [open, initialStart, initialEnd]);
 
-  const constraints = useMemo(() => ({
-    min: minStart ? dayjs(minStart) : undefined,
-    max: maxEnd ? dayjs(maxEnd) : undefined,
-  }), [minStart, maxEnd]);
+  const constraints = useMemo(
+    () => ({
+      min: minStart ? dayjs(minStart) : undefined,
+      max: maxEnd ? dayjs(maxEnd) : undefined,
+    }),
+    [minStart, maxEnd]
+  );
 
   useEffect(() => {
     const errs: string[] = [];
-    if (!start.isValid() || !end.isValid()) errs.push("Ngày không hợp lệ");
-    if (end.isBefore(start)) errs.push("Trả phải sau Nhận");
-    if (constraints.min && start.isBefore(constraints.min)) errs.push("Nhận phải sau thời gian bắt đầu loại phòng");
-    if (constraints.max && end.isAfter(constraints.max)) errs.push("Trả phải trước thời gian kết thúc loại phòng");
+    if (!start.isValid() || !end.isValid()) errs.push("Thời gian không hợp lệ");
+    if (end.isBefore(start))
+      errs.push("Thời gian trả phòng phải sau thời gian nhận phòng");
+
     setError(errs.join(". "));
   }, [start, end, constraints.min, constraints.max]);
 
@@ -47,19 +67,37 @@ export default function PlannedDatesDialog({ open, initialStart, initialEnd, min
       <DialogContent>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <Stack spacing={2} sx={{ mt: 1 }}>
-            <DateTimePicker label="Nhận (dự kiến)" value={start} onChange={(v) => v && setStart(v)} />
-            <DateTimePicker label="Trả (dự kiến)" value={end} onChange={(v) => v && setEnd(v)} />
+            <DateTimePicker
+              label="Thời gian nhận phòng (dự kiến)"
+              value={start}
+              onChange={(v) => v && setStart(v)}
+            />
+            <DateTimePicker
+              label="Thời gian trả phòng (dự kiến)"
+              value={end}
+              onChange={(v) => v && setEnd(v)}
+            />
             {error ? (
-              <TextField value={error} error fullWidth InputProps={{ readOnly: true }} />
+              <Typography variant="caption" color="error">
+                {error}
+              </Typography>
             ) : (
-              <Typography variant="caption" color="text.secondary">Chọn khoảng thời gian hợp lệ</Typography>
+              <Typography variant="caption" color="error">
+                * Chọn khoảng thời gian hợp lệ
+              </Typography>
             )}
           </Stack>
         </LocalizationProvider>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Hủy</Button>
-        <Button variant="contained" onClick={() => onConfirm(start.toISOString(), end.toISOString())} disabled={!!error}>Xác nhận</Button>
+        <Button
+          variant="contained"
+          onClick={() => onConfirm(start.toISOString(), end.toISOString())}
+          disabled={!!error}
+        >
+          Xác nhận
+        </Button>
       </DialogActions>
     </Dialog>
   );
