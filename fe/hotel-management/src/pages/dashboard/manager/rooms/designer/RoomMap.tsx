@@ -170,16 +170,16 @@ const RoomMap: React.FC = () => {
 
   const statusChip = (status: RoomStatus) => {
     const s = getRoomStatusString(status);
-    const map: Record<string, { color: string; label: string }> = {
-      Available: { color: "#4CAF50", label: "Trống" },
-      Occupied: { color: "#607D8B", label: "Đã Có Khách" },
-      Cleaning: { color: "#2196F3", label: "Đang Dọn Dẹp" },
-      Maintenance: { color: "#FF9800", label: "Bảo Trì" },
-      OutOfService: { color: "#9E9E9E", label: "Ngừng phục vụ" },
-      Dirty: { color: "#F44336", label: "Bẩn" },
-      Clean: { color: "#4CAF50", label: "Đã dọn sạch" },
+    const map: Record<string, { bg: string; text: string; label: string }> = {
+      Available: { bg: "#F2F4F7", text: "#344054", label: "Trống" },
+      Occupied: { bg: "#E8ECF7", text: "#1F2A44", label: "Đã Có Khách" },
+      Cleaning: { bg: "#FEF3C7", text: "#92400E", label: "Đang Dọn Dẹp" },
+      Maintenance: { bg: "#E8ECF7", text: "#1F2A44", label: "Bảo Trì" },
+      OutOfService: { bg: "#EDEDED", text: "#555", label: "Ngừng phục vụ" },
+      Dirty: { bg: "#FDECEC", text: "#C62828", label: "Bẩn" },
+      Clean: { bg: "#DDF7E5", text: "#1B5E20", label: "Đã dọn sạch" },
     };
-    const cfg = map[s] || { color: "default", label: String(status) };
+    const cfg = map[s] || { bg: "#F2F4F7", text: "#344054", label: String(status) };
     const icon =
       s === "Available" ? (
         <CheckCircleIcon />
@@ -197,13 +197,7 @@ const RoomMap: React.FC = () => {
         <DoneAllIcon />
       ) : undefined;
     return (
-      <Chip
-        size="small"
-        label={cfg.label}
-        color="info"
-        sx={{ bgcolor: cfg.color, color: "white" }}
-        icon={icon}
-      />
+      <Chip size="small" label={cfg.label} sx={{ bgcolor: cfg.bg, color: cfg.text, fontWeight: 700 }} icon={icon} />
     );
   };
 

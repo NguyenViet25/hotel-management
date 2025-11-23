@@ -25,25 +25,17 @@ type RoomTableProps = {
 
 const statusChip = (status: RoomStatus) => {
   const s = getRoomStatusString(status);
-
-  const map: Record<string, { color: string; label: string }> = {
-    Available: { color: "#4CAF50", label: "Sẵn sàng" },
-    Occupied: { color: "#607D8B", label: "Đang sử dụng" },
-    Cleaning: { color: "#2196F3", label: "Đang dọn dẹp" },
-    OutOfService: { color: "#9E9E9E", label: "Ngừng phục vụ" },
-    Dirty: { color: "#F44336", label: "Bẩn" },
-    Clean: { color: "#4CAF50", label: "Đã dọn sạch" },
-    Maintenance: { color: "#FF9800", label: "Bảo trì" },
+  const map: Record<string, { bg: string; text: string; label: string }> = {
+    Available: { bg: "#F2F4F7", text: "#344054", label: "Sẵn sàng" },
+    Occupied: { bg: "#E8ECF7", text: "#1F2A44", label: "Đang sử dụng" },
+    Cleaning: { bg: "#FEF3C7", text: "#92400E", label: "Đang dọn dẹp" },
+    OutOfService: { bg: "#EDEDED", text: "#555", label: "Ngừng phục vụ" },
+    Dirty: { bg: "#FDECEC", text: "#C62828", label: "Bẩn" },
+    Clean: { bg: "#DDF7E5", text: "#1B5E20", label: "Đã dọn sạch" },
+    Maintenance: { bg: "#E8ECF7", text: "#1F2A44", label: "Bảo trì" },
   };
-  const cfg = map[s] || { color: "default", label: String(status) };
-  return (
-    <Chip
-      size="small"
-      label={cfg.label}
-      color="primary"
-      sx={{ backgroundColor: cfg.color }}
-    />
-  );
+  const cfg = map[s] || { bg: "#F2F4F7", text: "#344054", label: String(status) };
+  return <Chip size="small" label={cfg.label} sx={{ bgcolor: cfg.bg, color: cfg.text, fontWeight: 700 }} />;
 };
 
 const RoomTable: React.FC<RoomTableProps> = ({

@@ -21,14 +21,19 @@ type Props = {
   onStatusUpdated?: () => Promise<void> | void;
 };
 
-const statusColorMap: Record<string, string> = {
-  Clean: "#4CAF50",
-  Dirty: "#F44336",
-  Maintenance: "#FF9800",
-  Available: "#4CAF50",
-  Occupied: "#607D8B",
-  Cleaning: "#2196F3",
-  OutOfService: "#9E9E9E",
+const HK = {
+  colors: {
+    cleanBg: "#DDF7E5",
+    cleanText: "#1B5E20",
+    dirtyBg: "#FDECEC",
+    dirtyText: "#C62828",
+    maintBg: "#E8ECF7",
+    maintText: "#1F2A44",
+    cleaningBg: "#FEF3C7",
+    cleaningText: "#92400E",
+    chipGreyBg: "#F2F4F7",
+    chipGreyText: "#344054",
+  },
 };
 
 export default function RoomHygieneList({ rooms, onStatusUpdated }: Props) {
@@ -95,7 +100,13 @@ export default function RoomHygieneList({ rooms, onStatusUpdated }: Props) {
       <Grid container spacing={1.5}>
         {dirtyRooms.map((r) => {
           const s = getRoomStatusString(r.status);
-          const color = statusColorMap[s] || "#9E9E9E";
+          const map: Record<string, { bg: string; text: string }> = {
+            Clean: { bg: HK.colors.cleanBg, text: HK.colors.cleanText },
+            Dirty: { bg: HK.colors.dirtyBg, text: HK.colors.dirtyText },
+            Maintenance: { bg: HK.colors.maintBg, text: HK.colors.maintText },
+            Cleaning: { bg: HK.colors.cleaningBg, text: HK.colors.cleaningText },
+          };
+          const cfg = map[s] || { bg: HK.colors.chipGreyBg, text: HK.colors.chipGreyText };
           const highlight = r.status === RoomStatus.Dirty;
           return (
             <Grid item xs={12} md={6} lg={4} key={r.id}>
@@ -111,11 +122,8 @@ export default function RoomHygieneList({ rooms, onStatusUpdated }: Props) {
                   bgcolor: highlight ? "error.light" : "background.default",
                 }}
               >
-                <Chip
-                  label={`#${r.number}`}
-                  sx={{ bgcolor: "primary.light", color: "white" }}
-                />
-                <Chip label={s} sx={{ bgcolor: color, color: "white" }} />
+                <Chip label={`#${r.number}`} sx={{ bgcolor: HK.colors.chipGreyBg, color: HK.colors.chipGreyText }} />
+                <Chip label={s} sx={{ bgcolor: cfg.bg, color: cfg.text, fontWeight: 700 }} />
                 <Select
                   size="small"
                   value={String(r.status)}
@@ -127,14 +135,7 @@ export default function RoomHygieneList({ rooms, onStatusUpdated }: Props) {
                   <MenuItem value={RoomStatus.Cleaning}>Đang dọn dẹp</MenuItem>
                   <MenuItem value={RoomStatus.Maintenance}>Bảo trì</MenuItem>
                 </Select>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  onClick={() => quickUpdate(r, RoomStatus.Clean)}
-                  disabled={updatingId === r.id}
-                >
-                  Đánh dấu sạch
-                </Button>
+                <Button size="small" variant="outlined" sx={{ borderRadius: 999 }} onClick={() => quickUpdate(r, RoomStatus.Clean)} disabled={updatingId === r.id}>Đánh dấu sạch</Button>
               </Stack>
             </Grid>
           );
