@@ -29,6 +29,8 @@ import AssignRoomDialog from "./AssignRoomDialog";
 import CheckInTimeDialog from "./CheckInTimeDialog";
 import CheckOutTimeDialog from "./CheckOutTimeDialog";
 import PlannedDatesDialog from "./PlannedDatesDialog";
+import ChangeRoomDialog from "./ChangeRoomDialog";
+import ExtendStayDialog from "./ExtendStayDialog";
 import GuestDialog from "./GuestDialog";
 import GuestList from "./GuestList";
 import StripedLabelWrapper from "../../../../../components/LabelStripedWrapper";
@@ -90,6 +92,8 @@ const RoomTypeBlock: React.FC<{
   const [plannedOpen, setPlannedOpen] = useState(false);
   const [editActualInOpen, setEditActualInOpen] = useState(false);
   const [editActualOutOpen, setEditActualOutOpen] = useState(false);
+  const [changeRoomOpen, setChangeRoomOpen] = useState(false);
+  const [extendOpen, setExtendOpen] = useState(false);
 
   const openAddGuest = (roomId: string) => {
     setGuestRoomId(roomId);
@@ -401,9 +405,13 @@ const RoomTypeBlock: React.FC<{
                               variant="outlined"
                               size="small"
                               color="primary"
-                            >
-                              Gia hạn thêm
-                            </Button>
+                            onClick={() => {
+                              setActiveRoom(br);
+                              setExtendOpen(true);
+                            }}
+                          >
+                            Gia hạn thêm
+                          </Button>
                           </StripedLabelWrapper>
                         </Stack>
                       }
@@ -448,6 +456,14 @@ const RoomTypeBlock: React.FC<{
                                 severity: "error",
                               });
                             }
+                          }}
+                          onChangeRoom={() => {
+                            setActiveRoom(br);
+                            setChangeRoomOpen(true);
+                          }}
+                          onExtendStay={() => {
+                            setActiveRoom(br);
+                            setExtendOpen(true);
                           }}
                         />
 
@@ -588,6 +604,48 @@ const RoomTypeBlock: React.FC<{
                 message: "Đã xảy ra lỗi khi check-out",
                 severity: "error",
               });
+            }
+          }}
+        />
+
+        <ChangeRoomDialog
+          open={changeRoomOpen}
+          booking={booking}
+          roomType={rt}
+          onClose={() => setChangeRoomOpen(false)}
+          onConfirm={async (roomId) => {
+            try {
+              const res = await bookingsApi.changeRoom(activeRoom!.bookingRoomId, { newRoomId: roomId });
+              if (res.isSuccess) {
+                setSnackbar({ open: true, message: "Đổi phòng thành công", severity: "success" });
+                setChangeRoomOpen(false);
+                await onRefresh?.();
+              } else {
+                setSnackbar({ open: true, message: res.message || "Không thể đổi phòng", severity: "error" });
+              }
+            } catch {
+              setSnackbar({ open: true, message: "Đã xảy ra lỗi khi đổi phòng", severity: "error" });
+            }
+          }}
+        />
+
+        <ExtendStayDialog
+          open={extendOpen}
+          currentEnd={activeRoom?.endDate || rt.endDate}
+          onClose={() => setExtendOpen(false)}
+          onConfirm={async (newEndIso) => {
+            try {
+              const res = await bookingsApi.extendStay(activeRoom!.bookingRoomId, { newEndDate: newEndIso });
+              if (res.isSuccess) {
+                const price = (res as any)?.data?.price ?? undefined;
+                setSnackbar({ open: true, message: price ? `Gia hạn thành công (+${price?.toLocaleString?.() || price}đ)` : "Gia hạn thành công", severity: "success" });
+                setExtendOpen(false);
+                await onRefresh?.();
+              } else {
+                setSnackbar({ open: true, message: res.message || "Không thể gia hạn", severity: "error" });
+              }
+            } catch {
+              setSnackbar({ open: true, message: "Đã xảy ra lỗi khi gia hạn", severity: "error" });
             }
           }}
         />

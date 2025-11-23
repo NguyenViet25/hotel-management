@@ -19,7 +19,7 @@ import EditOutlined from "@mui/icons-material/EditOutlined";
 import DeleteOutline from "@mui/icons-material/DeleteOutline";
 import BadgeIcon from "@mui/icons-material/Badge";
 import type { BookingGuestDto } from "../../../../../api/bookingsApi";
-import { MoveToInbox, MoveUp, Recycling } from "@mui/icons-material";
+import { MoveUp, EventAvailable } from "@mui/icons-material";
 
 type Props = {
   guest: BookingGuestDto;
@@ -28,6 +28,8 @@ type Props = {
   onDelete?: () => void;
   disabledEdit?: boolean;
   disabledDelete?: boolean;
+  onChangeRoom?: () => void;
+  onExtendStay?: () => void;
 };
 
 const initials = (s?: string) => {
@@ -47,6 +49,8 @@ const GuestCard: React.FC<Props> = ({
   onDelete,
   disabledEdit,
   disabledDelete,
+  onChangeRoom,
+  onExtendStay,
 }) => {
   const [cccdOpen, setCccdOpen] = useState(false);
   return (
@@ -153,10 +157,24 @@ const GuestCard: React.FC<Props> = ({
             <IconButton
               color="primary"
               size="small"
-              onClick={() => {}}
+              onClick={onChangeRoom}
               aria-label="Đổi phòng"
             >
               <MoveUp fontSize="small" />
+            </IconButton>
+          </span>
+        </Tooltip>
+
+        {/* Extend Stay */}
+        <Tooltip title="Gia hạn thời gian ở">
+          <span>
+            <IconButton
+              color="primary"
+              size="small"
+              onClick={onExtendStay}
+              aria-label="Gia hạn thời gian ở"
+            >
+              <EventAvailable fontSize="small" />
             </IconButton>
           </span>
         </Tooltip>

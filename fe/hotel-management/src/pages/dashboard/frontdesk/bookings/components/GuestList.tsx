@@ -11,6 +11,8 @@ type Props = {
   onEdit?: (idx: number, guest: BookingGuestDto) => void;
   onDelete?: (idx: number, guest: BookingGuestDto) => void;
   onAddGuestClick?: () => void;
+  onChangeRoom?: () => void;
+  onExtendStay?: () => void;
 };
 
 const GuestList: React.FC<Props> = ({
@@ -20,6 +22,8 @@ const GuestList: React.FC<Props> = ({
   onEdit,
   onDelete,
   onAddGuestClick,
+  onChangeRoom,
+  onExtendStay,
 }) => {
   return (
     <Stack spacing={0.5}>
@@ -58,6 +62,8 @@ const GuestList: React.FC<Props> = ({
                 onDelete={onDelete ? () => onDelete(idx, g) : undefined}
                 disabledEdit={!editable}
                 disabledDelete={!editable}
+                onChangeRoom={onChangeRoom}
+                onExtendStay={onExtendStay}
               />
             </Grid>
           ))}
