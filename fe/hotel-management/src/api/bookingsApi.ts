@@ -1,4 +1,5 @@
 import axios from "./axios";
+import type { RoomStatus } from "./roomsApi";
 
 // Booking API client aligned with fe/api-documentation/BookingsAPI.md
 
@@ -144,6 +145,7 @@ export interface RoomMapItemDto {
   roomTypeName: string;
   floor: number;
   timeline: RoomTimelineSegmentDto[];
+  status: RoomStatus
 }
 
 export interface RoomMapQueryDto {

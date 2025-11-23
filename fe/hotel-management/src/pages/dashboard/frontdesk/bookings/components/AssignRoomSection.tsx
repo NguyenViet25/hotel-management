@@ -1,7 +1,21 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Card, CardContent, CardHeader, Grid, Stack, Typography, Button, Divider, Chip } from "@mui/material";
-import bookingsApi, { type BookingDetailsDto, type RoomMapItemDto } from "../../../../../api/bookingsApi";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  Grid,
+  Stack,
+  Typography,
+  Button,
+  Divider,
+  Chip,
+} from "@mui/material";
+import bookingsApi, {
+  type BookingDetailsDto,
+  type RoomMapItemDto,
+} from "../../../../../api/bookingsApi";
 import RoomCard from "./RoomCard";
+import { statusUiFromTimeline } from "../../../../../utils/room-status";
 
 type Props = {
   booking: BookingDetailsDto;
@@ -21,7 +35,10 @@ const AssignRoomSection: React.FC<Props> = ({ booking, onAssigned }) => {
     if (!startDate) return;
     setLoading(true);
     try {
-      const res = await bookingsApi.getRoomMap({ date: startDate, hotelId: booking?.hotelId });
+      const res = await bookingsApi.getRoomMap({
+        date: startDate,
+        hotelId: booking?.hotelId,
+      });
       if (res.isSuccess && res.data) setRooms(res.data);
     } catch {}
     setLoading(false);
@@ -43,7 +60,9 @@ const AssignRoomSection: React.FC<Props> = ({ booking, onAssigned }) => {
       if (!byFloor[f]) byFloor[f] = [];
       byFloor[f].push(r);
     });
-    const entries = Object.entries(byFloor).sort((a, b) => Number(a[0]) - Number(b[0]));
+    const entries = Object.entries(byFloor).sort(
+      (a, b) => Number(a[0]) - Number(b[0])
+    );
     return entries.map(([floor, rooms]) => ({ floor, rooms }));
   }, [filteredRooms]);
 
@@ -53,20 +72,13 @@ const AssignRoomSection: React.FC<Props> = ({ booking, onAssigned }) => {
     return s === "available";
   };
 
-  const statusUi = (room: RoomMapItemDto) => {
-    const seg = room.timeline?.[0];
-    const s = (seg?.status || "").toLowerCase();
-    if (s === "available") return { label: "Trống", color: "#2e7d32" };
-    if (s === "occupied" || s === "booked") return { label: "Đã Có Khách", color: "#c62828" };
-    if (s === "cleaning") return { label: "Đang Dọn Dẹp", color: "#f9a825" };
-    if (s === "maintenance") return { label: "Bảo Trì", color: "#424242" };
-    return { label: seg?.status || "—", color: "#9e9e9e" };
-  };
-
   const assign = async () => {
     if (!selected || !bookingRoomTypeId) return;
     try {
-      const res = await bookingsApi.addRoom({ bookingRoomTypeId, roomId: selected });
+      const res = await bookingsApi.addRoom({
+        bookingRoomTypeId,
+        roomId: selected,
+      });
       if (res.isSuccess) {
         onAssigned?.();
       }
@@ -75,22 +87,41 @@ const AssignRoomSection: React.FC<Props> = ({ booking, onAssigned }) => {
 
   return (
     <Card variant="outlined" sx={{ borderRadius: 3 }}>
-      <CardHeader title="Chọn Phòng" subheader={loading ? "Đang tải sơ đồ phòng…" : undefined} />
+      <CardHeader
+        title="Chọn Phòng"
+        subheader={loading ? "Đang tải sơ đồ phòng…" : undefined}
+      />
       <CardContent>
         <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
-          <Chip label={`Loại phòng: ${booking?.bookingRoomTypes?.[0]?.roomTypeName || "—"}`} />
+          <Chip
+            label={`Loại phòng: ${
+              booking?.bookingRoomTypes?.[0]?.roomTypeName || "—"
+            }`}
+          />
           <Chip label={`Ngày nhận: ${startDate || "—"}`} />
-          <Chip label={`Số đêm: ${Math.max(1, (booking?.bookingRoomTypes?.[0]?.endDate && startDate) ? (new Date(booking.bookingRoomTypes[0].endDate).getTime() - new Date(startDate).getTime()) / 86400000 : 1)}`} />
+          <Chip
+            label={`Số đêm: ${Math.max(
+              1,
+              booking?.bookingRoomTypes?.[0]?.endDate && startDate
+                ? (new Date(booking.bookingRoomTypes[0].endDate).getTime() -
+                    new Date(startDate).getTime()) /
+                    86400000
+                : 1
+            )}`}
+          />
         </Stack>
         <Stack spacing={2}>
           {floorGroups.map((g) => (
             <Stack key={g.floor} spacing={1}>
-              <Typography variant="subtitle1" fontWeight={700}>{`Tầng ${g.floor}`}</Typography>
+              <Typography
+                variant="subtitle1"
+                fontWeight={700}
+              >{`Tầng ${g.floor}`}</Typography>
               <Grid container spacing={2}>
                 {g.rooms.map((r) => {
-                  const ui = statusUi(r);
+                  const ui = statusUiFromTimeline(r.status);
                   return (
-                    <Grid item key={r.roomId}>
+                    <Grid key={r.roomId}>
                       <RoomCard
                         room={r}
                         selected={selected === r.roomId}
@@ -108,8 +139,18 @@ const AssignRoomSection: React.FC<Props> = ({ booking, onAssigned }) => {
           ))}
         </Stack>
 
-        <Stack direction="row" spacing={1} justifyContent="flex-end" sx={{ mt: 2 }}>
-          <Button variant="contained" color="primary" disabled={!selected} onClick={assign}>
+        <Stack
+          direction="row"
+          spacing={1}
+          justifyContent="flex-end"
+          sx={{ mt: 2 }}
+        >
+          <Button
+            variant="contained"
+            color="primary"
+            disabled={!selected}
+            onClick={assign}
+          >
             Gán Phòng
           </Button>
         </Stack>

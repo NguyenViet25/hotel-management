@@ -29,6 +29,9 @@ public static class DatabaseInitializationExtensions
             SeedRoles(roleManager).GetAwaiter().GetResult();
             SeedUsers(userManager, dbContext).GetAwaiter().GetResult();
             SeedMenuItemsAsync(dbContext).GetAwaiter().GetResult();
+            SeedPromotionsAsync(dbContext).GetAwaiter().GetResult();
+            SeedMinibarsAsync(dbContext).GetAwaiter().GetResult();
+            SeedTablesAsync(dbContext).GetAwaiter().GetResult();
         }
 
         return app;
@@ -340,5 +343,183 @@ public static class DatabaseInitializationExtensions
         await dbContext.SaveChangesAsync();
     }
 
+    public static async Task SeedPromotionsAsync(DbContext dbContext)
+    {
+        var hotelId = DEFAULT_HOTEL_ID;
+
+        // Prevent duplicate seeding
+        if (await dbContext.Set<Promotion>().AnyAsync())
+            return;
+
+        var promotions = new List<Promotion>
+    {
+        new Promotion
+        {
+            Id = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+            HotelId = hotelId,
+            Code = "WELCOME10",
+            Description = "Giảm 10% cho khách mới",
+            Value = 10,
+            IsActive = true,
+            StartDate = new DateTime(2025, 1, 1),
+            EndDate = new DateTime(2025, 12, 31),
+            CreatedAt = DateTime.UtcNow
+        },
+        new Promotion
+        {
+            Id = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+            HotelId = hotelId,
+            Code = "SUMMER20",
+            Description = "Khuyến mãi mùa hè giảm 20%",
+            Value = 20,
+            IsActive = true,
+            StartDate = new DateTime(2025, 6, 1),
+            EndDate = new DateTime(2025, 8, 31),
+            CreatedAt = DateTime.UtcNow
+        },
+        new Promotion
+        {
+            Id = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc"),
+            HotelId = hotelId,
+            Code = "WEEKEND15",
+            Description = "Giảm 15% cho khách đặt phòng cuối tuần",
+            Value = 15,
+            IsActive = true,
+            StartDate = new DateTime(2025, 1, 1),
+            EndDate = new DateTime(2025, 12, 31),
+            CreatedAt = DateTime.UtcNow
+        },
+        new Promotion
+        {
+            Id = Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd"),
+            HotelId = hotelId,
+            Code = "LONGSTAY25",
+            Description = "Giảm 25% cho khách ở trên 7 đêm",
+            Value = 25,
+            IsActive = true,
+            StartDate = new DateTime(2025, 1, 1),
+            EndDate = new DateTime(2025, 12, 31),
+            CreatedAt = DateTime.UtcNow
+        },
+        new Promotion
+        {
+            Id = Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"),
+            HotelId = hotelId,
+            Code = "FLASH5",
+            Description = "Giảm 5% trong khung giờ vàng",
+            Value = 5,
+            IsActive = true,
+            StartDate = new DateTime(2025, 2, 1),
+            EndDate = new DateTime(2025, 2, 7),
+            CreatedAt = DateTime.UtcNow
+        }
+    };
+
+        dbContext.Set<Promotion>().AddRange(promotions);
+        await dbContext.SaveChangesAsync();
+    }
+
+    public static async Task SeedMinibarsAsync(DbContext dbContext)
+    {
+        var hotelId = DEFAULT_HOTEL_ID;
+
+        // Get all room types for this hotel
+        var roomTypes = await dbContext.Set<RoomType>()
+            .Where(rt => rt.HotelId == hotelId)
+            .ToListAsync();
+
+        if (!roomTypes.Any())
+            return; // No room types → nothing to seed
+
+        foreach (var roomType in roomTypes)
+        {
+            // Check if minibar items already seeded for this room type
+            bool exists = await dbContext.Set<Minibar>()
+                .AnyAsync(m => m.RoomTypeId == roomType.Id);
+
+            if (exists)
+                continue;
+
+            var items = new List<Minibar>
+        {
+            new Minibar
+            {
+                Id = Guid.NewGuid(),
+                HotelId = hotelId,
+                RoomTypeId = roomType.Id,
+                Name = "Nước suối Aquafina",
+                Price = 10000,
+                Quantity = 2
+            },
+            new Minibar
+            {
+                Id = Guid.NewGuid(),
+                HotelId = hotelId,
+                RoomTypeId = roomType.Id,
+                Name = "Coca-Cola",
+                Price = 15000,
+                Quantity = 2
+            },
+            new Minibar
+            {
+                Id = Guid.NewGuid(),
+                HotelId = hotelId,
+                RoomTypeId = roomType.Id,
+                Name = "Snack khoai tây",
+                Price = 20000,
+                Quantity = 1
+            },
+            new Minibar
+            {
+                Id = Guid.NewGuid(),
+                HotelId = hotelId,
+                RoomTypeId = roomType.Id,
+                Name = "Bia Heineken",
+                Price = 25000,
+                Quantity = 2
+            },
+            new Minibar
+            {
+                Id = Guid.NewGuid(),
+                HotelId = hotelId,
+                RoomTypeId = roomType.Id,
+                Name = "Trà xanh Không Độ",
+                Price = 12000,
+                Quantity = 1
+            }
+        };
+
+            dbContext.Set<Minibar>().AddRange(items);
+        }
+
+        await dbContext.SaveChangesAsync();
+    }
+
+    public static async Task SeedTablesAsync(DbContext dbContext)
+    {
+        var hotelId = DEFAULT_HOTEL_ID;
+
+        // If tables already exist, skip
+        if (await dbContext.Set<Table>().AnyAsync(t => t.HotelId == hotelId))
+            return;
+
+        var tables = new List<Table>();
+
+        for (int i = 1; i <= 20; i++)
+        {
+            tables.Add(new Table
+            {
+                Id = Guid.NewGuid(),
+                HotelId = hotelId,
+                Name = $"T{i}",              // Table name T1 → T20
+                Capacity = i % 4 + 2,        // Capacity 2–5 seats (cycle)
+                IsActive = true,
+                TableStatus = 0              // 0 = Available
+            });
+        }
+
+        dbContext.Set<Table>().AddRange(tables);
+        await dbContext.SaveChangesAsync();
+    }
 
 }

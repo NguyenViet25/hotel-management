@@ -25,6 +25,8 @@ import BlockIcon from "@mui/icons-material/Block";
 import ApartmentIcon from "@mui/icons-material/Apartment";
 import ArrowRightAltIcon from "@mui/icons-material/ArrowRightAlt";
 import { House } from "@mui/icons-material";
+import { RoomStatus } from "../../../../../api/roomsApi";
+import { statusUiFromEnum } from "../../../../../utils/room-status";
 
 type Props = {
   open: boolean;
@@ -196,8 +198,11 @@ export default function ChangeRoomDialog({
                   </Typography>
 
                   <Grid container spacing={2}>
-                    {list.map((room) => {
-                      const available = isAvailable(room);
+                    {list.map((room: RoomMapItemDto) => {
+                      const status = room.status;
+                      const ui = statusUiFromEnum(status);
+
+                      const available = status === RoomStatus.Available;
                       const isSelected = selected === room.roomId;
 
                       return (
@@ -246,21 +251,26 @@ export default function ChangeRoomDialog({
                                 {room.roomNumber}
                               </Typography>
 
-                              {available ? (
-                                <Chip
-                                  size="small"
-                                  color="success"
-                                  label="Trống"
-                                  icon={<CheckCircleIcon />}
-                                />
-                              ) : (
-                                <Chip
-                                  size="small"
-                                  color="error"
-                                  label="Bận"
-                                  icon={<BlockIcon />}
-                                />
-                              )}
+                              <Chip
+                                size="small"
+                                label={ui.label}
+                                sx={{ bgcolor: ui.color, color: "white" }}
+                                icon={
+                                  available ? (
+                                    <CheckCircleIcon
+                                      color="info"
+                                      sx={{
+                                        color: "#fff",
+                                      }}
+                                    />
+                                  ) : (
+                                    <BlockIcon
+                                      color="info"
+                                      sx={{ color: "#fff" }}
+                                    />
+                                  )
+                                }
+                              />
                             </Stack>
 
                             {/* Select button */}

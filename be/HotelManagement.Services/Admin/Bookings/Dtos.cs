@@ -159,6 +159,7 @@ public class RoomMapItemDto
     public Guid RoomTypeId { get; set; }
     public string RoomTypeName { get; set; } = string.Empty;
     public int Floor { get; set; }
+    public RoomStatus Status { get; set; } 
     public List<RoomTimelineSegmentDto> Timeline { get; set; } = new();
 }
 

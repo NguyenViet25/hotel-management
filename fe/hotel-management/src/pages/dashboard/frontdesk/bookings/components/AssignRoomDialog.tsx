@@ -17,6 +17,7 @@ import bookingsApi, {
   type RoomMapItemDto,
 } from "../../../../../api/bookingsApi";
 import RoomCard from "./RoomCard";
+import { statusUiFromTimeline } from "../../../../../utils/room-status";
 import { Check, Info, Warning } from "@mui/icons-material";
 
 type Props = {
@@ -70,16 +71,7 @@ const AssignRoomDialog: React.FC<Props> = ({
     return s === "available";
   };
 
-  const statusUi = (room: RoomMapItemDto) => {
-    const seg = room.timeline?.[0];
-    const s = (seg?.status || "").toLowerCase();
-    if (s === "available") return { label: "Trống", color: "#2e7d32" };
-    if (s === "occupied" || s === "booked")
-      return { label: "Đã Có Khách", color: "#c62828" };
-    if (s === "cleaning") return { label: "Đang Dọn Dẹp", color: "#f9a825" };
-    if (s === "maintenance") return { label: "Bảo Trì", color: "#424242" };
-    return { label: seg?.status || "—", color: "#9e9e9e" };
-  };
+  const statusUi = (room: RoomMapItemDto) => statusUiFromTimeline(room.status);
 
   const toggleSelect = (roomId: string) => {
     setSelected((prev) => {
@@ -155,7 +147,7 @@ const AssignRoomDialog: React.FC<Props> = ({
                   const disabled =
                     !isAvailable(r) || alreadyAssigned || remaining === 0;
                   return (
-                    <Grid item key={r.roomId}>
+                    <Grid key={r.roomId}>
                       <RoomCard
                         room={r}
                         selected={selected.includes(r.roomId)}

@@ -791,6 +791,7 @@ public class BookingsService(
                 RoomTypeId = r.RoomTypeId,
                 RoomTypeName = r.RoomType?.Name ?? string.Empty,
                 Floor = r.Floor,
+                Status = r.Status,
                 Timeline = BuildDayTimeline(targetDate, byRoom.TryGetValue(r.Id, out var list) && list.Any())
             }).ToList();
 
@@ -898,6 +899,13 @@ public class BookingsService(
             return ApiResponse.Fail("Không tìm thấy booking");
 
         var room = await _roomRepo.Query().Where(x => x.Id == roomId).FirstOrDefaultAsync();
+
+        if (room is not null)
+        {
+            room.Status = RoomStatus.Occupied;
+            await _roomRepo.UpdateAsync(room);
+            await _roomRepo.SaveChangesAsync();
+        }
 
         await _bookingRoomRepo.AddAsync(new BookingRoom()
         {
