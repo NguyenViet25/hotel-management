@@ -28,6 +28,11 @@ export interface FrontDeskDashboardSummary {
   completedBookings: number;
 }
 
+export interface KitchenDashboardSummary {
+  pendingOrderItems: number;
+  inProgressOrders: number;
+}
+
 const dashboardApi = {
   async getAdminSummary(): Promise<ApiResponse<AdminDashboardSummary>> {
     const res = await axios.get(`/dashboard/admin/summary`);
@@ -47,6 +52,14 @@ const dashboardApi = {
     const params = new URLSearchParams();
     params.append("hotelId", hotelId);
     const res = await axios.get(`/dashboard/frontdesk/summary?${params}`);
+    return res.data;
+  },
+  async getKitchenSummary(
+    hotelId: string
+  ): Promise<ApiResponse<KitchenDashboardSummary>> {
+    const params = new URLSearchParams();
+    params.append("hotelId", hotelId);
+    const res = await axios.get(`/dashboard/kitchen/summary?${params}`);
     return res.data;
   },
 };

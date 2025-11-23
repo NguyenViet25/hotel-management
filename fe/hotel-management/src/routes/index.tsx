@@ -104,7 +104,12 @@ const FrontDeskDashboard = () => (
     <FrontDeskDashboardPage />
   </Suspense>
 );
-const KitchenDashboard = () => <div>Kitchen Dashboard</div>;
+const KitchenDashboardPage = lazy(() => import("../pages/dashboard/kitchen"));
+const KitchenDashboard = () => (
+  <Suspense fallback={<LoadingFallback />}>
+    <KitchenDashboardPage />
+  </Suspense>
+);
 const WaiterDashboard = () => <div>Waiter Dashboard</div>;
 const HousekeeperPage = lazy(
   () => import("../pages/dashboard/housekeeper/HousekeepingPage")
