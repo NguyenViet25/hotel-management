@@ -279,7 +279,7 @@ namespace HotelManagement.Domain.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    HotelIdKey = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    HotelId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PrimaryGuestId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     Status = table.Column<int>(type: "int", nullable: false),
                     DepositAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
@@ -287,7 +287,7 @@ namespace HotelManagement.Domain.Migrations
                     TotalAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     LeftAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    HotelId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    HotelId1 = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
@@ -303,13 +303,13 @@ namespace HotelManagement.Domain.Migrations
                         name: "FK_Bookings_Hotels_HotelId",
                         column: x => x.HotelId,
                         principalTable: "Hotels",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Bookings_Hotels_HotelIdKey",
-                        column: x => x.HotelIdKey,
-                        principalTable: "Hotels",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Bookings_Hotels_HotelId1",
+                        column: x => x.HotelId1,
+                        principalTable: "Hotels",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -479,7 +479,7 @@ namespace HotelManagement.Domain.Migrations
                 columns: table => new
                 {
                     BookingRoomTypeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    BookingIdKey = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    BookingId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     RoomTypeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     RoomTypeName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Capacity = table.Column<int>(type: "int", nullable: false),
@@ -487,7 +487,7 @@ namespace HotelManagement.Domain.Migrations
                     TotalRoom = table.Column<int>(type: "int", nullable: false),
                     StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    BookingId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    BookingId1 = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -496,13 +496,13 @@ namespace HotelManagement.Domain.Migrations
                         name: "FK_BookingRoomTypes_Bookings_BookingId",
                         column: x => x.BookingId,
                         principalTable: "Bookings",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_BookingRoomTypes_Bookings_BookingIdKey",
-                        column: x => x.BookingIdKey,
-                        principalTable: "Bookings",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_BookingRoomTypes_Bookings_BookingId1",
+                        column: x => x.BookingId1,
+                        principalTable: "Bookings",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_BookingRoomTypes_RoomTypes_RoomTypeId",
                         column: x => x.RoomTypeId,
@@ -647,7 +647,7 @@ namespace HotelManagement.Domain.Migrations
                 {
                     BookingRoomId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     RoomId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    BookingRoomTypeIdKey = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    BookingRoomTypeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     RoomName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -655,7 +655,7 @@ namespace HotelManagement.Domain.Migrations
                     ActualCheckInAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ActualCheckOutAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     BookingStatus = table.Column<int>(type: "int", nullable: false),
-                    BookingRoomTypeId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    BookingRoomTypeId1 = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     HotelRoomId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
                 constraints: table =>
@@ -665,13 +665,13 @@ namespace HotelManagement.Domain.Migrations
                         name: "FK_BookingRooms_BookingRoomTypes_BookingRoomTypeId",
                         column: x => x.BookingRoomTypeId,
                         principalTable: "BookingRoomTypes",
-                        principalColumn: "BookingRoomTypeId");
-                    table.ForeignKey(
-                        name: "FK_BookingRooms_BookingRoomTypes_BookingRoomTypeIdKey",
-                        column: x => x.BookingRoomTypeIdKey,
-                        principalTable: "BookingRoomTypes",
                         principalColumn: "BookingRoomTypeId",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_BookingRooms_BookingRoomTypes_BookingRoomTypeId1",
+                        column: x => x.BookingRoomTypeId1,
+                        principalTable: "BookingRoomTypes",
+                        principalColumn: "BookingRoomTypeId");
                     table.ForeignKey(
                         name: "FK_BookingRooms_Rooms_HotelRoomId",
                         column: x => x.HotelRoomId,
@@ -973,9 +973,9 @@ namespace HotelManagement.Domain.Migrations
                 column: "BookingRoomTypeId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_BookingRooms_BookingRoomTypeIdKey",
+                name: "IX_BookingRooms_BookingRoomTypeId1",
                 table: "BookingRooms",
-                column: "BookingRoomTypeIdKey");
+                column: "BookingRoomTypeId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_BookingRooms_HotelRoomId",
@@ -993,9 +993,9 @@ namespace HotelManagement.Domain.Migrations
                 column: "BookingId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_BookingRoomTypes_BookingIdKey",
+                name: "IX_BookingRoomTypes_BookingId1",
                 table: "BookingRoomTypes",
-                column: "BookingIdKey");
+                column: "BookingId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_BookingRoomTypes_RoomTypeId",
@@ -1008,9 +1008,9 @@ namespace HotelManagement.Domain.Migrations
                 column: "HotelId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Bookings_HotelIdKey",
+                name: "IX_Bookings_HotelId1",
                 table: "Bookings",
-                column: "HotelIdKey");
+                column: "HotelId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Bookings_PrimaryGuestId",

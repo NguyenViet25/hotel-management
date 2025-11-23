@@ -235,7 +235,7 @@ public class OrdersService : IOrdersService
             var booking = await _bookingRepository
                 .Query()
                 .Include(x => x.PrimaryGuest)
-                .Where(b => b.Id == dto.BookingId && b.HotelIdKey == dto.HotelId)
+                .Where(b => b.Id == dto.BookingId && b.HotelId == dto.HotelId)
                 .FirstOrDefaultAsync();
             if (booking == null) return ApiResponse<OrderDetailsDto>.Fail("Booking not found in hotel");
 
@@ -433,7 +433,7 @@ public class OrdersService : IOrdersService
             var booking = await _bookingRepository
                 .Query()
                 .Include(x => x.PrimaryGuest)
-                .Where(b => b.Id == dto.BookingId && b.HotelIdKey == dto.HotelId)
+                .Where(b => b.Id == dto.BookingId && b.HotelId == dto.HotelId)
                 .FirstOrDefaultAsync();
             if (booking == null) return ApiResponse<OrderDetailsDto>.Fail("Booking not found in hotel");
 

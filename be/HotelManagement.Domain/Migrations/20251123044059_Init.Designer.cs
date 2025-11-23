@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelManagement.Domain.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251122175833_Init")]
+    [Migration("20251123044059_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -73,10 +73,10 @@ namespace HotelManagement.Domain.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<Guid?>("HotelId")
+                    b.Property<Guid>("HotelId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("HotelIdKey")
+                    b.Property<Guid?>("HotelId1")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("LeftAmount")
@@ -100,7 +100,7 @@ namespace HotelManagement.Domain.Migrations
 
                     b.HasIndex("HotelId");
 
-                    b.HasIndex("HotelIdKey");
+                    b.HasIndex("HotelId1");
 
                     b.HasIndex("PrimaryGuestId");
 
@@ -134,10 +134,10 @@ namespace HotelManagement.Domain.Migrations
                     b.Property<DateTime?>("ActualCheckOutAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid?>("BookingRoomTypeId")
+                    b.Property<Guid>("BookingRoomTypeId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("BookingRoomTypeIdKey")
+                    b.Property<Guid?>("BookingRoomTypeId1")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("BookingStatus")
@@ -165,7 +165,7 @@ namespace HotelManagement.Domain.Migrations
 
                     b.HasIndex("BookingRoomTypeId");
 
-                    b.HasIndex("BookingRoomTypeIdKey");
+                    b.HasIndex("BookingRoomTypeId1");
 
                     b.HasIndex("HotelRoomId");
 
@@ -180,10 +180,10 @@ namespace HotelManagement.Domain.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("BookingId")
+                    b.Property<Guid>("BookingId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("BookingIdKey")
+                    b.Property<Guid?>("BookingId1")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Capacity")
@@ -212,7 +212,7 @@ namespace HotelManagement.Domain.Migrations
 
                     b.HasIndex("BookingId");
 
-                    b.HasIndex("BookingIdKey");
+                    b.HasIndex("BookingId1");
 
                     b.HasIndex("RoomTypeId");
 
@@ -1231,15 +1231,15 @@ namespace HotelManagement.Domain.Migrations
 
             modelBuilder.Entity("HotelManagement.Domain.Booking", b =>
                 {
-                    b.HasOne("HotelManagement.Domain.Hotel", "Hotel")
-                        .WithMany()
-                        .HasForeignKey("HotelId");
-
                     b.HasOne("HotelManagement.Domain.Hotel", null)
                         .WithMany()
-                        .HasForeignKey("HotelIdKey")
+                        .HasForeignKey("HotelId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("HotelManagement.Domain.Hotel", "Hotel")
+                        .WithMany()
+                        .HasForeignKey("HotelId1");
 
                     b.HasOne("HotelManagement.Domain.Guest", "PrimaryGuest")
                         .WithMany()
@@ -1272,15 +1272,15 @@ namespace HotelManagement.Domain.Migrations
 
             modelBuilder.Entity("HotelManagement.Domain.BookingRoom", b =>
                 {
-                    b.HasOne("HotelManagement.Domain.BookingRoomType", "BookingRoomType")
-                        .WithMany("BookingRooms")
-                        .HasForeignKey("BookingRoomTypeId");
-
                     b.HasOne("HotelManagement.Domain.BookingRoomType", null)
                         .WithMany()
-                        .HasForeignKey("BookingRoomTypeIdKey")
+                        .HasForeignKey("BookingRoomTypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("HotelManagement.Domain.BookingRoomType", "BookingRoomType")
+                        .WithMany("BookingRooms")
+                        .HasForeignKey("BookingRoomTypeId1");
 
                     b.HasOne("HotelManagement.Domain.HotelRoom", "HotelRoom")
                         .WithMany("BookingRooms")
@@ -1299,15 +1299,15 @@ namespace HotelManagement.Domain.Migrations
 
             modelBuilder.Entity("HotelManagement.Domain.BookingRoomType", b =>
                 {
-                    b.HasOne("HotelManagement.Domain.Booking", "Booking")
-                        .WithMany("BookingRoomTypes")
-                        .HasForeignKey("BookingId");
-
                     b.HasOne("HotelManagement.Domain.Booking", null)
                         .WithMany()
-                        .HasForeignKey("BookingIdKey")
+                        .HasForeignKey("BookingId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("HotelManagement.Domain.Booking", "Booking")
+                        .WithMany("BookingRoomTypes")
+                        .HasForeignKey("BookingId1");
 
                     b.HasOne("HotelManagement.Domain.RoomType", "RoomType")
                         .WithMany()

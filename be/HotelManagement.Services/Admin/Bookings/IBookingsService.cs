@@ -19,7 +19,7 @@ public interface IBookingsService
     Task<ApiResponse> AddRoomToBookingAsync(Guid bookingRoomTypeId, Guid roomId);
     Task<ApiResponse> CheckInAsync(CheckInDto dto);
     Task<ApiResponse<BookingDetailsDto>> ChangeRoomAsync(Guid bookingRoomId, Guid newRoomId);
-    Task<ApiResponse<ExtendStayResultDto>> ExtendStayAsync(Guid bookingRoomId, DateTime newEndDate, string? discountCode);
+    Task<ApiResponse> ExtendStayAsync(Guid bookingRoomId, DateTime newEndDate, string? discountCode);
     Task<ApiResponse<CheckoutResultDto>> CheckOutAsync(Guid bookingId, CheckoutRequestDto dto);
     Task<ApiResponse<AdditionalChargesDto>> GetAdditionalChargesPreviewAsync(Guid bookingId);
     Task<ApiResponse> RecordMinibarConsumptionAsync(Guid bookingId, MinibarConsumptionDto dto);
@@ -27,4 +27,5 @@ public interface IBookingsService
     Task<ApiResponse> RemoveGuestFromRoomAsync(Guid bookingRoomId, Guid guestId);
     Task<ApiResponse<BookingDetailsDto>> UpdateRoomDatesAsync(Guid bookingRoomId, DateTime startDate, DateTime endDate);
     Task<ApiResponse<BookingDetailsDto>> UpdateRoomActualTimesAsync(Guid bookingRoomId, DateTime? actualCheckInAt, DateTime? actualCheckOutAt);
+    Task<ApiResponse<BookingDetailsDto>> MoveGuestAsync(Guid bookingRoomId, Guid guestId, Guid targetBookingRoomId);
 }

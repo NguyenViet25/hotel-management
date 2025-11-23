@@ -68,7 +68,7 @@ public class BookingsService(
             var booking = new Booking
             {
                 Id = Guid.NewGuid(),
-                HotelIdKey = dto.HotelId,
+                HotelId = dto.HotelId,
                 PrimaryGuestId = primaryGuest.Id,
                 Status = BookingStatus.Pending,
                 DepositAmount = dto.Deposit,
@@ -94,7 +94,7 @@ public class BookingsService(
                 var brt = new BookingRoomType
                 {
                     BookingRoomTypeId = Guid.NewGuid(),
-                    BookingIdKey = booking.Id,
+                    BookingId = booking.Id,
                     RoomTypeId = rt.RoomTypeId,
                     RoomTypeName = roomType.Name,
                     Capacity = rt.Capacity ?? roomType.Capacity,
@@ -141,7 +141,7 @@ public class BookingsService(
                     {
                         BookingRoomId = Guid.NewGuid(),
                         RoomId = r.RoomId,
-                        BookingRoomTypeIdKey = brt.BookingRoomTypeId,
+                        BookingRoomTypeId = brt.BookingRoomTypeId,
                         RoomName = room.Number,
                         StartDate = r.StartDate,
                         EndDate = r.EndDate,
@@ -231,7 +231,7 @@ public class BookingsService(
             var dto = new BookingDetailsDto
             {
                 Id = b.Id,
-                HotelId = b.HotelIdKey,
+                HotelId = b.HotelId,
                 PrimaryGuestId = b.PrimaryGuestId,
                 PrimaryGuestName = b.PrimaryGuest?.FullName,
                 PhoneNumber = b.PrimaryGuest?.Phone,
@@ -255,14 +255,14 @@ public class BookingsService(
 
             var roomTypes = await _bookingRoomTypeRepo.Query()
                     .Include(x => x.RoomType).Include(x => x.BookingRooms)
-                    .Where(x => x.BookingIdKey == dto.Id).ToListAsync();
+                    .Where(x => x.BookingId == dto.Id).ToListAsync();
 
             var list = new List<BookingRoomTypeDto>();
             foreach (var rt in roomTypes)
             {
                 var bookingRooms = await _bookingRoomRepo.Query()
                     .Include(x => x.HotelRoom)
-                    .Where(x => x.BookingRoomTypeIdKey == rt.BookingRoomTypeId)
+                    .Where(x => x.BookingRoomTypeId == rt.BookingRoomTypeId)
                     .ToListAsync();
 
                 var rtDto = new BookingRoomTypeDto()
@@ -336,7 +336,7 @@ public class BookingsService(
                 .Where(x => true);
 
             if (query.HotelId.HasValue)
-                q = q.Where(b => b.HotelIdKey == query.HotelId.Value);
+                q = q.Where(b => b.HotelId == query.HotelId.Value);
             if (query.Status.HasValue)
                 q = q.Where(b => b.Status == query.Status.Value);
             if (query.StartDate.HasValue)
@@ -383,7 +383,7 @@ public class BookingsService(
             var dtos = items.Select(b => new BookingDetailsDto
             {
                 Id = b.Id,
-                HotelId = b.HotelIdKey,
+                HotelId = b.HotelId,
                 PrimaryGuestId = b.PrimaryGuestId,
                 PrimaryGuestName = b.PrimaryGuest?.FullName,
                 PhoneNumber = b.PrimaryGuest?.Phone,
@@ -422,7 +422,7 @@ public class BookingsService(
             foreach (var item in dtos)
             {
                 var roomTypes = await _bookingRoomTypeRepo.Query()
-                    .Include(x => x.RoomType).Where(x => x.BookingIdKey == item.Id).ToListAsync();
+                    .Include(x => x.RoomType).Where(x => x.BookingId == item.Id).ToListAsync();
 
                 item.BookingRoomTypes = roomTypes.Select(rt => new BookingRoomTypeDto
                 {
@@ -468,7 +468,7 @@ public class BookingsService(
                 .Where(x => x.Status != BookingStatus.Pending && x.Status != BookingStatus.Cancelled);
 
             if (query.HotelId.HasValue)
-                q = q.Where(b => b.HotelIdKey == query.HotelId.Value);
+                q = q.Where(b => b.HotelId == query.HotelId.Value);
 
             q = q.OrderByDescending(b => b.CreatedAt);
 
@@ -483,7 +483,7 @@ public class BookingsService(
             var dtos = items.Select(b => new BookingDetailsDto
             {
                 Id = b.Id,
-                HotelId = b.HotelIdKey,
+                HotelId = b.HotelId,
                 PrimaryGuestId = b.PrimaryGuestId,
                 PrimaryGuestName = b.PrimaryGuest?.FullName,
                 PhoneNumber = b.PrimaryGuest?.Phone,
@@ -522,7 +522,7 @@ public class BookingsService(
             foreach (var item in dtos)
             {
                 var roomTypes = await _bookingRoomTypeRepo.Query()
-                    .Include(x => x.RoomType).Where(x => x.BookingIdKey == item.Id).ToListAsync();
+                    .Include(x => x.RoomType).Where(x => x.BookingId == item.Id).ToListAsync();
 
                 item.BookingRoomTypes = roomTypes.Select(rt => new BookingRoomTypeDto
                 {
@@ -574,7 +574,7 @@ public class BookingsService(
 
             if (dto.RoomTypes != null)
             {
-                var existingRoomTypeIds = await _bookingRoomTypeRepo.Query().Where(x => x.BookingIdKey == booking.Id).ToListAsync();
+                var existingRoomTypeIds = await _bookingRoomTypeRepo.Query().Where(x => x.BookingId == booking.Id).ToListAsync();
 
                 foreach (var item in existingRoomTypeIds)
                 {
@@ -588,7 +588,7 @@ public class BookingsService(
                 foreach (var rt in dto.RoomTypes)
                 {
                     var roomType = await _roomTypeRepo.FindAsync(rt.RoomTypeId);
-                    if (roomType == null || roomType.HotelId != booking.HotelIdKey)
+                    if (roomType == null || roomType.HotelId != booking.HotelId)
                     {
                         await _uow.RollbackTransactionAsync();
                         return ApiResponse<BookingDetailsDto>.Fail("Room type invalid for hotel");
@@ -597,7 +597,7 @@ public class BookingsService(
                     var brt = new BookingRoomType
                     {
                         BookingRoomTypeId = Guid.NewGuid(),
-                        BookingIdKey = booking.Id,
+                        BookingId = booking.Id,
                         RoomTypeId = rt.RoomTypeId,
                         RoomTypeName = roomType.Name,
                         StartDate = rt.StartDate,
@@ -622,7 +622,7 @@ public class BookingsService(
                             return ApiResponse<BookingDetailsDto>.Fail("Invalid date range for room");
                         }
 
-                        var room = await _roomRepo.Query().FirstOrDefaultAsync(x => x.Id == r.RoomId && x.HotelId == booking.HotelIdKey && x.RoomTypeId == rt.RoomTypeId);
+                        var room = await _roomRepo.Query().FirstOrDefaultAsync(x => x.Id == r.RoomId && x.HotelId == booking.HotelId && x.RoomTypeId == rt.RoomTypeId);
                         if (room == null)
                         {
                             await _uow.RollbackTransactionAsync();
@@ -642,7 +642,7 @@ public class BookingsService(
                         {
                             BookingRoomId = Guid.NewGuid(),
                             RoomId = r.RoomId,
-                            BookingRoomTypeIdKey = brt.BookingRoomTypeId,
+                            BookingRoomTypeId = brt.BookingRoomTypeId,
                             RoomName = room.Number,
                             StartDate = r.StartDate,
                             EndDate = r.EndDate,
@@ -841,7 +841,7 @@ public class BookingsService(
                 .Where(br => from < br.EndDate && to > br.StartDate)
                 .Select(br => new BookingIntervalDto
                 {
-                    BookingId = br.BookingRoomType.BookingIdKey,
+                    BookingId = br.BookingRoomType.BookingId,
                     Start = br.StartDate,
                     End = br.EndDate,
                     Status = br.BookingRoomType.Booking.Status,
@@ -895,7 +895,7 @@ public class BookingsService(
         await _bookingRoomRepo.AddAsync(new BookingRoom()
         {
             BookingRoomId = Guid.NewGuid(),
-            BookingRoomTypeIdKey = bookingRoomTypeId,
+            BookingRoomTypeId = bookingRoomTypeId,
             RoomId = roomId,
             StartDate = bookingRoomType.StartDate,
             EndDate = bookingRoomType.EndDate,
@@ -1032,7 +1032,7 @@ public class BookingsService(
         await _bookingRoomRepo.UpdateAsync(bookingRoom);
         await _bookingRoomRepo.SaveChangesAsync();
 
-        var bookingId = bookingRoom.BookingRoomType!.BookingIdKey;
+        var bookingId = bookingRoom.BookingRoomType!.BookingId;
         return await GetByIdAsync(bookingId);
     }
 
@@ -1100,7 +1100,28 @@ public class BookingsService(
         await _bookingRoomRepo.UpdateAsync(bookingRoom);
         await _bookingRoomRepo.SaveChangesAsync();
 
-        var bookingId = bookingRoom.BookingRoomType!.BookingIdKey;
+        var bookingId = bookingRoom.BookingRoomType!.BookingId;
+        return await GetByIdAsync(bookingId);
+    }
+
+    public async Task<ApiResponse<BookingDetailsDto>> MoveGuestAsync(Guid bookingRoomId, Guid guestId, Guid targetBookingRoomId)
+    {
+        var fromRoom = await _bookingRoomRepo.Query().Include(br => br.BookingRoomType).FirstOrDefaultAsync(br => br.BookingRoomId == bookingRoomId);
+        if (fromRoom == null) return ApiResponse<BookingDetailsDto>.Fail("Không tìm thấy phòng nguồn");
+        var toRoom = await _bookingRoomRepo.Query().Include(br => br.BookingRoomType).FirstOrDefaultAsync(br => br.BookingRoomId == targetBookingRoomId);
+        if (toRoom == null) return ApiResponse<BookingDetailsDto>.Fail("Không tìm thấy phòng đích");
+
+        if (fromRoom.BookingRoomType!.BookingId != toRoom.BookingRoomType!.BookingId)
+            return ApiResponse<BookingDetailsDto>.Fail("Phòng đích phải thuộc cùng booking");
+
+        var bg = await _bookingGuestRepo.Query().FirstOrDefaultAsync(x => x.BookingRoomId == bookingRoomId && x.GuestId == guestId);
+        if (bg == null) return ApiResponse<BookingDetailsDto>.Fail("Không tìm thấy khách trong phòng nguồn");
+
+        bg.BookingRoomId = targetBookingRoomId;
+        await _bookingGuestRepo.UpdateAsync(bg);
+        await _bookingGuestRepo.SaveChangesAsync();
+
+        var bookingId = fromRoom.BookingRoomType!.BookingId;
         return await GetByIdAsync(bookingId);
     }
 
@@ -1109,11 +1130,11 @@ public class BookingsService(
         var bookingRoom = await _bookingRoomRepo.Query().Include(br => br.BookingRoomType).FirstOrDefaultAsync(br => br.BookingRoomId == bookingRoomId);
         if (bookingRoom == null) return ApiResponse<BookingDetailsDto>.Fail("Không tìm thấy booking");
 
-        var booking = await _bookingRepo.FindAsync(bookingRoom.BookingRoomType!.BookingIdKey);
+        var booking = await _bookingRepo.FindAsync(bookingRoom.BookingRoomType!.BookingId);
         if (booking == null) return ApiResponse<BookingDetailsDto>.Fail("Không tìm thấy booking");
 
         var targetRoom = await _roomRepo.FindAsync(newRoomId);
-        if (targetRoom == null || targetRoom.HotelId != booking.HotelIdKey) return ApiResponse<BookingDetailsDto>.Fail("Phòng không hợp lệ");
+        if (targetRoom == null || targetRoom.HotelId != booking.HotelId) return ApiResponse<BookingDetailsDto>.Fail("Phòng không hợp lệ");
 
         var overlap = await _bookingRoomRepo.Query()
             .Where(br => br.RoomId == newRoomId && br.BookingStatus != BookingRoomStatus.Cancelled && br.BookingRoomId != bookingRoomId)
@@ -1161,20 +1182,25 @@ public class BookingsService(
         return await GetByIdAsync(booking.Id);
     }
 
-    public async Task<ApiResponse<ExtendStayResultDto>> ExtendStayAsync(Guid bookingRoomId, DateTime newEndDate, string? discountCode)
+    public async Task<ApiResponse> ExtendStayAsync(Guid bookingRoomId, DateTime newEndDate, string? discountCode)
     {
-        var bookingRoom = await _bookingRoomRepo.Query().Include(br => br.BookingRoomType).FirstOrDefaultAsync(br => br.BookingRoomId == bookingRoomId);
-        if (bookingRoom == null) return ApiResponse<ExtendStayResultDto>.Fail("Không tìm thấy booking");
+        var bookingRoom = await _bookingRoomRepo.Query()
+            .Include(br => br.BookingRoomType).FirstOrDefaultAsync(br => br.BookingRoomId == bookingRoomId);
+        if (bookingRoom == null) return ApiResponse.Fail("Không tìm thấy booking");
 
-        if (newEndDate.Date <= bookingRoom.EndDate.Date) return ApiResponse<ExtendStayResultDto>.Fail("Ngày kết thúc không hợp lệ");
+        if (newEndDate.Date <= bookingRoom.EndDate.Date) return ApiResponse.Fail("Ngày kết thúc không hợp lệ");
 
         var overlap = await _bookingRoomRepo.Query()
             .Where(br => br.RoomId == bookingRoom.RoomId && br.BookingStatus != BookingRoomStatus.Cancelled && br.BookingRoomId != bookingRoomId)
             .AnyAsync(br => bookingRoom.EndDate < br.EndDate && newEndDate > br.StartDate);
-        if (overlap) return ApiResponse<ExtendStayResultDto>.Fail("Không thể gia hạn do trùng lịch");
+        if (overlap) return ApiResponse.Fail("Không thể gia hạn do trùng lịch");
+
+        var bookingRoomType = await _bookingRoomTypeRepo.Query()
+            .Where(x => x.BookingRoomTypeId == bookingRoom.BookingRoomTypeId)
+            .FirstOrDefaultAsync();
 
         var nights = (newEndDate.Date - bookingRoom.EndDate.Date).Days;
-        var pricePerNight = bookingRoom.BookingRoomType!.Price;
+        var pricePerNight = bookingRoomType?.Price;
         var delta = pricePerNight * nights;
 
         bookingRoom.ExtendedDate = newEndDate;
@@ -1182,19 +1208,16 @@ public class BookingsService(
         await _bookingRoomRepo.UpdateAsync(bookingRoom);
         await _bookingRoomRepo.SaveChangesAsync();
 
-        var booking = await _bookingRepo.FindAsync(bookingRoom.BookingRoomType.BookingIdKey);
+        var booking = await _bookingRepo.FindAsync(bookingRoomType!.BookingId);
         if (booking != null)
         {
-            booking.TotalAmount += delta;
-            booking.LeftAmount += delta;
+            booking.TotalAmount += delta ?? 0;
+            booking.LeftAmount += delta ?? 0;
             await _bookingRepo.UpdateAsync(booking);
             await _bookingRepo.SaveChangesAsync();
         }
 
-        var details = await GetByIdAsync(bookingRoom.BookingRoomType.BookingIdKey);
-        if (!details.IsSuccess) return ApiResponse<ExtendStayResultDto>.Fail(details.Message ?? "");
-
-        return ApiResponse<ExtendStayResultDto>.Ok(new ExtendStayResultDto { Booking = details.Data!, Price = delta });
+        return ApiResponse.Ok();
     }
 
     public async Task<ApiResponse<CheckoutResultDto>> CheckOutAsync(Guid bookingId, CheckoutRequestDto dto)
@@ -1218,7 +1241,7 @@ public class BookingsService(
             });
         }
 
-        var rules = await _surchargeRuleRepo.Query().Where(x => x.HotelId == booking.HotelIdKey).ToListAsync();
+        var rules = await _surchargeRuleRepo.Query().Where(x => x.HotelId == booking.HotelId).ToListAsync();
 
         if (dto.EarlyCheckIn == true)
         {
@@ -1285,7 +1308,7 @@ public class BookingsService(
         var invoice = new Invoice
         {
             Id = Guid.NewGuid(),
-            HotelId = booking.HotelIdKey,
+            HotelId = booking.HotelId,
             BookingId = booking.Id,
             InvoiceNumber = $"INV-{DateTime.UtcNow:yyMM}-{new Random().Next(100000, 999999)}",
             Status = InvoiceStatus.Draft,
@@ -1360,7 +1383,7 @@ public class BookingsService(
         var booking = await _bookingRepo.Query().Include(b => b.BookingRoomTypes).ThenInclude(rt => rt.BookingRooms).FirstOrDefaultAsync(b => b.Id == bookingId);
         if (booking == null) return ApiResponse<AdditionalChargesDto>.Fail("Không tìm thấy booking");
 
-        var rules = await _surchargeRuleRepo.Query().Where(x => x.HotelId == booking.HotelIdKey).ToListAsync();
+        var rules = await _surchargeRuleRepo.Query().Where(x => x.HotelId == booking.HotelId).ToListAsync();
         var lines = new List<AdditionalChargeLineDto>();
 
         var earlyRule = rules.FirstOrDefault(r => r.Type == SurchargeType.EarlyCheckIn);

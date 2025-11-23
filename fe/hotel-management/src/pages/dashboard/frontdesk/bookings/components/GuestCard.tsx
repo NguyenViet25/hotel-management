@@ -28,7 +28,7 @@ type Props = {
   onDelete?: () => void;
   disabledEdit?: boolean;
   disabledDelete?: boolean;
-  onChangeRoom?: () => void;
+  onChangeRoom?: (guest: BookingGuestDto) => void;
   onExtendStay?: () => void;
 };
 
@@ -157,24 +157,10 @@ const GuestCard: React.FC<Props> = ({
             <IconButton
               color="primary"
               size="small"
-              onClick={onChangeRoom}
+              onClick={() => onChangeRoom?.(guest)}
               aria-label="Đổi phòng"
             >
               <MoveUp fontSize="small" />
-            </IconButton>
-          </span>
-        </Tooltip>
-
-        {/* Extend Stay */}
-        <Tooltip title="Gia hạn thời gian ở">
-          <span>
-            <IconButton
-              color="primary"
-              size="small"
-              onClick={onExtendStay}
-              aria-label="Gia hạn thời gian ở"
-            >
-              <EventAvailable fontSize="small" />
             </IconButton>
           </span>
         </Tooltip>

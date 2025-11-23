@@ -22,6 +22,7 @@ import React, { useState } from "react";
 import bookingsApi, {
   BookingRoomStatus,
   type BookingDetailsDto,
+  type BookingGuestDto,
   type BookingRoomDto,
   type BookingRoomTypeDto,
 } from "../../../../../api/bookingsApi";
@@ -31,6 +32,7 @@ import CheckOutTimeDialog from "./CheckOutTimeDialog";
 import PlannedDatesDialog from "./PlannedDatesDialog";
 import ChangeRoomDialog from "./ChangeRoomDialog";
 import ExtendStayDialog from "./ExtendStayDialog";
+import MoveGuestDialog from "./MoveGuestDialog";
 import GuestDialog from "./GuestDialog";
 import GuestList from "./GuestList";
 import StripedLabelWrapper from "../../../../../components/LabelStripedWrapper";
@@ -94,6 +96,9 @@ const RoomTypeBlock: React.FC<{
   const [editActualOutOpen, setEditActualOutOpen] = useState(false);
   const [changeRoomOpen, setChangeRoomOpen] = useState(false);
   const [extendOpen, setExtendOpen] = useState(false);
+  const [moveGuestOpen, setMoveGuestOpen] = useState(false);
+  const [movingGuest, setMovingGuest] = useState<BookingGuestDto | null>(null);
+  const [movingFromRoomId, setMovingFromRoomId] = useState<string | null>(null);
 
   const openAddGuest = (roomId: string) => {
     setGuestRoomId(roomId);
@@ -405,13 +410,13 @@ const RoomTypeBlock: React.FC<{
                               variant="outlined"
                               size="small"
                               color="primary"
-                            onClick={() => {
-                              setActiveRoom(br);
-                              setExtendOpen(true);
-                            }}
-                          >
-                            Gia hạn thêm
-                          </Button>
+                              onClick={() => {
+                                setActiveRoom(br);
+                                setExtendOpen(true);
+                              }}
+                            >
+                              Gia hạn thêm
+                            </Button>
                           </StripedLabelWrapper>
                         </Stack>
                       }
@@ -457,9 +462,11 @@ const RoomTypeBlock: React.FC<{
                               });
                             }
                           }}
-                          onChangeRoom={() => {
+                          onChangeRoom={(gi) => {
                             setActiveRoom(br);
-                            setChangeRoomOpen(true);
+                            setMovingGuest(gi);
+                            setMovingFromRoomId(br.bookingRoomId);
+                            setMoveGuestOpen(true);
                           }}
                           onExtendStay={() => {
                             setActiveRoom(br);
@@ -514,7 +521,6 @@ const RoomTypeBlock: React.FC<{
             onSubmit={submitCheckIn}
           />
         </Stack>
-
         <AssignRoomDialog
           open={assignOpen}
           booking={booking}
@@ -530,7 +536,6 @@ const RoomTypeBlock: React.FC<{
             await onRefresh?.();
           }}
         />
-
         <CheckInTimeDialog
           open={checkInOpen}
           scheduledStart={activeRoom?.startDate || ""}
@@ -569,7 +574,6 @@ const RoomTypeBlock: React.FC<{
             }
           }}
         />
-
         <CheckOutTimeDialog
           open={checkOutOpen}
           scheduledEnd={activeRoom?.endDate || ""}
@@ -607,7 +611,6 @@ const RoomTypeBlock: React.FC<{
             }
           }}
         />
-
         <ChangeRoomDialog
           open={changeRoomOpen}
           booking={booking}
@@ -615,41 +618,73 @@ const RoomTypeBlock: React.FC<{
           onClose={() => setChangeRoomOpen(false)}
           onConfirm={async (roomId) => {
             try {
-              const res = await bookingsApi.changeRoom(activeRoom!.bookingRoomId, { newRoomId: roomId });
+              const res = await bookingsApi.changeRoom(
+                activeRoom!.bookingRoomId,
+                { newRoomId: roomId }
+              );
               if (res.isSuccess) {
-                setSnackbar({ open: true, message: "Đổi phòng thành công", severity: "success" });
+                setSnackbar({
+                  open: true,
+                  message: "Đổi phòng thành công",
+                  severity: "success",
+                });
                 setChangeRoomOpen(false);
                 await onRefresh?.();
               } else {
-                setSnackbar({ open: true, message: res.message || "Không thể đổi phòng", severity: "error" });
+                setSnackbar({
+                  open: true,
+                  message: res.message || "Không thể đổi phòng",
+                  severity: "error",
+                });
               }
             } catch {
-              setSnackbar({ open: true, message: "Đã xảy ra lỗi khi đổi phòng", severity: "error" });
+              setSnackbar({
+                open: true,
+                message: "Đã xảy ra lỗi khi đổi phòng",
+                severity: "error",
+              });
             }
           }}
         />
-
         <ExtendStayDialog
           open={extendOpen}
           currentEnd={activeRoom?.endDate || rt.endDate}
           onClose={() => setExtendOpen(false)}
           onConfirm={async (newEndIso) => {
             try {
-              const res = await bookingsApi.extendStay(activeRoom!.bookingRoomId, { newEndDate: newEndIso });
+              const res = await bookingsApi.extendStay(
+                activeRoom!.bookingRoomId,
+                { newEndDate: newEndIso }
+              );
               if (res.isSuccess) {
                 const price = (res as any)?.data?.price ?? undefined;
-                setSnackbar({ open: true, message: price ? `Gia hạn thành công (+${price?.toLocaleString?.() || price}đ)` : "Gia hạn thành công", severity: "success" });
+                setSnackbar({
+                  open: true,
+                  message: price
+                    ? `Gia hạn thành công (+${
+                        price?.toLocaleString?.() || price
+                      }đ)`
+                    : "Gia hạn thành công",
+                  severity: "success",
+                });
                 setExtendOpen(false);
                 await onRefresh?.();
               } else {
-                setSnackbar({ open: true, message: res.message || "Không thể gia hạn", severity: "error" });
+                setSnackbar({
+                  open: true,
+                  message: res.message || "Không thể gia hạn",
+                  severity: "error",
+                });
               }
             } catch {
-              setSnackbar({ open: true, message: "Đã xảy ra lỗi khi gia hạn", severity: "error" });
+              setSnackbar({
+                open: true,
+                message: "Đã xảy ra lỗi khi gia hạn",
+                severity: "error",
+              });
             }
           }}
         />
-
         <PlannedDatesDialog
           open={plannedOpen}
           initialStart={activeRoom?.startDate || rt.startDate}
@@ -687,7 +722,6 @@ const RoomTypeBlock: React.FC<{
             }
           }}
         />
-
         <CheckInTimeDialog
           open={editActualInOpen}
           scheduledStart={activeRoom?.startDate || ""}
@@ -720,6 +754,45 @@ const RoomTypeBlock: React.FC<{
               setSnackbar({
                 open: true,
                 message: "Đã xảy ra lỗi khi cập nhật check-in",
+                severity: "error",
+              });
+            }
+          }}
+        />
+        <MoveGuestDialog
+          open={moveGuestOpen}
+          booking={booking}
+          fromRoomId={movingFromRoomId || ""}
+          guest={movingGuest as any}
+          onClose={() => setMoveGuestOpen(false)}
+          onConfirm={async (targetId) => {
+            try {
+              const res = await bookingsApi.moveGuest(
+                movingFromRoomId!,
+                movingGuest!.guestId,
+                { targetBookingRoomId: targetId } as any
+              );
+              if (res.isSuccess) {
+                setSnackbar({
+                  open: true,
+                  message: "Chuyển khách thành công",
+                  severity: "success",
+                });
+                setMoveGuestOpen(false);
+                setMovingGuest(null);
+                setMovingFromRoomId(null);
+                await onRefresh?.();
+              } else {
+                setSnackbar({
+                  open: true,
+                  message: res.message || "Không thể chuyển khách",
+                  severity: "error",
+                });
+              }
+            } catch {
+              setSnackbar({
+                open: true,
+                message: "Đã xảy ra lỗi khi chuyển khách",
                 severity: "error",
               });
             }
@@ -763,7 +836,6 @@ const RoomTypeBlock: React.FC<{
             }
           }}
         />
-
         <Snackbar
           open={snackbar.open}
           autoHideDuration={3000}

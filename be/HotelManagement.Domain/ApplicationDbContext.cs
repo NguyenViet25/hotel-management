@@ -99,7 +99,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
         builder.Entity<Booking>()
             .HasOne<Hotel>()
             .WithMany()
-            .HasForeignKey(b => b.HotelIdKey)
+            .HasForeignKey(b => b.HotelId)
             .OnDelete(DeleteBehavior.Restrict);
 
         var booking = builder.Entity<Booking>();
@@ -153,13 +153,13 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
         builder.Entity<BookingRoomType>()
             .HasOne<Booking>()
             .WithMany()
-            .HasForeignKey(b => b.BookingIdKey)
+            .HasForeignKey(b => b.BookingId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<BookingRoom>()
             .HasOne<BookingRoomType>()
             .WithMany()
-            .HasForeignKey(b => b.BookingRoomTypeIdKey)
+            .HasForeignKey(b => b.BookingRoomTypeId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<BookingRoom>()
