@@ -152,3 +152,4 @@
 2025-11-23 - 2 - 01:58:28 UTC :: test: UC-21 Housekeeping: cap nhat Dirty/In-progress/Cleaned/Inspected. — cai thien hieu nang render/list (da smoke test)
 2025-11-23 - 3 - 01:58:31 UTC :: test: UC-11 Goi gia: bat/tam ngung goi gia dang ap dung. — kiem tra tuong thich mui gio/tien te (da review so bo)
 2025-11-23 - 4 - 01:58:33 UTC :: build: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — dieu chinh UI & copy cho ro (chuan bi cho tinh nang tiep theo)
+2025-11-23 - 5 - 01:58:34 UTC :: refactor: UC-19 Lich phong: calendar trang thai phong theo ngay. — chuan hoa ten ham/bien theo convention (anh huong thap)
