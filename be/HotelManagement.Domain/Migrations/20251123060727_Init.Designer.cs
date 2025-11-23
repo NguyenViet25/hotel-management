@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelManagement.Domain.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251123044059_Init")]
+    [Migration("20251123060727_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -109,13 +109,19 @@ namespace HotelManagement.Domain.Migrations
 
             modelBuilder.Entity("HotelManagement.Domain.BookingGuest", b =>
                 {
+                    b.Property<Guid>("BookingGuestId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("BookingRoomId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("GuestId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("BookingRoomId", "GuestId");
+                    b.HasKey("BookingGuestId");
+
+                    b.HasIndex("BookingRoomId");
 
                     b.HasIndex("GuestId");
 

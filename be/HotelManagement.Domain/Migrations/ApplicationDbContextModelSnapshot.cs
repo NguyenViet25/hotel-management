@@ -106,13 +106,19 @@ namespace HotelManagement.Domain.Migrations
 
             modelBuilder.Entity("HotelManagement.Domain.BookingGuest", b =>
                 {
+                    b.Property<Guid>("BookingGuestId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("BookingRoomId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("GuestId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("BookingRoomId", "GuestId");
+                    b.HasKey("BookingGuestId");
+
+                    b.HasIndex("BookingRoomId");
 
                     b.HasIndex("GuestId");
 

@@ -786,12 +786,13 @@ namespace HotelManagement.Domain.Migrations
                 name: "BookingGuests",
                 columns: table => new
                 {
+                    BookingGuestId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     BookingRoomId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     GuestId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_BookingGuests", x => new { x.BookingRoomId, x.GuestId });
+                    table.PrimaryKey("PK_BookingGuests", x => x.BookingGuestId);
                     table.ForeignKey(
                         name: "FK_BookingGuests_BookingRooms_BookingRoomId",
                         column: x => x.BookingRoomId,
@@ -961,6 +962,11 @@ namespace HotelManagement.Domain.Migrations
                 name: "IX_AuditLogs_UserId",
                 table: "AuditLogs",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BookingGuests_BookingRoomId",
+                table: "BookingGuests",
+                column: "BookingRoomId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_BookingGuests_GuestId",

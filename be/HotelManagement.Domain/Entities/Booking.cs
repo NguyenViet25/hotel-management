@@ -59,6 +59,7 @@ public class BookingRoom
 
 public class BookingGuest
 {
+    public Guid BookingGuestId { get; set; }
     public Guid BookingRoomId { get; set; }
     public Guid GuestId { get; set; }
     public BookingRoom? BookingRoom { get; set; }

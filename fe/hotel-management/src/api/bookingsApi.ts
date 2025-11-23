@@ -484,6 +484,18 @@ const bookingsApi = {
     return res.data;
   },
 
+  async swapGuests(
+    bookingRoomId: string,
+    guestId: string,
+    payload: { targetBookingRoomId: string; targetGuestId: string }
+  ): Promise<ApiResponse<BookingDetailsDto>> {
+    const res = await axios.post(
+      `/admin/bookings/rooms/${bookingRoomId}/guests/${guestId}/swap`,
+      payload
+    );
+    return res.data;
+  },
+
   async createCallLog(
     id: string,
     payload: { callTime?: string; result: CallResult; notes?: string }

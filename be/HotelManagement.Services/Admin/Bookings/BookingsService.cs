@@ -157,6 +157,7 @@ public class BookingsService(
                         // Attach primary guest by default
                         await _bookingGuestRepo.AddAsync(new BookingGuest
                         {
+                            BookingGuestId = Guid.NewGuid(),
                             BookingRoomId = bookingRoom.BookingRoomId,
                             GuestId = primaryGuest.Id
                         });
@@ -183,6 +184,7 @@ public class BookingsService(
 
                             await _bookingGuestRepo.AddAsync(new BookingGuest
                             {
+                                BookingGuestId = Guid.NewGuid(),
                                 BookingRoomId = bookingRoom.BookingRoomId,
                                 GuestId = gid
                             });
@@ -1131,6 +1133,43 @@ public class BookingsService(
         await _bookingGuestRepo.SaveChangesAsync();
 
         var bookingId = fromRoom.BookingRoomType!.BookingId;
+        return await GetByIdAsync(bookingId);
+    }
+
+    public async Task<ApiResponse<BookingDetailsDto>> SwapGuestsAsync(Guid bookingRoomId, Guid guestId, Guid targetBookingRoomId, Guid targetGuestId)
+    {
+        var fromRoom = await _bookingRoomRepo.Query().Include(br => br.BookingRoomType).FirstOrDefaultAsync(br => br.BookingRoomId == bookingRoomId);
+        if (fromRoom == null) return ApiResponse<BookingDetailsDto>.Fail("Không tìm thấy phòng nguồn");
+        var toRoom = await _bookingRoomRepo.Query().Include(br => br.BookingRoomType).FirstOrDefaultAsync(br => br.BookingRoomId == targetBookingRoomId);
+        if (toRoom == null) return ApiResponse<BookingDetailsDto>.Fail("Không tìm thấy phòng đích");
+
+        var bookingRoomTypeFrom = await _bookingRoomTypeRepo.Query()
+            .Where(x => x.BookingRoomTypeId == fromRoom.BookingRoomTypeId)
+            .FirstOrDefaultAsync();
+
+        var bookingRoomTypeTo = await _bookingRoomTypeRepo.Query()
+            .Where(x => x.BookingRoomTypeId == toRoom.BookingRoomTypeId)
+            .FirstOrDefaultAsync();
+
+        if (bookingRoomTypeFrom!.BookingId != bookingRoomTypeTo!.BookingId)
+            return ApiResponse<BookingDetailsDto>.Fail("Phòng đích phải thuộc cùng booking");
+        if (fromRoom.BookingRoomTypeId != toRoom.BookingRoomTypeId)
+            return ApiResponse<BookingDetailsDto>.Fail("Phòng đích phải thuộc cùng loại phòng");
+
+        var src = await _bookingGuestRepo.Query().FirstOrDefaultAsync(x => x.BookingRoomId == bookingRoomId && x.GuestId == guestId);
+        if (src == null) return ApiResponse<BookingDetailsDto>.Fail("Không tìm thấy khách trong phòng nguồn");
+        var dst = await _bookingGuestRepo.Query().FirstOrDefaultAsync(x => x.BookingRoomId == targetBookingRoomId && x.GuestId == targetGuestId);
+        if (dst == null) return ApiResponse<BookingDetailsDto>.Fail("Không tìm thấy khách trong phòng đích");
+
+        src.BookingRoomId = targetBookingRoomId;
+        await _bookingGuestRepo.UpdateAsync(src);
+        await _bookingGuestRepo.SaveChangesAsync();
+
+        dst.BookingRoomId = bookingRoomId;
+        await _bookingGuestRepo.UpdateAsync(dst);
+        await _bookingGuestRepo.SaveChangesAsync();
+
+        var bookingId = bookingRoomTypeFrom!.BookingId;
         return await GetByIdAsync(bookingId);
     }
 

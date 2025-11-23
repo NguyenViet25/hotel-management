@@ -28,4 +28,5 @@ public interface IBookingsService
     Task<ApiResponse<BookingDetailsDto>> UpdateRoomDatesAsync(Guid bookingRoomId, DateTime startDate, DateTime endDate);
     Task<ApiResponse<BookingDetailsDto>> UpdateRoomActualTimesAsync(Guid bookingRoomId, DateTime? actualCheckInAt, DateTime? actualCheckOutAt);
     Task<ApiResponse<BookingDetailsDto>> MoveGuestAsync(Guid bookingRoomId, Guid guestId, Guid targetBookingRoomId);
+    Task<ApiResponse<BookingDetailsDto>> SwapGuestsAsync(Guid bookingRoomId, Guid guestId, Guid targetBookingRoomId, Guid targetGuestId);
 }

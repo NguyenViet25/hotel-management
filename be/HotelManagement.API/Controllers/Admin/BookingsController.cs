@@ -192,6 +192,13 @@ public class BookingsController(IBookingsService bookingsService, IWebHostEnviro
         var result = await _bookingsService.MoveGuestAsync(bookingRoomId, guestId, dto.TargetBookingRoomId);
         return Ok(result);
     }
+
+    [HttpPost("rooms/{bookingRoomId}/guests/{guestId}/swap")]
+    public async Task<ActionResult<ApiResponse<BookingDetailsDto>>> SwapGuests(Guid bookingRoomId, Guid guestId, [FromBody] SwapGuestsDto dto)
+    {
+        var result = await _bookingsService.SwapGuestsAsync(bookingRoomId, guestId, dto.TargetBookingRoomId, dto.TargetGuestId);
+        return Ok(result);
+    }
 }
 
 public class AddRoomToBooking

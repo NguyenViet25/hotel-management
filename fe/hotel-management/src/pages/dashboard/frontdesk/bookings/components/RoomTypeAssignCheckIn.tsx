@@ -832,18 +832,19 @@ const RoomTypeBlock: React.FC<{
           booking={booking}
           fromRoomId={movingFromRoomId || ""}
           guest={movingGuest as any}
+          roomType={rt}
           onClose={() => setMoveGuestOpen(false)}
-          onConfirm={async (targetId) => {
+          onConfirm={async (targetBookingRoomId, targetGuestId) => {
             try {
-              const res = await bookingsApi.moveGuest(
+              const res = await bookingsApi.swapGuests(
                 movingFromRoomId!,
                 movingGuest!.guestId,
-                { targetBookingRoomId: targetId } as any
+                { targetBookingRoomId, targetGuestId } as any
               );
               if (res.isSuccess) {
                 setSnackbar({
                   open: true,
-                  message: "Chuyển khách thành công",
+                  message: "Hoán đổi khách thành công",
                   severity: "success",
                 });
                 setMoveGuestOpen(false);
@@ -853,14 +854,14 @@ const RoomTypeBlock: React.FC<{
               } else {
                 setSnackbar({
                   open: true,
-                  message: res.message || "Không thể chuyển khách",
+                  message: res.message || "Không thể hoán đổi khách",
                   severity: "error",
                 });
               }
             } catch {
               setSnackbar({
                 open: true,
-                message: "Đã xảy ra lỗi khi chuyển khách",
+                message: "Đã xảy ra lỗi khi hoán đổi khách",
                 severity: "error",
               });
             }

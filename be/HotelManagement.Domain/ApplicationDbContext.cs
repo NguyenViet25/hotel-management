@@ -44,7 +44,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
     {
         base.OnModelCreating(builder);
 
-        builder.Entity<BookingGuest>().HasKey(x => new { x.BookingRoomId, x.GuestId });
+        builder.Entity<BookingGuest>().HasKey(x =>x.BookingGuestId);
 
         builder.Entity<Hotel>().HasIndex(h => h.Code).IsUnique();
         builder.Entity<HotelRoom>().HasIndex(r => new { r.HotelId, r.RoomTypeId, r.Id }).IsUnique();
