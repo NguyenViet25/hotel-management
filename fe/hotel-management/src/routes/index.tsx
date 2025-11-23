@@ -15,6 +15,7 @@ import KitchenTimelinePage from "../pages/dashboard/manager/kitchen/KitchenTimel
 import DiscountCodesPage from "../pages/dashboard/manager/discounts/DiscountCodesPage";
 import MinibarManagementPage from "../pages/dashboard/manager/minibars/MinibarManagementPage";
 import MyTask from "../pages/dashboard/housekeeper/MyTask";
+import RoomNeedCleaningPage from "../pages/dashboard/housekeeper/RoomNeedCleaningPage";
 
 // Role-aware layout wrapper for standalone pages like /profile
 const RoleAwareLayout = () => {

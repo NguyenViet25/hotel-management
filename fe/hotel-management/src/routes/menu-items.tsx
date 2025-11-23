@@ -86,7 +86,7 @@ export const menuItems = {
     },
     {
       title: "Phòng cần dọn",
-      path: "/housekeeper/room-need-cleaning",
+      path: "/housekeeper/rooms",
       icon: <CleanHands />,
     },
     {
