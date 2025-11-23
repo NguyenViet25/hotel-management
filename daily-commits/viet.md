@@ -150,3 +150,4 @@
 2025-11-22 - 5 - 01:41:31 UTC :: test: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — chinh sua tai lieu & mo ta API (can theo doi them)
 2025-11-23 - 1 - 01:58:28 UTC :: fix: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — bo sung metrics/telemetry co ban (anh huong thap)
 2025-11-23 - 2 - 01:58:30 UTC :: ci: UC-09 So do: hien thi layout, loc trang thai phong. — cap nhat mock data & seed test (chuan bi cho tinh nang tiep theo)
+2025-11-23 - 3 - 01:58:31 UTC :: feat: UC-40 Thu/chi: doi soat tien mat/the/le phi PG. — cap nhat mock data & seed test (da smoke test)
