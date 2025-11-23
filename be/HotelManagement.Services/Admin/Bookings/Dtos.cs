@@ -103,6 +103,7 @@ public class BookingRoomDto
     public string? RoomName { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
+    public DateTime? ExtendedDate { get; set; }
     public DateTime? ActualCheckInAt { get; set; }
     public DateTime? ActualCheckOutAt { get; set; }
     public BookingRoomStatus BookingStatus { get; set; }

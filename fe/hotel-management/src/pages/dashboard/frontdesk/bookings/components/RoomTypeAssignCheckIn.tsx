@@ -1,4 +1,4 @@
-import { Login, Logout } from "@mui/icons-material";
+import { Edit, Login, Logout } from "@mui/icons-material";
 import {
   Alert,
   Button,
@@ -7,6 +7,7 @@ import {
   CardHeader,
   Chip,
   Grid,
+  IconButton,
   Snackbar,
   Stack,
   Typography,
@@ -284,23 +285,55 @@ const RoomTypeBlock: React.FC<{
                             </Stack>
                           </StripedLabelWrapper>
                           <StripedLabelWrapper label="Thời gian thực tế">
-                            <Stack direction={"row"} spacing={1}>
-                              <Chip
-                                label={`Nhận: ${
-                                  br.actualCheckInAt
-                                    ? formatDateTime(br.actualCheckInAt)
-                                    : "—"
-                                }`}
-                                size="small"
-                              />
-                              <Chip
-                                label={`Trả: ${
-                                  br.actualCheckOutAt
-                                    ? formatDateTime(br.actualCheckOutAt)
-                                    : "—"
-                                }`}
-                                size="small"
-                              />{" "}
+                            <Stack spacing={1} justifyContent={"start"}>
+                              <Stack
+                                direction={"row"}
+                                spacing={1}
+                                justifyItems={"center"}
+                              >
+                                <Chip
+                                  label={`Nhận: ${
+                                    br.actualCheckInAt
+                                      ? formatDateTime(br.actualCheckInAt)
+                                      : "—"
+                                  }`}
+                                  size="small"
+                                  sx={{
+                                    width: "100%",
+                                    justifyContent: "flex-start", // <-- The key
+                                    "& .MuiChip-label": {
+                                      pl: 2, // remove default padding
+                                      textAlign: "left",
+                                      width: "100%",
+                                    },
+                                  }}
+                                />
+                                <Edit />
+                              </Stack>
+                              <Stack
+                                direction={"row"}
+                                spacing={1}
+                                justifyItems={"center"}
+                              >
+                                <Chip
+                                  label={`Trả: ${
+                                    br.actualCheckOutAt
+                                      ? formatDateTime(br.actualCheckOutAt)
+                                      : "—"
+                                  }`}
+                                  size="small"
+                                  sx={{
+                                    width: "100%",
+                                    justifyContent: "flex-start",
+                                    "& .MuiChip-label": {
+                                      pl: 2,
+                                      textAlign: "left",
+                                      width: "100%",
+                                    },
+                                  }}
+                                />
+                                <Edit />
+                              </Stack>
                             </Stack>
                           </StripedLabelWrapper>
                         </Stack>
@@ -317,13 +350,13 @@ const RoomTypeBlock: React.FC<{
                             openEditGuest(br.bookingRoomId, idx, {
                               ...gi,
                               name: gi.fullname || "",
-                            })
+                            } as any)
                           }
                           onDelete={async (_idx, gi) => {
                             try {
                               const res = await bookingsApi.removeGuestFromRoom(
                                 br.bookingRoomId,
-                                gi.id!
+                                gi.guestId!
                               );
                               if (res.isSuccess) {
                                 setSnackbar({
@@ -361,10 +394,7 @@ const RoomTypeBlock: React.FC<{
                               setActiveRoom(br);
                               setCheckInOpen(true);
                             }}
-                            // disabled={
-                            //   ((forms[br.bookingRoomId] || []).length + (br.guests || []).length) >=
-                            //   (rt.capacity || 0)
-                            // }
+                            disabled={br.actualCheckInAt !== undefined}
                           >
                             Check in
                           </Button>

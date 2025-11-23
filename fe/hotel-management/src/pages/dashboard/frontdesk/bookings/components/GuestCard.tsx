@@ -1,16 +1,22 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Avatar,
   Box,
   Card,
   CardContent,
+  Button,
   Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   IconButton,
   Stack,
   Typography,
 } from "@mui/material";
 import EditOutlined from "@mui/icons-material/EditOutlined";
 import DeleteOutline from "@mui/icons-material/DeleteOutline";
+import BadgeIcon from "@mui/icons-material/Badge";
 import type { BookingGuestDto } from "../../../../../api/bookingsApi";
 
 type Props = {
@@ -40,6 +46,7 @@ const GuestCard: React.FC<Props> = ({
   disabledEdit,
   disabledDelete,
 }) => {
+  const [cccdOpen, setCccdOpen] = useState(false);
   return (
     <Card
       variant="outlined"
@@ -61,7 +68,9 @@ const GuestCard: React.FC<Props> = ({
             <Typography variant="subtitle2" fontWeight={700} noWrap>
               Họ và tên: {guest.fullname || "—"}
             </Typography>
-
+            <Typography variant="body2" color="text.secondary" noWrap>
+              CMND/CCCD: {guest.idCard || "—"}
+            </Typography>
             <Typography variant="body2" color="text.secondary" noWrap>
               SĐT: {guest.phone || "—"}
             </Typography>
@@ -77,37 +86,56 @@ const GuestCard: React.FC<Props> = ({
             ) : null}
           </Stack>
         </Stack>
-        <Typography variant="body2" color="text.secondary" noWrap>
-          CMND/CCCD: {guest.idCard || "—"}
-        </Typography>
-        <Stack spacing={2} direction="row" alignItems="center">
-          {/* Front Image */}
-          <img
-            src={guest.idCardFrontImageUrl || ""}
-            alt={`${guest.fullname || ""} - Mặt trước`}
-            style={{
-              width: "100%",
-              height: 160,
-              borderRadius: 10,
-              objectFit: "contain",
-              border: "1px solid #ddd",
-            }}
-          />
 
-          {/* Back Image */}
-          <img
-            src={guest.idCardBackImageUrl || ""}
-            alt={`${guest.fullname || ""} - Mặt sau`}
-            style={{
-              width: "100%",
-
-              borderRadius: 10,
-              objectFit: "contain",
-              border: "1px solid #ddd",
-            }}
-          />
+        <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<BadgeIcon />}
+            onClick={() => setCccdOpen(true)}
+            disabled={!guest.idCardFrontImageUrl && !guest.idCardBackImageUrl}
+          >
+            Xem CMND/CCCD
+          </Button>
         </Stack>
       </CardContent>
+      <Dialog
+        open={cccdOpen}
+        onClose={() => setCccdOpen(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>CMND/CCCD - {guest.fullname || ""}</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} alignItems="center">
+            <img
+              src={guest.idCardFrontImageUrl || ""}
+              alt={`${guest.fullname || ""} - Mặt trước`}
+              style={{
+                width: "100%",
+                height: "auto",
+                borderRadius: 10,
+                objectFit: "cover",
+                border: "1px solid #ddd",
+              }}
+            />
+            <img
+              src={guest.idCardBackImageUrl || ""}
+              alt={`${guest.fullname || ""} - Mặt sau`}
+              style={{
+                width: "100%",
+                height: "auto",
+                borderRadius: 10,
+                objectFit: "cover",
+                border: "1px solid #ddd",
+              }}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCccdOpen(false)}>Đóng</Button>
+        </DialogActions>
+      </Dialog>
       <Box
         className="actions"
         sx={{
