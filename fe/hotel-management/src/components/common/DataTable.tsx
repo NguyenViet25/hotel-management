@@ -32,6 +32,7 @@ export interface Column<T> {
   align?: "right" | "left" | "center";
   format?: (value: any) => string | React.ReactNode;
   sortable?: boolean;
+  render?: (row: T) => React.ReactNode;
 }
 
 export interface DataTableProps<T> {
@@ -214,7 +215,9 @@ const DataTable = <T extends object>({
                       const value = row[column.id as keyof T];
                       return (
                         <TableCell key={column.id} align={column.align}>
-                          {column.format
+                          {column.render
+                            ? column.render(row)
+                            : column.format
                             ? column.format(value)
                             : (value as React.ReactNode)}
                         </TableCell>

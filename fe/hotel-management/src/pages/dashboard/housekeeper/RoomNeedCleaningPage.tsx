@@ -403,14 +403,19 @@ export default function RoomNeedCleaningPage() {
                         startIcon={<PlayCircleFilledWhiteIcon />}
                         color="primary"
                         disabled={r.status !== RoomStatus.Dirty}
-                        onClick={async () =>
-                          await housekeepingApi
-                            .updateRoomStatus({
-                              roomId: r.id,
-                              status: RoomStatus.Cleaning,
-                            })
-                            .then(refresh)
-                        }
+                        onClick={async () => {
+                          const taskId = taskByRoomId[r.id]?.id;
+                          if (taskId) {
+                            try {
+                              await housekeepingTasksApi.start({ taskId });
+                            } catch {}
+                          }
+                          await housekeepingApi.updateRoomStatus({
+                            roomId: r.id,
+                            status: RoomStatus.Cleaning,
+                          });
+                          await refresh();
+                        }}
                       >
                         Bắt đầu dọn
                       </Button>
