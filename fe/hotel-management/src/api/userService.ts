@@ -85,7 +85,15 @@ const userService = {
     );
     return response.data;
   },
-
+  getUsersByRole: async (
+    hotelId: string,
+    role: "housekeeper"
+  ): Promise<UserListResponse> => {
+    const response = await axios.get(
+      `/admin/users/by-role?hotelId=${hotelId}&role=${role}`
+    );
+    return response.data;
+  },
   getUserById: async (id: string): Promise<UserResponse> => {
     const response = await axios.get(`/admin/users/${id}`);
     return response.data;

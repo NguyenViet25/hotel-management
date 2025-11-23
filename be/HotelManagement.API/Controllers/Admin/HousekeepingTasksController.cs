@@ -7,7 +7,7 @@ namespace HotelManagement.Api.Controllers.Admin;
 
 [ApiController]
 [Route("api/admin/housekeeping/tasks")]
-[Authorize(Roles = "Admin,Manager,Housekeeper,Staff")]
+[Authorize]
 public class HousekeepingTasksController : ControllerBase
 {
     private readonly IHousekeepingTaskService _service;

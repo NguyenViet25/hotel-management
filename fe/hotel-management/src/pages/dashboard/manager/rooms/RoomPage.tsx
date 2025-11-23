@@ -22,7 +22,7 @@ export default function RoomPage() {
           view === "map"
             ? "Quản lý phòng theo dạng sơ đồ trực quan"
             : view === "assign"
-            ? "Giao nhiệm vụ dọn buồng, cập nhật trạng thái"
+            ? "Giao nhiệm vụ dọn buồng"
             : "Xem danh sách phòng, thêm/sửa/xóa và cập nhật trạng thái"
         }
       />

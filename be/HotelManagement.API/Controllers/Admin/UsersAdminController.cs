@@ -8,7 +8,7 @@ namespace HotelManagement.Api.Controllers.Admin;
 
 [ApiController]
 [Route("api/admin/users")]
-[Authorize(Roles = "Admin")]
+[Authorize]
 public class UsersAdminController : ControllerBase
 {
     private readonly IUsersAdminService _svc;
@@ -22,6 +22,12 @@ public class UsersAdminController : ControllerBase
         return Ok(ApiResponse<IEnumerable<UserSummaryDto>>.Ok(items, meta: meta));
     }
 
+    [HttpGet("by-role")]
+    public async Task<ActionResult<ApiResponse<IEnumerable<UserSummaryDto>>>> ListHouseKeppers([FromQuery] UserByRoleQuery query)
+    {
+        var items = await _svc.ListByRoleAsync(query);
+        return Ok(ApiResponse<IEnumerable<UserSummaryDto>>.Ok(items));
+    }
 
 
     [HttpGet("{id:guid}")]
