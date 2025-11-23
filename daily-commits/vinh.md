@@ -151,3 +151,4 @@
 2025-11-23 - 1 - 01:58:28 UTC :: feat: UC-10 Goi gia: tao rate plan, thoi gian ap dung linh hoat. — bo sung metrics/telemetry co ban (da review so bo)
 2025-11-23 - 2 - 01:58:30 UTC :: refactor: UC-19 Lich phong: calendar trang thai phong theo ngay. — them log chi tiet phuc vu audit (da kiem tra lint)
 2025-11-23 - 3 - 01:58:32 UTC :: fix: UC-39 Xuat Audit Log: xuat CSV/PDF kiem tra tuan thu. — fix race-condition nho trong thao tac (chuan bi cho tinh nang tiep theo)
+2025-11-23 - 4 - 01:58:33 UTC :: perf: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — tach chuc nang de de bao tri (khong doi hanh vi)
