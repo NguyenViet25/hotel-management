@@ -29,6 +29,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
     public DbSet<DiningSession> DiningSessions => Set<DiningSession>();
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+    public DbSet<OrderItemHistory> OrderItemHistories => Set<OrderItemHistory>();
     public DbSet<Invoice> Invoices => Set<Invoice>();
     public DbSet<InvoiceLine> InvoiceLines => Set<InvoiceLine>();
     public DbSet<UserPropertyRole> UserPropertyRoles => Set<UserPropertyRole>();
@@ -277,6 +278,30 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
             .HasOne<MenuItem>()
             .WithMany()
             .HasForeignKey(oi => oi.ProposedReplacementMenuItemId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<OrderItemHistory>()
+            .HasOne<Order>()
+            .WithMany()
+            .HasForeignKey(h => h.OrderId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<OrderItemHistory>()
+            .HasOne<OrderItem>()
+            .WithMany()
+            .HasForeignKey(h => h.OldOrderItemId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<OrderItemHistory>()
+            .HasOne<OrderItem>()
+            .WithMany()
+            .HasForeignKey(h => h.NewOrderItemId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<OrderItemHistory>()
+            .HasOne<AppUser>()
+            .WithMany()
+            .HasForeignKey(h => h.UserId)
             .OnDelete(DeleteBehavior.SetNull);
 
 

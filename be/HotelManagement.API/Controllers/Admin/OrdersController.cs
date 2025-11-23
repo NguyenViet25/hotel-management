@@ -69,4 +69,38 @@ public class OrdersController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("{orderId}/items")]
+    public async Task<ActionResult<ApiResponse<OrderDetailsDto>>> AddItem(Guid orderId, [FromBody] AddOrderItemDto dto)
+    {
+        var result = await _ordersService.AddItemAsync(orderId, dto);
+        if (!result.IsSuccess) return BadRequest(result);
+        return Ok(result);
+    }
+
+    [HttpPut("{orderId}/items/{itemId}")]
+    public async Task<ActionResult<ApiResponse<OrderDetailsDto>>> UpdateItem(Guid orderId, Guid itemId, [FromBody] UpdateOrderItemDto dto)
+    {
+        var result = await _ordersService.UpdateItemAsync(orderId, itemId, dto);
+        if (!result.IsSuccess) return BadRequest(result);
+        return Ok(result);
+    }
+
+    [HttpDelete("{orderId}/items/{itemId}")]
+    public async Task<ActionResult<ApiResponse<OrderDetailsDto>>> RemoveItem(Guid orderId, Guid itemId)
+    {
+        var result = await _ordersService.RemoveItemAsync(orderId, itemId);
+        if (!result.IsSuccess) return BadRequest(result);
+        return Ok(result);
+    }
+
+    [HttpPost("{orderId}/items/{itemId}/replace")]
+    public async Task<ActionResult<ApiResponse<OrderDetailsDto>>> ReplaceItem(Guid orderId, Guid itemId, [FromBody] ReplaceOrderItemDto dto)
+    {
+        Guid? userId = null;
+        var uid = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (Guid.TryParse(uid, out var parsed)) userId = parsed;
+        var result = await _ordersService.ReplaceItemAsync(orderId, itemId, dto, userId);
+        if (!result.IsSuccess) return BadRequest(result);
+        return Ok(result);
+    }
 }

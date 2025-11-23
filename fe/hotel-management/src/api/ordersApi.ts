@@ -43,6 +43,12 @@ export interface UpdateOrderItemDto {
   status?: OrderItemStatus;
 }
 
+export interface ReplaceOrderItemDto {
+  newMenuItemId: string;
+  quantity?: number;
+  reason?: string;
+}
+
 export interface ApplyDiscountDto {
   code: string;
 }
@@ -72,6 +78,20 @@ export interface OrderSummaryDto {
 
 export interface OrderDetailsDto extends OrderSummaryDto {
   items: OrderItemDto[];
+  itemHistories?: OrderItemHistoryDto[];
+}
+
+export interface OrderItemHistoryDto {
+  id: string;
+  oldOrderItemId: string;
+  newOrderItemId: string;
+  oldMenuItemId: string;
+  newMenuItemId: string;
+  oldMenuItemName: string;
+  newMenuItemName: string;
+  changedAt: string;
+  userId?: string | null;
+  reason?: string | null;
 }
 
 export interface ListResponse<T> {
@@ -168,6 +188,18 @@ const ordersApi = {
     itemId: string
   ): Promise<ItemResponse<OrderDetailsDto>> {
     const res = await axios.delete(`/admin/orders/${orderId}/items/${itemId}`);
+    return res.data;
+  },
+
+  async replaceItem(
+    orderId: string,
+    itemId: string,
+    payload: ReplaceOrderItemDto
+  ): Promise<ItemResponse<OrderDetailsDto>> {
+    const res = await axios.post(
+      `/admin/orders/${orderId}/items/${itemId}/replace`,
+      payload
+    );
     return res.data;
   },
 

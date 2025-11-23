@@ -1,3 +1,9 @@
+import { Check, Close, Save, Search, Warning } from "@mui/icons-material";
+import DoneIcon from "@mui/icons-material/Done";
+import EventIcon from "@mui/icons-material/Event";
+import LocalDiningIcon from "@mui/icons-material/LocalDining";
+import SoupKitchenIcon from "@mui/icons-material/SoupKitchen";
+import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 import {
   Alert,
   Box,
@@ -15,37 +21,31 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
-import SoupKitchenIcon from "@mui/icons-material/SoupKitchen";
-import DoneIcon from "@mui/icons-material/Done";
-import EventIcon from "@mui/icons-material/Event";
-import LocalDiningIcon from "@mui/icons-material/LocalDining";
-import ordersApi, {
-  type OrderDetailsDto,
-  type OrderItemDto,
-  type OrderSummaryDto,
-  type OrderItemStatus,
-} from "../../../../api/ordersApi";
-import menusApi, { type MenuItemDto } from "../../../../api/menusApi";
+import { useEffect, useMemo, useState } from "react";
 import bookingsApi, {
   type BookingDetailsDto,
 } from "../../../../api/bookingsApi";
+import menusApi, { type MenuItemDto } from "../../../../api/menusApi";
+import ordersApi, {
+  type OrderDetailsDto,
+  type OrderItemDto,
+  type OrderItemStatus,
+  type OrderSummaryDto,
+} from "../../../../api/ordersApi";
 import PageTitle from "../../../../components/common/PageTitle";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
-import React, { useEffect, useMemo, useState } from "react";
-import { Check, Close, Save, Search, Warning } from "@mui/icons-material";
 
-type ColumnKey = "new" | "cooking" | "ready" | "served";
+type ColumnKey = "Mới" | "Đang nấu" | "Sẵn sàng" | "Đã phục vụ";
 
 const getOrderPhase = (items: OrderItemDto[]): ColumnKey => {
   const total = items.length;
   const served = items.filter((i) => i?.status === "Served").length;
   const prepared = items.filter((i) => i?.status === "Prepared").length;
   const pending = items.filter((i) => i?.status === "Pending").length;
-  if (served === total && total > 0) return "served";
-  if (prepared === total && total > 0) return "ready";
-  if (prepared > 0 && pending > 0) return "cooking";
-  return "new";
+  if (served === total && total > 0) return "Đã phục vụ";
+  if (prepared === total && total > 0) return "Sẵn sàng";
+  if (prepared > 0 && pending > 0) return "Đang nấu";
+  return "Mới";
 };
 
 export default function KitchenManagementPage() {
@@ -94,7 +94,7 @@ export default function KitchenManagementPage() {
         bookingsToFetch.map((s) => bookingsApi.getById(s.bookingId!))
       );
       const bMap: Record<string, BookingDetailsDto | undefined> = {};
-      for (const b of bookingDetails) bMap[b.data.id] = b.data;
+      for (const b of bookingDetails) bMap[b.data!.id] = b.data;
       setBookingMap(bMap);
     } catch {
       setError("Không thể tải danh sách đơn đồ ăn");
@@ -109,10 +109,10 @@ export default function KitchenManagementPage() {
 
   const grouped = useMemo(() => {
     const g: Record<ColumnKey, OrderDetailsDto[]> = {
-      new: [],
-      cooking: [],
-      ready: [],
-      served: [],
+      Mới: [],
+      "Đang nấu": [],
+      "Sẵn sàng": [],
+      "Đã phục vụ": [],
     };
     for (const s of summaries) {
       const d = detailsMap[s.id];
@@ -179,10 +179,10 @@ export default function KitchenManagementPage() {
 
   const applyReplaceMenu = async (menuItem: MenuItemDto) => {
     if (!menuTarget) return;
-    await ordersApi.removeItem(menuTarget.orderId, menuTarget.itemId);
-    await ordersApi.addItem(menuTarget.orderId, {
-      menuItemId: menuItem.id,
+    await ordersApi.replaceItem(menuTarget.orderId, menuTarget.itemId, {
+      newMenuItemId: menuItem.id,
       quantity: menuTarget.qty,
+      reason: notesDraft[menuTarget.orderId] || undefined,
     });
     const res = await ordersApi.getById(menuTarget.orderId);
     setDetailsMap((m) => ({ ...m, [menuTarget.orderId]: res.data }));
@@ -311,9 +311,35 @@ export default function KitchenManagementPage() {
                         spacing={1}
                         alignItems="center"
                       >
-                        <Typography sx={{ flex: 1 }}>
+                        <Typography
+                          sx={{
+                            flex: 1,
+                            textDecoration:
+                              it.status === "Voided" ? "line-through" : "none",
+                          }}
+                        >
                           {it.menuItemName} x {it.quantity}
                         </Typography>
+                        {it.status === "Voided" &&
+                          order.itemHistories &&
+                          (() => {
+                            const hist = order.itemHistories.find(
+                              (h) => h.oldOrderItemId === it.id
+                            );
+                            if (!hist) return null;
+                            return (
+                              <Chip
+                                label={`Thay: ${hist.oldMenuItemName} → ${hist.newMenuItemName}`}
+                                icon={<SwapHorizIcon />}
+                                color="warning"
+                              />
+                            );
+                          })()}
+                        {/* New item highlight */}
+                        {order.itemHistories &&
+                          order.itemHistories.some(
+                            (h) => h.newOrderItemId === it.id
+                          ) && <Chip label={`Món mới`} color="success" />}
                         <Chip label={`${it.unitPrice.toLocaleString()} đ`} />
                         <Chip
                           label={
@@ -397,10 +423,10 @@ export default function KitchenManagementPage() {
 
       {!loading && (
         <Grid container spacing={2}>
-          <Column title="Mới đặt" items={grouped.new} />
-          <Column title="Đang nấu" items={grouped.cooking} />
-          <Column title="Sẵn sàng" items={grouped.ready} />
-          <Column title="Đã phục vụ" items={grouped.served} />
+          <Column title="Mới đặt" items={grouped["Mới"]} />
+          <Column title="Đang nấu" items={grouped["Đang nấu"]} />
+          <Column title="Sẵn sàng" items={grouped["Sẵn sàng"]} />
+          <Column title="Đã phục vụ" items={grouped["Đã phục vụ"]} />
         </Grid>
       )}
 
@@ -441,48 +467,54 @@ export default function KitchenManagementPage() {
 
             {/* Food list */}
             {!menuLoading &&
-              menuItems.map((mi) => (
-                <Stack
-                  key={mi.id}
-                  direction="row"
-                  alignItems="center"
-                  spacing={1.5}
-                  sx={{
-                    p: 1.2,
-                    borderRadius: 2,
-                    bgcolor: "white",
-                    border: "1px solid",
-                    borderColor: "divider",
-                    transition: "0.15s",
-                    "&:hover": {
-                      bgcolor: "grey.100",
-                      borderColor: "primary.main",
-                    },
-                  }}
-                >
-                  {/* Left section */}
-                  <Box sx={{ flexGrow: 1 }}>
-                    <Typography fontWeight={600}>{mi.name}</Typography>
-                    {mi.unitPrice && (
-                      <Typography variant="body2" color="text.secondary">
-                        {mi.unitPrice.toLocaleString()}₫
-                      </Typography>
-                    )}
-                  </Box>
-
-                  {/* Select button */}
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    size="small"
-                    onClick={() => applyReplaceMenu(mi)}
-                    endIcon={<Check />}
-                    sx={{ fontWeight: 600 }}
+              menuItems
+                .filter((mi) =>
+                  (search || "").trim().length === 0
+                    ? true
+                    : mi.name.toLowerCase().includes(search.toLowerCase())
+                )
+                .map((mi) => (
+                  <Stack
+                    key={mi.id}
+                    direction="row"
+                    alignItems="center"
+                    spacing={1.5}
+                    sx={{
+                      p: 1.2,
+                      borderRadius: 2,
+                      bgcolor: "white",
+                      border: "1px solid",
+                      borderColor: "divider",
+                      transition: "0.15s",
+                      "&:hover": {
+                        bgcolor: "grey.100",
+                        borderColor: "primary.main",
+                      },
+                    }}
                   >
-                    Chọn
-                  </Button>
-                </Stack>
-              ))}
+                    {/* Left section */}
+                    <Box sx={{ flexGrow: 1 }}>
+                      <Typography fontWeight={600}>{mi.name}</Typography>
+                      {mi.unitPrice && (
+                        <Typography variant="body2" color="text.secondary">
+                          {mi.unitPrice.toLocaleString()}₫
+                        </Typography>
+                      )}
+                    </Box>
+
+                    {/* Select button */}
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      size="small"
+                      onClick={() => applyReplaceMenu(mi)}
+                      endIcon={<Check />}
+                      sx={{ fontWeight: 600 }}
+                    >
+                      Chọn
+                    </Button>
+                  </Stack>
+                ))}
           </Stack>
         </DialogContent>
 

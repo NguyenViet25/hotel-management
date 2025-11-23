@@ -74,6 +74,13 @@ public class UpdateOrderItemDto
     public bool? ReplacementConfirmedByGuest { get; set; }
 }
 
+public class ReplaceOrderItemDto
+{
+    public Guid NewMenuItemId { get; set; }
+    public int? Quantity { get; set; }
+    public string? Reason { get; set; }
+}
+
 public class ApplyDiscountDto
 {
     [Required]
@@ -90,6 +97,20 @@ public class OrderItemDto
     public int Quantity { get; set; }
     public decimal UnitPrice { get; set; }
     public OrderItemStatus Status { get; set; }
+}
+
+public class OrderItemHistoryDto
+{
+    public Guid Id { get; set; }
+    public Guid OldOrderItemId { get; set; }
+    public Guid NewOrderItemId { get; set; }
+    public Guid OldMenuItemId { get; set; }
+    public Guid NewMenuItemId { get; set; }
+    public string OldMenuItemName { get; set; } = string.Empty;
+    public string NewMenuItemName { get; set; } = string.Empty;
+    public DateTime ChangedAt { get; set; }
+    public Guid? UserId { get; set; }
+    public string? Reason { get; set; }
 }
 
 
@@ -113,4 +134,5 @@ public class OrderSummaryDto
 
 public class OrderDetailsDto : OrderSummaryDto
 {
+    public List<OrderItemHistoryDto> ItemHistories { get; set; } = new();
 }

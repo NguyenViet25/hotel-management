@@ -1,5 +1,6 @@
 using HotelManagement.Domain;
 using HotelManagement.Repository.Common;
+using HotelManagement.Domain.Repositories;
 using HotelManagement.Services.Admin.Orders.Dtos;
 using HotelManagement.Services.Common;
 using Microsoft.EntityFrameworkCore;
@@ -13,19 +14,25 @@ public class OrdersService : IOrdersService
     private readonly IRepository<Hotel> _hotelRepository;
     private readonly IRepository<Booking> _bookingRepository;
     private readonly IRepository<MenuItem> _menuItemRepository;
+    private readonly IRepository<OrderItemHistory> _orderItemHistoryRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
     public OrdersService(
         IRepository<Order> orderRepository,
         IRepository<OrderItem> orderItemRepository,
         IRepository<Hotel> hotelRepository,
         IRepository<Booking> bookingRepository,
-        IRepository<MenuItem> menuItemRepository)
+        IRepository<MenuItem> menuItemRepository,
+        IRepository<OrderItemHistory> orderItemHistoryRepository,
+        IUnitOfWork unitOfWork)
     {
         _orderRepository = orderRepository;
         _orderItemRepository = orderItemRepository;
         _hotelRepository = hotelRepository;
         _bookingRepository = bookingRepository;
         _menuItemRepository = menuItemRepository;
+        _orderItemHistoryRepository = orderItemHistoryRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<ApiResponse<List<OrderSummaryDto>>> ListAsync(OrdersQueryDto query)
@@ -168,6 +175,32 @@ public class OrdersService : IOrdersService
                     Status = i.Status
                 }).ToList()
             };
+
+            var histories = await _orderItemHistoryRepository.Query()
+                .Where(h => h.OrderId == o.Id)
+                .ToListAsync();
+            if (histories.Count > 0)
+            {
+                var histMenuIds = histories.SelectMany(h => new[] { h.OldMenuItemId, h.NewMenuItemId }).Distinct().ToList();
+                var histMenus = await _menuItemRepository.Query()
+                    .Where(mi => histMenuIds.Contains(mi.Id))
+                    .Select(mi => new { mi.Id, mi.Name })
+                    .ToListAsync();
+                var hNameMap = histMenus.ToDictionary(x => x.Id, x => x.Name);
+                dto.ItemHistories = histories.Select(h => new OrderItemHistoryDto
+                {
+                    Id = h.Id,
+                    OldOrderItemId = h.OldOrderItemId,
+                    NewOrderItemId = h.NewOrderItemId,
+                    OldMenuItemId = h.OldMenuItemId,
+                    NewMenuItemId = h.NewMenuItemId,
+                    OldMenuItemName = hNameMap.TryGetValue(h.OldMenuItemId, out var on) ? on : string.Empty,
+                    NewMenuItemName = hNameMap.TryGetValue(h.NewMenuItemId, out var nn) ? nn : string.Empty,
+                    ChangedAt = h.ChangedAt,
+                    UserId = h.UserId,
+                    Reason = h.Reason
+                }).ToList();
+            }
 
             return ApiResponse<OrderDetailsDto>.Ok(dto);
         }
@@ -361,6 +394,57 @@ public class OrdersService : IOrdersService
         catch (Exception ex)
         {
             return ApiResponse<OrderDetailsDto>.Fail($"Error removing order item: {ex.Message}");
+        }
+    }
+
+    public async Task<ApiResponse<OrderDetailsDto>> ReplaceItemAsync(Guid orderId, Guid itemId, ReplaceOrderItemDto dto, Guid? userId)
+    {
+        try
+        {
+            var order = await _orderRepository.FindAsync(orderId);
+            if (order == null) return ApiResponse<OrderDetailsDto>.Fail("Order not found");
+
+            var oldItem = await _orderItemRepository.Query().FirstOrDefaultAsync(i => i.Id == itemId && i.OrderId == orderId);
+            if (oldItem == null) return ApiResponse<OrderDetailsDto>.Fail("Order item not found");
+
+            var newMenu = await _menuItemRepository.Query()
+                .FirstOrDefaultAsync(mi => mi.Id == dto.NewMenuItemId && mi.HotelId == order.HotelId && mi.IsActive);
+            if (newMenu == null) return ApiResponse<OrderDetailsDto>.Fail("Menu item not found or inactive");
+
+            oldItem.Status = OrderItemStatus.Voided;
+            await _orderItemRepository.UpdateAsync(oldItem);
+
+            var newItem = new OrderItem
+            {
+                Id = Guid.NewGuid(),
+                OrderId = orderId,
+                MenuItemId = newMenu.Id,
+                Quantity = dto.Quantity.HasValue ? Math.Max(1, dto.Quantity.Value) : oldItem.Quantity,
+                UnitPrice = newMenu.UnitPrice,
+                Name = newMenu.Name,
+                Status = OrderItemStatus.Pending
+            };
+            await _orderItemRepository.AddAsync(newItem);
+
+            await _orderItemHistoryRepository.AddAsync(new OrderItemHistory
+            {
+                Id = Guid.NewGuid(),
+                OrderId = orderId,
+                OldOrderItemId = oldItem.Id,
+                NewOrderItemId = newItem.Id,
+                OldMenuItemId = oldItem.MenuItemId,
+                NewMenuItemId = newItem.MenuItemId,
+                ChangedAt = DateTime.UtcNow,
+                UserId = userId,
+                Reason = dto.Reason
+            });
+
+            await _unitOfWork.SaveChangesAsync();
+            return await GetByIdAsync(orderId);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<OrderDetailsDto>.Fail($"Error replacing order item: {ex.Message}");
         }
     }
 
