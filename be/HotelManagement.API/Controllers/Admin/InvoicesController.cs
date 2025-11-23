@@ -6,7 +6,6 @@ using HotelManagement.Services.Admin.Bookings.Dtos;
 using HotelManagement.Services.Admin.Invoicing;
 using HotelManagement.Services.Admin.Invoicing.Dtos;
 using HotelManagement.Services.Admin.Orders;
-using HotelManagement.Services.Admin.Orders.Dtos;
 using HotelManagement.Services.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

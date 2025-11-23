@@ -165,20 +165,24 @@ const OrdersManagementPage: React.FC = () => {
   const onCreateInvoice = async () => {
     if (!selectedForInvoice) return;
     try {
-      await invoicesApi.createWalkIn({
+      const res = await invoicesApi.createWalkIn({
         orderId: selectedForInvoice.id,
         discountCode: discountCode || undefined,
       });
-      setSnackbar({
-        open: true,
-        severity: "success",
-        message: "Đã xuất hóa đơn khách vãng lai",
-      });
-      setInvoiceOpen(false);
-      setDiscountCode("");
-      setSelectedForInvoice(null);
-      fetchOrders(page);
-      window.print();
+      if (res.isSuccess) {
+        setSnackbar({
+          open: true,
+          severity: "success",
+          message: `Đã xuất hóa đơn khách vãng lai: ${res.data?.invoiceNumber || ""}`,
+        });
+        setInvoiceOpen(false);
+        setDiscountCode("");
+        setSelectedForInvoice(null);
+        fetchOrders(page);
+        window.print();
+      } else {
+        setSnackbar({ open: true, severity: "error", message: res.message || "Không thể xuất hóa đơn" });
+      }
     } catch (err) {
       setSnackbar({
         open: true,

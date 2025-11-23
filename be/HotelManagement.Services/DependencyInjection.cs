@@ -1,20 +1,19 @@
 using HotelManagement.Services.Admin.Audit;
 using HotelManagement.Services.Admin.Bookings;
-using HotelManagement.Services.Admin.Hotels;
-using HotelManagement.Services.Admin.Kitchen;
 using HotelManagement.Services.Admin.Dining;
-using HotelManagement.Services.Admin.Menu;
+using HotelManagement.Services.Admin.Hotels;
+using HotelManagement.Services.Admin.Housekeeping;
 using HotelManagement.Services.Admin.Invoicing;
-using HotelManagement.Services.Admin.Orders;
-using HotelManagement.Services.Admin.Minibar;
+using HotelManagement.Services.Admin.Kitchen;
 using HotelManagement.Services.Admin.Medias;
+using HotelManagement.Services.Admin.Menu;
+using HotelManagement.Services.Admin.Minibar;
+using HotelManagement.Services.Admin.Orders;
 using HotelManagement.Services.Admin.Rooms;
 using HotelManagement.Services.Admin.RoomTypes;
 using HotelManagement.Services.Admin.Users;
 using HotelManagement.Services.Auth;
 using HotelManagement.Services.Profile;
-using HotelManagement.Services.Admin.Dining;
-using HotelManagement.Services.Admin.Kitchen;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace HotelManagement.Services;
@@ -42,8 +41,9 @@ public static class DependencyInjection
         services.AddScoped<IDiscountCodeService, DiscountCodeService>();
         services.AddScoped<IMinibarService, MinibarService>();
         services.AddScoped<IMediaService, MediaService>();
-        services.AddScoped<HotelManagement.Services.Admin.Housekeeping.IRoomStatusService, HotelManagement.Services.Admin.Housekeeping.RoomStatusService>();
-        services.AddScoped<HotelManagement.Services.Admin.Housekeeping.IHousekeepingTaskService, HotelManagement.Services.Admin.Housekeeping.HousekeepingTaskService>();
+        services.AddScoped<IRoomStatusService, RoomStatusService>();
+        services.AddScoped<IHousekeepingTaskService, HousekeepingTaskService>();
+        services.AddScoped<IInvoiceService, InvoiceService>();
         return services;
     }
 }
