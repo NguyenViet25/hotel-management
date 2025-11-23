@@ -1,9 +1,12 @@
 import {
   CalendarMonth,
+  Check,
+  Close,
   Edit,
-  Expand,
   Login,
   Logout,
+  People,
+  Warning,
 } from "@mui/icons-material";
 import {
   Alert,
@@ -20,23 +23,22 @@ import {
 } from "@mui/material";
 import React, { useState } from "react";
 import bookingsApi, {
-  BookingRoomStatus,
   type BookingDetailsDto,
   type BookingGuestDto,
   type BookingRoomDto,
   type BookingRoomTypeDto,
 } from "../../../../../api/bookingsApi";
-import AssignRoomDialog from "./AssignRoomDialog";
-import CheckInTimeDialog from "./CheckInTimeDialog";
-import CheckOutTimeDialog from "./CheckOutTimeDialog";
-import PlannedDatesDialog from "./PlannedDatesDialog";
-import ChangeRoomDialog from "./ChangeRoomDialog";
-import ExtendStayDialog from "./ExtendStayDialog";
-import MoveGuestDialog from "./MoveGuestDialog";
-import GuestDialog from "./GuestDialog";
-import GuestList from "./GuestList";
 import StripedLabelWrapper from "../../../../../components/LabelStripedWrapper";
 import { formatDateTime } from "../../../../../utils/date-helper";
+import AssignRoomDialog from "./AssignRoomDialog";
+import ChangeRoomDialog from "./ChangeRoomDialog";
+import CheckInTimeDialog from "./CheckInTimeDialog";
+import CheckOutTimeDialog from "./CheckOutTimeDialog";
+import ExtendStayDialog from "./ExtendStayDialog";
+import GuestDialog from "./GuestDialog";
+import GuestList from "./GuestList";
+import MoveGuestDialog from "./MoveGuestDialog";
+import PlannedDatesDialog from "./PlannedDatesDialog";
 
 type Props = {
   booking: BookingDetailsDto | null;
@@ -204,18 +206,21 @@ const RoomTypeBlock: React.FC<{
           <Stack direction="row" spacing={2} justifyContent={"space-between"}>
             <Stack direction="row" spacing={1} alignItems="center">
               <Chip
-                label={`Cần gán: ${rt.totalRoom || 0}`}
+                label={`Cần gán: ${rt.totalRoom - assignedRooms.length || 0}`}
                 size="small"
-                color="primary"
+                icon={<Warning />}
+                color="warning"
               />
               <Chip
                 label={`Đã gán: ${assignedRooms.length}`}
                 size="small"
-                color="secondary"
+                icon={<Check />}
+                color="success"
               />
               <Chip
-                label={`Sức chứa/Phòng: ${rt.capacity || 0}`}
+                label={`Sức chứa: ${rt.capacity || 0}`}
                 size="small"
+                icon={<People />}
               />
             </Stack>
             <Stack direction="row" spacing={1} justifyContent="flex-end">
@@ -254,15 +259,23 @@ const RoomTypeBlock: React.FC<{
                               <Chip
                                 variant="filled"
                                 label={
-                                  br.bookingStatus ===
-                                  BookingRoomStatus.CheckedIn
+                                  br.actualCheckInAt !== undefined &&
+                                  br.actualCheckInAt !== null
                                     ? "Đã check-in"
                                     : "Chưa check-in"
                                 }
+                                icon={
+                                  br.actualCheckInAt !== undefined &&
+                                  br.actualCheckInAt !== null ? (
+                                    <Check />
+                                  ) : (
+                                    <Close />
+                                  )
+                                }
                                 size="small"
                                 color={
-                                  br.bookingStatus ===
-                                  BookingRoomStatus.CheckedIn
+                                  br.actualCheckInAt !== undefined &&
+                                  br.actualCheckInAt !== null
                                     ? "success"
                                     : "error"
                                 }
@@ -270,15 +283,23 @@ const RoomTypeBlock: React.FC<{
                               <Chip
                                 variant="filled"
                                 label={
-                                  br.bookingStatus ===
-                                  BookingRoomStatus.CheckedOut
+                                  br.actualCheckOutAt !== undefined &&
+                                  br.actualCheckOutAt !== null
                                     ? "Đã check-out"
                                     : "Chưa check-out"
                                 }
                                 size="small"
+                                icon={
+                                  br.actualCheckOutAt !== undefined &&
+                                  br.actualCheckOutAt !== null ? (
+                                    <Check />
+                                  ) : (
+                                    <Close />
+                                  )
+                                }
                                 color={
-                                  br.bookingStatus ===
-                                  BookingRoomStatus.CheckedOut
+                                  br.actualCheckOutAt !== undefined &&
+                                  br.actualCheckOutAt !== null
                                     ? "success"
                                     : "error"
                                 }
@@ -287,11 +308,7 @@ const RoomTypeBlock: React.FC<{
                           </StripedLabelWrapper>
                           <StripedLabelWrapper label="Thời gian dự kiến">
                             <Stack direction={"row"} spacing={1}>
-                              <Stack
-                                direction={"row"}
-                                spacing={1}
-                                sx={{ width: "100%" }}
-                              >
+                              <Stack spacing={1} sx={{ width: "100%" }}>
                                 <Chip
                                   label={`Nhận: ${
                                     br.startDate
@@ -333,10 +350,45 @@ const RoomTypeBlock: React.FC<{
                                   setActiveRoom(br);
                                   setPlannedOpen(true);
                                 }}
+                                sx={{ alignSelf: "flex-start" }}
                               >
                                 <Edit fontSize="small" />
                               </IconButton>
                             </Stack>
+                            <Button
+                              startIcon={<CalendarMonth />}
+                              variant="outlined"
+                              size="small"
+                              color="primary"
+                              onClick={() => {
+                                setActiveRoom(br);
+                                setExtendOpen(true);
+                              }}
+                            >
+                              Gia hạn thêm
+                            </Button>
+                            {((br as any).extendedDate ||
+                              (rt.endDate &&
+                                br.endDate &&
+                                new Date(br.endDate) >
+                                  new Date(rt.endDate))) && (
+                              <Chip
+                                label={`Gia hạn đến: ${formatDateTime(
+                                  (br as any).extendedDate ?? br.endDate
+                                )}`}
+                                size="small"
+                                color="warning"
+                                sx={{
+                                  width: "100%",
+                                  justifyContent: "flex-start",
+                                  "& .MuiChip-label": {
+                                    pl: 2,
+                                    textAlign: "left",
+                                    width: "100%",
+                                  },
+                                }}
+                              />
+                            )}
                           </StripedLabelWrapper>
                           <StripedLabelWrapper label="Thời gian thực tế">
                             <Stack spacing={1} justifyContent={"start"}>
@@ -405,18 +457,6 @@ const RoomTypeBlock: React.FC<{
                                 </IconButton>
                               </Stack>
                             </Stack>
-                            <Button
-                              startIcon={<CalendarMonth />}
-                              variant="outlined"
-                              size="small"
-                              color="primary"
-                              onClick={() => {
-                                setActiveRoom(br);
-                                setExtendOpen(true);
-                              }}
-                            >
-                              Gia hạn thêm
-                            </Button>
                           </StripedLabelWrapper>
                         </Stack>
                       }
@@ -486,7 +526,10 @@ const RoomTypeBlock: React.FC<{
                               setActiveRoom(br);
                               setCheckInOpen(true);
                             }}
-                            disabled={br.actualCheckInAt !== undefined}
+                            disabled={
+                              br.actualCheckInAt !== undefined &&
+                              br.actualCheckInAt !== null
+                            }
                           >
                             Check in
                           </Button>
@@ -499,10 +542,10 @@ const RoomTypeBlock: React.FC<{
                               setActiveRoom(br);
                               setCheckOutOpen(true);
                             }}
-                            // disabled={
-                            //   ((forms[br.bookingRoomId] || []).length + (br.guests || []).length) >=
-                            //   (rt.capacity || 0)
-                            // }
+                            disabled={
+                              br.actualCheckOutAt !== undefined &&
+                              br.actualCheckOutAt !== null
+                            }
                           >
                             Check out
                           </Button>

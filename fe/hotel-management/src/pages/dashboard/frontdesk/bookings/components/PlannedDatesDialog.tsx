@@ -77,13 +77,9 @@ export default function PlannedDatesDialog({
               value={end}
               onChange={(v) => v && setEnd(v)}
             />
-            {error ? (
+            {error && (
               <Typography variant="caption" color="error">
                 {error}
-              </Typography>
-            ) : (
-              <Typography variant="caption" color="error">
-                * Chọn khoảng thời gian hợp lệ
               </Typography>
             )}
           </Stack>

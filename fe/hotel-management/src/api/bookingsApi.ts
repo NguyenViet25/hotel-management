@@ -70,6 +70,7 @@ export interface BookingRoomDto {
   roomName?: string;
   startDate: string;
   endDate: string;
+  extendedDate?: string;
   actualCheckInAt: string;
   actualCheckOutAt: string;
   bookingStatus: BookingRoomStatus;

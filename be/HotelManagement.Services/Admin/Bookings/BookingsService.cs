@@ -97,8 +97,8 @@ public class BookingsService(
                     BookingId = booking.Id,
                     RoomTypeId = rt.RoomTypeId,
                     RoomTypeName = roomType.Name,
-                    Capacity = rt.Capacity ?? roomType.Capacity,
-                    Price = rt.Price ?? roomType.BasePriceFrom,
+                    Capacity = roomType.Capacity,
+                    Price = roomType.BasePriceFrom,
                     StartDate = rt.StartDate,
                     EndDate = rt.EndDate,
                     TotalRoom = rt.TotalRoom ?? 0
@@ -289,12 +289,13 @@ public class BookingsService(
                     {
                         BookingRoomId = br.BookingRoomId,
                         RoomId = br.RoomId,
-                        RoomName = br.HotelRoom?.Number,
+                        RoomName = br.RoomName,
                         StartDate = br.StartDate,
                         EndDate = br.EndDate,
                         BookingStatus = br.BookingStatus,
                         ActualCheckInAt = br.ActualCheckInAt,
                         ActualCheckOutAt = br.ActualCheckOutAt,
+                        ExtendedDate = br.ExtendedDate,
                         Guests = [.. bookingGuests.Select(x => new BookingGuestDto()
                         {
                             GuestId = x.GuestId,
@@ -602,8 +603,8 @@ public class BookingsService(
                         RoomTypeName = roomType.Name,
                         StartDate = rt.StartDate,
                         EndDate = rt.EndDate,
-                        Capacity = rt.Capacity ?? roomType.Capacity,
-                        Price = rt.Price ?? roomType.BasePriceFrom,
+                        Capacity = roomType.Capacity,
+                        Price = roomType.BasePriceFrom,
                         TotalRoom = rt.TotalRoom ?? 0
                     };
                     await _bookingRoomTypeRepo.AddAsync(brt);
@@ -892,11 +893,15 @@ public class BookingsService(
 
         if (bookingRoomType == null)
             return ApiResponse.Fail("Không tìm thấy booking");
+
+        var room = await _roomRepo.Query().Where(x => x.Id == roomId).FirstOrDefaultAsync();
+
         await _bookingRoomRepo.AddAsync(new BookingRoom()
         {
             BookingRoomId = Guid.NewGuid(),
             BookingRoomTypeId = bookingRoomTypeId,
             RoomId = roomId,
+            RoomName = room?.Number,
             StartDate = bookingRoomType.StartDate,
             EndDate = bookingRoomType.EndDate,
             BookingStatus = BookingRoomStatus.Pending
@@ -1048,7 +1053,7 @@ public class BookingsService(
         var end = bookingRoom.EndDate;
         if (actualCheckInAt.HasValue && (actualCheckInAt.Value < start || actualCheckInAt.Value > end))
             return ApiResponse<BookingDetailsDto>.Fail("Thời gian check-in nằm ngoài khoảng dự kiến");
-        if (actualCheckOutAt.HasValue && (actualCheckOutAt.Value < start || actualCheckOutAt.Value > end))
+        if (actualCheckOutAt.HasValue && (actualCheckOutAt.Value < start ))
             return ApiResponse<BookingDetailsDto>.Fail("Thời gian check-out nằm ngoài khoảng dự kiến");
 
         if (actualCheckInAt.HasValue)
@@ -1100,8 +1105,11 @@ public class BookingsService(
         await _bookingRoomRepo.UpdateAsync(bookingRoom);
         await _bookingRoomRepo.SaveChangesAsync();
 
-        var bookingId = bookingRoom.BookingRoomType!.BookingId;
-        return await GetByIdAsync(bookingId);
+        var bookingRoomType = await _bookingRoomTypeRepo.Query()
+            .Where(x => x.BookingRoomTypeId == bookingRoom.BookingRoomTypeId)
+            .FirstOrDefaultAsync();
+
+        return await GetByIdAsync(bookingRoomType!.BookingId);
     }
 
     public async Task<ApiResponse<BookingDetailsDto>> MoveGuestAsync(Guid bookingRoomId, Guid guestId, Guid targetBookingRoomId)
@@ -1204,7 +1212,7 @@ public class BookingsService(
         var delta = pricePerNight * nights;
 
         bookingRoom.ExtendedDate = newEndDate;
-        bookingRoom.EndDate = newEndDate;
+        //bookingRoom.EndDate = newEndDate;
         await _bookingRoomRepo.UpdateAsync(bookingRoom);
         await _bookingRoomRepo.SaveChangesAsync();
 
