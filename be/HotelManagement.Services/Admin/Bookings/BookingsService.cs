@@ -788,6 +788,7 @@ public class BookingsService(
                 RoomNumber = r.Number,
                 RoomTypeId = r.RoomTypeId,
                 RoomTypeName = r.RoomType?.Name ?? string.Empty,
+                Floor = r.Floor,
                 Timeline = BuildDayTimeline(targetDate, byRoom.TryGetValue(r.Id, out var list) && list.Any())
             }).ToList();
 
@@ -1053,7 +1054,7 @@ public class BookingsService(
         var end = bookingRoom.EndDate;
         if (actualCheckInAt.HasValue && (actualCheckInAt.Value < start || actualCheckInAt.Value > end))
             return ApiResponse<BookingDetailsDto>.Fail("Thời gian check-in nằm ngoài khoảng dự kiến");
-        if (actualCheckOutAt.HasValue && (actualCheckOutAt.Value < start ))
+        if (actualCheckOutAt.HasValue && (actualCheckOutAt.Value < start))
             return ApiResponse<BookingDetailsDto>.Fail("Thời gian check-out nằm ngoài khoảng dự kiến");
 
         if (actualCheckInAt.HasValue)
@@ -1138,7 +1139,11 @@ public class BookingsService(
         var bookingRoom = await _bookingRoomRepo.Query().Include(br => br.BookingRoomType).FirstOrDefaultAsync(br => br.BookingRoomId == bookingRoomId);
         if (bookingRoom == null) return ApiResponse<BookingDetailsDto>.Fail("Không tìm thấy booking");
 
-        var booking = await _bookingRepo.FindAsync(bookingRoom.BookingRoomType!.BookingId);
+        var bookingRoomType = await _bookingRoomTypeRepo.Query()
+            .Where(x => x.BookingRoomTypeId == bookingRoom.BookingRoomTypeId)
+            .FirstOrDefaultAsync();
+
+        var booking = await _bookingRepo.FindAsync(bookingRoomType!.BookingId);
         if (booking == null) return ApiResponse<BookingDetailsDto>.Fail("Không tìm thấy booking");
 
         var targetRoom = await _roomRepo.FindAsync(newRoomId);
@@ -1158,7 +1163,7 @@ public class BookingsService(
 
         if (oldRoom != null)
         {
-            oldRoom.Status = RoomStatus.Dirty;
+            oldRoom.Status = RoomStatus.Available;
             await _roomRepo.UpdateAsync(oldRoom);
             await _roomRepo.SaveChangesAsync();
 
@@ -1167,7 +1172,7 @@ public class BookingsService(
                 Id = Guid.NewGuid(),
                 HotelId = oldRoom.HotelId,
                 RoomId = oldRoom.Id,
-                Status = RoomStatus.Dirty,
+                Status = RoomStatus.Available,
                 Timestamp = DateTime.UtcNow
             });
             await _roomStatusLogRepo.SaveChangesAsync();

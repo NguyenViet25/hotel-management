@@ -142,6 +142,7 @@ export interface RoomMapItemDto {
   roomNumber: string;
   roomTypeId: string;
   roomTypeName: string;
+  floor: number;
   timeline: RoomTimelineSegmentDto[];
 }
 

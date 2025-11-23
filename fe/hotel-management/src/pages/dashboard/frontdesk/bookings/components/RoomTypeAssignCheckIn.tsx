@@ -5,6 +5,7 @@ import {
   Edit,
   Login,
   Logout,
+  MoveUp,
   People,
   Warning,
 } from "@mui/icons-material";
@@ -19,6 +20,7 @@ import {
   IconButton,
   Snackbar,
   Stack,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import React, { useState } from "react";
@@ -251,7 +253,29 @@ const RoomTypeBlock: React.FC<{
                 <Grid size={{ xs: 12, md: 4 }} key={br.bookingRoomId}>
                   <Card variant="outlined" sx={{ borderRadius: 2 }}>
                     <CardHeader
-                      title={`Phòng ${br.roomName ?? ""}`}
+                      title={
+                        <Stack
+                          direction={"row"}
+                          justifyContent={"space-between"}
+                        >
+                          <Typography>Phòng {br.roomName ?? ""}</Typography>
+                          <Tooltip title="Đổi cả phòng">
+                            <span>
+                              <IconButton
+                                size="small"
+                                color="primary"
+                                onClick={() => {
+                                  setActiveRoom(br);
+                                  setChangeRoomOpen(true);
+                                }}
+                                aria-label="Đổi cả phòng"
+                              >
+                                <MoveUp fontSize="small" />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                        </Stack>
+                      }
                       subheader={
                         <Stack spacing={2} mt={1}>
                           <StripedLabelWrapper label="Trạng thái">
@@ -658,6 +682,7 @@ const RoomTypeBlock: React.FC<{
           open={changeRoomOpen}
           booking={booking}
           roomType={rt}
+          bookingRoom={activeRoom as any}
           onClose={() => setChangeRoomOpen(false)}
           onConfirm={async (roomId) => {
             try {

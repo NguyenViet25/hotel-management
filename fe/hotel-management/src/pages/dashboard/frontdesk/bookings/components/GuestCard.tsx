@@ -151,14 +151,14 @@ const GuestCard: React.FC<Props> = ({
           gap: 0.5,
         }}
       >
-        {/* Change Room */}
-        <Tooltip title="Đổi phòng">
+        {/* Move Guest within booking */}
+        <Tooltip title="Chuyển khách">
           <span>
             <IconButton
               color="primary"
               size="small"
               onClick={() => onChangeRoom?.(guest)}
-              aria-label="Đổi phòng"
+              aria-label="Chuyển khách"
             >
               <MoveUp fontSize="small" />
             </IconButton>
