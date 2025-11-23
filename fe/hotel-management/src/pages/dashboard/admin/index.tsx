@@ -1,4 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
+import ApartmentIcon from "@mui/icons-material/Apartment";
+import GroupsIcon from "@mui/icons-material/Groups";
+import ListAltIcon from "@mui/icons-material/ListAlt";
 import {
   Alert,
   Box,
@@ -8,94 +10,39 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import PageTitle from "../../../components/common/PageTitle";
-import ApartmentIcon from "@mui/icons-material/Apartment";
-import GroupsIcon from "@mui/icons-material/Groups";
-import ListAltIcon from "@mui/icons-material/ListAlt";
-import {
-  DataGrid,
-  type GridColDef,
-  type GridPaginationModel,
-  type GridSortModel,
-} from "@mui/x-data-grid";
 import dayjs from "dayjs";
-
-type Facility = { id: string; name: string };
-type User = { id: string; name: string };
-type AuditLogItem = {
-  id: string;
-  action: string;
-  user: string | null;
-  timestamp: string;
-};
-
-const mockFetchFacilities = async (): Promise<Facility[]> => {
-  await new Promise((r) => setTimeout(r, 500));
-  return [
-    { id: "h1", name: "Hotel Alpha" },
-    { id: "h2", name: "Hotel Beta" },
-    { id: "h3", name: "Hotel Gamma" },
-    { id: "h4", name: "Hotel Delta" },
-    { id: "h5", name: "Hotel Epsilon" },
-  ];
-};
-
-const mockFetchUsers = async (): Promise<User[]> => {
-  await new Promise((r) => setTimeout(r, 600));
-  return Array.from({ length: 24 }).map((_, i) => ({
-    id: `u${i + 1}`,
-    name: `User ${i + 1}`,
-  }));
-};
-
-const mockFetchAuditLogs = async (): Promise<AuditLogItem[]> => {
-  await new Promise((r) => setTimeout(r, 800));
-  const actions = [
-    "CREATE_USER",
-    "UPDATE_FACILITY",
-    "LOGIN",
-    "LOGOUT",
-    "DELETE_USER",
-    "ASSIGN_ROLE",
-  ];
-  const now = dayjs();
-  return Array.from({ length: 50 }).map((_, i) => ({
-    id: `${i + 1}`,
-    action: actions[i % actions.length],
-    user: i % 5 === 0 ? null : `User ${((i % 24) + 1).toString()}`,
-    timestamp: now.subtract(i * 30, "minute").toISOString(),
-  }));
-};
+import React, { useEffect, useMemo, useState } from "react";
+import auditService from "../../../api/auditService";
+import dashboardApi, {
+  type AdminDashboardSummary,
+} from "../../../api/dashboardApi";
+import DataTable, { type Column } from "../../../components/common/DataTable";
+import PageTitle from "../../../components/common/PageTitle";
 
 const AdminDashboardPage: React.FC = () => {
-  const [facilities, setFacilities] = useState<Facility[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
-  const [auditLogs, setAuditLogs] = useState<AuditLogItem[]>([]);
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [summary, setSummary] = useState<AdminDashboardSummary | null>(null);
 
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [tableLoading, setTableLoading] = useState(false);
   const [summaryError, setSummaryError] = useState<string | null>(null);
   const [tableError, setTableError] = useState<string | null>(null);
 
-  const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
-    page: 0,
-    pageSize: 10,
-  });
-  const [sortModel, setSortModel] = useState<GridSortModel>([
-    { field: "timestamp", sort: "desc" },
-  ]);
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(10);
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
     const run = async () => {
       setSummaryLoading(true);
       setSummaryError(null);
       try {
-        const [fRes, uRes] = await Promise.all([
-          mockFetchFacilities(),
-          mockFetchUsers(),
-        ]);
-        setFacilities(fRes);
-        setUsers(uRes);
+        const res = await dashboardApi.getAdminSummary();
+        if (res.isSuccess) {
+          setSummary(res.data);
+        } else {
+          setSummaryError(res.message || "Không thể tải tổng quan");
+        }
       } catch {
         setSummaryError("Không thể tải tổng quan");
       } finally {
@@ -110,8 +57,20 @@ const AdminDashboardPage: React.FC = () => {
       setTableLoading(true);
       setTableError(null);
       try {
-        const logs = await mockFetchAuditLogs();
-        setAuditLogs(logs);
+        const from = dayjs().subtract(24, "hour").toISOString();
+        const res = await auditService.getLogs({ page, pageSize, from });
+        if ((res as any).isSuccess) {
+          const rows: any[] = ((res as any).data || []).map((l: any) => ({
+            id: l.id,
+            action: l.action,
+            user: l.userId || null,
+            timestamp: l.timestamp,
+          }));
+          setAuditLogs(rows);
+          setTotal((res as any).meta?.total ?? rows.length);
+        } else {
+          setTableError((res as any).message || "Không thể tải nhật ký");
+        }
       } catch {
         setTableError("Không thể tải nhật ký");
       } finally {
@@ -119,26 +78,23 @@ const AdminDashboardPage: React.FC = () => {
       }
     };
     run();
-  }, []);
+  }, [page, pageSize]);
 
-  const columns: GridColDef[] = useMemo(
+  const columns: Column<any>[] = useMemo(
     () => [
-      { field: "id", headerName: "ID", minWidth: 80 },
-      { field: "action", headerName: "Hành động", flex: 1, minWidth: 160 },
+      { id: "id", label: "ID", minWidth: 80 },
+      { id: "action", label: "Hành động", minWidth: 160 },
       {
-        field: "user",
-        headerName: "Người dùng",
-        flex: 1,
+        id: "user",
+        label: "Người dùng",
         minWidth: 160,
-        valueGetter: (params: any) => params || "admin",
+        format: (value) => (value ? (value as string) : "Hệ thống"),
       },
       {
-        field: "timestamp",
-        headerName: "Thời gian",
+        id: "timestamp",
+        label: "Thời gian",
         minWidth: 180,
-        valueFormatter: (params: any) =>
-          dayjs(params?.value as string).format("DD/MM/YYYY HH:mm"),
-        sortable: true,
+        format: (value) => dayjs(value as string).format("DD/MM/YYYY HH:mm"),
       },
     ],
     []
@@ -180,7 +136,7 @@ const AdminDashboardPage: React.FC = () => {
                     Tổng cơ sở
                   </Typography>
                   <Typography variant="h5" fontWeight={700}>
-                    {summaryLoading ? "—" : facilities.length}
+                    {summaryLoading ? "—" : summary?.totalHotels ?? "—"}
                   </Typography>
                 </Stack>
               </Stack>
@@ -210,7 +166,7 @@ const AdminDashboardPage: React.FC = () => {
                     Tổng người dùng
                   </Typography>
                   <Typography variant="h5" fontWeight={700}>
-                    {summaryLoading ? "—" : users.length}
+                    {summaryLoading ? "—" : summary?.totalUsers ?? "—"}
                   </Typography>
                 </Stack>
               </Stack>
@@ -240,7 +196,9 @@ const AdminDashboardPage: React.FC = () => {
                     Nhật ký hệ thống
                   </Typography>
                   <Typography variant="h5" fontWeight={700}>
-                    {summaryLoading ? "—" : auditLogs.length}
+                    {summaryLoading
+                      ? "—"
+                      : summary?.auditCountLast24Hours ?? "—"}
                   </Typography>
                 </Stack>
               </Stack>
@@ -255,26 +213,19 @@ const AdminDashboardPage: React.FC = () => {
         </Alert>
       )}
 
-      <Box sx={{ height: 480 }}>
-        <DataGrid
-          rows={auditLogs}
-          columns={columns}
-          loading={tableLoading}
-          paginationModel={paginationModel}
-          onPaginationModelChange={setPaginationModel}
-          pageSizeOptions={[5, 10, 20]}
-          sortModel={sortModel}
-          onSortModelChange={setSortModel}
-          disableRowSelectionOnClick
-          sx={{
-            borderRadius: 2,
-            bgcolor: "background.paper",
-            "& .MuiDataGrid-row:hover": {
-              backgroundColor: "action.hover",
-            },
-          }}
-        />
-      </Box>
+      <DataTable
+        columns={columns}
+        data={auditLogs}
+        loading={tableLoading}
+        pagination={{
+          page,
+          pageSize,
+          total,
+          onPageChange: (p) => setPage(p),
+        }}
+        getRowId={(row) => row.id}
+        borderRadius={2}
+      />
     </Box>
   );
 };
