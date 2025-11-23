@@ -1,9 +1,10 @@
 import React from "react";
-import { Chip, Avatar } from "@mui/material";
+import { Chip, Avatar, Stack, Button } from "@mui/material";
 import DataTable, {
   type Column,
 } from "../../../../../components/common/DataTable";
 import type { OrderSummaryDto } from "../../../../../api/ordersApi";
+import { Receipt } from "@mui/icons-material";
 
 interface OrdersTableProps {
   data: OrderSummaryDto[];
@@ -16,6 +17,8 @@ interface OrdersTableProps {
   onEdit?: (record: OrderSummaryDto) => void;
   onCancel?: (record: OrderSummaryDto) => void;
   onSearch?: (search: string) => void;
+  onCreateInvoice?: (record: OrderSummaryDto) => void;
+  onSelectPromotion?: (record: OrderSummaryDto) => void;
 }
 
 const formatCurrency = (value: number) =>
@@ -34,6 +37,8 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
   onEdit,
   onSearch,
   onCancel,
+  onCreateInvoice,
+  onSelectPromotion,
 }) => {
   const columns: Column<OrderSummaryDto>[] = [
     {
@@ -112,6 +117,27 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
       label: "Tạo lúc",
       format: (v: string) => new Date(v).toLocaleString("vi-VN"),
       minWidth: 180,
+    },
+    {
+      id: "invoiceActions",
+      label: "Hóa đơn",
+      minWidth: 220,
+      render: (row) =>
+        row.isWalkIn ? (
+          <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
+            <Button
+              startIcon={<Receipt />}
+              size="small"
+              variant="contained"
+              onClick={() => onCreateInvoice?.(row)}
+              disabled={row.status === "2" || row.status === "3"}
+            >
+              Xuất hóa đơn
+            </Button>
+          </Stack>
+        ) : (
+          <span>—</span>
+        ),
     },
   ];
 

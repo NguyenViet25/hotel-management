@@ -1,5 +1,5 @@
-import { Check, Close } from "@mui/icons-material";
-import { Alert, Box, Snackbar, Tab, Tabs } from "@mui/material";
+import { Check, Close, Search } from "@mui/icons-material";
+import { Alert, Box, Snackbar, Tab, Tabs, Typography } from "@mui/material";
 import React, { useEffect, useLayoutEffect, useState } from "react";
 import ordersApi, {
   type OrderDetailsDto,
@@ -11,6 +11,16 @@ import PageTitle from "../../../../components/common/PageTitle";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
 import OrderFormModal from "./components/OrderFormModal";
 import OrdersTable from "./components/OrdersTable";
+import PromotionDialog from "../../frontdesk/invoices/components/PromotionDialog";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Stack,
+  TextField,
+} from "@mui/material";
 import { useSearchParams } from "react-router-dom";
 
 // Orders Management Page (UC-28, UC-29, UC-30)
@@ -54,6 +64,12 @@ const OrdersManagementPage: React.FC = () => {
     message: string;
     severity: "success" | "error";
   }>({ open: false, message: "", severity: "success" });
+
+  const [invoiceOpen, setInvoiceOpen] = useState(false);
+  const [selectedForInvoice, setSelectedForInvoice] =
+    useState<OrderSummaryDto | null>(null);
+  const [promoOpen, setPromoOpen] = useState(false);
+  const [discountCode, setDiscountCode] = useState("");
 
   // Fetch orders based on filters and pagination
   const fetchOrders = async (pageNum = 1) => {
@@ -115,6 +131,41 @@ const OrdersManagementPage: React.FC = () => {
         open: true,
         severity: "error",
         message: "Không thể hủy order",
+      });
+    }
+  };
+
+  const onCreateInvoice = async () => {
+    if (!selectedForInvoice) return;
+    try {
+      if (discountCode) {
+        await ordersApi.applyDiscount(selectedForInvoice.id, {
+          code: discountCode,
+        });
+      }
+      await ordersApi.updateWalkIn(selectedForInvoice.id, {
+        id: selectedForInvoice.id,
+        hotelId: hotelId,
+        customerName: selectedForInvoice.customerName,
+        customerPhone: selectedForInvoice.customerPhone,
+        status: 2 as any,
+        notes: "Thanh toán và xuất hóa đơn",
+      });
+      setSnackbar({
+        open: true,
+        severity: "success",
+        message: "Đã xuất hóa đơn khách vãng lai",
+      });
+      setInvoiceOpen(false);
+      setDiscountCode("");
+      setSelectedForInvoice(null);
+      fetchOrders(page);
+      window.print();
+    } catch (err) {
+      setSnackbar({
+        open: true,
+        severity: "error",
+        message: "Không thể xuất hóa đơn",
       });
     }
   };
@@ -211,6 +262,14 @@ const OrdersManagementPage: React.FC = () => {
           setConfirmOpen(true);
         }}
         onSearch={(e) => setSearch(e)}
+        onCreateInvoice={(row) => {
+          setSelectedForInvoice(row);
+          setInvoiceOpen(true);
+        }}
+        onSelectPromotion={(row) => {
+          setSelectedForInvoice(row);
+          setPromoOpen(true);
+        }}
       />
 
       <OrderFormModal
@@ -244,6 +303,79 @@ const OrdersManagementPage: React.FC = () => {
       >
         <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
       </Snackbar>
+
+      <Dialog
+        open={invoiceOpen}
+        onClose={() => setInvoiceOpen(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>Xuất hóa đơn Khách vãng lai</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <TextField
+              label="Mã đơn"
+              disabled
+              value={
+                selectedForInvoice?.id
+                  ? String(selectedForInvoice.id).slice(0, 8).toUpperCase()
+                  : ""
+              }
+              InputProps={{ readOnly: true }}
+              fullWidth
+            />
+            <TextField
+              label="Khách hàng"
+              value={selectedForInvoice?.customerName || ""}
+              fullWidth
+            />
+            <TextField
+              label="Số điện thoại"
+              value={selectedForInvoice?.customerPhone || ""}
+              fullWidth
+            />
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={1}
+              alignItems={{ sm: "center" }}
+            >
+              <Button
+                startIcon={<Search />}
+                variant="contained"
+                color="success"
+                sx={{ width: 200, height: "100%" }}
+                onClick={() => setPromoOpen(true)}
+              >
+                Chọn mã khuyến mãi
+              </Button>
+              {discountCode && (
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mt: 0.5 }}
+                >
+                  Mã khuyến mãi: {discountCode || ""}
+                </Typography>
+              )}
+            </Stack>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setInvoiceOpen(false)}>Hủy</Button>
+          <Button variant="contained" onClick={onCreateInvoice}>
+            Xuất hóa đơn
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <PromotionDialog
+        open={promoOpen}
+        onClose={() => setPromoOpen(false)}
+        onApply={(code) => {
+          setDiscountCode(code.code);
+          setPromoOpen(false);
+        }}
+      />
     </Box>
   );
 };

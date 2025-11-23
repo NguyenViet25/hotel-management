@@ -146,7 +146,7 @@ const BookingDetailsPage: React.FC = () => {
       >
         <Stack direction="row" spacing={1.5} alignItems="center">
           <Typography variant="h5" fontWeight={700}>
-            Booking {data?.id || "—"}
+            Booking #{data?.id?.substring(0, 8) || "—"}
           </Typography>
           {statusChip}
         </Stack>
@@ -275,7 +275,12 @@ const BookingDetailsPage: React.FC = () => {
         onSubmitted={fetch}
       />
 
-      <Dialog open={openCheckout} onClose={() => setOpenCheckout(false)} fullWidth maxWidth="sm">
+      <Dialog
+        open={openCheckout}
+        onClose={() => setOpenCheckout(false)}
+        fullWidth
+        maxWidth="sm"
+      >
         <DialogTitle>Thanh toán & xuất hóa đơn</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 0.5 }}>
@@ -314,11 +319,21 @@ const BookingDetailsPage: React.FC = () => {
             <Grid item xs={12}>
               <Stack direction="row" spacing={2}>
                 <FormControlLabel
-                  control={<Checkbox checked={earlyCheckIn} onChange={(e) => setEarlyCheckIn(e.target.checked)} />}
+                  control={
+                    <Checkbox
+                      checked={earlyCheckIn}
+                      onChange={(e) => setEarlyCheckIn(e.target.checked)}
+                    />
+                  }
                   label="Early check-in"
                 />
                 <FormControlLabel
-                  control={<Checkbox checked={lateCheckOut} onChange={(e) => setLateCheckOut(e.target.checked)} />}
+                  control={
+                    <Checkbox
+                      checked={lateCheckOut}
+                      onChange={(e) => setLateCheckOut(e.target.checked)}
+                    />
+                  }
                   label="Late check-out"
                 />
               </Stack>
@@ -334,7 +349,10 @@ const BookingDetailsPage: React.FC = () => {
               try {
                 const res = await bookingsApi.checkOut(id, {
                   discountCode: discountCode || undefined,
-                  finalPayment: paymentAmount > 0 ? { amount: paymentAmount, type: paymentType } : undefined,
+                  finalPayment:
+                    paymentAmount > 0
+                      ? { amount: paymentAmount, type: paymentType }
+                      : undefined,
                   earlyCheckIn,
                   lateCheckOut,
                 });

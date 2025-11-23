@@ -1,29 +1,31 @@
-import React, { useEffect, useMemo, useState } from "react";
 import {
+  Alert,
   Box,
   Button,
   Chip,
-  Snackbar,
-  Alert,
-  Stack,
-  Typography,
   Dialog,
-  DialogTitle,
-  DialogContent,
   DialogActions,
-  TextField,
+  DialogContent,
+  DialogTitle,
   MenuItem,
+  Snackbar,
+  Stack,
+  TextField,
+  Typography,
 } from "@mui/material";
-import DataTable, { type Column } from "../../../../components/common/DataTable";
-import PageTitle from "../../../../components/common/PageTitle";
-import { useStore, type StoreState } from "../../../../hooks/useStore";
+import React, { useEffect, useMemo, useState } from "react";
 import bookingsApi, {
   type BookingDetailsDto,
   type BookingsQueryDto,
 } from "../../../../api/bookingsApi";
 import ordersApi, { type OrderSummaryDto } from "../../../../api/ordersApi";
-import PromotionDialog from "./components/PromotionDialog";
+import DataTable, {
+  type Column,
+} from "../../../../components/common/DataTable";
+import PageTitle from "../../../../components/common/PageTitle";
+import { useStore, type StoreState } from "../../../../hooks/useStore";
 import OrderFormModal from "../../waiter/orders/components/OrderFormModal";
+import PromotionDialog from "./components/PromotionDialog";
 
 type InvoiceRow = {
   id: string;
@@ -47,7 +49,6 @@ const InvoiceManagementPage: React.FC = () => {
     message: string;
   }>({ open: false, severity: "success", message: "" });
   const [openWalkIn, setOpenWalkIn] = useState(false);
-  const [openBookingOrder, setOpenBookingOrder] = useState(false);
   const [bookingCheckoutOpen, setBookingCheckoutOpen] = useState(false);
   const [selectedBookingId, setSelectedBookingId] = useState<string>("");
   const [discountCode, setDiscountCode] = useState<string>("");
@@ -62,86 +63,63 @@ const InvoiceManagementPage: React.FC = () => {
   const [promoOpen, setPromoOpen] = useState(false);
   const [promoOrderId, setPromoOrderId] = useState<string | null>(null);
 
-  const columns: GridColDef<InvoiceRow>[] = useMemo(
+  const columns: Column<InvoiceRow & { actions?: React.ReactNode }>[] = useMemo(
     () => [
       {
-        field: "invoiceNumber",
-        headerName: "Số hóa đơn",
+        id: "invoiceNumber",
+        label: "Số hóa đơn",
         minWidth: 160,
-        renderCell: (params) => (
-          <Typography fontWeight={600}>{params.value || "N/A"}</Typography>
+        render: (row) => (
+          <Typography fontWeight={600}>{row.invoiceNumber || "N/A"}</Typography>
         ),
       },
-      { field: "guestName", headerName: "Khách", minWidth: 160 },
-      { field: "roomNumber", headerName: "Phòng", minWidth: 120 },
-      { field: "type", headerName: "Loại", minWidth: 120 },
+      { id: "guestName", label: "Khách", minWidth: 160 },
+      { id: "roomNumber", label: "Phòng", minWidth: 120 },
+      { id: "type", label: "Loại", minWidth: 120 },
       {
-        field: "totalAmount",
-        headerName: "Tổng tiền",
+        id: "totalAmount",
+        label: "Tổng tiền",
         minWidth: 140,
-        valueFormatter: (params: any) =>
-          `${Number(params.value || 0).toLocaleString()} đ`,
+        format: (v) => `${Number(v || 0).toLocaleString()} đ`,
       },
       {
-        field: "status",
-        headerName: "Trạng thái",
+        id: "status",
+        label: "Trạng thái",
         minWidth: 140,
-        renderCell: (p) => <Chip label={p.value as string} />,
+        render: (row) => <Chip label={row.status} />,
       },
       {
-        field: "createdAt",
-        headerName: "Ngày tạo",
+        id: "createdAt",
+        label: "Ngày tạo",
         minWidth: 160,
-        valueFormatter: (params: any) => {
-          const v = params.value as string | undefined;
-          return v ? new Date(v).toLocaleString() : "";
+        format: (v) => {
+          const s = v as string | undefined;
+          return s ? new Date(s).toLocaleString() : "";
         },
       },
-      {
-        field: "actions",
-        headerName: "Thao tác",
-        sortable: false,
-        minWidth: 220,
-        renderCell: (p) => (
-          <Stack direction="row" spacing={1}>
-            <Button
-              size="small"
-              variant="outlined"
-              onClick={() => onView(p.row)}
-            >
-              Xem
-            </Button>
-            <Button
-              size="small"
-              variant="contained"
-              onClick={() => onPrint(p.row)}
-            >
-              In
-            </Button>
-            
-          </Stack>
-        ),
-      },
+      { id: "actions", label: "Tác vụ", minWidth: 220, align: "center" },
     ],
     []
   );
 
-  const fetchData = async () => {
+  const fetchList = async (nextPage = 1) => {
     setLoading(true);
     try {
       const q: BookingsQueryDto = {
         hotelId: hotelId || undefined,
-        page: 1,
-        pageSize: 20,
+        page: nextPage,
+        pageSize,
         sortBy: "createdAt",
         sortDir: "desc",
+        guestName: search || undefined,
       };
       const [bookingRes, ordersRes] = await Promise.all([
         bookingsApi.list(q),
         ordersApi.listOrders({
           hotelId: hotelId || undefined,
-          page: 1,
-          pageSize: 20,
+          page: nextPage,
+          pageSize,
+          search: search || undefined,
         }),
       ]);
 
@@ -186,12 +164,16 @@ const InvoiceManagementPage: React.FC = () => {
         })
       );
 
-      setRows(
-        [...bookingRows, ...orderRows].sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        )
+      const combined = [...bookingRows, ...orderRows].sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
+      setRows(combined);
+      setPage(nextPage);
+      const totalCount =
+        (bookingRes.meta?.total ?? bookingRes.data?.length ?? 0) +
+        (ordersRes.meta?.total ?? ordersRes.data?.length ?? 0);
+      setTotal(totalCount);
     } catch (err: any) {
       setSnackbar({
         open: true,
@@ -204,7 +186,7 @@ const InvoiceManagementPage: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchData();
+    fetchList(1);
   }, [hotelId]);
 
   const onView = (row: InvoiceRow) => {
@@ -219,7 +201,38 @@ const InvoiceManagementPage: React.FC = () => {
     window.print();
   };
 
-  
+  const tableData = useMemo(() => {
+    return rows.map((r) => ({
+      ...r,
+      actions: (
+        <Stack
+          direction="row"
+          spacing={1}
+          justifyContent="center"
+          sx={{ flexWrap: "wrap" }}
+        >
+          <Button size="small" variant="outlined" onClick={() => onView(r)}>
+            Xem
+          </Button>
+          <Button size="small" variant="contained" onClick={() => onPrint(r)}>
+            In
+          </Button>
+          {String(r.id).startsWith("OD-") && (
+            <Button
+              size="small"
+              onClick={() => {
+                setPromoOrderId(String(r.id).replace("OD-", ""));
+                setPromoOpen(true);
+              }}
+            >
+              Khuyến mãi
+            </Button>
+          )}
+        </Stack>
+      ),
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows]);
 
   return (
     <Box>
@@ -228,27 +241,24 @@ const InvoiceManagementPage: React.FC = () => {
         subtitle="Quản lý hóa đơn Walk-in và Booking"
       />
 
-      <Stack direction="row" spacing={1} mb={2}>
-        <Button variant="contained" onClick={() => setOpenWalkIn(true)}>
-          Tạo hóa đơn Walk-in
-        </Button>
-        <Button variant="outlined" onClick={() => setBookingCheckoutOpen(true)}>
-          Tạo hóa đơn Booking
-        </Button>
-      </Stack>
-
-      <div style={{ height: 560, width: "100%" }}>
-        <DataGrid
-          rows={rows}
-          columns={columns}
-          loading={loading}
-          disableColumnMenu
-          initialState={{
-            pagination: { paginationModel: { pageSize: 10, page: 0 } },
-          }}
-          pageSizeOptions={[10, 20, 50]}
-        />
-      </div>
+      <DataTable
+        title="Danh sách hóa đơn"
+        columns={columns}
+        data={tableData}
+        loading={loading}
+        pagination={{
+          page,
+          pageSize,
+          total,
+          onPageChange: (p) => fetchList(p),
+        }}
+        onSearch={(text) => {
+          setSearch(text);
+          fetchList(1);
+        }}
+        actionColumn={false}
+        getRowId={(r: any) => r.id}
+      />
 
       <Snackbar
         open={snackbar.open}
@@ -270,16 +280,47 @@ const InvoiceManagementPage: React.FC = () => {
             severity: "success",
             message: "Đã tạo order vãng lai",
           });
-          fetchData();
+          fetchList(page);
         }}
       />
 
       <PromotionDialog
         open={promoOpen}
         onClose={() => setPromoOpen(false)}
-        onApply={(code) => {
-          setDiscountCode(code.code);
-          setPromoOpen(false);
+        onApply={async (code) => {
+          if (!promoOrderId) {
+            setDiscountCode(code.code);
+            setPromoOpen(false);
+            return;
+          }
+          try {
+            const res = await ordersApi.applyDiscount(promoOrderId, {
+              code: code.code,
+            });
+            if ((res as any).isSuccess) {
+              setSnackbar({
+                open: true,
+                severity: "success",
+                message: "Áp dụng khuyến mãi thành công",
+              });
+              fetchList(page);
+            } else {
+              setSnackbar({
+                open: true,
+                severity: "error",
+                message: (res as any).message || "Không thể áp dụng",
+              });
+            }
+          } catch (err: any) {
+            setSnackbar({
+              open: true,
+              severity: "error",
+              message: err?.message || "Đã xảy ra lỗi",
+            });
+          } finally {
+            setPromoOpen(false);
+            setPromoOrderId(null);
+          }
         }}
       />
 
@@ -299,14 +340,20 @@ const InvoiceManagementPage: React.FC = () => {
               placeholder="Nhập hoặc dán mã booking"
               fullWidth
             />
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{ sm: "center" }}>
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={1}
+              alignItems={{ sm: "center" }}
+            >
               <TextField
                 label="Mã giảm giá"
                 value={discountCode}
                 onChange={(e) => setDiscountCode(e.target.value)}
                 fullWidth
               />
-              <Button variant="outlined" onClick={() => setPromoOpen(true)}>Chọn mã</Button>
+              <Button variant="outlined" onClick={() => setPromoOpen(true)}>
+                Chọn mã
+              </Button>
             </Stack>
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
               <TextField
@@ -376,7 +423,7 @@ const InvoiceManagementPage: React.FC = () => {
                     message: "Đã tạo hóa đơn booking",
                   });
                   setBookingCheckoutOpen(false);
-                  fetchData();
+                  fetchList(page);
                 } else {
                   setSnackbar({
                     open: true,
