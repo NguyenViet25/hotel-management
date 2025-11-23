@@ -335,7 +335,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "shopping-list",
+        path: "orders",
         element: (
           <Suspense fallback={<div>Loading...</div>}>
             <KitchenManagementPage />

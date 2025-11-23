@@ -65,8 +65,8 @@ export const menuItems = {
       icon: <RestaurantIcon />,
     },
     {
-      title: "Mua nguyên liệu",
-      path: "/kitchen/shopping-list",
+      title: "Đơn hàng",
+      path: "/kitchen/orders",
       icon: <ShoppingCart />,
     },
   ],
