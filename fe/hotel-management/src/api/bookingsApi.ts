@@ -152,9 +152,11 @@ export interface AddRoomToBookingDto {
 }
 
 export enum BookingRoomStatus {
-  Pending = "Pending",
-  Occupied = "Occupied",
-  Available = "Available",
+  Pending = 0,
+  Confirmed = 1,
+  CheckedIn = 2,
+  CheckedOut = 3,
+  Cancelled = 4,
 }
 
 export enum EBookingStatus {

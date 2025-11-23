@@ -215,6 +215,7 @@ public class CheckInDto
     public Guid RoomBookingId { get; set; }
 
     public List<PersonDto> Persons { get; set; } = [];
+    public DateTime? ActualCheckInAt { get; set; }
 }
 
 public class PersonDto
@@ -259,6 +260,7 @@ public class CheckoutRequestDto
     public bool? LateCheckOut { get; set; }
     public string? DiscountCode { get; set; }
     public PaymentDto? FinalPayment { get; set; }
+    public DateTime? CheckoutTime { get; set; }
 }
 
 public class PaymentDto

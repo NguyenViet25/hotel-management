@@ -56,7 +56,7 @@ const GuestList: React.FC<Props> = ({
           Chưa có danh sách khách
         </Typography>
       ) : (
-        <Grid container spacing={1.5}>
+        <Grid container spacing={1.5} mt={1}>
           {guests.map((g, idx) => (
             <Grid
               size={12}

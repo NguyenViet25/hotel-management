@@ -1,3 +1,4 @@
+import { Login, Logout } from "@mui/icons-material";
 import {
   Alert,
   Button,
@@ -12,22 +13,18 @@ import {
 } from "@mui/material";
 import React, { useState } from "react";
 import bookingsApi, {
+  BookingRoomStatus,
   type BookingDetailsDto,
   type BookingRoomDto,
   type BookingRoomTypeDto,
 } from "../../../../../api/bookingsApi";
 import AssignRoomDialog from "./AssignRoomDialog";
+import CheckInTimeDialog from "./CheckInTimeDialog";
+import CheckOutTimeDialog from "./CheckOutTimeDialog";
 import GuestDialog from "./GuestDialog";
 import GuestList from "./GuestList";
-import {
-  Check,
-  DockRounded,
-  DoorBack,
-  DoorSliding,
-  Login,
-  Logout,
-  OfflinePin,
-} from "@mui/icons-material";
+import StripedLabelWrapper from "../../../../../components/LabelStripedWrapper";
+import { formatDateTime } from "../../../../../utils/date-helper";
 
 type Props = {
   booking: BookingDetailsDto | null;
@@ -79,6 +76,9 @@ const RoomTypeBlock: React.FC<{
   const [guestEditIndex, setGuestEditIndex] = useState<number | null>(null);
   const [guestRoomId, setGuestRoomId] = useState<string | null>(null);
   const [updatingGuestId, setUpdatingGuestId] = useState<string | null>(null);
+  const [checkInOpen, setCheckInOpen] = useState(false);
+  const [checkOutOpen, setCheckOutOpen] = useState(false);
+  const [activeRoom, setActiveRoom] = useState<BookingRoomDto | null>(null);
 
   const openAddGuest = (roomId: string) => {
     setGuestRoomId(roomId);
@@ -228,23 +228,77 @@ const RoomTypeBlock: React.FC<{
                     <CardHeader
                       title={`Phòng ${br.roomName ?? ""}`}
                       subheader={
-                        <Stack direction="row" spacing={1} alignItems="center">
-                          <Chip
-                            label={`Nhận: ${
-                              br.startDate
-                                ? new Date(br.startDate).toLocaleDateString()
-                                : "—"
-                            }`}
-                            size="small"
-                          />
-                          <Chip
-                            label={`Trả: ${
-                              br.endDate
-                                ? new Date(br.endDate).toLocaleDateString()
-                                : "—"
-                            }`}
-                            size="small"
-                          />
+                        <Stack spacing={2} mt={1}>
+                          <StripedLabelWrapper label="Trạng thái">
+                            <Stack direction={"row"} spacing={1}>
+                              <Chip
+                                variant="filled"
+                                label={
+                                  br.bookingStatus ===
+                                  BookingRoomStatus.CheckedIn
+                                    ? "Đã check-in"
+                                    : "Chưa check-in"
+                                }
+                                size="small"
+                                color={
+                                  br.bookingStatus ===
+                                  BookingRoomStatus.CheckedIn
+                                    ? "success"
+                                    : "error"
+                                }
+                              />
+                              <Chip
+                                variant="filled"
+                                label={
+                                  br.bookingStatus ===
+                                  BookingRoomStatus.CheckedOut
+                                    ? "Đã check-out"
+                                    : "Chưa check-out"
+                                }
+                                size="small"
+                                color={
+                                  br.bookingStatus ===
+                                  BookingRoomStatus.CheckedOut
+                                    ? "success"
+                                    : "error"
+                                }
+                              />
+                            </Stack>
+                          </StripedLabelWrapper>
+                          <StripedLabelWrapper label="Thời gian dự kiến">
+                            <Stack direction={"row"} spacing={1}>
+                              <Chip
+                                label={`Nhận: ${
+                                  br.startDate
+                                    ? formatDateTime(br.startDate)
+                                    : "—"
+                                }`}
+                                size="small"
+                              />
+                              <Chip
+                                label={`Trả: ${
+                                  br.endDate ? formatDateTime(br.endDate) : "—"
+                                }`}
+                                size="small"
+                              />{" "}
+                            </Stack>
+                          </StripedLabelWrapper>
+                          <StripedLabelWrapper label="Thời gian thực tế">
+                            <Stack direction={"row"} spacing={1}>
+                              <Chip
+                                label={`Nhận: ${
+                                  br.startDate
+                                    ? formatDateTime(br.startDate)
+                                    : "—"
+                                }`}
+                                size="small"
+                              />
+                              <Chip
+                                label={`Trả: ${formatDateTime(br.endDate)}`}
+                                size="small"
+                              />{" "}
+                            </Stack>
+                          </StripedLabelWrapper>
                         </Stack>
                       }
                     />
@@ -306,7 +360,10 @@ const RoomTypeBlock: React.FC<{
                             variant="contained"
                             fullWidth
                             startIcon={<Login />}
-                            onClick={() => {}}
+                            onClick={() => {
+                              setActiveRoom(br);
+                              setCheckInOpen(true);
+                            }}
                             // disabled={
                             //   ((forms[br.bookingRoomId] || []).length + (br.guests || []).length) >=
                             //   (rt.capacity || 0)
@@ -319,8 +376,10 @@ const RoomTypeBlock: React.FC<{
                             startIcon={<Logout />}
                             variant="contained"
                             color="success"
-                            onClick={() => openAddGuest(br.bookingRoomId)}
-                            disabled
+                            onClick={() => {
+                              setActiveRoom(br);
+                              setCheckOutOpen(true);
+                            }}
                             // disabled={
                             //   ((forms[br.bookingRoomId] || []).length + (br.guests || []).length) >=
                             //   (rt.capacity || 0)
@@ -357,6 +416,83 @@ const RoomTypeBlock: React.FC<{
             });
             setAssignOpen(false);
             await onRefresh?.();
+          }}
+        />
+
+        <CheckInTimeDialog
+          open={checkInOpen}
+          scheduledStart={activeRoom?.startDate || ""}
+          scheduledEnd={activeRoom?.endDate || undefined}
+          onClose={() => setCheckInOpen(false)}
+          onConfirm={async (iso, info) => {
+            try {
+              const res = await bookingsApi.checkIn(booking.id, {
+                roomBookingId: activeRoom?.bookingRoomId,
+                persons: [],
+                actualCheckInAt: iso,
+              } as any);
+              if (res.isSuccess) {
+                setSnackbar({
+                  open: true,
+                  message: info.isEarly
+                    ? `Check-in early ${info.days}d ${info.hours}h ${info.minutes}m`
+                    : "Check-in thành công",
+                  severity: "success",
+                });
+                setCheckInOpen(false);
+                await onRefresh?.();
+              } else {
+                setSnackbar({
+                  open: true,
+                  message: res.message || "Không thể check-in",
+                  severity: "error",
+                });
+              }
+            } catch {
+              setSnackbar({
+                open: true,
+                message: "Đã xảy ra lỗi khi check-in",
+                severity: "error",
+              });
+            }
+          }}
+        />
+
+        <CheckOutTimeDialog
+          open={checkOutOpen}
+          scheduledEnd={activeRoom?.endDate || ""}
+          scheduledStart={activeRoom?.startDate || undefined}
+          onClose={() => setCheckOutOpen(false)}
+          onConfirm={async (iso, info) => {
+            try {
+              const res = await bookingsApi.checkOut(booking.id, {
+                lateCheckOut: info.isLate,
+                checkoutTime: iso,
+              } as any);
+              if (res.isSuccess) {
+                setSnackbar({
+                  open: true,
+                  message: info.isLate
+                    ? `Late check-out ${info.days}d ${info.hours}h ${info.minutes}m`
+                    : "Check-out thành công",
+                  severity: "success",
+                });
+                setCheckOutOpen(false);
+                await onRefresh?.();
+              } else {
+                setSnackbar({
+                  open: true,
+                  message: res.message || "Không thể check-out",
+                  severity: "error",
+                });
+              }
+            } catch {
+              setSnackbar({
+                open: true,
+                message: "Đã xảy ra lỗi khi check-out",
+                severity: "error",
+              });
+            }
           }}
         />
 

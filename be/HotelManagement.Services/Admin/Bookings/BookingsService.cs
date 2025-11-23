@@ -913,8 +913,7 @@ public class BookingsService(
                 FullName = guest.Name,
                 Phone = guest.Phone,
                 IdCardFrontImageUrl = guest.IdCardFrontImageUrl,
-                IdCardBackImageUrl = guest.IdCardBackImageUrl,
-                IdCard = guest.IdCard,
+                IdCardBackImageUrl = guest.IdCardBackImageUrl
             };
             await _guestRepo.AddAsync(newGuest);
             await _guestRepo.SaveChangesAsync();
@@ -932,7 +931,7 @@ public class BookingsService(
         if (bookingRoom != null)
         {
             bookingRoom.BookingStatus = BookingRoomStatus.CheckedIn;
-            bookingRoom.ActualCheckInAt = DateTime.UtcNow;
+            bookingRoom.ActualCheckInAt = dto.ActualCheckInAt ?? DateTime.UtcNow;
             await _bookingRoomRepo.UpdateAsync(bookingRoom);
             await _bookingRoomRepo.SaveChangesAsync();
 
@@ -976,7 +975,6 @@ public class BookingsService(
             guest.Email = dto.Email ?? guest.Email;
             guest.IdCardFrontImageUrl = dto.IdCardFrontImageUrl ?? guest.IdCardFrontImageUrl;
             guest.IdCardBackImageUrl = dto.IdCardBackImageUrl ?? guest.IdCardBackImageUrl;
-            guest.IdCard = dto.IdCard ?? guest.IdCard;
 
             await _guestRepo.UpdateAsync(guest);
             await _guestRepo.SaveChangesAsync();
@@ -1224,7 +1222,7 @@ public class BookingsService(
         foreach (var br in booking.BookingRoomTypes.SelectMany(rt => rt.BookingRooms))
         {
             br.BookingStatus = BookingRoomStatus.CheckedOut;
-            br.ActualCheckOutAt = DateTime.UtcNow;
+            br.ActualCheckOutAt = dto.CheckoutTime ?? DateTime.UtcNow;
             await _bookingRoomRepo.UpdateAsync(br);
         }
         await _bookingRoomRepo.SaveChangesAsync();
@@ -1249,7 +1247,7 @@ public class BookingsService(
                     HotelId = room.HotelId,
                     RoomId = room.Id,
                     Status = RoomStatus.Dirty,
-                    Timestamp = DateTime.UtcNow
+                    Timestamp = dto.CheckoutTime ?? DateTime.UtcNow
                 });
                 await _roomStatusLogRepo.SaveChangesAsync();
             }
@@ -1258,7 +1256,7 @@ public class BookingsService(
         var details = await GetByIdAsync(bookingId);
         if (!details.IsSuccess) return ApiResponse<CheckoutResultDto>.Fail(details.Message ?? "");
 
-        return ApiResponse<CheckoutResultDto>.Ok(new CheckoutResultDto { TotalPaid = totalPaid, Booking = details.Data, CheckoutTime = DateTime.UtcNow });
+        return ApiResponse<CheckoutResultDto>.Ok(new CheckoutResultDto { TotalPaid = totalPaid, Booking = details.Data, CheckoutTime = dto.CheckoutTime ?? DateTime.UtcNow });
     }
 
     public async Task<ApiResponse<AdditionalChargesDto>> GetAdditionalChargesPreviewAsync(Guid bookingId)
