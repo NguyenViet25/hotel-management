@@ -179,7 +179,11 @@ const RoomMap: React.FC = () => {
       Dirty: { bg: "#FDECEC", text: "#C62828", label: "Bẩn" },
       Clean: { bg: "#DDF7E5", text: "#1B5E20", label: "Đã dọn sạch" },
     };
-    const cfg = map[s] || { bg: "#F2F4F7", text: "#344054", label: String(status) };
+    const cfg = map[s] || {
+      bg: "#F2F4F7",
+      text: "#344054",
+      label: String(status),
+    };
     const icon =
       s === "Available" ? (
         <CheckCircleIcon />
@@ -197,7 +201,12 @@ const RoomMap: React.FC = () => {
         <DoneAllIcon />
       ) : undefined;
     return (
-      <Chip size="small" label={cfg.label} sx={{ bgcolor: cfg.bg, color: cfg.text, fontWeight: 700 }} icon={icon} />
+      <Chip
+        size="small"
+        label={cfg.label}
+        sx={{ bgcolor: cfg.bg, color: cfg.text, fontWeight: 700 }}
+        icon={icon}
+      />
     );
   };
 
@@ -480,9 +489,9 @@ const RoomMap: React.FC = () => {
           "&:hover": { boxShadow: 3 },
         }}
       >
-        <Stack p={3} direction="row" spacing={1.5} alignItems="center">
+        <Stack p={2} direction="row" spacing={1.5} alignItems="center">
           <AddCircleOutlineIcon color="primary" />
-          <Typography variant="h6" fontWeight={700}>
+          <Typography variant="h6" fontWeight={600}>
             Thêm Phòng Mới
           </Typography>
         </Stack>
@@ -556,8 +565,11 @@ const RoomMap: React.FC = () => {
                         boxShadow: "0 3px 12px rgba(0,0,0,0.1)",
                         position: "relative",
                         border: "1px solid rgba(0,0,0,0.08)",
-                        borderLeft: '6px solid',
-                        borderLeftColor: (r.status as number) === 4 ? 'error.main' : 'transparent',
+                        borderLeft: "6px solid",
+                        borderLeftColor:
+                          (r.status as number) === 4
+                            ? "error.main"
+                            : "transparent",
                         transition: "all 0.2s ease",
                         "&:hover": {
                           boxShadow: "0px 6px 20px rgba(0,0,0,0.18)",
@@ -667,19 +679,6 @@ const RoomMap: React.FC = () => {
                             sx={{ bgcolor: "white" }}
                           >
                             <ChangeCircleIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-
-                        <Tooltip title="Buồng phòng">
-                          <IconButton
-                            size="small"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openHousekeeping(r);
-                            }}
-                            sx={{ bgcolor: "white" }}
-                          >
-                            <CleaningServicesIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
 
