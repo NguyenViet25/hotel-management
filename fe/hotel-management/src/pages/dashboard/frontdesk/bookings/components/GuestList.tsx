@@ -1,25 +1,15 @@
+import { AddCircle } from "@mui/icons-material";
+import { Button, Grid, Stack, Typography } from "@mui/material";
 import React from "react";
-import { Button, Grid, IconButton, Stack, Typography } from "@mui/material";
 import GuestCard from "./GuestCard";
-import { Add, AddCircle } from "@mui/icons-material";
-
-export type GuestItem = {
-  id?: string;
-  fullname?: string;
-  name?: string;
-  phone?: string;
-  email?: string;
-  idCardFrontImageUrl?: string;
-  idCardBackImageUrl?: string;
-  typeLabel?: string;
-};
+import type { BookingGuestDto } from "../../../../../api/bookingsApi";
 
 type Props = {
   title: string;
-  guests: GuestItem[];
+  guests: BookingGuestDto[];
   editable?: boolean;
-  onEdit?: (idx: number, guest: GuestItem) => void;
-  onDelete?: (idx: number, guest: GuestItem) => void;
+  onEdit?: (idx: number, guest: BookingGuestDto) => void;
+  onDelete?: (idx: number, guest: BookingGuestDto) => void;
   onAddGuestClick?: () => void;
 };
 
@@ -60,12 +50,10 @@ const GuestList: React.FC<Props> = ({
           {guests.map((g, idx) => (
             <Grid
               size={12}
-              key={g.id || `${g.fullname || g.name}-${g.phone}-${idx}`}
+              key={g.guestId || `${g.fullname || g.fullname}-${g.phone}-${idx}`}
             >
               <GuestCard
-                name={g.fullname ?? g.name}
-                phone={g.phone}
-                email={g.email}
+                guest={g}
                 onEdit={onEdit ? () => onEdit(idx, g) : undefined}
                 onDelete={onDelete ? () => onDelete(idx, g) : undefined}
                 disabledEdit={!editable}

@@ -1,13 +1,20 @@
 import React from "react";
-import { Avatar, Box, Card, CardContent, Chip, IconButton, Stack, Typography } from "@mui/material";
+import {
+  Avatar,
+  Box,
+  Card,
+  CardContent,
+  Chip,
+  IconButton,
+  Stack,
+  Typography,
+} from "@mui/material";
 import EditOutlined from "@mui/icons-material/EditOutlined";
 import DeleteOutline from "@mui/icons-material/DeleteOutline";
+import type { BookingGuestDto } from "../../../../../api/bookingsApi";
 
 type Props = {
-  name?: string;
-  phone?: string;
-  email?: string;
-  avatarUrl?: string;
+  guest: BookingGuestDto;
   typeLabel?: string;
   onEdit?: () => void;
   onDelete?: () => void;
@@ -25,7 +32,14 @@ const initials = (s?: string) => {
   return `${a}${b}`.toUpperCase();
 };
 
-const GuestCard: React.FC<Props> = ({ name, phone, email, avatarUrl, typeLabel, onEdit, onDelete, disabledEdit, disabledDelete }) => {
+const GuestCard: React.FC<Props> = ({
+  guest,
+  typeLabel,
+  onEdit,
+  onDelete,
+  disabledEdit,
+  disabledDelete,
+}) => {
   return (
     <Card
       variant="outlined"
@@ -34,26 +48,93 @@ const GuestCard: React.FC<Props> = ({ name, phone, email, avatarUrl, typeLabel, 
         position: "relative",
         overflow: "hidden",
         transition: "all .15s",
-        '&:hover': { borderColor: 'primary.main', boxShadow: 2 },
-        '&:hover .actions': { opacity: 1 },
+        "&:hover": { borderColor: "primary.main", boxShadow: 2 },
+        "&:hover .actions": { opacity: 1 },
       }}
     >
       <CardContent>
         <Stack direction="row" spacing={1.5} alignItems="center">
-          <Avatar src={avatarUrl} sx={{ bgcolor: "primary.main" }}>{!avatarUrl ? initials(name) : null}</Avatar>
+          <Avatar src={""} sx={{ bgcolor: "primary.main" }}>
+            {initials(guest.fullname)}
+          </Avatar>
           <Stack flex={1} spacing={0.25} minWidth={0}>
-            <Typography variant="subtitle2" fontWeight={700} noWrap>{name || "—"}</Typography>
-            <Typography variant="body2" color="text.secondary" noWrap>{phone || "—"}</Typography>
-            {email ? <Typography variant="caption" color="text.secondary" noWrap>{email}</Typography> : null}
-            {typeLabel ? <Box sx={{ mt: 0.5 }}><Chip size="small" label={typeLabel} /></Box> : null}
+            <Typography variant="subtitle2" fontWeight={700} noWrap>
+              Họ và tên: {guest.fullname || "—"}
+            </Typography>
+
+            <Typography variant="body2" color="text.secondary" noWrap>
+              SĐT: {guest.phone || "—"}
+            </Typography>
+            {guest.email ? (
+              <Typography variant="caption" color="text.secondary" noWrap>
+                Email: {guest.email}
+              </Typography>
+            ) : null}
+            {typeLabel ? (
+              <Box sx={{ mt: 0.5 }}>
+                <Chip size="small" label={typeLabel} />
+              </Box>
+            ) : null}
           </Stack>
         </Stack>
+        <Typography variant="body2" color="text.secondary" noWrap>
+          CMND/CCCD: {guest.idCard || "—"}
+        </Typography>
+        <Stack spacing={2} direction="row" alignItems="center">
+          {/* Front Image */}
+          <img
+            src={guest.idCardFrontImageUrl || ""}
+            alt={`${guest.fullname || ""} - Mặt trước`}
+            style={{
+              width: "100%",
+              height: 160,
+              borderRadius: 10,
+              objectFit: "contain",
+              border: "1px solid #ddd",
+            }}
+          />
+
+          {/* Back Image */}
+          <img
+            src={guest.idCardBackImageUrl || ""}
+            alt={`${guest.fullname || ""} - Mặt sau`}
+            style={{
+              width: "100%",
+
+              borderRadius: 10,
+              objectFit: "contain",
+              border: "1px solid #ddd",
+            }}
+          />
+        </Stack>
       </CardContent>
-      <Box className="actions" sx={{ position: "absolute", top: 6, right: 6, display: "flex", gap: 0.5, opacity: 0, transition: "opacity 0.2s" }}>
-        <IconButton size="small" onClick={onEdit} disabled={disabledEdit} aria-label="Chỉnh sửa">
+      <Box
+        className="actions"
+        sx={{
+          position: "absolute",
+          top: 6,
+          right: 6,
+          display: "flex",
+          gap: 0.5,
+          opacity: 0,
+          transition: "opacity 0.2s",
+        }}
+      >
+        <IconButton
+          size="small"
+          onClick={onEdit}
+          disabled={disabledEdit}
+          aria-label="Chỉnh sửa"
+        >
           <EditOutlined fontSize="small" />
         </IconButton>
-        <IconButton size="small" color="error" onClick={onDelete} disabled={disabledDelete} aria-label="Xoá">
+        <IconButton
+          size="small"
+          color="error"
+          onClick={onDelete}
+          disabled={disabledDelete}
+          aria-label="Xoá"
+        >
           <DeleteOutline fontSize="small" />
         </IconButton>
       </Box>

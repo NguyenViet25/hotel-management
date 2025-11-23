@@ -91,6 +91,7 @@ public class BookingGuestDto
     public string? Fullname { get; set; }
     public string? Phone { get; set; }
     public string? Email { get; set; }
+    public string? IdCard { get; set; }
     public string? IdCardFrontImageUrl { get; set; }
     public string? IdCardBackImageUrl { get; set; }
 }
@@ -102,6 +103,8 @@ public class BookingRoomDto
     public string? RoomName { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
+    public DateTime? ActualCheckInAt { get; set; }
+    public DateTime? ActualCheckOutAt { get; set; }
     public BookingRoomStatus BookingStatus { get; set; }
     public List<BookingGuestDto> Guests { get; set; } = new();
 }

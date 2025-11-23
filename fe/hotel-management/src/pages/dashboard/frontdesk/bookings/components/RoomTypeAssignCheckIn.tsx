@@ -222,7 +222,7 @@ const RoomTypeBlock: React.FC<{
             </Typography>
           ) : (
             <Grid container spacing={2}>
-              {assignedRooms.map((br) => (
+              {assignedRooms.map((br: BookingRoomDto) => (
                 <Grid size={{ xs: 12, md: 4 }} key={br.bookingRoomId}>
                   <Card variant="outlined" sx={{ borderRadius: 2 }}>
                     <CardHeader
@@ -287,14 +287,18 @@ const RoomTypeBlock: React.FC<{
                             <Stack direction={"row"} spacing={1}>
                               <Chip
                                 label={`Nhận: ${
-                                  br.startDate
-                                    ? formatDateTime(br.startDate)
+                                  br.actualCheckInAt
+                                    ? formatDateTime(br.actualCheckInAt)
                                     : "—"
                                 }`}
                                 size="small"
                               />
                               <Chip
-                                label={`Trả: ${formatDateTime(br.endDate)}`}
+                                label={`Trả: ${
+                                  br.actualCheckOutAt
+                                    ? formatDateTime(br.actualCheckOutAt)
+                                    : "—"
+                                }`}
                                 size="small"
                               />{" "}
                             </Stack>
@@ -307,14 +311,7 @@ const RoomTypeBlock: React.FC<{
                         <GuestList
                           onAddGuestClick={() => openAddGuest(br.bookingRoomId)}
                           title="Danh sách khách"
-                          guests={(br.guests || []).map((g) => ({
-                            id: g.guestId,
-                            fullname: g.fullname,
-                            phone: g.phone,
-                            email: g.email,
-                            idCardFrontImageUrl: g.idCardFrontImageUrl,
-                            idCardBackImageUrl: g.idCardBackImageUrl,
-                          }))}
+                          guests={br.guests || []}
                           editable={true}
                           onEdit={(idx, gi) =>
                             openEditGuest(br.bookingRoomId, idx, {

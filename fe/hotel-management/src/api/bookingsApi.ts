@@ -59,6 +59,7 @@ export interface BookingGuestDto {
   fullname?: string;
   phone?: string;
   email?: string;
+  idCard?: string;
   idCardFrontImageUrl?: string;
   idCardBackImageUrl?: string;
 }
@@ -69,6 +70,8 @@ export interface BookingRoomDto {
   roomName?: string;
   startDate: string;
   endDate: string;
+  actualCheckInAt: string;
+  actualCheckOutAt: string;
   bookingStatus: BookingRoomStatus;
   guests: BookingGuestDto[];
 }

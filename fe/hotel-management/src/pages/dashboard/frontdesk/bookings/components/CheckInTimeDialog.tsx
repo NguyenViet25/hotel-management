@@ -1,5 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
-import { Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Stack, Typography } from "@mui/material";
+import {
+  Button,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
@@ -9,10 +18,19 @@ type Props = {
   scheduledStart: string;
   scheduledEnd?: string;
   onClose: () => void;
-  onConfirm: (selectedIso: string, info: { isEarly: boolean; days: number; hours: number; minutes: number }) => void;
+  onConfirm: (
+    selectedIso: string,
+    info: { isEarly: boolean; days: number; hours: number; minutes: number }
+  ) => void;
 };
 
-export default function CheckInTimeDialog({ open, scheduledStart, scheduledEnd, onClose, onConfirm }: Props) {
+export default function CheckInTimeDialog({
+  open,
+  scheduledStart,
+  scheduledEnd,
+  onClose,
+  onConfirm,
+}: Props) {
   const [value, setValue] = useState<Dayjs>(dayjs());
 
   useEffect(() => {
@@ -36,26 +54,47 @@ export default function CheckInTimeDialog({ open, scheduledStart, scheduledEnd, 
       <DialogContent>
         <Stack spacing={1.5} sx={{ mt: 1 }}>
           <Stack direction="row" spacing={1} alignItems="center">
-            <Typography variant="subtitle2" fontWeight={700}>Dự kiến nhận phòng:</Typography>
+            <Typography variant="subtitle2" fontWeight={700}>
+              Dự kiến nhận phòng:
+            </Typography>
             <Chip label={dayjs(scheduledStart).format("DD/MM/YYYY HH:mm")} />
           </Stack>
           {scheduledEnd ? (
             <Stack direction="row" spacing={1} alignItems="center">
-              <Typography variant="subtitle2" fontWeight={700}>Dự kiến trả phòng:</Typography>
+              <Typography variant="subtitle2" fontWeight={700}>
+                Dự kiến trả phòng:
+              </Typography>
               <Chip label={dayjs(scheduledEnd).format("DD/MM/YYYY HH:mm")} />
             </Stack>
           ) : null}
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateTimePicker label="Thời gian check-in" value={value} onChange={(v) => v && setValue(v)} />
+            <DateTimePicker
+              label="Thời gian check-in"
+              value={value}
+              maxDate={dayjs(scheduledEnd)}
+              onChange={(v) => v && setValue(v)}
+            />
           </LocalizationProvider>
           <Stack direction="row" spacing={1} alignItems="center">
-            <Chip color={isEarly ? "warning" : "success"} label={isEarly ? `Early ${days}d ${hours}h ${minutes}m` : `Không early`} />
+            <Chip
+              color={isEarly ? "warning" : "success"}
+              label={
+                isEarly ? `Sớm ${days}d ${hours}h ${minutes}m` : `Đúng giờ`
+              }
+            />
           </Stack>
         </Stack>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Hủy</Button>
-        <Button variant="contained" onClick={() => onConfirm(value.toISOString(), { isEarly, days, hours, minutes })}>Xác nhận</Button>
+        <Button
+          variant="contained"
+          onClick={() =>
+            onConfirm(value.toISOString(), { isEarly, days, hours, minutes })
+          }
+        >
+          Xác nhận
+        </Button>
       </DialogActions>
     </Dialog>
   );

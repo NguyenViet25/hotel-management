@@ -278,7 +278,7 @@ public class BookingsService(
                 };
 
                 var listBookingRoomDto = new List<BookingRoomDto>();
-                foreach (var br in bookingRooms)
+                foreach (BookingRoom br in bookingRooms)
                 {
                     var bookingGuests = await _bookingGuestRepo.Query()
                         .Include(x => x.BookingRoom)
@@ -293,12 +293,15 @@ public class BookingsService(
                         StartDate = br.StartDate,
                         EndDate = br.EndDate,
                         BookingStatus = br.BookingStatus,
+                        ActualCheckInAt = br.ActualCheckInAt,
+                        ActualCheckOutAt = br.ActualCheckOutAt,
                         Guests = [.. bookingGuests.Select(x => new BookingGuestDto()
                         {
                             GuestId = x.GuestId,
                             Fullname = x.Guest?.FullName,
                             Email = x.Guest?.Email,
                             Phone = x.Guest?.Phone,
+                            IdCard = x.Guest?.IdCard,
                             IdCardBackImageUrl = x.Guest?.IdCardBackImageUrl,
                             IdCardFrontImageUrl = x.Guest?.IdCardFrontImageUrl
                         })]
@@ -912,6 +915,7 @@ public class BookingsService(
                 Id = Guid.NewGuid(),
                 FullName = guest.Name,
                 Phone = guest.Phone,
+                IdCard = guest.IdCard,
                 IdCardFrontImageUrl = guest.IdCardFrontImageUrl,
                 IdCardBackImageUrl = guest.IdCardBackImageUrl
             };
