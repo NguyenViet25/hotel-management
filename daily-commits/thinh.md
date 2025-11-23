@@ -150,3 +150,4 @@
 2025-11-22 - 5 - 01:41:33 UTC :: docs: UC-02 RBAC: thiet lap quyen thao tac theo vai tro/pham vi. — dieu chinh quyen truy cap theo vai tro (can theo doi them)
 2025-11-23 - 1 - 01:58:26 UTC :: fix: UC-22 Minibar/Amenity: ghi tieu hao, post charge vao folio. — dieu chinh UI & copy cho ro (dong bo voi BE/FE)
 2025-11-23 - 2 - 01:58:28 UTC :: test: UC-21 Housekeeping: cap nhat Dirty/In-progress/Cleaned/Inspected. — cai thien hieu nang render/list (da smoke test)
+2025-11-23 - 3 - 01:58:31 UTC :: test: UC-11 Goi gia: bat/tam ngung goi gia dang ap dung. — kiem tra tuong thich mui gio/tien te (da review so bo)
