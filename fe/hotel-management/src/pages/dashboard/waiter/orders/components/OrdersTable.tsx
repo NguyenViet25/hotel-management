@@ -19,6 +19,8 @@ interface OrdersTableProps {
   onSearch?: (search: string) => void;
   onCreateInvoice?: (record: OrderSummaryDto) => void;
   onSelectPromotion?: (record: OrderSummaryDto) => void;
+  invoiceMap?: Record<string, { id: string; invoiceNumber?: string }>;
+  onPrintInvoice?: (record: OrderSummaryDto, invoiceId: string) => void;
 }
 
 const formatCurrency = (value: number) =>
@@ -39,6 +41,8 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
   onCancel,
   onCreateInvoice,
   onSelectPromotion,
+  invoiceMap,
+  onPrintInvoice,
 }) => {
   const columns: Column<OrderSummaryDto>[] = [
     {
@@ -121,23 +125,38 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
     {
       id: "invoiceActions",
       label: "Hóa đơn",
-      minWidth: 220,
-      render: (row) =>
-        row.isWalkIn ? (
+      minWidth: 260,
+      render: (row) => {
+        if (!row.isWalkIn) return <span>—</span>;
+        const existing = invoiceMap?.[row.id];
+        return (
           <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
-            <Button
-              startIcon={<Receipt />}
-              size="small"
-              variant="contained"
-              onClick={() => onCreateInvoice?.(row)}
-              disabled={row.status === "2" || row.status === "3"}
-            >
-              Xuất hóa đơn
-            </Button>
+            {existing ? (
+              <Button
+                startIcon={<Receipt />}
+                size="small"
+                variant="contained"
+                color="success"
+                onClick={() => onPrintInvoice?.(row, existing.id)}
+              >
+                In hóa đơn
+              </Button>
+            ) : (
+              <>
+                <Button
+                  startIcon={<Receipt />}
+                  size="small"
+                  variant="contained"
+                  onClick={() => onCreateInvoice?.(row)}
+                  disabled={row.status === "2" || row.status === "3"}
+                >
+                  Xuất hóa đơn
+                </Button>
+              </>
+            )}
           </Stack>
-        ) : (
-          <span>—</span>
-        ),
+        );
+      },
     },
   ];
 

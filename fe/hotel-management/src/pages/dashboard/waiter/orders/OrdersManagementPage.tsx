@@ -97,6 +97,10 @@ const OrdersManagementPage: React.FC = () => {
   const [orderDetails, setOrderDetails] = useState<OrderDetailsDto | null>(
     null
   );
+  const [orderInvoiceMap, setOrderInvoiceMap] = useState<
+    Record<string, { id: string; invoiceNumber?: string }>
+  >({});
+  const [disableForPrint, setDisableForPrint] = useState(false);
 
   // Fetch orders based on filters and pagination
   const fetchOrders = async (pageNum = 1) => {
@@ -173,7 +177,9 @@ const OrdersManagementPage: React.FC = () => {
         setSnackbar({
           open: true,
           severity: "success",
-          message: `Đã xuất hóa đơn khách vãng lai: ${res.data?.invoiceNumber || ""}`,
+          message: `Đã xuất hóa đơn khách vãng lai: ${
+            res.data?.invoiceNumber || ""
+          }`,
         });
         setInvoiceOpen(false);
         setDiscountCode("");
@@ -181,7 +187,11 @@ const OrdersManagementPage: React.FC = () => {
         fetchOrders(page);
         window.print();
       } else {
-        setSnackbar({ open: true, severity: "error", message: res.message || "Không thể xuất hóa đơn" });
+        setSnackbar({
+          open: true,
+          severity: "error",
+          message: res.message || "Không thể xuất hóa đơn",
+        });
       }
     } catch (err) {
       setSnackbar({
@@ -202,6 +212,37 @@ const OrdersManagementPage: React.FC = () => {
     };
     load();
   }, [invoiceOpen, selectedForInvoice]);
+
+  useEffect(() => {
+    const run = async () => {
+      if (!orders?.length) {
+        setOrderInvoiceMap({});
+        return;
+      }
+      const candidates = orders.filter((o) => o.isWalkIn);
+      try {
+        const results = await Promise.all(
+          candidates.map((o) =>
+            invoicesApi.list({
+              hotelId: hotelId || undefined,
+              orderId: o.id,
+              page: 1,
+              pageSize: 1,
+            })
+          )
+        );
+        const map: Record<string, { id: string; invoiceNumber?: string }> = {};
+        candidates.forEach((o, idx) => {
+          const item = results[idx]?.data?.items?.[0];
+          if (item)
+            map[o.id] = { id: item.id, invoiceNumber: item.invoiceNumber };
+        });
+        setOrderInvoiceMap(map);
+      } catch {}
+    };
+    run();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orders, hotelId]);
 
   useEffect(() => {
     setSearchParams({ tabValue: value.toString() });
@@ -302,6 +343,11 @@ const OrdersManagementPage: React.FC = () => {
           setSelectedForInvoice(row);
           setPromoOpen(true);
         }}
+        invoiceMap={orderInvoiceMap}
+        onPrintInvoice={(row) => {
+          setSelectedForInvoice(row);
+          setInvoiceOpen(true);
+        }}
       />
       <OrderFormModal
         open={openOrder}
@@ -350,7 +396,9 @@ const OrdersManagementPage: React.FC = () => {
           }}
         >
           <ReceiptLongIcon color="primary" sx={{ fontSize: 32 }} />
-          Xuất hóa đơn Khách vãng lai
+          {selectedForInvoice && orderInvoiceMap[selectedForInvoice.id]
+            ? "Hóa đơn Khách vãng lai"
+            : "Xuất hóa đơn Khách vãng lai"}
         </DialogTitle>
 
         <DialogContent>
@@ -412,36 +460,45 @@ const OrdersManagementPage: React.FC = () => {
                 {/* Promotion Button */}
                 <Divider sx={{ my: 1 }} />
 
-                <Typography
-                  variant="subtitle1"
-                  fontWeight={700}
-                  sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}
-                >
-                  <LocalOfferIcon color="success" />
-                  Khuyến mãi
-                </Typography>
-
-                <Stack spacing={2}>
-                  <Button
-                    startIcon={<SearchIcon />}
-                    variant="contained"
-                    color="success"
-                    sx={{ width: 220 }}
-                    size="small"
-                    onClick={() => setPromoOpen(true)}
-                  >
-                    Chọn mã khuyến mãi
-                  </Button>
-
-                  {discountCode && (
-                    <Chip
-                      label={`Áp dụng: ${discountCode} - giảm giá ${discountPercent}%`}
-                      color="default"
-                      icon={<LocalOfferIcon />}
-                      sx={{ mt: 1, px: 2, fontWeight: 600 }}
-                    />
-                  )}
-                </Stack>
+                {!(
+                  selectedForInvoice && orderInvoiceMap[selectedForInvoice.id]
+                ) && (
+                  <>
+                    <Typography
+                      variant="subtitle1"
+                      fontWeight={700}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        mb: 1,
+                      }}
+                    >
+                      <LocalOfferIcon color="success" />
+                      Khuyến mãi
+                    </Typography>
+                    <Stack spacing={2}>
+                      <Button
+                        startIcon={<SearchIcon />}
+                        variant="contained"
+                        color="success"
+                        sx={{ width: 220 }}
+                        size="small"
+                        onClick={() => setPromoOpen(true)}
+                      >
+                        Chọn mã khuyến mãi
+                      </Button>
+                      {discountCode && (
+                        <Chip
+                          label={`Áp dụng: ${discountCode} - giảm giá ${discountPercent}%`}
+                          color="default"
+                          icon={<LocalOfferIcon />}
+                          sx={{ mt: 1, px: 2, fontWeight: 600 }}
+                        />
+                      )}
+                    </Stack>
+                  </>
+                )}
               </CardContent>
             </Card>
 
@@ -583,17 +640,30 @@ const OrdersManagementPage: React.FC = () => {
         </DialogContent>
 
         {/* ========================= FOOTER ========================= */}
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setInvoiceOpen(false)}>Hủy</Button>
-          <Button
-            variant="contained"
-            startIcon={<ReceiptIcon />}
-            onClick={onCreateInvoice}
-            sx={{ px: 3, py: 1 }}
-          >
-            Xuất hóa đơn
-          </Button>
-        </DialogActions>
+        {!disableForPrint && (
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button onClick={() => setInvoiceOpen(false)}>Đóng</Button>
+            {selectedForInvoice && orderInvoiceMap[selectedForInvoice.id] ? (
+              <Button
+                variant="contained"
+                startIcon={<ReceiptIcon />}
+                onClick={() => window.print()}
+                sx={{ px: 3, py: 1 }}
+              >
+                In hóa đơn
+              </Button>
+            ) : (
+              <Button
+                variant="contained"
+                startIcon={<ReceiptIcon />}
+                onClick={onCreateInvoice}
+                sx={{ px: 3, py: 1 }}
+              >
+                Xuất hóa đơn
+              </Button>
+            )}
+          </DialogActions>
+        )}
       </Dialog>
       ;
       <PromotionDialog

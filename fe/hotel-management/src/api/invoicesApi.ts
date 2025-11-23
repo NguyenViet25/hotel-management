@@ -55,6 +55,7 @@ export interface ItemResponse<T> {
 export interface InvoiceFilterParams {
   hotelId?: string;
   bookingId?: string;
+  orderId?: string;
   guestId?: string;
   status?: string | number;
   fromDate?: string;
@@ -82,6 +83,7 @@ const invoicesApi = {
     const qp = new URLSearchParams();
     if (params.hotelId) qp.append("hotelId", params.hotelId);
     if (params.bookingId) qp.append("bookingId", params.bookingId);
+    if (params.orderId) qp.append("orderId", params.orderId);
     if (params.guestId) qp.append("guestId", params.guestId);
     if (params.status !== undefined) qp.append("status", String(params.status));
     if (params.fromDate) qp.append("fromDate", params.fromDate);

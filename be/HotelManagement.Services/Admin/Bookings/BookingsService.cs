@@ -469,8 +469,7 @@ public class BookingsService(
                 .Include(x => x.PrimaryGuest)
                 .Include(b => b.BookingRoomTypes)
                 .ThenInclude(rt => rt.BookingRooms)
-                .Where(x => true)
-                .Where(x => x.Status != BookingStatus.Pending && x.Status != BookingStatus.Cancelled);
+                .Where(x => x.Status != BookingStatus.Cancelled || x.Status != BookingStatus.Completed);
 
             if (query.HotelId.HasValue)
                 q = q.Where(b => b.HotelId == query.HotelId.Value);
