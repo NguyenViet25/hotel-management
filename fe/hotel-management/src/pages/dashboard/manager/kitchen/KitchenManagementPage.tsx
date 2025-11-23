@@ -10,6 +10,7 @@ import {
   DialogContent,
   DialogTitle,
   Grid,
+  InputAdornment,
   Stack,
   TextField,
   Typography,
@@ -32,6 +33,7 @@ import bookingsApi, {
 import PageTitle from "../../../../components/common/PageTitle";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
 import React, { useEffect, useMemo, useState } from "react";
+import { Check, Close, Save, Search, Warning } from "@mui/icons-material";
 
 type ColumnKey = "new" | "cooking" | "ready" | "served";
 
@@ -60,6 +62,7 @@ export default function KitchenManagementPage() {
 
   const [notesDraft, setNotesDraft] = useState<Record<string, string>>({});
   const [needConfirm, setNeedConfirm] = useState<Record<string, boolean>>({});
+  const [search, setSearch] = useState("");
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuTarget, setMenuTarget] = useState<{
@@ -197,7 +200,7 @@ export default function KitchenManagementPage() {
     title: string;
     items: OrderDetailsDto[];
   }) => (
-    <Grid size={{ xs: 12, md: 3 }}>
+    <Grid size={{ xs: 12 }}>
       <Stack spacing={1}>
         <Stack direction="row" alignItems="center" spacing={1}>
           <Typography variant="subtitle1" fontWeight={700}>
@@ -252,7 +255,30 @@ export default function KitchenManagementPage() {
                   </Stack>
 
                   <Stack spacing={1}>
-                    <Typography fontWeight={600}>Ghi chú gửi khách</Typography>
+                    <Stack
+                      direction="row"
+                      justifyContent={"space-between"}
+                      spacing={1}
+                      alignItems={"center"}
+                    >
+                      <Typography fontWeight={600}>
+                        Ghi chú gửi khách
+                      </Typography>
+                      <Button
+                        startIcon={<Warning />}
+                        color="error"
+                        size="small"
+                        variant="contained"
+                        onClick={() =>
+                          setNotesDraft((m) => ({
+                            ...m,
+                            [order.id]: IngredientNote,
+                          }))
+                        }
+                      >
+                        Không đạt nguyên liệu
+                      </Button>
+                    </Stack>
                     <TextField
                       size="small"
                       value={notesDraft[order.id] ?? order.notes ?? ""}
@@ -267,43 +293,12 @@ export default function KitchenManagementPage() {
                     />
                     <Stack direction="row" spacing={1} flexWrap="wrap">
                       <Button
-                        variant="outlined"
-                        onClick={() =>
-                          setNotesDraft((m) => ({
-                            ...m,
-                            [order.id]: IngredientNote,
-                          }))
-                        }
-                      >
-                        Không đạt nguyên liệu
-                      </Button>
-                      <Button
-                        variant="outlined"
+                        variant="contained"
+                        color="primary"
+                        startIcon={<Save />}
                         onClick={() => saveNotes(order.id)}
                       >
                         Lưu ghi chú
-                      </Button>
-                      <Button
-                        variant="contained"
-                        startIcon={<SwapHorizIcon />}
-                        onClick={() =>
-                          order.items[0] &&
-                          openReplaceMenu(order.id, order.items[0])
-                        }
-                      >
-                        Thay menu (chọn)
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        color={needConfirm[order.id] ? "warning" : "inherit"}
-                        onClick={() =>
-                          setNeedConfirm((m) => ({
-                            ...m,
-                            [order.id]: !m[order.id],
-                          }))
-                        }
-                      >
-                        Đánh dấu cần KH xác nhận
                       </Button>
                     </Stack>
                   </Stack>
@@ -326,7 +321,7 @@ export default function KitchenManagementPage() {
                               ? "queued"
                               : it?.status === "Prepared"
                               ? "ready"
-                              : it?.status?.toLowerCase()
+                              : "N/A"
                           }
                         />
                         {it?.status === "Pending" && (
@@ -415,25 +410,74 @@ export default function KitchenManagementPage() {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Chọn món thay thế</DialogTitle>
-        <DialogContent>
-          <Stack spacing={1} sx={{ mt: 1 }}>
-            {menuLoading && <Typography>Đang tải...</Typography>}
-            {!menuLoading && menuItems.length === 0 && (
-              <Typography>Không có món</Typography>
+        <DialogTitle sx={{ fontWeight: 600, pb: 1.5 }}>
+          🍽️ Chọn món thay thế
+        </DialogTitle>
+
+        <DialogContent dividers sx={{ bgcolor: "grey.50" }}>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            {/* Search */}
+            <TextField
+              placeholder="Tìm món..."
+              size="small"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search fontSize="small" />
+                  </InputAdornment>
+                ),
+              }}
+            />
+
+            {menuLoading && (
+              <Typography color="text.secondary">Đang tải...</Typography>
             )}
+
+            {!menuLoading && menuItems.length === 0 && (
+              <Typography color="text.secondary">Không có món</Typography>
+            )}
+
+            {/* Food list */}
             {!menuLoading &&
               menuItems.map((mi) => (
                 <Stack
                   key={mi.id}
                   direction="row"
                   alignItems="center"
-                  justifyContent="space-between"
+                  spacing={1.5}
+                  sx={{
+                    p: 1.2,
+                    borderRadius: 2,
+                    bgcolor: "white",
+                    border: "1px solid",
+                    borderColor: "divider",
+                    transition: "0.15s",
+                    "&:hover": {
+                      bgcolor: "grey.100",
+                      borderColor: "primary.main",
+                    },
+                  }}
                 >
-                  <Typography>{mi.name}</Typography>
+                  {/* Left section */}
+                  <Box sx={{ flexGrow: 1 }}>
+                    <Typography fontWeight={600}>{mi.name}</Typography>
+                    {mi.unitPrice && (
+                      <Typography variant="body2" color="text.secondary">
+                        {mi.unitPrice.toLocaleString()}₫
+                      </Typography>
+                    )}
+                  </Box>
+
+                  {/* Select button */}
                   <Button
-                    variant="outlined"
+                    variant="contained"
+                    color="primary"
+                    size="small"
                     onClick={() => applyReplaceMenu(mi)}
+                    endIcon={<Check />}
+                    sx={{ fontWeight: 600 }}
                   >
                     Chọn
                   </Button>
@@ -441,8 +485,16 @@ export default function KitchenManagementPage() {
               ))}
           </Stack>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setMenuOpen(false)}>Đóng</Button>
+
+        <DialogActions sx={{ p: 2 }}>
+          <Button
+            onClick={() => setMenuOpen(false)}
+            variant="outlined"
+            color="inherit"
+            startIcon={<Close />}
+          >
+            Đóng
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>
