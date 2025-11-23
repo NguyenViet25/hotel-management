@@ -1,8 +1,5 @@
-import DoneAllIcon from "@mui/icons-material/DoneAll";
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import { PersonAdd } from "@mui/icons-material";
 import KingBedIcon from "@mui/icons-material/KingBed";
-import LocalBarIcon from "@mui/icons-material/LocalBar";
-import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import {
   Alert,
@@ -16,15 +13,19 @@ import {
   Typography,
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
-import housekeepingApi from "../../../../../api/housekeepingApi";
+import housekeepingTasksApi, {
+  type HousekeepingTaskDto,
+} from "../../../../../api/housekeepingTasksApi";
 import roomsApi, {
   type RoomDto,
   RoomStatus,
   getRoomStatusString,
 } from "../../../../../api/roomsApi";
+import DataTable, {
+  type Column,
+} from "../../../../../components/common/DataTable";
 import { useStore } from "../../../../../hooks/useStore";
 import AssignHousekeepingDialog from "../components/AssignHousekeepingDialog";
-import { PersonAdd } from "@mui/icons-material";
 
 const HK = {
   colors: {
@@ -47,6 +48,8 @@ export default function HousekeepingAssignPage() {
   const [loading, setLoading] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
   const [assignRoom, setAssignRoom] = useState<RoomDto | null>(null);
+  const [tasks, setTasks] = useState<HousekeepingTaskDto[]>([]);
+  const [tasksLoading, setTasksLoading] = useState(false);
 
   const fetchRooms = async () => {
     setLoading(true);
@@ -65,6 +68,7 @@ export default function HousekeepingAssignPage() {
 
   useEffect(() => {
     fetchRooms();
+    fetchTasks();
   }, [hotelId]);
 
   const dirtyRooms = useMemo(() => {
@@ -77,9 +81,56 @@ export default function HousekeepingAssignPage() {
       );
   }, [rooms]);
 
+  const fetchTasks = async () => {
+    if (!hotelId) return;
+    setTasksLoading(true);
+    try {
+      const res = await housekeepingTasksApi.list({
+        hotelId,
+        onlyActive: true,
+      });
+      if (res.isSuccess && Array.isArray(res.data)) setTasks(res.data);
+    } finally {
+      setTasksLoading(false);
+    }
+  };
+
+  const taskColumns: Column<HousekeepingTaskDto>[] = [
+    { id: "roomNumber", label: "Phòng", minWidth: 90 },
+    { id: "floor", label: "Tầng", minWidth: 60, format: (v) => String(v) },
+    {
+      id: "assignedToName",
+      label: "Nhân viên",
+      minWidth: 140,
+      format: (v) => v || "—",
+    },
+    { id: "notes", label: "Ghi chú", minWidth: 220, format: (v) => v || "—" },
+    {
+      id: "createdAt",
+      label: "Tạo lúc",
+      minWidth: 140,
+      format: (v) => new Date(v).toLocaleString(),
+    },
+    {
+      id: "startedAt",
+      label: "Bắt đầu",
+      minWidth: 140,
+      format: (v) => (v ? new Date(v).toLocaleString() : "—"),
+    },
+    {
+      id: "completedAt",
+      label: "Hoàn tất",
+      minWidth: 140,
+      format: (v) => (v ? new Date(v).toLocaleString() : "—"),
+    },
+  ];
+
   return (
     <Box>
       {loading && <Alert severity="info">Đang tải dữ liệu...</Alert>}
+      <Typography variant="h6" fontWeight={700} sx={{ mb: 1 }}>
+        Phòng cần dọn
+      </Typography>
       <Grid container spacing={2}>
         {dirtyRooms.map((r) => {
           const s = getRoomStatusString(r.status);
@@ -185,8 +236,24 @@ export default function HousekeepingAssignPage() {
           setAssignOpen(false);
           setAssignRoom(null);
         }}
-        onAssigned={fetchRooms}
+        onAssigned={() => {
+          fetchRooms();
+          fetchTasks();
+        }}
       />
+
+      <Box sx={{ mt: 3 }}>
+        <Typography variant="h6" fontWeight={700} sx={{ mb: 1 }}>
+          Danh sách nhiệm vụ dọn dẹp
+        </Typography>
+        <DataTable
+          columns={taskColumns}
+          data={tasks}
+          loading={tasksLoading}
+          getRowId={(t) => t.id}
+          actionColumn={false}
+        />
+      </Box>
     </Box>
   );
 }

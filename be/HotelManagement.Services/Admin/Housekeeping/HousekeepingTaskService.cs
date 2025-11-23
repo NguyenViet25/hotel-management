@@ -57,7 +57,7 @@ public class HousekeepingTaskService : IHousekeepingTaskService
         };
 
         await _taskRepo.AddAsync(task);
-        await _uow.SaveChangesAsync();
+        await _taskRepo.SaveChangesAsync();
 
         var dto = await ToDto(task);
         return ApiResponse<HousekeepingTaskDto>.Success(dto);
@@ -69,7 +69,7 @@ public class HousekeepingTaskService : IHousekeepingTaskService
         if (task == null) return ApiResponse<HousekeepingTaskDto>.Fail("Task not found");
         task.AssignedToUserId = request.AssignedToUserId;
         await _taskRepo.UpdateAsync(task);
-        await _uow.SaveChangesAsync();
+        await _taskRepo.SaveChangesAsync();
         return ApiResponse<HousekeepingTaskDto>.Success(await ToDto(task));
     }
 
@@ -79,7 +79,7 @@ public class HousekeepingTaskService : IHousekeepingTaskService
         if (task == null) return ApiResponse<HousekeepingTaskDto>.Fail("Task not found");
         task.Notes = request.Notes;
         await _taskRepo.UpdateAsync(task);
-        await _uow.SaveChangesAsync();
+        await _taskRepo.SaveChangesAsync();
         return ApiResponse<HousekeepingTaskDto>.Success(await ToDto(task));
     }
 
@@ -129,7 +129,7 @@ public class HousekeepingTaskService : IHousekeepingTaskService
         }
 
         await _taskRepo.UpdateAsync(task);
-        await _uow.SaveChangesAsync();
+        await _taskRepo.SaveChangesAsync();
         return ApiResponse<HousekeepingTaskDto>.Success(await ToDto(task));
     }
 
@@ -163,7 +163,7 @@ public class HousekeepingTaskService : IHousekeepingTaskService
 
         await _roomRepo.UpdateAsync(room);
         await _taskRepo.UpdateAsync(task);
-        await _uow.SaveChangesAsync();
+        await _taskRepo.SaveChangesAsync();
 
         return ApiResponse<HousekeepingTaskDto>.Success(await ToDto(task));
     }
