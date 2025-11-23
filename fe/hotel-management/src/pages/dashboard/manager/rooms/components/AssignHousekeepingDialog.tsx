@@ -23,6 +23,8 @@ type Props = {
   roomNumber: string;
   onClose: () => void;
   onAssigned?: () => void | Promise<void>;
+  taskId?: string;
+  initialAssigneeId?: string;
 };
 
 export default function AssignHousekeepingDialog({
@@ -32,6 +34,8 @@ export default function AssignHousekeepingDialog({
   roomNumber,
   onClose,
   onAssigned,
+  taskId,
+  initialAssigneeId,
 }: Props) {
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
@@ -54,6 +58,11 @@ export default function AssignHousekeepingDialog({
     })();
   }, [open, hotelId]);
 
+  useEffect(() => {
+    if (!open) return;
+    setAssigneeId(initialAssigneeId || "");
+  }, [open, initialAssigneeId]);
+
   const submit = async () => {
     setLoading(true);
     try {
@@ -61,16 +70,21 @@ export default function AssignHousekeepingDialog({
         toast.error("Vui lòng chọn buồng phòng");
         return;
       }
-      const res = await housekeepingTasksApi.create({
-        hotelId,
-        roomId,
-        assignedToUserId: assigneeId || undefined,
-        notes: notes || undefined,
-      });
+      const res = taskId
+        ? await housekeepingTasksApi.assign({
+            taskId,
+            assignedToUserId: assigneeId,
+          })
+        : await housekeepingTasksApi.create({
+            hotelId,
+            roomId,
+            assignedToUserId: assigneeId || undefined,
+            notes: notes || undefined,
+          });
       if (res.isSuccess) {
         if (onAssigned) await onAssigned();
         onClose();
-
+        toast.success("Phân công dọn phòng thành công");
         setNotes("");
         setAssigneeId("");
       }
@@ -81,7 +95,10 @@ export default function AssignHousekeepingDialog({
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Phân công dọn phòng {roomNumber}</DialogTitle>
+      <DialogTitle>
+        {taskId ? "Cập nhật nhân viên phòng " : "Phân công dọn phòng "}
+        {roomNumber}
+      </DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
           <Typography variant="body2" color="text.secondary">
@@ -113,7 +130,7 @@ export default function AssignHousekeepingDialog({
       <DialogActions>
         <Button onClick={onClose}>Hủy</Button>
         <Button variant="contained" onClick={submit} disabled={loading}>
-          Phân công
+          {taskId ? "Cập nhật" : "Phân công"}
         </Button>
       </DialogActions>
     </Dialog>

@@ -1,4 +1,4 @@
-import { PersonAdd } from "@mui/icons-material";
+import { Edit, Info, Note, Person, PersonAdd } from "@mui/icons-material";
 import KingBedIcon from "@mui/icons-material/KingBed";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import {
@@ -48,6 +48,12 @@ export default function HousekeepingAssignPage() {
   const [loading, setLoading] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
   const [assignRoom, setAssignRoom] = useState<RoomDto | null>(null);
+  const [assignTaskId, setAssignTaskId] = useState<string | undefined>(
+    undefined
+  );
+  const [assignInitialAssigneeId, setAssignInitialAssigneeId] = useState<
+    string | undefined
+  >(undefined);
   const [tasks, setTasks] = useState<HousekeepingTaskDto[]>([]);
   const [tasksLoading, setTasksLoading] = useState(false);
 
@@ -94,6 +100,12 @@ export default function HousekeepingAssignPage() {
       setTasksLoading(false);
     }
   };
+
+  const taskByRoomId = useMemo(() => {
+    const map: Record<string, HousekeepingTaskDto | undefined> = {};
+    for (const t of tasks) map[t.roomId] = t;
+    return map;
+  }, [tasks]);
 
   const taskColumns: Column<HousekeepingTaskDto>[] = [
     { id: "roomNumber", label: "Phòng", minWidth: 90 },
@@ -158,10 +170,11 @@ export default function HousekeepingAssignPage() {
                       <Stack direction="row" spacing={1} alignItems="center">
                         <Chip
                           label={`Phòng ${r.number}`}
+                          color="info"
                           icon={<KingBedIcon />}
                           sx={{
-                            bgcolor: HK.colors.chipGreyBg,
-                            color: HK.colors.chipGreyText,
+                            bgcolor: "primary.main",
+                            color: "primary.contrastText",
                             borderRadius: 2,
                           }}
                         />
@@ -184,33 +197,71 @@ export default function HousekeepingAssignPage() {
                         icon={<WarningAmberIcon />}
                       />
                     </Stack>
-
-                    <Box
-                      sx={{
-                        bgcolor: "#F4F6FA",
-                        borderRadius: 2,
-                        px: 1.5,
-                        py: 1,
-                      }}
-                    >
-                      <Typography variant="caption" color="text.secondary">
-                        Ghi chú: Phân công dọn buồng
-                      </Typography>
-                    </Box>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Chip
+                        icon={<Info />}
+                        label={"Ghi chú: Phân công dọn buồng"}
+                        sx={{
+                          bgcolor: HK.colors.chipGreyBg,
+                          color: HK.colors.chipGreyText,
+                          borderRadius: 2,
+                        }}
+                      />{" "}
+                    </Stack>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Chip
+                        variant="filled"
+                        icon={<Person />}
+                        label={
+                          tasksLoading
+                            ? "Đang tải nhiệm vụ…"
+                            : taskByRoomId[r.id]?.assignedToName
+                            ? `Nhân viên phụ trách: ${
+                                taskByRoomId[r.id]?.assignedToName
+                              }`
+                            : "Chưa phân công"
+                        }
+                        sx={{
+                          bgcolor: HK.colors.chipGreyBg,
+                          color: HK.colors.chipGreyText,
+                          borderRadius: 2,
+                        }}
+                      />
+                    </Stack>
 
                     <Stack direction="row" spacing={1}>
-                      <Button
-                        size="small"
-                        variant="contained"
-                        sx={{ borderRadius: 999 }}
-                        startIcon={<PersonAdd />}
-                        onClick={() => {
-                          setAssignRoom(r);
-                          setAssignOpen(true);
-                        }}
-                      >
-                        Phân công
-                      </Button>
+                      {taskByRoomId[r.id]?.assignedToName ? (
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          startIcon={<Edit />}
+                          sx={{ borderRadius: 999 }}
+                          onClick={() => {
+                            const t = taskByRoomId[r.id];
+                            setAssignRoom(r);
+                            setAssignTaskId(t?.id);
+                            setAssignInitialAssigneeId(
+                              t?.assignedToUserId || undefined
+                            );
+                            setAssignOpen(true);
+                          }}
+                        >
+                          Đổi nhân viên
+                        </Button>
+                      ) : (
+                        <Button
+                          size="small"
+                          variant="contained"
+                          sx={{ borderRadius: 999 }}
+                          startIcon={<PersonAdd />}
+                          onClick={() => {
+                            setAssignRoom(r);
+                            setAssignOpen(true);
+                          }}
+                        >
+                          Phân công
+                        </Button>
+                      )}
                     </Stack>
                   </Stack>
                 </CardContent>
@@ -232,9 +283,13 @@ export default function HousekeepingAssignPage() {
         hotelId={hotelId || ""}
         roomId={assignRoom?.id || ""}
         roomNumber={assignRoom?.number || ""}
+        taskId={assignTaskId}
+        initialAssigneeId={assignInitialAssigneeId}
         onClose={() => {
           setAssignOpen(false);
           setAssignRoom(null);
+          setAssignTaskId(undefined);
+          setAssignInitialAssigneeId(undefined);
         }}
         onAssigned={() => {
           fetchRooms();
