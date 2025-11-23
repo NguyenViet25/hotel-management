@@ -58,7 +58,7 @@ public class RoomStatusService : IRoomStatusService
 
         await _roomStatusLogRepository.AddAsync(statusLog);
         await _roomRepository.UpdateAsync(room);
-        await _unitOfWork.SaveChangesAsync();
+        await _roomRepository.SaveChangesAsync();
 
         return ApiResponse<RoomStatusDto>.Success(new RoomStatusDto
         {

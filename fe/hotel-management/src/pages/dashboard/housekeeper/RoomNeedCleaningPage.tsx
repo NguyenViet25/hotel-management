@@ -158,22 +158,22 @@ export default function RoomNeedCleaningPage() {
       string,
       { bg: string; text: string; icon?: React.ReactNode }
     > = {
-      Clean: {
+      "Đã dọn": {
         bg: HK.colors.cleanBg,
         text: HK.colors.cleanText,
         icon: <DoneAllIcon fontSize="small" />,
       },
-      Dirty: {
+      Bẩn: {
         bg: HK.colors.dirtyBg,
         text: HK.colors.dirtyText,
         icon: <WarningAmberIcon fontSize="small" />,
       },
-      Cleaning: {
+      "Đang dọn dẹp": {
         bg: HK.colors.cleaningBg,
         text: HK.colors.cleaningText,
         icon: <PlayCircleFilledWhiteIcon fontSize="small" />,
       },
-      Maintenance: {
+      "Bảo trì": {
         bg: HK.colors.maintBg,
         text: HK.colors.maintText,
         icon: <WarningAmberIcon fontSize="small" />,
@@ -335,9 +335,8 @@ export default function RoomNeedCleaningPage() {
 
       <Grid container spacing={2}>
         {filteredRooms.map((r) => {
-          const s = getRoomStatusString(r.status);
           return (
-            <Grid item xs={12} md={6} lg={4} key={r.id}>
+            <Grid size={{ xs: 12, md: 4 }} key={r.id}>
               <Card
                 sx={{
                   borderRadius: 3,
@@ -371,8 +370,8 @@ export default function RoomNeedCleaningPage() {
                             borderRadius: 2,
                           }}
                         />
-                        {statusChip(r.status)}
                       </Stack>
+                      {statusChip(r.status)}
                     </Stack>
 
                     <Stack direction="row" spacing={1}>
@@ -403,8 +402,9 @@ export default function RoomNeedCleaningPage() {
                         variant="contained"
                         startIcon={<PlayCircleFilledWhiteIcon />}
                         color="primary"
-                        onClick={() =>
-                          housekeepingApi
+                        disabled={r.status !== RoomStatus.Dirty}
+                        onClick={async () =>
+                          await housekeepingApi
                             .updateRoomStatus({
                               roomId: r.id,
                               status: RoomStatus.Cleaning,
@@ -420,6 +420,7 @@ export default function RoomNeedCleaningPage() {
                         variant="contained"
                         color="success"
                         onClick={() => openComplete(r)}
+                        disabled={r.status === RoomStatus.Clean}
                       >
                         Hoàn tất
                       </Button>
@@ -431,7 +432,7 @@ export default function RoomNeedCleaningPage() {
           );
         })}
         {filteredRooms.length === 0 && !loading && (
-          <Grid item xs={12}>
+          <Grid>
             <Typography variant="body2" color="text.secondary">
               Không có phòng cần dọn
             </Typography>
@@ -663,7 +664,12 @@ export default function RoomNeedCleaningPage() {
           </Button>
         </DialogActions>
       </Dialog>
-      <Dialog open={viewerOpen} onClose={() => setViewerOpen(false)} maxWidth="md" fullWidth>
+      <Dialog
+        open={viewerOpen}
+        onClose={() => setViewerOpen(false)}
+        maxWidth="md"
+        fullWidth
+      >
         <DialogTitle>Ảnh minh chứng</DialogTitle>
         <DialogContent>
           <Box

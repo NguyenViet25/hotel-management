@@ -19,7 +19,7 @@ export default function MyTask() {
       const res = await housekeepingTasksApi.list({
         hotelId,
         assignedToUserId: user.id,
-        onlyActive: true,
+        onlyActive: false,
       });
       if (res.isSuccess && Array.isArray(res.data)) setTasks(res.data);
     } finally {

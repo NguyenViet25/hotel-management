@@ -23,19 +23,19 @@ export enum RoomStatus {
 export function getRoomStatusString(status: number | RoomStatus): string {
   switch (status) {
     case RoomStatus.Available:
-      return "Available";
+      return "Sẵn sàng";
     case RoomStatus.Occupied:
-      return "Occupied";
+      return "Đang sử dụng";
     case RoomStatus.Cleaning:
-      return "Cleaning";
+      return "Đang dọn dẹp";
     case RoomStatus.OutOfService:
-      return "OutOfService";
+      return "Bảo trì";
     case RoomStatus.Dirty:
-      return "Dirty";
+      return "Bẩn";
     case RoomStatus.Clean:
-      return "Clean";
+      return "Đã dọn";
     case RoomStatus.Maintenance:
-      return "Maintenance";
+      return "Bảo trì";
     default:
       return "Unknown";
   }
