@@ -148,3 +148,4 @@
 2025-11-22 - 3 - 01:41:30 UTC :: chore: UC-43 Mat khau: quy dinh do manh, het han phien. — chinh sua tai lieu & mo ta API (da kiem tra lint)
 2025-11-22 - 4 - 01:41:32 UTC :: perf: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — refactor luong xu ly cho ro rang (chuan bi cho tinh nang tiep theo)
 2025-11-22 - 5 - 01:41:33 UTC :: refactor: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — cap nhat mock data & seed test (da review so bo)
+2025-11-23 - 1 - 01:58:28 UTC :: feat: UC-10 Goi gia: tao rate plan, thoi gian ap dung linh hoat. — bo sung metrics/telemetry co ban (da review so bo)
