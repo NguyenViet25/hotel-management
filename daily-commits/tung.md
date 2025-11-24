@@ -161,3 +161,4 @@
 2025-11-24 - 1 - 01:53:04 UTC :: refactor: UC-11 Goi gia: bat/tam ngung goi gia dang ap dung. — chuan hoa ten ham/bien theo convention (khong doi hanh vi)
 2025-11-24 - 2 - 01:53:06 UTC :: refactor: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — refactor luong xu ly cho ro rang (da review so bo)
 2025-11-24 - 3 - 01:53:07 UTC :: fix: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — kiem tra tuong thich mui gio/tien te (anh huong thap)
+2025-11-24 - 4 - 01:53:08 UTC :: refactor: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — kiem tra tuong thich mui gio/tien te (dam bao backward-compatible)
