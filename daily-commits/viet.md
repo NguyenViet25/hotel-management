@@ -155,3 +155,4 @@
 2025-11-23 - 5 - 01:58:36 UTC :: feat: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — cai thien hieu nang render/list (chuan bi cho tinh nang tiep theo)
 2025-11-24 - 1 - 01:53:02 UTC :: docs: UC-11 Goi gia: bat/tam ngung goi gia dang ap dung. — refactor luong xu ly cho ro rang (dat tieu chi toi thieu)
 2025-11-24 - 2 - 01:53:04 UTC :: chore: UC-02 RBAC: thiet lap quyen thao tac theo vai tro/pham vi. — bo sung case canh bien & no-show (anh huong thap)
+2025-11-24 - 3 - 01:53:06 UTC :: refactor: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — cai thien hieu nang render/list (can theo doi them)
