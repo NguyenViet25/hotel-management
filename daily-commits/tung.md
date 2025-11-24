@@ -162,3 +162,4 @@
 2025-11-24 - 2 - 01:53:06 UTC :: refactor: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — refactor luong xu ly cho ro rang (da review so bo)
 2025-11-24 - 3 - 01:53:07 UTC :: fix: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — kiem tra tuong thich mui gio/tien te (anh huong thap)
 2025-11-24 - 4 - 01:53:08 UTC :: refactor: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — kiem tra tuong thich mui gio/tien te (dam bao backward-compatible)
+2025-11-24 - 5 - 01:53:09 UTC :: chore: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — tach chuc nang de de bao tri (anh huong thap)
