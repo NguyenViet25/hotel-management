@@ -158,3 +158,4 @@
 2025-11-23 - 3 - 01:58:29 UTC :: build: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — toi uu truy van va bo nho (can theo doi them)
 2025-11-23 - 4 - 01:58:30 UTC :: test: UC-02 RBAC: thiet lap quyen thao tac theo vai tro/pham vi. — sua validate va bo sung thong bao loi (anh huong thap)
 2025-11-23 - 5 - 01:58:32 UTC :: ci: UC-20 Keo-tha: gan/doi phong truc quan, tranh trung. — them kiem soat loi & retry nhe (da kiem tra lint)
+2025-11-24 - 1 - 01:53:04 UTC :: refactor: UC-11 Goi gia: bat/tam ngung goi gia dang ap dung. — chuan hoa ten ham/bien theo convention (khong doi hanh vi)
