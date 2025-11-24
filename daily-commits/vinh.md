@@ -156,3 +156,4 @@
 2025-11-24 - 1 - 01:53:06 UTC :: chore: UC-19 Lich phong: calendar trang thai phong theo ngay. — fix race-condition nho trong thao tac (can theo doi them)
 2025-11-24 - 2 - 01:53:09 UTC :: refactor: UC-22 Minibar/Amenity: ghi tieu hao, post charge vao folio. — cap nhat mock data & seed test (chuan bi cho tinh nang tiep theo)
 2025-11-24 - 3 - 01:53:12 UTC :: fix: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — bo sung metrics/telemetry co ban (dat tieu chi toi thieu)
+2025-11-24 - 4 - 01:53:13 UTC :: feat: UC-47 Dashboard: gioi han xem theo vai tro va co so. — dieu chinh quyen truy cap theo vai tro (dat tieu chi toi thieu)
