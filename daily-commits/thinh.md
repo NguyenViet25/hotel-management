@@ -156,3 +156,4 @@
 2025-11-24 - 1 - 01:53:04 UTC :: perf: UC-26 Order: tao/chinh sua order, ghi chu, void/discount. — toi uu truy van va bo nho (chuan bi cho tinh nang tiep theo)
 2025-11-24 - 2 - 01:53:05 UTC :: perf: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — dieu chinh UI & copy cho ro (dong bo voi BE/FE)
 2025-11-24 - 3 - 01:53:06 UTC :: chore: UC-36 Duyet ngoai le: duyet/tu choi theo han muc. — them kiem soat loi & retry nhe (da kiem tra lint)
+2025-11-24 - 4 - 01:53:07 UTC :: build: UC-39 Xuat Audit Log: xuat CSV/PDF kiem tra tuan thu. — toi uu truy van va bo nho (dat tieu chi toi thieu)
