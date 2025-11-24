@@ -153,3 +153,4 @@
 2025-11-23 - 3 - 01:58:31 UTC :: test: UC-11 Goi gia: bat/tam ngung goi gia dang ap dung. — kiem tra tuong thich mui gio/tien te (da review so bo)
 2025-11-23 - 4 - 01:58:33 UTC :: build: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — dieu chinh UI & copy cho ro (chuan bi cho tinh nang tiep theo)
 2025-11-23 - 5 - 01:58:34 UTC :: refactor: UC-19 Lich phong: calendar trang thai phong theo ngay. — chuan hoa ten ham/bien theo convention (anh huong thap)
+2025-11-24 - 1 - 01:53:04 UTC :: perf: UC-26 Order: tao/chinh sua order, ghi chu, void/discount. — toi uu truy van va bo nho (chuan bi cho tinh nang tiep theo)
