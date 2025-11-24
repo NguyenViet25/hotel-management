@@ -157,3 +157,4 @@
 2025-11-24 - 2 - 01:53:04 UTC :: chore: UC-02 RBAC: thiet lap quyen thao tac theo vai tro/pham vi. — bo sung case canh bien & no-show (anh huong thap)
 2025-11-24 - 3 - 01:53:06 UTC :: refactor: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — cai thien hieu nang render/list (can theo doi them)
 2025-11-24 - 4 - 01:53:08 UTC :: fix: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — cai thien hieu nang render/list (can theo doi them)
+2025-11-24 - 5 - 01:53:11 UTC :: fix: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — tach chuc nang de de bao tri (da smoke test)
