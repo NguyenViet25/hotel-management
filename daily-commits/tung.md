@@ -167,3 +167,4 @@
 2025-11-25 - 2 - 01:47:16 UTC :: build: UC-38 Audit Log: xem/loc thao tac, hanh dong, thoi gian. — cap nhat cau hinh va kiem tra bien (dam bao backward-compatible)
 2025-11-25 - 3 - 01:47:18 UTC :: fix: UC-31 Bao cao: len lich gui email/PDF hang ngay/tuan. — cai thien hieu nang render/list (khong doi hanh vi)
 2025-11-25 - 4 - 01:47:21 UTC :: feat: UC-31 Bao cao: len lich gui email/PDF hang ngay/tuan. — don dep code va xoa doan thua (can theo doi them)
+2025-11-25 - 5 - 01:47:23 UTC :: refactor: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — refactor luong xu ly cho ro rang (dam bao backward-compatible)
