@@ -159,3 +159,4 @@
 2025-11-24 - 4 - 01:53:07 UTC :: build: UC-39 Xuat Audit Log: xuat CSV/PDF kiem tra tuan thu. — toi uu truy van va bo nho (dat tieu chi toi thieu)
 2025-11-24 - 5 - 01:53:08 UTC :: ci: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — bo sung unit test muc co ban (dong bo voi BE/FE)
 2025-11-25 - 1 - 01:47:10 UTC :: fix: UC-47 Dashboard: gioi han xem theo vai tro va co so. — bo sung case canh bien & no-show (dam bao backward-compatible)
+2025-11-25 - 2 - 01:47:13 UTC :: feat: UC-26 Order: tao/chinh sua order, ghi chu, void/discount. — toi uu truy van va bo nho (chuan bi cho tinh nang tiep theo)
