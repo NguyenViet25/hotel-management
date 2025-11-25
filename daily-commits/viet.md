@@ -158,3 +158,4 @@
 2025-11-24 - 3 - 01:53:06 UTC :: refactor: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — cai thien hieu nang render/list (can theo doi them)
 2025-11-24 - 4 - 01:53:08 UTC :: fix: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — cai thien hieu nang render/list (can theo doi them)
 2025-11-24 - 5 - 01:53:11 UTC :: fix: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — tach chuc nang de de bao tri (da smoke test)
+2025-11-25 - 1 - 01:47:08 UTC :: test: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — chuan hoa ten ham/bien theo convention (da smoke test)
