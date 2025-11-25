@@ -29,6 +29,7 @@ import roomsApi, {
   type RoomDto,
 } from "../../../api/roomsApi";
 import PageTitle from "../../../components/common/PageTitle";
+import dashboardApi, { type HousekeeperDashboardSummary } from "../../../api/dashboardApi";
 import { useStore, type StoreState } from "../../../hooks/useStore";
 
 const HK = {
@@ -80,6 +81,9 @@ export default function HousekeepingPage() {
 
   const [tasks, setTasks] = useState<HousekeepingTaskDto[]>([]);
   const [tasksLoading, setTasksLoading] = useState(false);
+  const [hkSummary, setHkSummary] = useState<HousekeeperDashboardSummary | null>(null);
+  const [hkLoading, setHkLoading] = useState(false);
+  const [hkError, setHkError] = useState<string | null>(null);
   const [completeOpen, setCompleteOpen] = useState(false);
   const [completeNotes, setCompleteNotes] = useState("");
   const [completeEvidence, setCompleteEvidence] = useState<MediaDto[]>([]);
@@ -141,6 +145,24 @@ export default function HousekeepingPage() {
   useEffect(() => {
     refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hotelId]);
+
+  useEffect(() => {
+    const run = async () => {
+      if (!hotelId) return;
+      setHkLoading(true);
+      setHkError(null);
+      try {
+        const res = await dashboardApi.getHousekeeperSummary(hotelId);
+        if (res.isSuccess) setHkSummary(res.data);
+        else setHkError(res.message || "Không thể tải tổng quan");
+      } catch {
+        setHkError("Không thể tải tổng quan");
+      } finally {
+        setHkLoading(false);
+      }
+    };
+    run();
   }, [hotelId]);
 
   const toggleSelect = (id: string) =>
@@ -325,7 +347,7 @@ export default function HousekeepingPage() {
               <Stack spacing={0.5}>
                 <Typography variant="subtitle2">Phòng bẩn</Typography>
                 <Typography variant="h5" color="error.main">
-                  {summary?.dirtyRooms ?? 0}
+                  {hkLoading ? "—" : hkSummary?.dirtyRoomsCount ?? summary?.dirtyRooms ?? 0}
                 </Typography>
               </Stack>
             </CardContent>
@@ -359,9 +381,9 @@ export default function HousekeepingPage() {
           <Card>
             <CardContent>
               <Stack spacing={0.5}>
-                <Typography variant="subtitle2">Bảo trì</Typography>
-                <Typography variant="h5" color="warning.main">
-                  {summary?.maintenanceRooms ?? 0}
+                <Typography variant="subtitle2">Nhiệm vụ đang hoạt động</Typography>
+                <Typography variant="h5" color="text.primary">
+                  {hkLoading ? "—" : hkSummary?.assignedActiveTasks ?? tasks.length}
                 </Typography>
               </Stack>
             </CardContent>

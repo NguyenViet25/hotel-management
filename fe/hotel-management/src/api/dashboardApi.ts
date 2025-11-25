@@ -38,6 +38,11 @@ export interface WaiterDashboardSummary {
   inProgressOrders: number;
 }
 
+export interface HousekeeperDashboardSummary {
+  assignedActiveTasks: number;
+  dirtyRoomsCount: number;
+}
+
 const dashboardApi = {
   async getAdminSummary(): Promise<ApiResponse<AdminDashboardSummary>> {
     const res = await axios.get(`/dashboard/admin/summary`);
@@ -73,6 +78,14 @@ const dashboardApi = {
     const params = new URLSearchParams();
     params.append("hotelId", hotelId);
     const res = await axios.get(`/dashboard/waiter/summary?${params}`);
+    return res.data;
+  },
+  async getHousekeeperSummary(
+    hotelId: string
+  ): Promise<ApiResponse<HousekeeperDashboardSummary>> {
+    const params = new URLSearchParams();
+    params.append("hotelId", hotelId);
+    const res = await axios.get(`/dashboard/housekeeper/summary?${params}`);
     return res.data;
   },
 };
