@@ -9,6 +9,7 @@ builder.Services.AddIdentityAndJwt(builder.Configuration);
 
 builder.Services.AddRepositories();
 builder.Services.AddApplicationServices();
+builder.Services.AddEmailing(builder.Configuration);
 builder.Services.AddApiSwagger(builder.Configuration);
 builder.Services.AddControllers();
 

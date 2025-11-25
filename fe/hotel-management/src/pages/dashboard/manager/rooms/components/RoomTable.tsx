@@ -26,16 +26,26 @@ type RoomTableProps = {
 const statusChip = (status: RoomStatus) => {
   const s = getRoomStatusString(status);
   const map: Record<string, { bg: string; text: string; label: string }> = {
-    Available: { bg: "#F2F4F7", text: "#344054", label: "Sẵn sàng" },
-    Occupied: { bg: "#E8ECF7", text: "#1F2A44", label: "Đang sử dụng" },
-    Cleaning: { bg: "#FEF3C7", text: "#92400E", label: "Đang dọn dẹp" },
-    OutOfService: { bg: "#EDEDED", text: "#555", label: "Ngừng phục vụ" },
-    Dirty: { bg: "#FDECEC", text: "#C62828", label: "Bẩn" },
-    Clean: { bg: "#DDF7E5", text: "#1B5E20", label: "Đã dọn sạch" },
-    Maintenance: { bg: "#E8ECF7", text: "#1F2A44", label: "Bảo trì" },
+    "Sẵn sàng": { bg: "#F2F4F7", text: "#344054", label: "Trống" },
+    "Đang sử dụng": { bg: "#E8ECF7", text: "#1F2A44", label: "Đang sử dụng" },
+    "Đang dọn dẹp": { bg: "#FEF3C7", text: "#92400E", label: "Đang Dọn Dẹp" },
+    "Ngừng phục vụ": { bg: "#EDEDED", text: "#555", label: "Ngừng phục vụ" },
+    Bẩn: { bg: "#FDECEC", text: "#C62828", label: "Bẩn" },
+    "Đã dọn sạch": { bg: "#DDF7E5", text: "#1B5E20", label: "Đã dọn sạch" },
+    "Bảo trì": { bg: "#ccc", text: "#344054", label: "Bảo Trì" },
   };
-  const cfg = map[s] || { bg: "#F2F4F7", text: "#344054", label: String(status) };
-  return <Chip size="small" label={cfg.label} sx={{ bgcolor: cfg.bg, color: cfg.text, fontWeight: 700 }} />;
+  const cfg = map[s] || {
+    bg: "#F2F4F7",
+    text: "#344054",
+    label: String(status),
+  };
+  return (
+    <Chip
+      size="small"
+      label={cfg.label}
+      sx={{ bgcolor: cfg.bg, color: cfg.text, fontWeight: 700 }}
+    />
+  );
 };
 
 const RoomTable: React.FC<RoomTableProps> = ({

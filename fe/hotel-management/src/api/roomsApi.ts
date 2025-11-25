@@ -29,11 +29,11 @@ export function getRoomStatusString(status: number | RoomStatus): string {
     case RoomStatus.Cleaning:
       return "Đang dọn dẹp";
     case RoomStatus.OutOfService:
-      return "Bảo trì";
+      return "Ngừng phục vụ";
     case RoomStatus.Dirty:
       return "Bẩn";
     case RoomStatus.Clean:
-      return "Đã dọn";
+      return "Đã dọn sạch";
     case RoomStatus.Maintenance:
       return "Bảo trì";
     default:

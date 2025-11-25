@@ -177,12 +177,12 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
     const s = getRoomStatusString(status);
     const map: Record<string, { bg: string; text: string; label: string }> = {
       "Sẵn sàng": { bg: "#F2F4F7", text: "#344054", label: "Trống" },
-      "Đang sử dụng": { bg: "#E8ECF7", text: "#1F2A44", label: "Đã Có Khách" },
+      "Đang sử dụng": { bg: "#E8ECF7", text: "#1F2A44", label: "Đang sử dụng" },
       "Đang dọn dẹp": { bg: "#FEF3C7", text: "#92400E", label: "Đang Dọn Dẹp" },
-      "Bảo trì": { bg: "#E8ECF7", text: "#1F2A44", label: "Bảo Trì" },
       "Ngừng phục vụ": { bg: "#EDEDED", text: "#555", label: "Ngừng phục vụ" },
       Bẩn: { bg: "#FDECEC", text: "#C62828", label: "Bẩn" },
       "Đã dọn sạch": { bg: "#DDF7E5", text: "#1B5E20", label: "Đã dọn sạch" },
+      "Bảo trì": { bg: "#ccc", text: "#344054", label: "Bảo Trì" },
     };
     const cfg = map[s] || {
       bg: "#F2F4F7",
@@ -196,7 +196,7 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
         <HotelIcon />
       ) : s === "Đang dọn dẹp" ? (
         <CleaningServicesIcon />
-      ) : s === "Maintenance" ? (
+      ) : s === "Bảo trì" ? (
         <ConstructionIcon />
       ) : s === "Ngừng phục vụ" ? (
         <BlockIcon />
@@ -742,10 +742,12 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                 severity: "error",
               });
             }
-          } catch {
+          } catch (error) {
+            console.log(error);
             setSnackbar({
               open: true,
-              message: "Đã xảy ra lỗi khi tạo phòng",
+              message:
+                error.response.data.message || "Đã xảy ra lỗi khi tạo phòng",
               severity: "error",
             });
           }

@@ -129,11 +129,11 @@ public class RoomsService : IRoomsService
 
             var roomType = await _roomTypeRepository.Query()
                 .FirstOrDefaultAsync(rt => rt.Id == dto.RoomTypeId && rt.HotelId == dto.HotelId);
-            if (roomType == null) return ApiResponse<RoomSummaryDto>.Fail("Room type not found in hotel");
+            if (roomType == null) return ApiResponse<RoomSummaryDto>.Fail("Kiểu phòng không tồn tại trong khách sạn");
 
             var existing = await _roomRepository.Query()
                 .AnyAsync(r => r.HotelId == dto.HotelId && r.Number == dto.Number);
-            if (existing) return ApiResponse<RoomSummaryDto>.Fail("Room number already exists in this hotel");
+            if (existing) return ApiResponse<RoomSummaryDto>.Fail("Số phòng đã tồn tại");
 
             var room = new HotelRoom
             {

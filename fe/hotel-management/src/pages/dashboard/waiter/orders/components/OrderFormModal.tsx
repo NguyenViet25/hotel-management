@@ -219,7 +219,7 @@ const OrderFormModal: React.FC<IProps> = ({
           bookingId: undefined,
         });
       }}
-      maxWidth="sm"
+      maxWidth="md"
       fullWidth
     >
       <DialogTitle sx={{ fontWeight: 600, fontSize: 20, pb: 0 }}>
