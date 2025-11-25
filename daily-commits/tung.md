@@ -165,3 +165,4 @@
 2025-11-24 - 5 - 01:53:09 UTC :: chore: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — tach chuc nang de de bao tri (anh huong thap)
 2025-11-25 - 1 - 01:47:14 UTC :: perf: UC-02 RBAC: thiet lap quyen thao tac theo vai tro/pham vi. — refactor luong xu ly cho ro rang (da review so bo)
 2025-11-25 - 2 - 01:47:16 UTC :: build: UC-38 Audit Log: xem/loc thao tac, hanh dong, thoi gian. — cap nhat cau hinh va kiem tra bien (dam bao backward-compatible)
+2025-11-25 - 3 - 01:47:18 UTC :: fix: UC-31 Bao cao: len lich gui email/PDF hang ngay/tuan. — cai thien hieu nang render/list (khong doi hanh vi)
