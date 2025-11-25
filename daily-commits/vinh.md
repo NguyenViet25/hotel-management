@@ -160,3 +160,4 @@
 2025-11-24 - 5 - 01:53:14 UTC :: feat: UC-37 Night Audit: kiem tra folio chua chot, khoa giao dich. — dieu chinh UI & copy cho ro (khong doi hanh vi)
 2025-11-25 - 1 - 01:47:08 UTC :: perf: UC-26 Order: tao/chinh sua order, ghi chu, void/discount. — dieu chinh UI & copy cho ro (anh huong thap)
 2025-11-25 - 2 - 01:47:09 UTC :: ci: UC-09 So do: hien thi layout, loc trang thai phong. — bo sung metrics/telemetry co ban (khong doi hanh vi)
+2025-11-25 - 3 - 01:47:10 UTC :: chore: UC-01 RBAC: tao, sua, khoa tai khoan; gan vai tro. — don dep code va xoa doan thua (anh huong thap)
