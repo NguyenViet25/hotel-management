@@ -160,3 +160,4 @@
 2025-11-24 - 5 - 01:53:08 UTC :: ci: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — bo sung unit test muc co ban (dong bo voi BE/FE)
 2025-11-25 - 1 - 01:47:10 UTC :: fix: UC-47 Dashboard: gioi han xem theo vai tro va co so. — bo sung case canh bien & no-show (dam bao backward-compatible)
 2025-11-25 - 2 - 01:47:13 UTC :: feat: UC-26 Order: tao/chinh sua order, ghi chu, void/discount. — toi uu truy van va bo nho (chuan bi cho tinh nang tiep theo)
+2025-11-25 - 3 - 01:47:15 UTC :: feat: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — chuan hoa ten ham/bien theo convention (anh huong thap)
