@@ -162,3 +162,4 @@
 2025-11-25 - 2 - 01:47:13 UTC :: feat: UC-26 Order: tao/chinh sua order, ghi chu, void/discount. — toi uu truy van va bo nho (chuan bi cho tinh nang tiep theo)
 2025-11-25 - 3 - 01:47:15 UTC :: feat: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — chuan hoa ten ham/bien theo convention (anh huong thap)
 2025-11-25 - 4 - 01:47:17 UTC :: chore: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — refactor luong xu ly cho ro rang (dam bao backward-compatible)
+2025-11-25 - 5 - 01:47:19 UTC :: docs: UC-40 Thu/chi: doi soat tien mat/the/le phi PG. — fix race-condition nho trong thao tac (anh huong thap)
