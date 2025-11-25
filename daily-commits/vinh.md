@@ -158,3 +158,4 @@
 2025-11-24 - 3 - 01:53:12 UTC :: fix: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — bo sung metrics/telemetry co ban (dat tieu chi toi thieu)
 2025-11-24 - 4 - 01:53:13 UTC :: feat: UC-47 Dashboard: gioi han xem theo vai tro va co so. — dieu chinh quyen truy cap theo vai tro (dat tieu chi toi thieu)
 2025-11-24 - 5 - 01:53:14 UTC :: feat: UC-37 Night Audit: kiem tra folio chua chot, khoa giao dich. — dieu chinh UI & copy cho ro (khong doi hanh vi)
+2025-11-25 - 1 - 01:47:08 UTC :: perf: UC-26 Order: tao/chinh sua order, ghi chu, void/discount. — dieu chinh UI & copy cho ro (anh huong thap)
