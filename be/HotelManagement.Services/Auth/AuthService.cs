@@ -51,22 +51,31 @@ public class AuthService : IAuthService
             if (!valid2fa) return new LoginResponseDto(true, null, null, null);
         }
 
-        var roles = await _userManager.GetRolesAsync(user);
-        var token = _tokenService.CreateAccessToken(user.Id, user.UserName!, roles, new[]
-        {
-            new Claim("twoFactor", (await _userManager.GetTwoFactorEnabledAsync(user)).ToString())
-        });
-
 
         var propertyRoles = await _db.UserPropertyRoles.AsNoTracking()
             .Select(pr => new UserPropertyRoleDto(pr.UserId, pr.HotelId, pr.Role, "")).ToListAsync();
 
         var hotel = propertyRoles.Where(x => x.Id == user.Id).FirstOrDefault();
+        var hotelId = hotel?.HotelId.ToString() ?? string.Empty;
+        var roles = await _userManager.GetRolesAsync(user);
+
+        var extraClaims = new[]
+        {
+            new Claim("twoFactor", (await _userManager.GetTwoFactorEnabledAsync(user)).ToString()),
+            new Claim("hotelId", hotelId)    
+        };
+
+        var token = _tokenService.CreateAccessToken(
+            user.Id,
+            user.UserName!,
+            roles,
+            extraClaims
+        );
 
         return new LoginResponseDto(false, token, null, UserMapper.MapToResponseAsync(user, roles.ToList(), hotel?.HotelId));
     }
 
-  
+
 
     public Task LogoutAsync(string userName)
     {

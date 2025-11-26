@@ -17,6 +17,7 @@ import ConfirmModal from "../../../../components/common/ConfirmModel";
 import type { DiscountFormValues } from "./components/DiscountForm";
 import DiscountForm from "./components/DiscountForm";
 import DiscountList from "./components/DiscountList";
+import { useStore, type StoreState } from "../../../../hooks/useStore";
 
 const getCurrentHotelId = (): string | null => {
   const userJson = localStorage.getItem("user");
@@ -39,8 +40,7 @@ const DiscountCodesPage = () => {
   const [openDelete, setOpenDelete] = useState(false);
   const [deleting, setDeleting] = useState<DiscountCode | null>(null);
   const [submitting, setSubmitting] = useState(false);
-
-  const hotelId = useMemo(() => getCurrentHotelId(), []);
+  const { hotelId } = useStore<StoreState>((state) => state);
 
   const onSearch = async (txt: string) => {
     const q = txt.toLowerCase();

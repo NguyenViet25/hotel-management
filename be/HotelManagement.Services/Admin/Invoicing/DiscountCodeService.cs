@@ -20,11 +20,12 @@ public class DiscountCodeService : IDiscountCodeService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ApiResponse<List<PromotionDto>>> ListAsync()
+    public async Task<ApiResponse<List<PromotionDto>>> ListAsync(Guid? hotelId)
     {
         try
         {
             var items = await _promotionRepository.Query()
+                .Where(x => x.HotelId == hotelId)
                 .OrderByDescending(p => p.CreatedAt)
                 .ToListAsync();
 

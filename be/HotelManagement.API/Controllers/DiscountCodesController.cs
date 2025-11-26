@@ -22,7 +22,14 @@ public class DiscountCodesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<ApiResponse<List<PromotionDto>>>> List()
     {
-        var result = await _service.ListAsync();
+        var hotelIdClaim = User.FindFirst("hotelId")?.Value;
+
+        if (hotelIdClaim == null)
+            return BadRequest("HotelId not found in user claims");
+
+        Guid hotelId = Guid.Parse(hotelIdClaim);
+
+        var result = await _service.ListAsync(hotelId);
         return Ok(result);
     }
 
