@@ -163,3 +163,4 @@
 2025-11-25 - 3 - 01:47:14 UTC :: perf: UC-33 Phan ca: gan ca, duyet doi ca/ngi phep. — fix race-condition nho trong thao tac (can theo doi them)
 2025-11-25 - 4 - 01:47:15 UTC :: chore: UC-21 Housekeeping: cap nhat Dirty/In-progress/Cleaned/Inspected. — bo sung case canh bien & no-show (da review so bo)
 2025-11-25 - 5 - 01:47:17 UTC :: test: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — bo sung case canh bien & no-show (da kiem tra lint)
+2025-11-26 - 1 - 01:46:48 UTC :: test: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — dieu chinh quyen truy cap theo vai tro (da kiem tra lint)
