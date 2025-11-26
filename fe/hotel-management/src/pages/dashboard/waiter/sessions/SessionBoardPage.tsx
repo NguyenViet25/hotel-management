@@ -10,8 +10,17 @@ import {
   Snackbar,
   Stack,
   Typography,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  FormControl,
+  InputLabel,
+  List,
+  ListItem,
+  ListItemText,
 } from "@mui/material";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
 import diningSessionsApi, {
@@ -42,6 +51,14 @@ export default function SessionBoardPage() {
   const [assignOpen, setAssignOpen] = useState(false);
   const [attachOpen, setAttachOpen] = useState(false);
   const [selectedSessionId, setSelectedSessionId] = useState<string>("");
+  const [attachFromSessionOpen, setAttachFromSessionOpen] = useState(false);
+  const [attachSessionTargetId, setAttachSessionTargetId] =
+    useState<string>("");
+  const [availableAttachTables, setAvailableAttachTables] = useState<
+    TableDto[]
+  >([]);
+  const [selectedAttachTableId, setSelectedAttachTableId] =
+    useState<string>("");
   const [activeSession, setActiveSession] = useState<DiningSessionDto | null>(
     null
   );
@@ -182,6 +199,57 @@ export default function SessionBoardPage() {
     await mutateTables();
   };
 
+  useEffect(() => {
+    const loadAvailable = async () => {
+      if (!hotelId) return;
+      const res = await tablesApi.listTables({
+        hotelId,
+        status: TableStatus.Available,
+        page: 1,
+        pageSize: 100,
+      });
+      setAvailableAttachTables(res.data || []);
+    };
+    if (attachFromSessionOpen) {
+      setSelectedAttachTableId("");
+      loadAvailable();
+    }
+  }, [attachFromSessionOpen, hotelId]);
+
+  const openAttachForSession = (sessionId: string) => {
+    setAttachSessionTargetId(sessionId);
+    setAttachFromSessionOpen(true);
+  };
+
+  const confirmAttachForSession = async () => {
+    if (!attachSessionTargetId || !selectedAttachTableId) return;
+    try {
+      const res = await diningSessionsApi.attachTable(
+        attachSessionTargetId,
+        selectedAttachTableId
+      );
+      if (res.isSuccess) {
+        setSnackbar({
+          open: true,
+          message: "Đã gắn bàn vào phiên",
+          severity: "success",
+        });
+        setAttachFromSessionOpen(false);
+        setAttachSessionTargetId("");
+        setSelectedAttachTableId("");
+        await refreshAll();
+      } else {
+        setSnackbar({
+          open: true,
+          message: res.message || "Gắn bàn thất bại",
+          severity: "error",
+        });
+      }
+    } catch {
+      setSnackbar({ open: true, message: "Đã xảy ra lỗi", severity: "error" });
+    }
+  };
+
   return (
     <Box>
       <PageTitle title="Phiên phục vụ" subtitle="Quản lý phiên phục vụ " />
@@ -219,6 +287,52 @@ export default function SessionBoardPage() {
           Tạo phiên
         </Button>
       </Stack>
+      <Box mt={2}>
+        <Typography variant="h6">Danh sách phiên</Typography>
+        <List>
+          {sessions.map((s) => (
+            <ListItem
+              key={s.id}
+              secondaryAction={
+                <Stack direction="row" spacing={1}>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    onClick={() => navigate(`/waiter/sessions/${s.id}`)}
+                  >
+                    Chi tiết
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    onClick={() => openAttachForSession(s.id)}
+                  >
+                    Gắn bàn
+                  </Button>
+                  <Button
+                    size="small"
+                    color="error"
+                    onClick={() => endSession(s.id)}
+                  >
+                    Kết thúc
+                  </Button>
+                </Stack>
+              }
+            >
+              <ListItemText
+                primary={`${new Date(s.startedAt).toLocaleString()} • ${
+                  s.totalGuests
+                } khách`}
+                secondary={`Bàn đã gắn: ${(s.tables || []).length}`}
+              />
+            </ListItem>
+          ))}
+        </List>
+      </Box>
+
+      <Typography variant="h6" sx={{ mt: 3 }}>
+        Danh sách bàn
+      </Typography>
       <Grid container spacing={2} mt={1}>
         {tables.map((t) => (
           <Grid key={t.id} size={{ xs: 12, sm: 6, md: 3 }}>
@@ -357,6 +471,77 @@ export default function SessionBoardPage() {
         onClose={() => setSnackbar(null)}
         message={snackbar?.message}
       />
+
+      <Dialog
+        open={attachFromSessionOpen}
+        onClose={() => setAttachFromSessionOpen(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>Gắn bàn vào phiên</DialogTitle>
+        <DialogContent>
+          <FormControl fullWidth size="small" sx={{ mt: 2 }}>
+            <InputLabel>Bàn</InputLabel>
+            <Select
+              label="Bàn"
+              value={selectedAttachTableId}
+              onChange={(e) => setSelectedAttachTableId(String(e.target.value))}
+            >
+              {availableAttachTables.map((t) => (
+                <MenuItem key={t.id} value={t.id}>
+                  {t.name} • {t.capacity} chỗ
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAttachFromSessionOpen(false)}>Đóng</Button>
+          <Button
+            variant="contained"
+            disabled={!selectedAttachTableId}
+            onClick={confirmAttachForSession}
+          >
+            Gắn
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={attachOpen}
+        onClose={() => setAttachOpen(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>Gắn bàn vào phiên</DialogTitle>
+        <DialogContent>
+          <FormControl fullWidth size="small" sx={{ mt: 2 }}>
+            <InputLabel>Phiên</InputLabel>
+            <Select
+              label="Phiên"
+              value={selectedSessionId}
+              onChange={(e) => setSelectedSessionId(String(e.target.value))}
+            >
+              {sessions.map((s) => (
+                <MenuItem key={s.id} value={s.id}>
+                  {new Date(s.startedAt).toLocaleString()} • {s.totalGuests}{" "}
+                  khách
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAttachOpen(false)}>Đóng</Button>
+          <Button
+            variant="contained"
+            disabled={!selectedSessionId}
+            onClick={attachSelectedTable}
+          >
+            Gắn
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
