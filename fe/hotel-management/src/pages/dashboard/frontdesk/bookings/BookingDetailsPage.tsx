@@ -13,7 +13,6 @@ import {
 import dayjs from "dayjs";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { toast } from "react-toastify";
 import bookingsApi, {
   EBookingStatus,
   type BookingDetailsDto,
@@ -21,13 +20,13 @@ import bookingsApi, {
 } from "../../../../api/bookingsApi";
 import PageTitle from "../../../../components/common/PageTitle";
 import BookingFormModal from "./components/BookingFormModal";
+import BookingInvoiceDialog from "./components/BookingInvoiceDialog";
 import { BookingSummary } from "./components/BookingSummary";
 import CallLogsDisplay from "./components/CallLogDIsplay";
 import CallLogModal from "./components/CallLogModal";
 import CancelBookingModal from "./components/CancelBookingModal";
 import RoomTypeAssignCheckIn from "./components/RoomTypeAssignCheckIn";
 import type { IBookingSummary } from "./components/types";
-import BookingInvoiceDialog from "./components/BookingInvoiceDialog";
 
 const BookingDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -55,6 +54,16 @@ const BookingDetailsPage: React.FC = () => {
     if (!id) return;
     try {
       const res = await bookingsApi.update(id, payload);
+      if (res.isSuccess) {
+        await fetch();
+      }
+    } catch {}
+  };
+
+  const handleConfirm = async () => {
+    if (!data?.id) return;
+    try {
+      const res = await bookingsApi.confirm(data?.id);
       if (res.isSuccess) {
         await fetch();
       }
@@ -147,7 +156,7 @@ const BookingDetailsPage: React.FC = () => {
           >
             Chỉnh sửa
           </Button>
-          {data?.status === EBookingStatus.Pending && (
+          {data?.status != EBookingStatus.Cancelled && (
             <Button
               variant="outlined"
               color="error"
@@ -165,22 +174,23 @@ const BookingDetailsPage: React.FC = () => {
               variant="outlined"
               color="success"
               startIcon={<Check />}
-              onClick={() => {
-                toast.warning("Tính năng đang trong quá trình hoàn thành");
-              }}
+              onClick={handleConfirm}
               aria-label="Xác nhận booking"
             >
               Xác nhận
             </Button>
           )}
-          <Button
-            variant="contained"
-            color="success"
-            startIcon={<Print />}
-            onClick={() => setOpenCheckout(true)}
-          >
-            xuất hóa đơn
-          </Button>
+          {data?.status !== EBookingStatus.Pending &&
+            data?.status !== EBookingStatus.Cancelled && (
+              <Button
+                variant="contained"
+                color="success"
+                startIcon={<Print />}
+                onClick={() => setOpenCheckout(true)}
+              >
+                xuất hóa đơn
+              </Button>
+            )}
         </Stack>
       </Stack>
 

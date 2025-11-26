@@ -262,9 +262,9 @@ public class ExtendStayResultDto
 
 public class CheckoutRequestDto
 {
-    public bool? EarlyCheckIn { get; set; }
-    public bool? LateCheckOut { get; set; }
     public string? DiscountCode { get; set; }
+    public string? Notes { get; set; }
+    public decimal? AdditionalAmount { get; set; } = 0;
     public PaymentDto? FinalPayment { get; set; }
     public DateTime? CheckoutTime { get; set; }
 }

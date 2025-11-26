@@ -145,7 +145,7 @@ export interface RoomMapItemDto {
   roomTypeName: string;
   floor: number;
   timeline: RoomTimelineSegmentDto[];
-  status: RoomStatus
+  status: RoomStatus;
 }
 
 export interface RoomMapQueryDto {
@@ -352,6 +352,11 @@ const bookingsApi = {
 
   async cancel(id: string): Promise<ApiResponse<BookingDetailsDto>> {
     const res = await axios.delete(`/admin/bookings/${id}`);
+    return res.data;
+  },
+
+  async confirm(id: string): Promise<ApiResponse<BookingDetailsDto>> {
+    const res = await axios.put(`/admin/bookings/confirm/${id}`, {});
     return res.data;
   },
 

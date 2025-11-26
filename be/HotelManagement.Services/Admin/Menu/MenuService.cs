@@ -24,11 +24,12 @@ public class MenuService : IMenuService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ApiResponse<List<MenuItemDto>>> GetMenuItemsAsync(MenuQueryDto query)
+    public async Task<ApiResponse<List<MenuItemDto>>> GetMenuItemsAsync(MenuQueryDto query, Guid hotelId)
     {
         try
         {
             Expression<Func<MenuItem, bool>> filter = item => true;
+
 
             if (query.Category != null)
             {
@@ -53,6 +54,7 @@ public class MenuService : IMenuService
 
             var menuItems = await _menuItemRepository.Query()
                 .Where(filter)
+                .Where(x => x.HotelId == hotelId)
                 .ToListAsync();
 
             var result = menuItems.Select(MapToMenuItemDto).ToList();

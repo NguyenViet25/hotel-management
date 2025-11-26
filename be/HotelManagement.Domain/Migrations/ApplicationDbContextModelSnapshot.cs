@@ -592,6 +592,9 @@ namespace HotelManagement.Domain.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<decimal?>("AdditionalAmount")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<Guid?>("BookingId")
                         .HasColumnType("uniqueidentifier");
 

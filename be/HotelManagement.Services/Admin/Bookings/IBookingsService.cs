@@ -9,6 +9,7 @@ public interface IBookingsService
     Task<ApiResponse<BookingDetailsDto>> GetByIdAsync(Guid id);
     Task<ApiResponse<BookingDetailsDto>> UpdateAsync(Guid id, UpdateBookingDto dto);
     Task<ApiResponse> CancelAsync(Guid id);
+    Task<ApiResponse> ConfirmAsync(Guid id);
     Task<ApiResponse<CallLogDto>> AddCallLogAsync(Guid bookingId, AddCallLogDto dto);
     Task<ApiResponse<List<RoomMapItemDto>>> GetRoomMapAsync(RoomMapQueryDto query);
     Task<ApiResponse<List<BookingDetailsDto>>> ListAsync(BookingsQueryDto query);

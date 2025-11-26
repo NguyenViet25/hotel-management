@@ -134,9 +134,9 @@ public class InvoicesController : ControllerBase
         {
             DiscountCode = request.DiscountCode,
             FinalPayment = request.FinalPayment,
-            EarlyCheckIn = request.EarlyCheckIn,
-            LateCheckOut = request.LateCheckOut,
-            CheckoutTime = request.CheckoutTime
+            CheckoutTime = request.CheckoutTime,
+            AdditionalAmount = request.AdditionalAmount,
+            Notes = request.Notes
         };
 
         var result = await _bookingsService.CheckOutAsync(request.BookingId, checkoutDto);
@@ -169,8 +169,8 @@ public class CreateBookingInvoiceRequest
 {
     public Guid BookingId { get; set; }
     public string? DiscountCode { get; set; }
+    public string? Notes { get; set; }
+    public decimal? AdditionalAmount { get; set; }
     public PaymentDto? FinalPayment { get; set; }
-    public bool? EarlyCheckIn { get; set; }
-    public bool? LateCheckOut { get; set; }
     public DateTime? CheckoutTime { get; set; }
 }

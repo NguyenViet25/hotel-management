@@ -6,7 +6,7 @@ namespace HotelManagement.Services.Admin.Menu;
 public interface IMenuService
 {
     // UC-45: Display menu by group, session, and status
-    Task<ApiResponse<List<MenuItemDto>>> GetMenuItemsAsync(MenuQueryDto query);
+    Task<ApiResponse<List<MenuItemDto>>> GetMenuItemsAsync(MenuQueryDto query, Guid hotelId);
     
     // UC-46: Add new menu item with quantity, price, and image
     Task<ApiResponse<MenuItemDto>> CreateMenuItemAsync(CreateMenuItemDto dto, Guid staffUserId);

@@ -21,7 +21,14 @@ public class MenuController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetMenuItems([FromQuery] MenuQueryDto query)
     {
-        var result = await _menuService.GetMenuItemsAsync(query);
+        var hotelIdClaim = User.FindFirst("hotelId")?.Value;
+
+        if (hotelIdClaim == null)
+            return BadRequest("HotelId not found in user claims");
+
+        Guid hotelId = Guid.Parse(hotelIdClaim);
+
+        var result = await _menuService.GetMenuItemsAsync(query, hotelId);
         return Ok(result);
     }
 

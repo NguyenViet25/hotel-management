@@ -84,6 +84,14 @@ public class BookingsController(IBookingsService bookingsService, IWebHostEnviro
         return Ok(result);
     }
 
+    [HttpPut("confirm/{id}")]
+    public async Task<ActionResult<ApiResponse>> Confirm(Guid id)
+    {
+        var result = await _bookingsService.ConfirmAsync(id);
+        return Ok(result);
+    }
+
+
     [HttpDelete("{id}")]
     public async Task<ActionResult<ApiResponse>> Cancel(Guid id)
     {

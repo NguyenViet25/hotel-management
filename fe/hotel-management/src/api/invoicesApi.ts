@@ -30,6 +30,7 @@ export interface InvoiceDto {
   issuedAt?: string;
   paidAt?: string;
   lines: InvoiceLineDto[];
+  additionalAmount?: number;
 }
 
 export interface PagedResult<T> {
@@ -76,10 +77,14 @@ export interface CreateBookingInvoiceRequest {
   earlyCheckIn?: boolean;
   lateCheckOut?: boolean;
   checkoutTime?: string;
+  notes?: string;
+  additionalAmount?: number;
 }
 
 const invoicesApi = {
-  async list(params: InvoiceFilterParams = {}): Promise<ListPagedResponse<InvoiceDto>> {
+  async list(
+    params: InvoiceFilterParams = {}
+  ): Promise<ListPagedResponse<InvoiceDto>> {
     const qp = new URLSearchParams();
     if (params.hotelId) qp.append("hotelId", params.hotelId);
     if (params.bookingId) qp.append("bookingId", params.bookingId);
@@ -99,12 +104,16 @@ const invoicesApi = {
     return res.data;
   },
 
-  async createWalkIn(payload: CreateWalkInInvoiceRequest): Promise<ItemResponse<InvoiceDto>> {
+  async createWalkIn(
+    payload: CreateWalkInInvoiceRequest
+  ): Promise<ItemResponse<InvoiceDto>> {
     const res = await axios.post(`/admin/invoices/walk-in`, payload);
     return res.data;
   },
 
-  async createBooking(payload: CreateBookingInvoiceRequest): Promise<ItemResponse<InvoiceDto>> {
+  async createBooking(
+    payload: CreateBookingInvoiceRequest
+  ): Promise<ItemResponse<InvoiceDto>> {
     const res = await axios.post(`/admin/invoices/booking`, payload);
     return res.data;
   },
