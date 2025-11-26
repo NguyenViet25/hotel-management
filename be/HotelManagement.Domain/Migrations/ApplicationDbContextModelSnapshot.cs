@@ -272,8 +272,11 @@ namespace HotelManagement.Domain.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<Guid>("TableId")
+                    b.Property<Guid?>("TableId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("TotalGuests")
+                        .HasColumnType("int");
 
                     b.Property<Guid?>("WaiterUserId")
                         .HasColumnType("uniqueidentifier");
@@ -287,6 +290,33 @@ namespace HotelManagement.Domain.Migrations
                     b.HasIndex("WaiterUserId");
 
                     b.ToTable("DiningSessions");
+                });
+
+            modelBuilder.Entity("HotelManagement.Domain.DiningSessionTable", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("AttachedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("DiningSessionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("HotelId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TableId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DiningSessionId");
+
+                    b.HasIndex("TableId");
+
+                    b.ToTable("DiningSessionTables");
                 });
 
             modelBuilder.Entity("HotelManagement.Domain.Entities.AppUser", b =>
@@ -1390,13 +1420,27 @@ namespace HotelManagement.Domain.Migrations
                     b.HasOne("HotelManagement.Domain.Table", null)
                         .WithMany()
                         .HasForeignKey("TableId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("HotelManagement.Domain.Entities.AppUser", null)
                         .WithMany()
                         .HasForeignKey("WaiterUserId")
                         .OnDelete(DeleteBehavior.SetNull);
+                });
+
+            modelBuilder.Entity("HotelManagement.Domain.DiningSessionTable", b =>
+                {
+                    b.HasOne("HotelManagement.Domain.DiningSession", null)
+                        .WithMany()
+                        .HasForeignKey("DiningSessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HotelManagement.Domain.Table", null)
+                        .WithMany()
+                        .HasForeignKey("TableId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("HotelManagement.Domain.Entities.ShoppingItem", b =>

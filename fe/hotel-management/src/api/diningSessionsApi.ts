@@ -1,20 +1,27 @@
 import axios from "./axios";
 
+export interface SessionTableDto {
+  tableId: string;
+  tableName: string;
+  capacity: number;
+  attachedAt: string;
+}
+
 export interface DiningSessionDto {
   id: string;
   hotelId: string;
-  tableId: string;
-  tableName: string;
   waiterUserId?: string | null;
   waiterName?: string | null;
   startedAt: string;
   endedAt?: string | null;
   status: string;
+  notes?: string | null;
+  totalGuests: number;
+  tables: SessionTableDto[];
 }
 
 export interface CreateDiningSessionRequest {
   hotelId: string;
-  tableId: string;
   waiterUserId?: string;
   startedAt?: string;
   notes?: string;
@@ -46,7 +53,9 @@ export interface ListResponse<T> {
 }
 
 const diningSessionsApi = {
-  async createSession(payload: CreateDiningSessionRequest): Promise<ItemResponse<DiningSessionDto>> {
+  async createSession(
+    payload: CreateDiningSessionRequest
+  ): Promise<ItemResponse<DiningSessionDto>> {
     const res = await axios.post(`/dining-sessions`, payload);
     return res.data;
   },
@@ -54,7 +63,12 @@ const diningSessionsApi = {
     const res = await axios.get(`/dining-sessions/${id}`);
     return res.data;
   },
-  async getSessions(params: { hotelId: string; page?: number; pageSize?: number; status?: string }): Promise<ListResponse<DiningSessionListResponse>> {
+  async getSessions(params: {
+    hotelId: string;
+    page?: number;
+    pageSize?: number;
+    status?: string;
+  }): Promise<ListResponse<DiningSessionListResponse>> {
     const qp = new URLSearchParams();
     qp.append("hotelId", params.hotelId);
     if (params.page) qp.append("page", String(params.page));
@@ -63,7 +77,10 @@ const diningSessionsApi = {
     const res = await axios.get(`/dining-sessions?${qp.toString()}`);
     return res.data;
   },
-  async updateSession(id: string, payload: UpdateDiningSessionRequest): Promise<ItemResponse<DiningSessionDto>> {
+  async updateSession(
+    id: string,
+    payload: UpdateDiningSessionRequest
+  ): Promise<ItemResponse<DiningSessionDto>> {
     const res = await axios.put(`/dining-sessions/${id}`, payload);
     return res.data;
   },
@@ -71,8 +88,31 @@ const diningSessionsApi = {
     const res = await axios.post(`/dining-sessions/${id}/end`);
     return res.data;
   },
-  async assignOrder(sessionId: string, orderId: string): Promise<ItemResponse<boolean>> {
-    const res = await axios.post(`/dining-sessions/${sessionId}/orders/${orderId}`);
+  async assignOrder(
+    sessionId: string,
+    orderId: string
+  ): Promise<ItemResponse<boolean>> {
+    const res = await axios.post(
+      `/dining-sessions/${sessionId}/orders/${orderId}`
+    );
+    return res.data;
+  },
+  async attachTable(
+    sessionId: string,
+    tableId: string
+  ): Promise<ItemResponse<boolean>> {
+    const res = await axios.post(
+      `/dining-sessions/${sessionId}/tables/${tableId}`
+    );
+    return res.data;
+  },
+  async detachTable(
+    sessionId: string,
+    tableId: string
+  ): Promise<ItemResponse<boolean>> {
+    const res = await axios.delete(
+      `/dining-sessions/${sessionId}/tables/${tableId}`
+    );
     return res.data;
   },
 };

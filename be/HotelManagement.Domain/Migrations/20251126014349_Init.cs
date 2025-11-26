@@ -573,11 +573,12 @@ namespace HotelManagement.Domain.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     HotelId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    TableId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TableId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     WaiterUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     StartedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TotalGuests = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -740,6 +741,33 @@ namespace HotelManagement.Domain.Migrations
                         name: "FK_RoomStatusLogs_Rooms_RoomId",
                         column: x => x.RoomId,
                         principalTable: "Rooms",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DiningSessionTables",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    HotelId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    DiningSessionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TableId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AttachedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DiningSessionTables", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_DiningSessionTables_DiningSessions_DiningSessionId",
+                        column: x => x.DiningSessionId,
+                        principalTable: "DiningSessions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_DiningSessionTables_Tables_TableId",
+                        column: x => x.TableId,
+                        principalTable: "Tables",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -1088,6 +1116,16 @@ namespace HotelManagement.Domain.Migrations
                 column: "WaiterUserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_DiningSessionTables_DiningSessionId",
+                table: "DiningSessionTables",
+                column: "DiningSessionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DiningSessionTables_TableId",
+                table: "DiningSessionTables",
+                column: "TableId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Hotels_Code",
                 table: "Hotels",
                 column: "Code",
@@ -1292,6 +1330,9 @@ namespace HotelManagement.Domain.Migrations
 
             migrationBuilder.DropTable(
                 name: "CallLogs");
+
+            migrationBuilder.DropTable(
+                name: "DiningSessionTables");
 
             migrationBuilder.DropTable(
                 name: "HousekeepingTasks");

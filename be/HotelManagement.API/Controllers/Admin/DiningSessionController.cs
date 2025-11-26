@@ -71,4 +71,26 @@ public class DiningSessionController : ControllerBase
         }
         return Ok(response);
     }
+
+    [HttpPost("{sessionId}/tables/{tableId}")]
+    public async Task<IActionResult> AttachTable(Guid sessionId, Guid tableId)
+    {
+        var response = await _diningSessionService.AttachTableAsync(sessionId, tableId);
+        if (!response.IsSuccess)
+        {
+            return BadRequest(response);
+        }
+        return Ok(response);
+    }
+
+    [HttpDelete("{sessionId}/tables/{tableId}")]
+    public async Task<IActionResult> DetachTable(Guid sessionId, Guid tableId)
+    {
+        var response = await _diningSessionService.DetachTableAsync(sessionId, tableId);
+        if (!response.IsSuccess)
+        {
+            return NotFound(response);
+        }
+        return Ok(response);
+    }
 }

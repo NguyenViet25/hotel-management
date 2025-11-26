@@ -27,6 +27,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
     public DbSet<MenuItem> MenuItems => Set<MenuItem>();
     public DbSet<Table> Tables => Set<Table>();
     public DbSet<DiningSession> DiningSessions => Set<DiningSession>();
+    public DbSet<DiningSessionTable> DiningSessionTables => Set<DiningSessionTable>();
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
     public DbSet<OrderItemHistory> OrderItemHistories => Set<OrderItemHistory>();
@@ -241,6 +242,18 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
             .HasOne<Table>()
             .WithMany()
             .HasForeignKey(ds => ds.TableId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<DiningSessionTable>()
+            .HasOne<DiningSession>()
+            .WithMany()
+            .HasForeignKey(dst => dst.DiningSessionId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<DiningSessionTable>()
+            .HasOne<Table>()
+            .WithMany()
+            .HasForeignKey(dst => dst.TableId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.Entity<DiningSession>()

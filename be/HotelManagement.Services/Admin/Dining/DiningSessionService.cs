@@ -12,44 +12,31 @@ public class DiningSessionService : IDiningSessionService
 {
     private readonly IRepository<DiningSession> _diningSessionRepository;
     private readonly IRepository<Table> _tableRepository;
+    private readonly IRepository<DiningSessionTable> _diningSessionTableRepository;
     private readonly IRepository<AppUser> _userRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public DiningSessionService(
         IRepository<DiningSession> diningSessionRepository,
         IRepository<Table> tableRepository,
+        IRepository<DiningSessionTable> diningSessionTableRepository,
         IRepository<AppUser> userRepository,
         IUnitOfWork unitOfWork)
     {
         _diningSessionRepository = diningSessionRepository;
         _tableRepository = tableRepository;
+        _diningSessionTableRepository = diningSessionTableRepository;
         _userRepository = userRepository;
         _unitOfWork = unitOfWork;
     }
 
     public async Task<ApiResponse<DiningSessionDto>> CreateSessionAsync(CreateDiningSessionRequest request)
     {
-        var table = await _tableRepository.FindAsync(request.TableId);
-        if (table == null)
-        {
-            return ApiResponse<DiningSessionDto>.Fail("Table not found");
-        }
-
-        // Check if table is already in use
-        var activeSession = await _diningSessionRepository.Query()
-            .Where(s => s.TableId == request.TableId && s.Status == DiningSessionStatus.Open)
-            .FirstOrDefaultAsync();
-
-        if (activeSession != null)
-        {
-            return ApiResponse<DiningSessionDto>.Fail("Table is already in use");
-        }
-
         var session = new DiningSession
         {
             Id = Guid.NewGuid(),
             HotelId = request.HotelId,
-            TableId = request.TableId,
+            TableId = null,
             WaiterUserId = request.WaiterUserId,
             StartedAt = request.StartedAt ?? DateTime.UtcNow,
             Notes = request.Notes ?? string.Empty,
@@ -157,17 +144,89 @@ public class DiningSessionService : IDiningSessionService
         session.Status = DiningSessionStatus.Closed;
         session.EndedAt = DateTime.UtcNow;
 
-        await _diningSessionRepository.UpdateAsync(session);
-        await _diningSessionRepository.SaveChangesAsync();
+        var linkedTables = await _diningSessionTableRepository.Query()
+            .Where(x => x.DiningSessionId == id)
+            .ToListAsync();
+        foreach (var link in linkedTables)
+        {
+            var table = await _tableRepository.FindAsync(link.TableId);
+            if (table != null)
+            {
+                table.TableStatus = 0;
+                await _tableRepository.UpdateAsync(table);
+            }
+            await _diningSessionTableRepository.RemoveAsync(link);
+        }
 
+        await _diningSessionRepository.UpdateAsync(session);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ApiResponse<bool>.Success(true);
+    }
+
+    public async Task<ApiResponse<bool>> AttachTableAsync(Guid sessionId, Guid tableId)
+    {
+        var session = await _diningSessionRepository.FindAsync(sessionId);
+        if (session == null || session.Status != DiningSessionStatus.Open)
+        {
+            return ApiResponse<bool>.Fail("Session not found or not open");
+        }
+        var table = await _tableRepository.FindAsync(tableId);
+        if (table == null || table.TableStatus == 1)
+        {
+            return ApiResponse<bool>.Fail("Table not available");
+        }
+
+        var existing = await _diningSessionTableRepository.Query()
+            .Where(x => x.TableId == tableId)
+            .FirstOrDefaultAsync();
+        if (existing != null)
+        {
+            return ApiResponse<bool>.Fail("Table is already attached");
+        }
+
+        var link = new DiningSessionTable
+        {
+            Id = Guid.NewGuid(),
+            HotelId = session.HotelId,
+            DiningSessionId = sessionId,
+            TableId = tableId,
+            AttachedAt = DateTime.UtcNow,
+        };
+        await _diningSessionTableRepository.AddAsync(link);
+        table.TableStatus = 1;
+        await _tableRepository.UpdateAsync(table);
+        await _unitOfWork.SaveChangesAsync();
+        return ApiResponse<bool>.Success(true);
+    }
+
+    public async Task<ApiResponse<bool>> DetachTableAsync(Guid sessionId, Guid tableId)
+    {
+        var session = await _diningSessionRepository.FindAsync(sessionId);
+        if (session == null)
+        {
+            return ApiResponse<bool>.Fail("Session not found");
+        }
+        var link = await _diningSessionTableRepository.Query()
+            .Where(x => x.DiningSessionId == sessionId && x.TableId == tableId)
+            .FirstOrDefaultAsync();
+        if (link == null)
+        {
+            return ApiResponse<bool>.Fail("Link not found");
+        }
+        await _diningSessionTableRepository.RemoveAsync(link);
+        var table = await _tableRepository.FindAsync(tableId);
+        if (table != null)
+        {
+            table.TableStatus = 0;
+            await _tableRepository.UpdateAsync(table);
+        }
+        await _unitOfWork.SaveChangesAsync();
         return ApiResponse<bool>.Success(true);
     }
 
     private async Task<DiningSessionDto> MapToDto(DiningSession session)
     {
-        var table = await _tableRepository.FindAsync(session.TableId);
-        string tableName = table?.Name ?? "Unknown";
-
         string? waiterName = null;
         if (session.WaiterUserId.HasValue)
         {
@@ -175,12 +234,29 @@ public class DiningSessionService : IDiningSessionService
             waiterName = waiter?.Fullname;
         }
 
+        var links = await _diningSessionTableRepository.Query()
+            .Where(x => x.DiningSessionId == session.Id)
+            .ToListAsync();
+        var tableDtos = new List<SessionTableDto>();
+        foreach (var link in links)
+        {
+            var table = await _tableRepository.FindAsync(link.TableId);
+            if (table != null)
+            {
+                tableDtos.Add(new SessionTableDto
+                {
+                    TableId = table.Id,
+                    TableName = table.Name,
+                    Capacity = table.Capacity,
+                    AttachedAt = link.AttachedAt,
+                });
+            }
+        }
+
         return new DiningSessionDto
         {
             Id = session.Id,
             HotelId = session.HotelId,
-            TableId = session.TableId,
-            TableName = tableName,
             WaiterUserId = session.WaiterUserId,
             WaiterName = waiterName,
             StartedAt = session.StartedAt,
@@ -188,6 +264,7 @@ public class DiningSessionService : IDiningSessionService
             Status = session.Status.ToString(),
             Notes = session.Notes,
             TotalGuests = session.TotalGuests,
+            Tables = tableDtos,
         };
     }
 }

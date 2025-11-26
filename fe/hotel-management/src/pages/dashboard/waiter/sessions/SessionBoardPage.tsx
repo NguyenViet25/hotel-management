@@ -11,6 +11,12 @@ import {
   Stack,
   Select,
   MenuItem,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
 import useSWR from "swr";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
@@ -31,6 +37,8 @@ export default function SessionBoardPage() {
   const [selectedTable, setSelectedTable] = useState<TableDto | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
+  const [attachOpen, setAttachOpen] = useState(false);
+  const [selectedSessionId, setSelectedSessionId] = useState<string>("");
   const [activeSession, setActiveSession] = useState<DiningSessionDto | null>(
     null
   );
@@ -91,7 +99,7 @@ export default function SessionBoardPage() {
   };
 
   const sessionForTable = (tableId: string) =>
-    sessions.find((s) => s.tableId === tableId);
+    sessions.find((s) => s.tables?.some((t) => t.tableId === tableId));
 
   const handleTableClick = (t: TableDto) => {
     setSelectedTable(t);
@@ -100,7 +108,7 @@ export default function SessionBoardPage() {
     if (s) {
       navigate(`/waiter/sessions/${s.id}`);
     } else {
-      setCreateOpen(true);
+      setAttachOpen(true);
     }
   };
 
@@ -112,6 +120,35 @@ export default function SessionBoardPage() {
       message: "Tạo phiên thành công",
       severity: "success",
     });
+  };
+
+  const attachSelectedTable = async () => {
+    if (!selectedTable || !selectedSessionId) return;
+    try {
+      const res = await diningSessionsApi.attachTable(
+        selectedSessionId,
+        selectedTable.id
+      );
+      if (res.isSuccess) {
+        setSnackbar({
+          open: true,
+          message: "Đã gắn bàn vào phiên",
+          severity: "success",
+        });
+        setAttachOpen(false);
+        setSelectedSessionId("");
+        await mutateSessions();
+        await mutateTables();
+      } else {
+        setSnackbar({
+          open: true,
+          message: res.message || "Gắn bàn thất bại",
+          severity: "error",
+        });
+      }
+    } catch {
+      setSnackbar({ open: true, message: "Đã xảy ra lỗi", severity: "error" });
+    }
   };
 
   const endSession = async (sessionId: string) => {
@@ -146,6 +183,9 @@ export default function SessionBoardPage() {
     <Box p={2}>
       <Typography variant="h5">Phiên phục vụ</Typography>
       <Stack direction="row" spacing={2} alignItems="center" mt={1} mb={2}>
+        <Button variant="contained" onClick={() => setCreateOpen(true)}>
+          Tạo phiên
+        </Button>
         <Select
           size="small"
           value={statusFilter}
@@ -227,10 +267,10 @@ export default function SessionBoardPage() {
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedTable(t);
-                          setCreateOpen(true);
+                          setAttachOpen(true);
                         }}
                       >
-                        Tạo phiên
+                        Gắn vào phiên
                       </Button>
                     </Box>
                   )}
@@ -266,5 +306,46 @@ export default function SessionBoardPage() {
         message={snackbar?.message}
       />
     </Box>
+  );
+}
+{
+  attachOpen && (
+    <Dialog
+      open={attachOpen}
+      onClose={() => setAttachOpen(false)}
+      fullWidth
+      maxWidth="sm"
+    >
+      <DialogTitle>Gắn bàn vào phiên</DialogTitle>
+      <DialogContent>
+        <Stack spacing={2} mt={1}>
+          <FormControl fullWidth size="small">
+            <InputLabel>Phiên</InputLabel>
+            <Select
+              label="Phiên"
+              value={selectedSessionId}
+              onChange={(e) => setSelectedSessionId(String(e.target.value))}
+            >
+              {sessions.map((s) => (
+                <MenuItem key={s.id} value={s.id}>
+                  {new Date(s.startedAt).toLocaleString()} • {s.totalGuests}{" "}
+                  khách
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Stack>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setAttachOpen(false)}>Đóng</Button>
+        <Button
+          variant="contained"
+          disabled={!selectedSessionId}
+          onClick={attachSelectedTable}
+        >
+          Gắn
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 }
