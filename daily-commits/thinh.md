@@ -165,3 +165,4 @@
 2025-11-25 - 5 - 01:47:19 UTC :: docs: UC-40 Thu/chi: doi soat tien mat/the/le phi PG. — fix race-condition nho trong thao tac (anh huong thap)
 2025-11-26 - 1 - 01:46:47 UTC :: docs: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — chinh sua tai lieu & mo ta API (can theo doi them)
 2025-11-26 - 2 - 01:46:48 UTC :: fix: UC-40 Thu/chi: doi soat tien mat/the/le phi PG. — bo sung unit test muc co ban (da kiem tra lint)
+2025-11-26 - 3 - 01:46:50 UTC :: docs: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — tach chuc nang de de bao tri (dat tieu chi toi thieu)
