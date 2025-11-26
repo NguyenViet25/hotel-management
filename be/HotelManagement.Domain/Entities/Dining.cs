@@ -19,5 +19,7 @@ public class DiningSession
     public Guid? WaiterUserId { get; set; }
     public DateTime StartedAt { get; set; } = DateTime.UtcNow;
     public DateTime? EndedAt { get; set; }
+    public string Notes { get; set; } = string.Empty;
+    public int TotalGuests { get; set; }
     public DiningSessionStatus Status { get; set; } = DiningSessionStatus.Open;
 }

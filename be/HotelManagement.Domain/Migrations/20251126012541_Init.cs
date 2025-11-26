@@ -577,6 +577,7 @@ namespace HotelManagement.Domain.Migrations
                     WaiterUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     StartedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>

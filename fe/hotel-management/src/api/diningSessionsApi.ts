@@ -16,12 +16,16 @@ export interface CreateDiningSessionRequest {
   hotelId: string;
   tableId: string;
   waiterUserId?: string;
-  guestId?: string;
+  startedAt?: string;
+  notes?: string;
+  totalGuests?: number;
 }
 
 export interface UpdateDiningSessionRequest {
   waiterUserId?: string;
   status?: string;
+  notes?: string;
+  totalGuests?: number;
 }
 
 export interface DiningSessionListResponse {

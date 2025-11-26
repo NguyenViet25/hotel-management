@@ -262,6 +262,10 @@ namespace HotelManagement.Domain.Migrations
                     b.Property<Guid>("HotelId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("StartedAt")
                         .HasColumnType("datetime2");
 

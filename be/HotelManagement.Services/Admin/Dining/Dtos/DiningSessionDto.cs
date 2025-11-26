@@ -1,5 +1,3 @@
-using System;
-
 namespace HotelManagement.Services.Admin.Dining.Dtos;
 
 public class DiningSessionDto
@@ -13,6 +11,8 @@ public class DiningSessionDto
     public DateTime StartedAt { get; set; }
     public DateTime? EndedAt { get; set; }
     public string Status { get; set; } = string.Empty;
+    public string? Notes { get; set; }
+    public int TotalGuests { get; set; }
 }
 
 public class CreateDiningSessionRequest
@@ -20,13 +20,17 @@ public class CreateDiningSessionRequest
     public Guid HotelId { get; set; }
     public Guid TableId { get; set; }
     public Guid? WaiterUserId { get; set; }
-    public Guid? GuestId { get; set; }
+    public string? Notes { get; set; }
+    public DateTime? StartedAt { get; set; }
+    public int? TotalGuests { get; set; }
 }
 
 public class UpdateDiningSessionRequest
 {
     public Guid? WaiterUserId { get; set; }
     public string? Status { get; set; }
+    public string? Notes { get; set; }
+    public int? TotalGuests { get; set; }
 }
 
 public class DiningSessionListResponse

@@ -71,15 +71,4 @@ public class DiningSessionController : ControllerBase
         }
         return Ok(response);
     }
-
-    [HttpPost("{sessionId}/orders/{orderId}")]
-    public async Task<IActionResult> AssignOrderToSession(Guid sessionId, Guid orderId)
-    {
-        var response = await _diningSessionService.AssignOrderToSessionAsync(sessionId, orderId);
-        if (!response.IsSuccess)
-        {
-            return BadRequest(response);
-        }
-        return Ok(response);
-    }
 }

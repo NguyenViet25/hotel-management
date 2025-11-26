@@ -12,24 +12,18 @@ public class DiningSessionService : IDiningSessionService
 {
     private readonly IRepository<DiningSession> _diningSessionRepository;
     private readonly IRepository<Table> _tableRepository;
-    private readonly IRepository<Order> _orderRepository;
     private readonly IRepository<AppUser> _userRepository;
-    private readonly IRepository<Guest> _guestRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public DiningSessionService(
         IRepository<DiningSession> diningSessionRepository,
         IRepository<Table> tableRepository,
-        IRepository<Order> orderRepository,
         IRepository<AppUser> userRepository,
-        IRepository<Guest> guestRepository,
         IUnitOfWork unitOfWork)
     {
         _diningSessionRepository = diningSessionRepository;
         _tableRepository = tableRepository;
-        _orderRepository = orderRepository;
         _userRepository = userRepository;
-        _guestRepository = guestRepository;
         _unitOfWork = unitOfWork;
     }
 
@@ -57,35 +51,14 @@ public class DiningSessionService : IDiningSessionService
             HotelId = request.HotelId,
             TableId = request.TableId,
             WaiterUserId = request.WaiterUserId,
-            StartedAt = DateTime.UtcNow,
+            StartedAt = request.StartedAt ?? DateTime.UtcNow,
+            Notes = request.Notes ?? string.Empty,
+            TotalGuests = request.TotalGuests ?? 0,
             Status = DiningSessionStatus.Open
         };
 
         await _diningSessionRepository.AddAsync(session);
-        await _unitOfWork.SaveChangesAsync();
-
-        // If guest ID is provided, create an order for this guest
-        if (request.GuestId.HasValue)
-        {
-            var guest = await _guestRepository.FindAsync(request.GuestId.Value);
-            var order = new Order
-            {
-                Id = Guid.NewGuid(),
-                HotelId = request.HotelId,
-                DiningSessionId = session.Id,
-                Status = OrderStatus.Draft,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            if (guest != null)
-            {
-                order.CustomerName = guest.FullName;
-                order.CustomerPhone = guest.Phone;
-            }
-
-            await _orderRepository.AddAsync(order);
-            await _unitOfWork.SaveChangesAsync();
-        }
+        await _diningSessionRepository.SaveChangesAsync();
 
         return ApiResponse<DiningSessionDto>.Success(await MapToDto(session));
     }
@@ -158,8 +131,17 @@ public class DiningSessionService : IDiningSessionService
             }
         }
 
+        if (request.Notes != null)
+        {
+            session.Notes = request.Notes;
+        }
+        if (request.TotalGuests.HasValue)
+        {
+            session.TotalGuests = request.TotalGuests.Value;
+        }
+
         await _diningSessionRepository.UpdateAsync(session);
-        await _unitOfWork.SaveChangesAsync();
+        await _diningSessionRepository.SaveChangesAsync();
 
         return ApiResponse<DiningSessionDto>.Success(await MapToDto(session));
     }
@@ -176,28 +158,7 @@ public class DiningSessionService : IDiningSessionService
         session.EndedAt = DateTime.UtcNow;
 
         await _diningSessionRepository.UpdateAsync(session);
-        await _unitOfWork.SaveChangesAsync();
-
-        return ApiResponse<bool>.Success(true);
-    }
-
-    public async Task<ApiResponse<bool>> AssignOrderToSessionAsync(Guid sessionId, Guid orderId)
-    {
-        var session = await _diningSessionRepository.FindAsync(sessionId);
-        if (session == null)
-        {
-            return ApiResponse<bool>.Fail("Dining session not found");
-        }
-
-        var order = await _orderRepository.FindAsync(orderId);
-        if (order == null)
-        {
-            return ApiResponse<bool>.Fail("Order not found");
-        }
-
-        order.DiningSessionId = sessionId;
-        await _orderRepository.UpdateAsync(order);
-        await _unitOfWork.SaveChangesAsync();
+        await _diningSessionRepository.SaveChangesAsync();
 
         return ApiResponse<bool>.Success(true);
     }
@@ -224,7 +185,9 @@ public class DiningSessionService : IDiningSessionService
             WaiterName = waiterName,
             StartedAt = session.StartedAt,
             EndedAt = session.EndedAt,
-            Status = session.Status.ToString()
+            Status = session.Status.ToString(),
+            Notes = session.Notes,
+            TotalGuests = session.TotalGuests,
         };
     }
 }
