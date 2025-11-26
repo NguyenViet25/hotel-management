@@ -167,3 +167,4 @@
 2025-11-26 - 2 - 01:46:48 UTC :: docs: UC-39 Xuat Audit Log: xuat CSV/PDF kiem tra tuan thu. — them log chi tiet phuc vu audit (anh huong thap)
 2025-11-26 - 3 - 01:46:49 UTC :: build: UC-20 Keo-tha: gan/doi phong truc quan, tranh trung. — bo sung unit test muc co ban (da kiem tra lint)
 2025-11-26 - 4 - 01:46:50 UTC :: fix: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — bo sung index & toi uu DB (dam bao backward-compatible)
+2025-11-26 - 5 - 01:46:53 UTC :: perf: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — fix race-condition nho trong thao tac (dong bo voi BE/FE)
