@@ -164,3 +164,4 @@
 2025-11-25 - 4 - 01:47:13 UTC :: fix: UC-01 RBAC: tao, sua, khoa tai khoan; gan vai tro. — dieu chinh UI & copy cho ro (dat tieu chi toi thieu)
 2025-11-25 - 5 - 01:47:16 UTC :: refactor: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — tach chuc nang de de bao tri (dong bo voi BE/FE)
 2025-11-26 - 1 - 01:46:47 UTC :: feat: UC-35 Ngoai le: gui yeu cau mien/giam phi, vuot tran. — chinh sua tai lieu & mo ta API (da kiem tra lint)
+2025-11-26 - 2 - 01:46:48 UTC :: docs: UC-39 Xuat Audit Log: xuat CSV/PDF kiem tra tuan thu. — them log chi tiet phuc vu audit (anh huong thap)
