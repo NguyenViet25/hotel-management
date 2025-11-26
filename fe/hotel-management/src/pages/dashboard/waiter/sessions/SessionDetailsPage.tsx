@@ -17,15 +17,23 @@ import {
   ListItemText,
   Stack,
   Snackbar,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import useSWR from "swr";
 import diningSessionsApi from "../../../../api/diningSessionsApi";
+import tablesApi, {
+  type TableDto,
+  TableStatus,
+} from "../../../../api/tablesApi";
 import ordersApi, { type OrderDetailsDto } from "../../../../api/ordersApi";
 import orderItemsApi from "../../../../api/orderItemsApi";
 import serviceRequestsApi, {
   type ServiceRequestDto,
 } from "../../../../api/serviceRequestsApi";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
 
 export default function SessionDetailsPage() {
@@ -39,6 +47,9 @@ export default function SessionDetailsPage() {
     message: string;
     severity: "success" | "error";
   } | null>(null);
+  const [attachOpen, setAttachOpen] = useState(false);
+  const [availableTables, setAvailableTables] = useState<TableDto[]>([]);
+  const [selectedTableId, setSelectedTableId] = useState<string>("");
   const requestTypes = useMemo(
     () => [
       { value: "water", label: "Nước" },
@@ -125,17 +136,100 @@ export default function SessionDetailsPage() {
     }
   };
 
+  useEffect(() => {
+    const loadAvailableTables = async () => {
+      if (!hotelId) return;
+      const res = await tablesApi.listTables({
+        hotelId,
+        status: TableStatus.Available,
+        page: 1,
+        pageSize: 100,
+      });
+      setAvailableTables(res.data || []);
+    };
+    if (attachOpen) {
+      setSelectedTableId("");
+      loadAvailableTables();
+    }
+  }, [attachOpen, hotelId]);
+
+  const attachTable = async () => {
+    if (!id || !selectedTableId) return;
+    try {
+      const res = await diningSessionsApi.attachTable(id, selectedTableId);
+      if (res.isSuccess) {
+        setSnackbar({ open: true, message: "Đã gắn bàn", severity: "success" });
+        setAttachOpen(false);
+      } else {
+        setSnackbar({
+          open: true,
+          message: res.message || "Gắn bàn thất bại",
+          severity: "error",
+        });
+      }
+    } catch {
+      setSnackbar({ open: true, message: "Đã xảy ra lỗi", severity: "error" });
+    }
+  };
+
+  const detachTable = async (tableId: string) => {
+    if (!id) return;
+    try {
+      const res = await diningSessionsApi.detachTable(id, tableId);
+      if (res.isSuccess) {
+        setSnackbar({
+          open: true,
+          message: "Đã tách bàn",
+          severity: "success",
+        });
+      } else {
+        setSnackbar({
+          open: true,
+          message: res.message || "Tách bàn thất bại",
+          severity: "error",
+        });
+      }
+    } catch {
+      setSnackbar({ open: true, message: "Đã xảy ra lỗi", severity: "error" });
+    }
+  };
+
   return (
     <Box p={2}>
       <Typography variant="h5">Phiên bàn</Typography>
       {session && (
         <Box mt={1}>
-          <Typography variant="subtitle1">Bàn {session.tableName}</Typography>
+          <Typography variant="subtitle1">Phiên đang mở</Typography>
           <Chip
             label={session.status}
             color={session.status === "Open" ? "success" : "default"}
             size="small"
           />
+          <Box mt={1}>
+            <Typography variant="subtitle2">Bàn đang phục vụ</Typography>
+            <List>
+              {(session.tables || []).map((t) => (
+                <ListItem key={t.tableId}>
+                  <ListItemText
+                    primary={`${t.tableName} • ${t.capacity} chỗ`}
+                    secondary={`Gắn lúc ${new Date(
+                      t.attachedAt
+                    ).toLocaleString()}`}
+                  />
+                  <Button
+                    size="small"
+                    color="warning"
+                    onClick={() => detachTable(t.tableId)}
+                  >
+                    Tách
+                  </Button>
+                </ListItem>
+              ))}
+            </List>
+            <Button variant="outlined" onClick={() => setAttachOpen(true)}>
+              Gắn thêm bàn
+            </Button>
+          </Box>
         </Box>
       )}
 
@@ -270,6 +364,41 @@ export default function SessionDetailsPage() {
         onClose={() => setSnackbar(null)}
         message={snackbar?.message}
       />
+
+      <Dialog
+        open={attachOpen}
+        onClose={() => setAttachOpen(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>Gắn bàn vào phiên</DialogTitle>
+        <DialogContent>
+          <FormControl fullWidth size="small" sx={{ mt: 2 }}>
+            <InputLabel>Bàn</InputLabel>
+            <Select
+              label="Bàn"
+              value={selectedTableId}
+              onChange={(e) => setSelectedTableId(String(e.target.value))}
+            >
+              {availableTables.map((t) => (
+                <MenuItem key={t.id} value={t.id}>
+                  {t.name} • {t.capacity} chỗ
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAttachOpen(false)}>Đóng</Button>
+          <Button
+            variant="contained"
+            disabled={!selectedTableId}
+            onClick={attachTable}
+          >
+            Gắn
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

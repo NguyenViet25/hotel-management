@@ -1,22 +1,18 @@
-import { useEffect, useState } from "react";
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Button,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Stack,
+  TextField,
 } from "@mui/material";
-import { useStore, type StoreState } from "../../../../../hooks/useStore";
+import { useEffect, useState } from "react";
 import diningSessionsApi, {
   type CreateDiningSessionRequest,
   type DiningSessionDto,
 } from "../../../../../api/diningSessionsApi";
+import { useStore, type StoreState } from "../../../../../hooks/useStore";
 // no table selection at creation time
 
 interface Props {
@@ -28,7 +24,6 @@ interface Props {
 
 export default function CreateSessionDialog({
   open,
-  tableId,
   onClose,
   onCreated,
 }: Props) {
@@ -42,7 +37,6 @@ export default function CreateSessionDialog({
       d.getDate()
     )}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   });
-  const [selectedTableId] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

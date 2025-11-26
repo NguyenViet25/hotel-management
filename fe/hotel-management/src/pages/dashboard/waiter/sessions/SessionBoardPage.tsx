@@ -1,36 +1,39 @@
-import { useMemo, useState } from "react";
 import {
   Box,
   Button,
-  Chip,
-  Grid,
-  Typography,
   Card,
   CardContent,
+  Chip,
+  Grid,
+  MenuItem,
+  Select,
   Snackbar,
   Stack,
-  Select,
-  MenuItem,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  FormControl,
-  InputLabel,
+  Typography,
 } from "@mui/material";
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
-import { useStore, type StoreState } from "../../../../hooks/useStore";
-import tablesApi, {
-  type TableDto,
-  type TablesQueryParams,
-  TableStatus,
-} from "../../../../api/tablesApi";
 import diningSessionsApi, {
   type DiningSessionDto,
 } from "../../../../api/diningSessionsApi";
-import CreateSessionDialog from "./components/CreateSessionDialog";
+import tablesApi, {
+  TableStatus,
+  type TableDto,
+  type TablesQueryParams,
+} from "../../../../api/tablesApi";
+import { useStore, type StoreState } from "../../../../hooks/useStore";
 import AssignOrderDialog from "./components/AssignOrderDialog";
-import { useNavigate } from "react-router-dom";
+import CreateSessionDialog from "./components/CreateSessionDialog";
+import {
+  Add,
+  AddAlarm,
+  AddBox,
+  AddCall,
+  AddCircle,
+  AddTask,
+} from "@mui/icons-material";
+import PageTitle from "../../../../components/common/PageTitle";
 
 export default function SessionBoardPage() {
   const { hotelId } = useStore<StoreState>((s) => s);
@@ -180,28 +183,41 @@ export default function SessionBoardPage() {
   };
 
   return (
-    <Box p={2}>
-      <Typography variant="h5">Phiên phục vụ</Typography>
-      <Stack direction="row" spacing={2} alignItems="center" mt={1} mb={2}>
-        <Button variant="contained" onClick={() => setCreateOpen(true)}>
+    <Box>
+      <PageTitle title="Phiên phục vụ" subtitle="Quản lý phiên phục vụ " />
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={2}
+        alignItems="center"
+        justifyContent={"space-between"}
+        mt={1}
+        mb={2}
+      >
+        <Stack direction="row" spacing={2} alignItems="center">
+          <Select
+            size="small"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as any)}
+          >
+            <MenuItem value="all">Tất cả</MenuItem>
+            <MenuItem value={TableStatus.Available}>Trống</MenuItem>
+            <MenuItem value={TableStatus.InUse}>Đang dùng</MenuItem>
+            <MenuItem value={TableStatus.Reserved}>Đặt trước</MenuItem>
+            <MenuItem value={TableStatus.OutOfService}>Ngưng phục vụ</MenuItem>
+          </Select>
+          <Chip
+            label={`Đang mở: ${sessions.length}`}
+            color="primary"
+            size="small"
+          />
+        </Stack>
+        <Button
+          startIcon={<AddCircle />}
+          variant="contained"
+          onClick={() => setCreateOpen(true)}
+        >
           Tạo phiên
         </Button>
-        <Select
-          size="small"
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as any)}
-        >
-          <MenuItem value="all">Tất cả</MenuItem>
-          <MenuItem value={TableStatus.Available}>Trống</MenuItem>
-          <MenuItem value={TableStatus.InUse}>Đang dùng</MenuItem>
-          <MenuItem value={TableStatus.Reserved}>Đặt trước</MenuItem>
-          <MenuItem value={TableStatus.OutOfService}>Ngưng phục vụ</MenuItem>
-        </Select>
-        <Chip
-          label={`Đang mở: ${sessions.length}`}
-          color="primary"
-          size="small"
-        />
       </Stack>
       <Grid container spacing={2} mt={1}>
         {tables.map((t) => (
@@ -247,6 +263,43 @@ export default function SessionBoardPage() {
                       </Button>
                       <Button
                         size="small"
+                        color="warning"
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          const s = sessionForTable(t.id)!;
+                          try {
+                            const res = await diningSessionsApi.detachTable(
+                              s.id,
+                              t.id
+                            );
+                            if (res.isSuccess) {
+                              setSnackbar({
+                                open: true,
+                                message: "Đã tách bàn khỏi phiên",
+                                severity: "success",
+                              });
+                              await mutateSessions();
+                              await mutateTables();
+                            } else {
+                              setSnackbar({
+                                open: true,
+                                message: res.message || "Tách bàn thất bại",
+                                severity: "error",
+                              });
+                            }
+                          } catch {
+                            setSnackbar({
+                              open: true,
+                              message: "Đã xảy ra lỗi",
+                              severity: "error",
+                            });
+                          }
+                        }}
+                      >
+                        Tách bàn
+                      </Button>
+                      <Button
+                        size="small"
                         color="error"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -264,6 +317,8 @@ export default function SessionBoardPage() {
                       <Button
                         size="small"
                         variant="contained"
+                        color="inherit"
+                        startIcon={<AddTask />}
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedTable(t);
@@ -280,14 +335,11 @@ export default function SessionBoardPage() {
         ))}
       </Grid>
 
-      {selectedTable && (
-        <CreateSessionDialog
-          open={createOpen}
-          tableId={selectedTable.id}
-          onClose={() => setCreateOpen(false)}
-          onCreated={() => handleCreated()}
-        />
-      )}
+      <CreateSessionDialog
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        onCreated={() => handleCreated()}
+      />
 
       {activeSession && (
         <AssignOrderDialog
@@ -306,46 +358,5 @@ export default function SessionBoardPage() {
         message={snackbar?.message}
       />
     </Box>
-  );
-}
-{
-  attachOpen && (
-    <Dialog
-      open={attachOpen}
-      onClose={() => setAttachOpen(false)}
-      fullWidth
-      maxWidth="sm"
-    >
-      <DialogTitle>Gắn bàn vào phiên</DialogTitle>
-      <DialogContent>
-        <Stack spacing={2} mt={1}>
-          <FormControl fullWidth size="small">
-            <InputLabel>Phiên</InputLabel>
-            <Select
-              label="Phiên"
-              value={selectedSessionId}
-              onChange={(e) => setSelectedSessionId(String(e.target.value))}
-            >
-              {sessions.map((s) => (
-                <MenuItem key={s.id} value={s.id}>
-                  {new Date(s.startedAt).toLocaleString()} • {s.totalGuests}{" "}
-                  khách
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Stack>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={() => setAttachOpen(false)}>Đóng</Button>
-        <Button
-          variant="contained"
-          disabled={!selectedSessionId}
-          onClick={attachSelectedTable}
-        >
-          Gắn
-        </Button>
-      </DialogActions>
-    </Dialog>
   );
 }
