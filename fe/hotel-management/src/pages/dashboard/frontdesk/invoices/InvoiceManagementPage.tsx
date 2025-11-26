@@ -3,26 +3,21 @@ import {
   Box,
   Button,
   Chip,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  MenuItem,
   Snackbar,
   Stack,
-  TextField,
   Typography,
 } from "@mui/material";
 import React, { useEffect, useMemo, useState } from "react";
+import bookingsApi, {
+  type BookingDetailsDto,
+} from "../../../../api/bookingsApi";
 import invoicesApi, { type InvoiceDto } from "../../../../api/invoicesApi";
 import DataTable, {
   type Column,
 } from "../../../../components/common/DataTable";
 import PageTitle from "../../../../components/common/PageTitle";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
-import OrderFormModal from "../../waiter/orders/components/OrderFormModal";
-import PromotionDialog from "./components/PromotionDialog";
-import ordersApi from "../../../../api/ordersApi";
+import BookingInvoiceDialog from "../bookings/components/BookingInvoiceDialog";
 
 type InvoiceRow = {
   id: string;
@@ -33,6 +28,8 @@ type InvoiceRow = {
   totalAmount: number;
   status: string;
   createdAt: string;
+  bookingId?: string;
+  orderId?: string;
 };
 
 const InvoiceManagementPage: React.FC = () => {
@@ -45,20 +42,16 @@ const InvoiceManagementPage: React.FC = () => {
     severity: "success" | "error";
     message: string;
   }>({ open: false, severity: "success", message: "" });
-  const [openWalkIn, setOpenWalkIn] = useState(false);
-  const [bookingCheckoutOpen, setBookingCheckoutOpen] = useState(false);
-  const [selectedBookingId, setSelectedBookingId] = useState<string>("");
-  const [discountCode, setDiscountCode] = useState<string>("");
-  const [paymentAmount, setPaymentAmount] = useState<number>(0);
-  const [paymentType, setPaymentType] = useState<0 | 1 | 2 | 3>(0);
-  const [earlyCheckIn, setEarlyCheckIn] = useState<boolean>(false);
-  const [lateCheckOut, setLateCheckOut] = useState<boolean>(false);
+  const [data, setData] = useState<BookingDetailsDto | null>(null);
+  const [id, setId] = useState<string | null>(null);
+
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState("");
-  const [promoOpen, setPromoOpen] = useState(false);
-  const [promoOrderId, setPromoOrderId] = useState<string | null>(null);
+  const [type, setType] = useState("");
+  const [openBookingInvoice, setOpenBookingInvoice] = useState(false);
+  const [openOrderInvoice, setOpenOrderInvoice] = useState(false);
 
   const columns: Column<InvoiceRow & { actions?: React.ReactNode }>[] = useMemo(
     () => [
@@ -71,7 +64,6 @@ const InvoiceManagementPage: React.FC = () => {
         ),
       },
       { id: "guestName", label: "Khách", minWidth: 160 },
-      { id: "roomNumber", label: "Phòng", minWidth: 120 },
       { id: "type", label: "Loại", minWidth: 120 },
       {
         id: "totalAmount",
@@ -79,12 +71,7 @@ const InvoiceManagementPage: React.FC = () => {
         minWidth: 140,
         format: (v) => `${Number(v || 0).toLocaleString()} đ`,
       },
-      {
-        id: "status",
-        label: "Trạng thái",
-        minWidth: 140,
-        render: (row) => <Chip label={row.status} />,
-      },
+
       {
         id: "createdAt",
         label: "Ngày tạo",
@@ -118,6 +105,8 @@ const InvoiceManagementPage: React.FC = () => {
           totalAmount: i.totalAmount || 0,
           status: (i.statusName as string) || String(i.status),
           createdAt: i.createdAt,
+          bookingId: i.bookingId,
+          orderId: i.orderId,
         })
       );
 
@@ -143,16 +132,55 @@ const InvoiceManagementPage: React.FC = () => {
     fetchList(1);
   }, [hotelId]);
 
-  const onView = (row: InvoiceRow) => {
+  const onView = (row: InvoiceRow, type: InvoiceRow["type"]) => {
+    setId(row.bookingId);
+    setType(type);
+  };
+
+  const fetchBooking = async () => {
+    if (!id) return;
+    try {
+      const res = await bookingsApi.getById(id);
+      if (res.isSuccess && res.data) {
+        setSnackbar({
+          open: true,
+          severity: "success",
+          message: `Mở hóa đơn ${res.data.id || "N/A"}`,
+        });
+        setData(res.data);
+        setOpenBookingInvoice(true);
+      } else {
+        setSnackbar({
+          open: true,
+          severity: "error",
+          message: `Không tìm thấy hóa đơn`,
+        });
+      }
+    } catch {
+      setSnackbar({
+        open: true,
+        severity: "error",
+        message: `Không tìm thấy hóa đơn`,
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (id) {
+      if (type === "Booking") {
+        fetchBooking();
+      }
+    }
+  }, [id]);
+
+  const onPrint = (row: InvoiceRow, type: InvoiceRow["type"]) => {
+    setId(row.id);
+    setType(type);
     setSnackbar({
       open: true,
       severity: "success",
       message: `Mở hóa đơn ${row.invoiceNumber}`,
     });
-  };
-
-  const onPrint = (row: InvoiceRow) => {
-    window.print();
   };
 
   const tableData = useMemo(() => {
@@ -165,10 +193,18 @@ const InvoiceManagementPage: React.FC = () => {
           justifyContent="center"
           sx={{ flexWrap: "wrap" }}
         >
-          <Button size="small" variant="outlined" onClick={() => onView(r)}>
+          <Button
+            size="small"
+            variant="outlined"
+            onClick={() => onView(r, r.type)}
+          >
             Xem
           </Button>
-          <Button size="small" variant="contained" onClick={() => onPrint(r)}>
+          <Button
+            size="small"
+            variant="contained"
+            onClick={() => onPrint(r, r.type)}
+          >
             In
           </Button>
         </Stack>
@@ -213,181 +249,12 @@ const InvoiceManagementPage: React.FC = () => {
         </Alert>
       </Snackbar>
 
-      <OrderFormModal
-        open={openWalkIn}
-        onClose={() => setOpenWalkIn(false)}
-        isWalkIn
-        onSubmitted={() => {
-          setSnackbar({
-            open: true,
-            severity: "success",
-            message: "Đã tạo order vãng lai",
-          });
-          fetchList(page);
-        }}
+      <BookingInvoiceDialog
+        open={openBookingInvoice}
+        onClose={() => setOpenBookingInvoice(false)}
+        booking={data as any}
+        onRefreshBooking={fetchBooking}
       />
-
-      <PromotionDialog
-        open={promoOpen}
-        onClose={() => setPromoOpen(false)}
-        onApply={async (code) => {
-          if (!promoOrderId) {
-            setDiscountCode(code.code);
-            setPromoOpen(false);
-            return;
-          }
-          try {
-            const res = await ordersApi.applyDiscount(promoOrderId, {
-              code: code.code,
-            });
-            if ((res as any).isSuccess) {
-              setSnackbar({
-                open: true,
-                severity: "success",
-                message: "Áp dụng khuyến mãi thành công",
-              });
-              fetchList(page);
-            } else {
-              setSnackbar({
-                open: true,
-                severity: "error",
-                message: (res as any).message || "Không thể áp dụng",
-              });
-            }
-          } catch (err: any) {
-            setSnackbar({
-              open: true,
-              severity: "error",
-              message: err?.message || "Đã xảy ra lỗi",
-            });
-          } finally {
-            setPromoOpen(false);
-            setPromoOrderId(null);
-          }
-        }}
-      />
-
-      <Dialog
-        open={bookingCheckoutOpen}
-        onClose={() => setBookingCheckoutOpen(false)}
-        fullWidth
-        maxWidth="sm"
-      >
-        <DialogTitle>Tạo hóa đơn Booking</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2} sx={{ mt: 1 }}>
-            <TextField
-              label="Booking ID"
-              value={selectedBookingId}
-              onChange={(e) => setSelectedBookingId(e.target.value)}
-              placeholder="Nhập hoặc dán mã booking"
-              fullWidth
-            />
-            <Stack
-              direction={{ xs: "column", sm: "row" }}
-              spacing={1}
-              alignItems={{ sm: "center" }}
-            >
-              <TextField
-                label="Mã giảm giá"
-                value={discountCode}
-                onChange={(e) => setDiscountCode(e.target.value)}
-                fullWidth
-              />
-              <Button variant="outlined" onClick={() => setPromoOpen(true)}>
-                Chọn mã
-              </Button>
-            </Stack>
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              <TextField
-                label="Số tiền thanh toán"
-                type="number"
-                value={paymentAmount}
-                onChange={(e) => setPaymentAmount(Number(e.target.value) || 0)}
-                fullWidth
-              />
-              <TextField
-                select
-                label="Hình thức"
-                value={paymentType}
-                onChange={(e) => setPaymentType(Number(e.target.value) as any)}
-                fullWidth
-              >
-                <MenuItem value={0}>Tiền mặt</MenuItem>
-                <MenuItem value={1}>Thẻ</MenuItem>
-                <MenuItem value={2}>Chuyển khoản</MenuItem>
-                <MenuItem value={3}>Khác</MenuItem>
-              </TextField>
-            </Stack>
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              <TextField
-                select
-                label="Early check-in"
-                value={earlyCheckIn ? 1 : 0}
-                onChange={(e) => setEarlyCheckIn(Number(e.target.value) === 1)}
-                fullWidth
-              >
-                <MenuItem value={0}>Không</MenuItem>
-                <MenuItem value={1}>Có</MenuItem>
-              </TextField>
-              <TextField
-                select
-                label="Late check-out"
-                value={lateCheckOut ? 1 : 0}
-                onChange={(e) => setLateCheckOut(Number(e.target.value) === 1)}
-                fullWidth
-              >
-                <MenuItem value={0}>Không</MenuItem>
-                <MenuItem value={1}>Có</MenuItem>
-              </TextField>
-            </Stack>
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setBookingCheckoutOpen(false)}>Hủy</Button>
-          <Button
-            variant="contained"
-            onClick={async () => {
-              if (!selectedBookingId) return;
-              try {
-                const res = await invoicesApi.createBooking({
-                  bookingId: selectedBookingId,
-                  discountCode: discountCode || undefined,
-                  finalPayment:
-                    paymentAmount > 0
-                      ? { amount: paymentAmount, type: paymentType }
-                      : undefined,
-                  earlyCheckIn,
-                  lateCheckOut,
-                });
-                if (res.isSuccess) {
-                  setSnackbar({
-                    open: true,
-                    severity: "success",
-                    message: "Đã tạo hóa đơn booking",
-                  });
-                  setBookingCheckoutOpen(false);
-                  fetchList(page);
-                } else {
-                  setSnackbar({
-                    open: true,
-                    severity: "error",
-                    message: res.message || "Không thể tạo hóa đơn",
-                  });
-                }
-              } catch (err: any) {
-                setSnackbar({
-                  open: true,
-                  severity: "error",
-                  message: err?.message || "Đã xảy ra lỗi",
-                });
-              }
-            }}
-          >
-            Xác nhận
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };

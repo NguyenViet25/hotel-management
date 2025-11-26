@@ -716,7 +716,7 @@ const OrdersManagementPage: React.FC = () => {
           </DialogActions>
         )}
       </Dialog>
-      ;
+
       <PromotionDialog
         open={promoOpen}
         onClose={() => setPromoOpen(false)}
