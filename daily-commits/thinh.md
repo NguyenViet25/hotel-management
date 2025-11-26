@@ -158,3 +158,8 @@
 2025-11-24 - 3 - 01:53:06 UTC :: chore: UC-36 Duyet ngoai le: duyet/tu choi theo han muc. — them kiem soat loi & retry nhe (da kiem tra lint)
 2025-11-24 - 4 - 01:53:07 UTC :: build: UC-39 Xuat Audit Log: xuat CSV/PDF kiem tra tuan thu. — toi uu truy van va bo nho (dat tieu chi toi thieu)
 2025-11-24 - 5 - 01:53:08 UTC :: ci: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — bo sung unit test muc co ban (dong bo voi BE/FE)
+2025-11-25 - 1 - 01:47:10 UTC :: fix: UC-47 Dashboard: gioi han xem theo vai tro va co so. — bo sung case canh bien & no-show (dam bao backward-compatible)
+2025-11-25 - 2 - 01:47:13 UTC :: feat: UC-26 Order: tao/chinh sua order, ghi chu, void/discount. — toi uu truy van va bo nho (chuan bi cho tinh nang tiep theo)
+2025-11-25 - 3 - 01:47:15 UTC :: feat: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — chuan hoa ten ham/bien theo convention (anh huong thap)
+2025-11-25 - 4 - 01:47:17 UTC :: chore: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — refactor luong xu ly cho ro rang (dam bao backward-compatible)
+2025-11-25 - 5 - 01:47:19 UTC :: docs: UC-40 Thu/chi: doi soat tien mat/the/le phi PG. — fix race-condition nho trong thao tac (anh huong thap)
