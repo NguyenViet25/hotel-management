@@ -167,3 +167,4 @@
 2025-11-26 - 2 - 01:46:49 UTC :: test: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — refactor luong xu ly cho ro rang (dong bo voi BE/FE)
 2025-11-26 - 3 - 01:46:51 UTC :: perf: UC-39 Xuat Audit Log: xuat CSV/PDF kiem tra tuan thu. — dieu chinh quyen truy cap theo vai tro (khong doi hanh vi)
 2025-11-26 - 4 - 01:46:53 UTC :: ci: UC-28 Room charge F&B: ghi hoa don ban an vao folio. — kiem tra tuong thich mui gio/tien te (can theo doi them)
+2025-11-26 - 5 - 01:46:56 UTC :: chore: UC-37 Night Audit: kiem tra folio chua chot, khoa giao dich. — cap nhat mock data & seed test (da review so bo)
