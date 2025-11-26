@@ -7,6 +7,10 @@ import {
   Typography,
   Card,
   CardContent,
+  Snackbar,
+  Stack,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import useSWR from "swr";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
@@ -31,14 +35,21 @@ export default function SessionBoardPage() {
     null
   );
   const navigate = useNavigate();
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: "success" | "error";
+  } | null>(null);
+  const [statusFilter, setStatusFilter] = useState<number | "all">("all");
 
   const { data: tablesRes, mutate: mutateTables } = useSWR(
-    ["tables", hotelId],
+    ["tables", hotelId, statusFilter],
     async () => {
       const params: TablesQueryParams = {
         hotelId: hotelId || undefined,
         page: 1,
         pageSize: 50,
+        status: statusFilter === "all" ? undefined : statusFilter,
       };
       return tablesApi.listTables(params);
     }
@@ -96,17 +107,72 @@ export default function SessionBoardPage() {
   const handleCreated = async () => {
     await mutateSessions();
     await mutateTables();
+    setSnackbar({
+      open: true,
+      message: "Tạo phiên thành công",
+      severity: "success",
+    });
+  };
+
+  const endSession = async (sessionId: string) => {
+    try {
+      const res = await diningSessionsApi.endSession(sessionId);
+      if (res.isSuccess) {
+        setSnackbar({
+          open: true,
+          message: "Đã kết thúc phiên",
+          severity: "success",
+        });
+        await mutateSessions();
+        await mutateTables();
+      } else {
+        setSnackbar({
+          open: true,
+          message: res.message || "Kết thúc phiên thất bại",
+          severity: "error",
+        });
+      }
+    } catch {
+      setSnackbar({ open: true, message: "Đã xảy ra lỗi", severity: "error" });
+    }
+  };
+
+  const refreshAll = async () => {
+    await mutateSessions();
+    await mutateTables();
   };
 
   return (
     <Box p={2}>
       <Typography variant="h5">Phiên phục vụ</Typography>
+      <Stack direction="row" spacing={2} alignItems="center" mt={1} mb={2}>
+        <Select
+          size="small"
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value as any)}
+        >
+          <MenuItem value="all">Tất cả</MenuItem>
+          <MenuItem value={TableStatus.Available}>Trống</MenuItem>
+          <MenuItem value={TableStatus.InUse}>Đang dùng</MenuItem>
+          <MenuItem value={TableStatus.Reserved}>Đặt trước</MenuItem>
+          <MenuItem value={TableStatus.OutOfService}>Ngưng phục vụ</MenuItem>
+        </Select>
+        <Chip
+          label={`Đang mở: ${sessions.length}`}
+          color="primary"
+          size="small"
+        />
+      </Stack>
       <Grid container spacing={2} mt={1}>
         {tables.map((t) => (
-          <Grid key={t.id} item xs={12} sm={6} md={3} lg={2}>
+          <Grid key={t.id} size={{ xs: 12, sm: 6, md: 3 }}>
             <Card
               onClick={() => handleTableClick(t)}
-              sx={{ cursor: "pointer" }}
+              sx={{
+                cursor: "pointer",
+                borderRadius: 2,
+              }}
+              variant="outlined"
             >
               <CardContent>
                 <Typography variant="subtitle1">{t.name}</Typography>
@@ -115,8 +181,59 @@ export default function SessionBoardPage() {
                 {sessionForTable(t.id) && (
                   <Box mt={1}>
                     <Chip label="Phiên đang mở" color="primary" size="small" />
+                    <Stack direction="row" spacing={1} mt={1}>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(
+                            `/waiter/sessions/${sessionForTable(t.id)!.id}`
+                          );
+                        }}
+                      >
+                        Chi tiết
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveSession(sessionForTable(t.id)!);
+                          setAssignOpen(true);
+                        }}
+                      >
+                        Gắn Order
+                      </Button>
+                      <Button
+                        size="small"
+                        color="error"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          endSession(sessionForTable(t.id)!.id);
+                        }}
+                      >
+                        Kết thúc
+                      </Button>
+                    </Stack>
                   </Box>
                 )}
+                {!sessionForTable(t.id) &&
+                  t.status === TableStatus.Available && (
+                    <Box mt={1}>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedTable(t);
+                          setCreateOpen(true);
+                        }}
+                      >
+                        Tạo phiên
+                      </Button>
+                    </Box>
+                  )}
               </CardContent>
             </Card>
           </Grid>
@@ -143,15 +260,11 @@ export default function SessionBoardPage() {
         />
       )}
 
-      <Box mt={2}>
-        <Button
-          variant="outlined"
-          onClick={() => setAssignOpen(true)}
-          disabled={!activeSession}
-        >
-          Gắn Order vào phiên
-        </Button>
-      </Box>
+      <Snackbar
+        open={!!snackbar?.open}
+        onClose={() => setSnackbar(null)}
+        message={snackbar?.message}
+      />
     </Box>
   );
 }
