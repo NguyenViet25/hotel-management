@@ -17,6 +17,7 @@ import roomTypesApi, {
 import PageTitle from "../../../../components/common/PageTitle";
 import RoomTypeForm from "./components/RoomTypeForm";
 import RoomTypeTable from "./components/RoomTypeTable";
+import { useStore, type StoreState } from "../../../../hooks/useStore";
 
 const RoomTypePage: React.FC = () => {
   const [items, setItems] = useState<RoomType[]>([]);
@@ -25,7 +26,7 @@ const RoomTypePage: React.FC = () => {
   const [pageSize] = useState<number>(10);
   const [total, setTotal] = useState<number>(0);
   const [search, setSearch] = useState<string>();
-
+  const { hotelId } = useStore<StoreState>((state) => state);
   const [createOpen, setCreateOpen] = useState<boolean>(false);
   const [editOpen, setEditOpen] = useState<boolean>(false);
   const [deleteOpen, setDeleteOpen] = useState<boolean>(false);
@@ -44,6 +45,7 @@ const RoomTypePage: React.FC = () => {
         page: newPage ?? page,
         pageSize,
         searchTerm: search,
+        hotelId: hotelId ?? "",
       });
       if (res.isSuccess) {
         setItems(res.data);

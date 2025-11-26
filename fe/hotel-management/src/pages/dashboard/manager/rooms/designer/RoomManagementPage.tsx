@@ -19,6 +19,7 @@ import roomTypesApi, { type RoomType } from "../../../../../api/roomTypesApi";
 import ChangeRoomStatusModal from "../components/ChangeRoomStatusModal";
 import RoomFormModal from "../components/RoomFormModal";
 import RoomTable from "../components/RoomTable";
+import { useStore, type StoreState } from "../../../../../hooks/useStore";
 
 // Status options and chips have been moved into dedicated components
 
@@ -30,6 +31,7 @@ const RoomManagementPage: React.FC = () => {
   const [page, setPage] = useState<number>(1);
   const [pageSize] = useState<number>(10);
   const [total, setTotal] = useState<number>(0);
+  const { hotelId } = useStore<StoreState>((state) => state);
 
   // Filters
   const [status, setStatus] = useState<string>("");
@@ -60,7 +62,11 @@ const RoomManagementPage: React.FC = () => {
   // Fetch room types for filter and forms
   const fetchRoomTypes = async () => {
     try {
-      const res = await roomTypesApi.getRoomTypes({ page: 1, pageSize: 100 });
+      const res = await roomTypesApi.getRoomTypes({
+        page: 1,
+        pageSize: 100,
+        hotelId: hotelId ?? "",
+      });
       if (res.isSuccess) setRoomTypes(res.data);
     } catch (err) {
       // Silent failure, filters still usable without types
@@ -78,6 +84,7 @@ const RoomManagementPage: React.FC = () => {
         number: searchNumber || undefined,
         page: pageNum,
         pageSize,
+        hotelId: hotelId ?? "",
       };
       const res = await roomsApi.getRooms(qp);
       if (res.isSuccess) {

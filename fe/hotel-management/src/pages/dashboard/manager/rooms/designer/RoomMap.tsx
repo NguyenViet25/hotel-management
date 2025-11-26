@@ -55,6 +55,7 @@ import roomTypesApi, { type RoomType } from "../../../../../api/roomTypesApi";
 import ChangeRoomStatusModal from "../components/ChangeRoomStatusModal";
 import RoomFormModal from "../components/RoomFormModal";
 import { ROOM_STATUS_OPTIONS } from "../components/roomsConstants";
+import { useStore, type StoreState } from "../../../../../hooks/useStore";
 
 interface IProps {
   allowAddNew?: boolean;
@@ -71,6 +72,7 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
+  const { hotelId } = useStore<StoreState>((state) => state);
 
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -113,7 +115,11 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
     const fetchRoomTypes = async () => {
       setRoomTypesLoading(true);
       try {
-        const res = await roomTypesApi.getRoomTypes({ page: 1, pageSize: 100 });
+        const res = await roomTypesApi.getRoomTypes({
+          page: 1,
+          pageSize: 100,
+          hotelId: hotelId ?? "",
+        });
         if (res.isSuccess) setRoomTypes(res.data);
       } catch {}
       setRoomTypesLoading(false);
@@ -121,7 +127,11 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
     const fetchRooms = async () => {
       setLoading(true);
       try {
-        const res = await roomsApi.getRooms({ page: 1, pageSize: 200 });
+        const res = await roomsApi.getRooms({
+          page: 1,
+          pageSize: 200,
+          hotelId: hotelId ?? "",
+        });
         if (res.isSuccess) setRooms(res.data);
       } catch {
         setSnackbar({
