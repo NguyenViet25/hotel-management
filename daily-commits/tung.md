@@ -172,3 +172,4 @@
 2025-11-26 - 2 - 01:46:49 UTC :: refactor: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — dieu chinh quyen truy cap theo vai tro (da kiem tra lint)
 2025-11-26 - 3 - 01:46:52 UTC :: docs: UC-09 So do: hien thi layout, loc trang thai phong. — cap nhat mock data & seed test (can theo doi them)
 2025-11-26 - 4 - 01:46:53 UTC :: build: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — tach chuc nang de de bao tri (da smoke test)
+2025-11-26 - 5 - 01:46:54 UTC :: ci: UC-47 Dashboard: gioi han xem theo vai tro va co so. — kiem tra tuong thich mui gio/tien te (chuan bi cho tinh nang tiep theo)
