@@ -169,3 +169,4 @@
 2025-11-25 - 4 - 01:47:21 UTC :: feat: UC-31 Bao cao: len lich gui email/PDF hang ngay/tuan. — don dep code va xoa doan thua (can theo doi them)
 2025-11-25 - 5 - 01:47:23 UTC :: refactor: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — refactor luong xu ly cho ro rang (dam bao backward-compatible)
 2025-11-26 - 1 - 01:46:46 UTC :: ci: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — bo sung index & toi uu DB (anh huong thap)
+2025-11-26 - 2 - 01:46:49 UTC :: refactor: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — dieu chinh quyen truy cap theo vai tro (da kiem tra lint)
