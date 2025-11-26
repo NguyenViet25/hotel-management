@@ -163,3 +163,4 @@
 2025-11-25 - 3 - 01:47:15 UTC :: feat: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — chuan hoa ten ham/bien theo convention (anh huong thap)
 2025-11-25 - 4 - 01:47:17 UTC :: chore: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — refactor luong xu ly cho ro rang (dam bao backward-compatible)
 2025-11-25 - 5 - 01:47:19 UTC :: docs: UC-40 Thu/chi: doi soat tien mat/the/le phi PG. — fix race-condition nho trong thao tac (anh huong thap)
+2025-11-26 - 1 - 01:46:47 UTC :: docs: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — chinh sua tai lieu & mo ta API (can theo doi them)
