@@ -1,4 +1,4 @@
-using HotelManagement.Services.Common;
+﻿using HotelManagement.Services.Common;
 using HotelManagement.Services.Profile;
 using HotelManagement.Services.Profile.Dtos;
 using Microsoft.AspNetCore.Authorization;
@@ -31,7 +31,7 @@ public class ProfileController : ControllerBase
         var id = CurrentUserId();
         if (id == null) return Unauthorized(ApiResponse<ProfileDto>.Fail("Unauthorized"));
         var dto = await _svc.GetAsync(id.Value);
-        if (dto == null) return NotFound(ApiResponse<ProfileDto>.Fail("User not found"));
+        if (dto == null) return NotFound(ApiResponse<ProfileDto>.Fail("Không tìm thấy người dùng"));
         return Ok(ApiResponse<ProfileDto>.Ok(dto));
     }
 
@@ -41,8 +41,8 @@ public class ProfileController : ControllerBase
         var id = CurrentUserId();
         if (id == null) return Unauthorized(ApiResponse<ProfileDto>.Fail("Unauthorized"));
         var dto = await _svc.UpdateAsync(id.Value, request);
-        if (dto == null) return BadRequest(ApiResponse<ProfileDto>.Fail("Update failed"));
-        return Ok(ApiResponse<ProfileDto>.Ok(dto, message: "Profile updated"));
+        if (dto == null) return Ok(ApiResponse<ProfileDto>.Fail("Cập nhật thông tin thất bại"));
+        return Ok(ApiResponse<ProfileDto>.Ok(dto, message: "Cập nhật thông tin thành công"));
     }
 
     [HttpPost("change-password")]
@@ -51,7 +51,7 @@ public class ProfileController : ControllerBase
         var id = CurrentUserId();
         if (id == null) return Unauthorized(ApiResponse.Fail("Unauthorized"));
         var ok = await _svc.ChangePasswordAsync(id.Value, request);
-        if (!ok) return BadRequest(ApiResponse.Fail("Incorrect password or update failed"));
-        return Ok(ApiResponse.Ok("Password updated"));
+        if (!ok) return Ok(ApiResponse.Fail("Mật khẩu cũ không chính xác"));
+        return Ok(ApiResponse.Ok("Thay đổi mật khẩu thành công"));
     }
 }
