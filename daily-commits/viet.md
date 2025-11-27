@@ -171,3 +171,4 @@
 2025-11-27 - 1 - 01:45:01 UTC :: refactor: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — them kiem soat loi & retry nhe (khong doi hanh vi)
 2025-11-27 - 2 - 01:45:04 UTC :: perf: UC-18 Room Move/Extend: doi phong, gia han dem o. — cap nhat mock data & seed test (dat tieu chi toi thieu)
 2025-11-27 - 3 - 01:45:06 UTC :: ci: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — cap nhat cau hinh va kiem tra bien (da review so bo)
+2025-11-27 - 4 - 01:45:07 UTC :: refactor: UC-02 RBAC: thiet lap quyen thao tac theo vai tro/pham vi. — fix race-condition nho trong thao tac (khong doi hanh vi)
