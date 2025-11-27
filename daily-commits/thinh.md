@@ -170,3 +170,4 @@
 2025-11-26 - 5 - 01:46:55 UTC :: fix: UC-36 Duyet ngoai le: duyet/tu choi theo han muc. — kiem tra tuong thich mui gio/tien te (da smoke test)
 2025-11-27 - 1 - 01:45:01 UTC :: refactor: UC-09 So do: hien thi layout, loc trang thai phong. — dieu chinh UI & copy cho ro (dat tieu chi toi thieu)
 2025-11-27 - 2 - 01:45:02 UTC :: build: UC-43 Mat khau: quy dinh do manh, het han phien. — cap nhat mock data & seed test (khong doi hanh vi)
+2025-11-27 - 3 - 01:45:04 UTC :: test: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — bo sung case canh bien & no-show (khong doi hanh vi)
