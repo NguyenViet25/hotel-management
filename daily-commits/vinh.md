@@ -172,3 +172,4 @@
 2025-11-27 - 2 - 01:45:04 UTC :: build: UC-42 Phan quyen: thiet lap quyen theo co so. — refactor luong xu ly cho ro rang (dong bo voi BE/FE)
 2025-11-27 - 3 - 01:45:05 UTC :: build: UC-26 Order: tao/chinh sua order, ghi chu, void/discount. — kiem tra tuong thich mui gio/tien te (dam bao backward-compatible)
 2025-11-27 - 4 - 01:45:06 UTC :: refactor: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — don dep code va xoa doan thua (da smoke test)
+2025-11-27 - 5 - 01:45:08 UTC :: test: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — bo sung metrics/telemetry co ban (da kiem tra lint)
