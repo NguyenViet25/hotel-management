@@ -170,3 +170,4 @@
 2025-11-26 - 5 - 01:46:56 UTC :: chore: UC-37 Night Audit: kiem tra folio chua chot, khoa giao dich. — cap nhat mock data & seed test (da review so bo)
 2025-11-27 - 1 - 01:45:01 UTC :: refactor: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — them kiem soat loi & retry nhe (khong doi hanh vi)
 2025-11-27 - 2 - 01:45:04 UTC :: perf: UC-18 Room Move/Extend: doi phong, gia han dem o. — cap nhat mock data & seed test (dat tieu chi toi thieu)
+2025-11-27 - 3 - 01:45:06 UTC :: ci: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — cap nhat cau hinh va kiem tra bien (da review so bo)
