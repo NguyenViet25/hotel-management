@@ -171,3 +171,4 @@
 2025-11-27 - 1 - 01:45:01 UTC :: refactor: UC-09 So do: hien thi layout, loc trang thai phong. — dieu chinh UI & copy cho ro (dat tieu chi toi thieu)
 2025-11-27 - 2 - 01:45:02 UTC :: build: UC-43 Mat khau: quy dinh do manh, het han phien. — cap nhat mock data & seed test (khong doi hanh vi)
 2025-11-27 - 3 - 01:45:04 UTC :: test: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — bo sung case canh bien & no-show (khong doi hanh vi)
+2025-11-27 - 4 - 01:45:05 UTC :: build: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — tach chuc nang de de bao tri (anh huong thap)
