@@ -177,3 +177,4 @@
 2025-11-27 - 2 - 01:45:01 UTC :: refactor: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — them log chi tiet phuc vu audit (dong bo voi BE/FE)
 2025-11-27 - 3 - 01:45:02 UTC :: ci: UC-28 Room charge F&B: ghi hoa don ban an vao folio. — dieu chinh quyen truy cap theo vai tro (dong bo voi BE/FE)
 2025-11-27 - 4 - 01:45:04 UTC :: ci: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — don dep code va xoa doan thua (anh huong thap)
+2025-11-27 - 5 - 01:45:05 UTC :: build: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — chinh sua tai lieu & mo ta API (da smoke test)
