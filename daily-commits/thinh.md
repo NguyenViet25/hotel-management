@@ -169,3 +169,4 @@
 2025-11-26 - 4 - 01:46:53 UTC :: chore: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — bo sung case canh bien & no-show (dong bo voi BE/FE)
 2025-11-26 - 5 - 01:46:55 UTC :: fix: UC-36 Duyet ngoai le: duyet/tu choi theo han muc. — kiem tra tuong thich mui gio/tien te (da smoke test)
 2025-11-27 - 1 - 01:45:01 UTC :: refactor: UC-09 So do: hien thi layout, loc trang thai phong. — dieu chinh UI & copy cho ro (dat tieu chi toi thieu)
+2025-11-27 - 2 - 01:45:02 UTC :: build: UC-43 Mat khau: quy dinh do manh, het han phien. — cap nhat mock data & seed test (khong doi hanh vi)
