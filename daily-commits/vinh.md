@@ -169,3 +169,4 @@
 2025-11-26 - 4 - 01:46:50 UTC :: fix: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — bo sung index & toi uu DB (dam bao backward-compatible)
 2025-11-26 - 5 - 01:46:53 UTC :: perf: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — fix race-condition nho trong thao tac (dong bo voi BE/FE)
 2025-11-27 - 1 - 01:45:01 UTC :: build: UC-40 Thu/chi: doi soat tien mat/the/le phi PG. — them kiem soat loi & retry nhe (khong doi hanh vi)
+2025-11-27 - 2 - 01:45:04 UTC :: build: UC-42 Phan quyen: thiet lap quyen theo co so. — refactor luong xu ly cho ro rang (dong bo voi BE/FE)
