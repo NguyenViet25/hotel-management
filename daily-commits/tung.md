@@ -174,3 +174,4 @@
 2025-11-26 - 4 - 01:46:53 UTC :: build: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — tach chuc nang de de bao tri (da smoke test)
 2025-11-26 - 5 - 01:46:54 UTC :: ci: UC-47 Dashboard: gioi han xem theo vai tro va co so. — kiem tra tuong thich mui gio/tien te (chuan bi cho tinh nang tiep theo)
 2025-11-27 - 1 - 01:45:00 UTC :: ci: UC-10 Goi gia: tao rate plan, thoi gian ap dung linh hoat. — dieu chinh quyen truy cap theo vai tro (da kiem tra lint)
+2025-11-27 - 2 - 01:45:01 UTC :: refactor: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — them log chi tiet phuc vu audit (dong bo voi BE/FE)
