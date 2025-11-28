@@ -175,3 +175,4 @@
 2025-11-27 - 5 - 01:45:07 UTC :: fix: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — sua validate va bo sung thong bao loi (anh huong thap)
 2025-11-28 - 1 - 01:44:47 UTC :: perf: UC-33 Phan ca: gan ca, duyet doi ca/ngi phep. — cap nhat cau hinh va kiem tra bien (da review so bo)
 2025-11-28 - 2 - 01:44:49 UTC :: chore: UC-35 Ngoai le: gui yeu cau mien/giam phi, vuot tran. — cai thien hieu nang render/list (da kiem tra lint)
+2025-11-28 - 3 - 01:44:50 UTC :: build: UC-21 Housekeeping: cap nhat Dirty/In-progress/Cleaned/Inspected. — cap nhat mock data & seed test (khong doi hanh vi)
