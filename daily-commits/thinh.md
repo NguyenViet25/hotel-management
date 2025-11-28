@@ -177,3 +177,4 @@
 2025-11-28 - 2 - 01:44:49 UTC :: chore: UC-35 Ngoai le: gui yeu cau mien/giam phi, vuot tran. — cai thien hieu nang render/list (da kiem tra lint)
 2025-11-28 - 3 - 01:44:50 UTC :: build: UC-21 Housekeeping: cap nhat Dirty/In-progress/Cleaned/Inspected. — cap nhat mock data & seed test (khong doi hanh vi)
 2025-11-28 - 4 - 01:44:52 UTC :: perf: UC-18 Room Move/Extend: doi phong, gia han dem o. — them kiem soat loi & retry nhe (chuan bi cho tinh nang tiep theo)
+2025-11-28 - 5 - 01:44:54 UTC :: chore: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — refactor luong xu ly cho ro rang (dat tieu chi toi thieu)
