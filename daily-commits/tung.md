@@ -182,3 +182,4 @@
 2025-11-28 - 2 - 01:44:48 UTC :: test: UC-01 RBAC: tao, sua, khoa tai khoan; gan vai tro. — chinh sua tai lieu & mo ta API (chuan bi cho tinh nang tiep theo)
 2025-11-28 - 3 - 01:44:51 UTC :: test: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — refactor luong xu ly cho ro rang (da review so bo)
 2025-11-28 - 4 - 01:44:54 UTC :: test: UC-22 Minibar/Amenity: ghi tieu hao, post charge vao folio. — cai thien hieu nang render/list (can theo doi them)
+2025-11-28 - 5 - 01:44:57 UTC :: fix: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — fix race-condition nho trong thao tac (dam bao backward-compatible)
