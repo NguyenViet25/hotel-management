@@ -175,3 +175,4 @@
 2025-11-27 - 5 - 01:45:08 UTC :: test: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — bo sung metrics/telemetry co ban (da kiem tra lint)
 2025-11-28 - 1 - 01:44:47 UTC :: test: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — chuan hoa ten ham/bien theo convention (da review so bo)
 2025-11-28 - 2 - 01:44:48 UTC :: docs: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — sua validate va bo sung thong bao loi (da review so bo)
+2025-11-28 - 3 - 01:44:50 UTC :: perf: UC-37 Night Audit: kiem tra folio chua chot, khoa giao dich. — fix race-condition nho trong thao tac (da review so bo)
