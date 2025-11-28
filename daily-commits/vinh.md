@@ -177,3 +177,4 @@
 2025-11-28 - 2 - 01:44:48 UTC :: docs: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — sua validate va bo sung thong bao loi (da review so bo)
 2025-11-28 - 3 - 01:44:50 UTC :: perf: UC-37 Night Audit: kiem tra folio chua chot, khoa giao dich. — fix race-condition nho trong thao tac (da review so bo)
 2025-11-28 - 4 - 01:44:51 UTC :: test: UC-09 So do: hien thi layout, loc trang thai phong. — sua validate va bo sung thong bao loi (chuan bi cho tinh nang tiep theo)
+2025-11-28 - 5 - 01:44:54 UTC :: fix: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — don dep code va xoa doan thua (can theo doi them)
