@@ -173,3 +173,4 @@
 2025-11-27 - 3 - 01:45:04 UTC :: test: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — bo sung case canh bien & no-show (khong doi hanh vi)
 2025-11-27 - 4 - 01:45:05 UTC :: build: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — tach chuc nang de de bao tri (anh huong thap)
 2025-11-27 - 5 - 01:45:07 UTC :: fix: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — sua validate va bo sung thong bao loi (anh huong thap)
+2025-11-28 - 1 - 01:44:47 UTC :: perf: UC-33 Phan ca: gan ca, duyet doi ca/ngi phep. — cap nhat cau hinh va kiem tra bien (da review so bo)
