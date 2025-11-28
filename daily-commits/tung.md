@@ -180,3 +180,4 @@
 2025-11-27 - 5 - 01:45:05 UTC :: build: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — chinh sua tai lieu & mo ta API (da smoke test)
 2025-11-28 - 1 - 01:44:46 UTC :: docs: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — bo sung case canh bien & no-show (da review so bo)
 2025-11-28 - 2 - 01:44:48 UTC :: test: UC-01 RBAC: tao, sua, khoa tai khoan; gan vai tro. — chinh sua tai lieu & mo ta API (chuan bi cho tinh nang tiep theo)
+2025-11-28 - 3 - 01:44:51 UTC :: test: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — refactor luong xu ly cho ro rang (da review so bo)
