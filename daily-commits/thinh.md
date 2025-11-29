@@ -179,3 +179,4 @@
 2025-11-28 - 4 - 01:44:52 UTC :: perf: UC-18 Room Move/Extend: doi phong, gia han dem o. — them kiem soat loi & retry nhe (chuan bi cho tinh nang tiep theo)
 2025-11-28 - 5 - 01:44:54 UTC :: chore: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — refactor luong xu ly cho ro rang (dat tieu chi toi thieu)
 2025-11-29 - 1 - 01:44:00 UTC :: feat: UC-23 Bao tri: tao ticket, dinh anh, mo ta loi. — chinh sua tai lieu & mo ta API (khong doi hanh vi)
+2025-11-29 - 2 - 01:44:02 UTC :: feat: UC-01 RBAC: tao, sua, khoa tai khoan; gan vai tro. — chinh sua tai lieu & mo ta API (dam bao backward-compatible)
