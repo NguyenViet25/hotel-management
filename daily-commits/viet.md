@@ -181,3 +181,4 @@
 2025-11-29 - 1 - 01:44:00 UTC :: refactor: UC-42 Phan quyen: thiet lap quyen theo co so. — bo sung index & toi uu DB (khong doi hanh vi)
 2025-11-29 - 2 - 01:44:03 UTC :: build: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — bo sung index & toi uu DB (anh huong thap)
 2025-11-29 - 3 - 01:44:06 UTC :: feat: UC-10 Goi gia: tao rate plan, thoi gian ap dung linh hoat. — bo sung unit test muc co ban (khong doi hanh vi)
+2025-11-29 - 4 - 01:44:07 UTC :: ci: UC-42 Phan quyen: thiet lap quyen theo co so. — fix race-condition nho trong thao tac (da smoke test)
