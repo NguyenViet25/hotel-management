@@ -1,8 +1,7 @@
 import axios from "axios";
 import { toast } from "react-toastify";
 
-const API_URL =
-  "https://hm-web-api.azurewebsites.net" || "http://localhost:5283/api";
+const API_URL = "https://hm-web-api.azurewebsites.net";
 
 const axiosInstance = axios.create({
   baseURL: API_URL,
