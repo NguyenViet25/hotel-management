@@ -1,4 +1,4 @@
-# Unit Tests Inventory
+# Unit Tests
 
 This document lists unit test function names, inputs, and expected outputs by controller. It serves as a quick reference for manual test documentation.
 
