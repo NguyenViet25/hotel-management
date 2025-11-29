@@ -181,3 +181,4 @@
 2025-11-29 - 1 - 01:44:01 UTC :: build: UC-36 Duyet ngoai le: duyet/tu choi theo han muc. — sua validate va bo sung thong bao loi (can theo doi them)
 2025-11-29 - 2 - 01:44:02 UTC :: fix: UC-09 So do: hien thi layout, loc trang thai phong. — fix race-condition nho trong thao tac (dong bo voi BE/FE)
 2025-11-29 - 3 - 01:44:05 UTC :: ci: UC-35 Ngoai le: gui yeu cau mien/giam phi, vuot tran. — tach chuc nang de de bao tri (da review so bo)
+2025-11-29 - 4 - 01:44:08 UTC :: build: UC-47 Dashboard: gioi han xem theo vai tro va co so. — dieu chinh quyen truy cap theo vai tro (da review so bo)
