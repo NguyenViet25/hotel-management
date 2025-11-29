@@ -184,3 +184,4 @@
 2025-11-28 - 4 - 01:44:54 UTC :: test: UC-22 Minibar/Amenity: ghi tieu hao, post charge vao folio. — cai thien hieu nang render/list (can theo doi them)
 2025-11-28 - 5 - 01:44:57 UTC :: fix: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — fix race-condition nho trong thao tac (dam bao backward-compatible)
 2025-11-29 - 1 - 01:44:00 UTC :: chore: UC-40 Thu/chi: doi soat tien mat/the/le phi PG. — cap nhat mock data & seed test (da kiem tra lint)
+2025-11-29 - 2 - 01:44:02 UTC :: ci: UC-02 RBAC: thiet lap quyen thao tac theo vai tro/pham vi. — chuan hoa ten ham/bien theo convention (da kiem tra lint)
