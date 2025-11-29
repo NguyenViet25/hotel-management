@@ -63,7 +63,7 @@ const LoginPage = () => {
       setUser(user);
       localStorageHelper.setAuthData(accessToken!, user);
       navigateToCorrectPage(user);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
       toast.error(error.response.data.message);
     } finally {
@@ -86,7 +86,7 @@ const LoginPage = () => {
       setUser(user);
       localStorageHelper.setAuthData(accessToken!, user);
       navigateToCorrectPage(user);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
       toast.error(error.response.data.message);
     } finally {
@@ -100,7 +100,7 @@ const LoginPage = () => {
     let path = "/dashboard";
     switch (role) {
       case "admin":
-        path = "/dashboard";
+        path = "/admin/dashboard";
         break;
       case "manager":
         path = "/manager/dashboard";
@@ -120,10 +120,6 @@ const LoginPage = () => {
     }
     toast.success("Đăng nhập thành công!", { toastId: "welcome-back" });
     navigate(path);
-  };
-
-  const handleGoogleLogin = () => {
-    toast.info("Chức năng đăng nhập Google sẽ được triển khai sớm.");
   };
 
   return (

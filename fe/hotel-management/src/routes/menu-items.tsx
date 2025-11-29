@@ -21,16 +21,16 @@ import {
 
 export const menuItems = {
   admin: [
-    { title: "Tổng quan", path: "/dashboard", icon: <DashboardIcon /> },
+    { title: "Tổng quan", path: "/admin/dashboard", icon: <DashboardIcon /> },
     {
       title: "Quản lý người dùng",
-      path: "/user-management",
+      path: "/admin/user-management",
       icon: <PersonIcon />,
     },
-    { title: "Quản lý cơ sở", path: "/hotels", icon: <HotelIcon /> },
+    { title: "Quản lý cơ sở", path: "/admin/hotels", icon: <HotelIcon /> },
     {
       title: "Nhật ký hoạt động",
-      path: "/audit-logs",
+      path: "/admin/audit-logs",
       icon: <ReceiptIcon />,
     },
   ],

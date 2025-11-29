@@ -3,7 +3,7 @@ using HotelManagement.Services.Admin.Dining.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace HotelManagement.Api.Controllers.Admin;
+namespace HotelManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/dining-sessions")]

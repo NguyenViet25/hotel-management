@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
-namespace HotelManagement.Api.Controllers.Admin;
+namespace HotelManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/hotels")]

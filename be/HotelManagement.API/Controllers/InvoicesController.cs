@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace HotelManagement.Api.Controllers.Admin;
+namespace HotelManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/invoices")]

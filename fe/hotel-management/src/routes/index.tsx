@@ -52,9 +52,9 @@ const NotFoundPage = lazy(() => import("../pages/not-found"));
 const LoginPage = lazy(() => import("../pages/login"));
 const ProfilePage = lazy(() => import("../pages/profile/ProfilePage"));
 const UserManagementPage = lazy(
-  () => import("../pages/dashboard/user-management")
+  () => import("../pages/dashboard/admin/user-management")
 );
-const AuditLogsPage = lazy(() => import("../pages/dashboard/audit-logs"));
+const AuditLogsPage = lazy(() => import("../pages/dashboard/admin/audit-logs"));
 const HotelsListPage = lazy(
   () => import("../features/hotels/pages/HotelsListPage")
 );

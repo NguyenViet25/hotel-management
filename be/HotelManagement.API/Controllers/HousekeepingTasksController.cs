@@ -3,7 +3,7 @@ using HotelManagement.Services.Admin.Housekeeping.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace HotelManagement.Api.Controllers.Admin;
+namespace HotelManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/housekeeping/tasks")]
