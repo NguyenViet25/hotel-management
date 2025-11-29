@@ -6,7 +6,7 @@ Consumes: JSON
 
 Auth: Bearer JWT (same as other Admin APIs)
 
-Base Path: `api/admin/bookings`
+Base Path: `api/bookings`
 
 This API follows the project’s Admin controller conventions and returns consistent JSON using `ApiResponse` (`isSuccess`, `message`, `data`, `errors`, `meta`). All endpoints use standard HTTP status codes.
 
@@ -44,18 +44,18 @@ Error:
 
 - Controller: `BookingsController` (Admin)
 - Actions:
-  - `Create` → POST `/api/admin/bookings` (UC-31)
-  - `Get` → GET `/api/admin/bookings/{id}` (UC-33)
-  - `AddCallLog` → POST `/api/admin/bookings/{id}/call-log` (UC-32)
-  - `Update` → PUT `/api/admin/bookings/{id}` (UC-33)
-  - `Cancel` → DELETE `/api/admin/bookings/{id}` (UC-33)
-  - `RoomMap` → GET `/api/admin/bookings/room-map` (UC-34)
+  - `Create` → POST `/api/bookings` (UC-31)
+  - `Get` → GET `/api/bookings/{id}` (UC-33)
+  - `AddCallLog` → POST `/api/bookings/{id}/call-log` (UC-32)
+  - `Update` → PUT `/api/bookings/{id}` (UC-33)
+  - `Cancel` → DELETE `/api/bookings/{id}` (UC-33)
+  - `RoomMap` → GET `/api/bookings/room-map` (UC-34)
 
 ---
 
 ## UC-31 – Create Booking with Deposit
 
-- URL: `POST /api/admin/bookings`
+- URL: `POST /api/bookings`
 - Purpose: Create a booking with multiple room types and rooms, store a deposit, compute totals, and set status to `Pending`.
 
 ### Request Body (CreateBookingDto)
@@ -90,6 +90,7 @@ Error:
 ```
 
 Validation:
+
 - `hotelId` required
 - `checkInDate < checkOutDate` (ISO date strings)
 - `primaryGuest.fullName`, `primaryGuest.phone` required
@@ -98,6 +99,7 @@ Validation:
 - Room availability verified (no overlapping bookings for chosen rooms)
 
 Business Logic:
+
 - Creates/attaches `PrimaryGuest` into `Guest` table from `primaryGuest`; sets `booking.primaryGuestId`.
 - Adds nested `BookingRoomType` → `BookingRoom` → `BookingGuest`.
 - Calculates `totalAmount` based on selected rooms and number of nights; applies `discountAmount`.
@@ -114,7 +116,11 @@ Example Request:
   "checkOutDate": "2025-11-23",
   "depositAmount": 500000,
   "discountAmount": 100000,
-  "primaryGuest": { "fullName": "Nguyen Van A", "phone": "0901234567", "email": "guest@example.com" },
+  "primaryGuest": {
+    "fullName": "Nguyen Van A",
+    "phone": "0901234567",
+    "email": "guest@example.com"
+  },
   "roomTypes": [
     {
       "roomTypeId": "11111111-2222-3333-4444-555555555555",
@@ -122,13 +128,27 @@ Example Request:
         {
           "roomId": "77777777-8888-9999-0000-aaaaaaaaaaaa",
           "guests": [
-            { "fullName": "Guest 1", "phone": "0900000001", "email": "g1@example.com" },
-            { "fullName": "Guest 2", "phone": "0900000002", "email": "g2@example.com" }
+            {
+              "fullName": "Guest 1",
+              "phone": "0900000001",
+              "email": "g1@example.com"
+            },
+            {
+              "fullName": "Guest 2",
+              "phone": "0900000002",
+              "email": "g2@example.com"
+            }
           ]
         },
         {
           "roomId": "bbbbbbbb-cccc-dddd-eeee-ffffffffffff",
-          "guests": [ { "fullName": "Guest 3", "phone": "0900000003", "email": "g3@example.com" } ]
+          "guests": [
+            {
+              "fullName": "Guest 3",
+              "phone": "0900000003",
+              "email": "g3@example.com"
+            }
+          ]
         }
       ]
     }
@@ -166,13 +186,30 @@ Example Response (201 Created):
           {
             "roomId": "77777777-8888-9999-0000-aaaaaaaaaaaa",
             "guests": [
-              { "id": "GUEST_GUID_1", "fullName": "Guest 1", "phone": "0900000001", "email": "g1@example.com" },
-              { "id": "GUEST_GUID_2", "fullName": "Guest 2", "phone": "0900000002", "email": "g2@example.com" }
+              {
+                "id": "GUEST_GUID_1",
+                "fullName": "Guest 1",
+                "phone": "0900000001",
+                "email": "g1@example.com"
+              },
+              {
+                "id": "GUEST_GUID_2",
+                "fullName": "Guest 2",
+                "phone": "0900000002",
+                "email": "g2@example.com"
+              }
             ]
           },
           {
             "roomId": "bbbbbbbb-cccc-dddd-eeee-ffffffffffff",
-            "guests": [ { "id": "GUEST_GUID_3", "fullName": "Guest 3", "phone": "0900000003", "email": "g3@example.com" } ]
+            "guests": [
+              {
+                "id": "GUEST_GUID_3",
+                "fullName": "Guest 3",
+                "phone": "0900000003",
+                "email": "g3@example.com"
+              }
+            ]
           }
         ]
       }
@@ -183,13 +220,14 @@ Example Response (201 Created):
 ```
 
 Status Codes:
+
 - 201 Created, 400 Bad Request, 401 Unauthorized, 404 Not Found, 409 Conflict (room availability)
 
 ---
 
 ## UC-33 – Get Booking by Id
 
-- URL: `GET /api/admin/bookings/{id}`
+- URL: `GET /api/bookings/{id}`
 - Path Params: `id` (Guid)
 - Purpose: Retrieve full booking details.
 
@@ -208,9 +246,18 @@ Example Response (200 OK):
     "discountAmount": 100000,
     "totalAmount": 1800000,
     "leftAmount": 1300000,
-    "primaryGuest": { "id": "PRIMARY_GUEST_GUID", "fullName": "Nguyen Van A", "phone": "0901234567", "email": "guest@example.com" },
-    "roomTypes": [ /* ... */ ],
-    "callLogs": [ /* ... */ ]
+    "primaryGuest": {
+      "id": "PRIMARY_GUEST_GUID",
+      "fullName": "Nguyen Van A",
+      "phone": "0901234567",
+      "email": "guest@example.com"
+    },
+    "roomTypes": [
+      /* ... */
+    ],
+    "callLogs": [
+      /* ... */
+    ]
   }
 }
 ```
@@ -221,7 +268,7 @@ Status Codes: 200 OK, 401 Unauthorized, 404 Not Found
 
 ## UC-32 – Log Call to Confirm Booking
 
-- URL: `POST /api/admin/bookings/{id}/call-log`
+- URL: `POST /api/bookings/{id}/call-log`
 - Path Params: `id` (Guid)
 - Purpose: Record a pre-stay confirmation call and result.
 
@@ -237,6 +284,7 @@ Status Codes: 200 OK, 401 Unauthorized, 404 Not Found
 ```
 
 Validation:
+
 - `callTime` required
 - `result` required (enum `CallResult`)
 - `staffUserId` required
@@ -263,7 +311,7 @@ Status Codes: 200 OK, 400 Bad Request, 401 Unauthorized, 404 Not Found
 
 ## UC-33 – Update Booking
 
-- URL: `PUT /api/admin/bookings/{id}`
+- URL: `PUT /api/bookings/{id}`
 - Path Params: `id` (Guid)
 - Purpose: Update booking details and recompute totals.
 
@@ -283,7 +331,9 @@ Partial update allowing these fields:
       "rooms": [
         {
           "roomId": "Guid",
-          "guests": [ { "fullName": "string", "phone": "string", "email": "string" } ]
+          "guests": [
+            { "fullName": "string", "phone": "string", "email": "string" }
+          ]
         }
       ]
     }
@@ -293,10 +343,12 @@ Partial update allowing these fields:
 ```
 
 Validation:
+
 - Same rules as create for provided fields
 - Room availability revalidated
 
 Business Logic:
+
 - Recomputes `totalAmount` and `leftAmount`
 - May adjust or reattach room/guest allocations
 - Transactional update across related entities
@@ -322,7 +374,7 @@ Status Codes: 200 OK, 400 Bad Request, 401 Unauthorized, 404 Not Found, 409 Conf
 
 ## UC-33 – Cancel Booking & Handle Deposit
 
-- URL: `DELETE /api/admin/bookings/{id}`
+- URL: `DELETE /api/bookings/{id}`
 - Path Params: `id` (Guid)
 - Purpose: Cancel booking; record refund or deductions.
 
@@ -336,6 +388,7 @@ Status Codes: 200 OK, 400 Bad Request, 401 Unauthorized, 404 Not Found, 409 Conf
 ```
 
 Business Logic:
+
 - Sets `status = Cancelled`
 - Applies refund/deduction policy to deposit (implementation may vary by hotel policy)
 
@@ -358,7 +411,7 @@ Status Codes: 200 OK, 400 Bad Request, 401 Unauthorized, 404 Not Found
 
 ## UC-34 – Room Map (Timeline)
 
-- URL: `GET /api/admin/bookings/room-map`
+- URL: `GET /api/bookings/room-map`
 - Query Params:
   - `date` (string, `YYYY-MM-DD`, required) – day to view
   - `hotelId` (Guid, required)
@@ -384,6 +437,7 @@ Response Data (per room):
 ```
 
 Notes:
+
 - Current implementation returns a single full-day segment per room: `Booked` if any bookings exist that day, otherwise `Available`.
 - For hour-level segments, extend to compute blocks using `checkInDate/checkOutDate` with time-of-day granularity.
 
@@ -399,7 +453,12 @@ Example Response (200 OK):
       "roomTypeId": "TYPE_GUID",
       "roomTypeName": "Deluxe",
       "timeline": [
-        { "start": "2025-11-20T00:00:00", "end": "2025-11-21T00:00:00", "status": "Booked", "bookingId": null }
+        {
+          "start": "2025-11-20T00:00:00",
+          "end": "2025-11-21T00:00:00",
+          "status": "Booked",
+          "bookingId": null
+        }
       ]
     },
     {
@@ -408,7 +467,12 @@ Example Response (200 OK):
       "roomTypeId": "TYPE_GUID",
       "roomTypeName": "Deluxe",
       "timeline": [
-        { "start": "2025-11-20T00:00:00", "end": "2025-11-21T00:00:00", "status": "Available", "bookingId": null }
+        {
+          "start": "2025-11-20T00:00:00",
+          "end": "2025-11-21T00:00:00",
+          "status": "Available",
+          "bookingId": null
+        }
       ]
     }
   ]

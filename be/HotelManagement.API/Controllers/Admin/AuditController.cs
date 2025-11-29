@@ -8,7 +8,7 @@ using System.Security.Claims;
 namespace HotelManagement.Api.Controllers.Admin;
 
 [ApiController]
-[Route("api/admin/audit")]
+[Route("api/audit")]
 public class AuditController : ControllerBase
 {
     private readonly IAuditService _svc;

@@ -69,17 +69,17 @@ const hotelService = {
     if (params.sortBy) queryParams.append("sortBy", params.sortBy);
     if (params.sortDir) queryParams.append("sortDir", params.sortDir);
 
-    const response = await axios.get(`/admin/hotels?${queryParams.toString()}`);
+    const response = await axios.get(`/hotels?${queryParams.toString()}`);
     return response.data;
   },
 
   getHotelById: async (id: string): Promise<HotelResponse> => {
-    const response = await axios.get(`/admin/hotels/${id}`);
+    const response = await axios.get(`/hotels/${id}`);
     return response.data;
   },
 
   createHotel: async (hotel: CreateHotelRequest): Promise<HotelResponse> => {
-    const response = await axios.post("/admin/hotels", hotel);
+    const response = await axios.post("/hotels", hotel);
     return response.data;
   },
 
@@ -87,7 +87,7 @@ const hotelService = {
     id: string,
     hotel: UpdateHotelRequest
   ): Promise<HotelResponse> => {
-    const response = await axios.put(`/admin/hotels/${id}`, hotel);
+    const response = await axios.put(`/hotels/${id}`, hotel);
     return response.data;
   },
 
@@ -95,10 +95,7 @@ const hotelService = {
     id: string,
     statusRequest: ChangeHotelStatusRequest
   ): Promise<HotelResponse> => {
-    const response = await axios.post(
-      `/admin/hotels/${id}/status`,
-      statusRequest
-    );
+    const response = await axios.post(`/hotels/${id}/status`, statusRequest);
     return response.data;
   },
 };

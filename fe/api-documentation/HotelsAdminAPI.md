@@ -7,7 +7,7 @@ This document provides detailed information about the Hotels Admin API endpoints
 ## Base URL
 
 ```
-/api/admin/hotels
+/api/hotels
 ```
 
 ## Authentication and Authorization
@@ -38,20 +38,20 @@ All API responses follow a standard format:
 
 Retrieves a paginated list of hotels with optional filtering.
 
-- **URL**: `/api/admin/hotels`
+- **URL**: `/api/hotels`
 - **Method**: `GET`
 - **Auth Required**: Yes
 - **Permissions**: Admin, Manager
 - **Query Parameters**:
 
-| Parameter | Type    | Required | Description                                      |
-|-----------|---------|----------|--------------------------------------------------|
-| page      | integer | No       | Page number (default: 1)                         |
-| pageSize  | integer | No       | Number of items per page (default: 20)           |
-| search    | string  | No       | Search term for hotel name, code, or address     |
-| isActive  | boolean | No       | Filter by active status                          |
-| sortBy    | string  | No       | Field to sort by (name, code, createdAt)         |
-| sortDir   | string  | No       | Sort direction (asc, desc)                       |
+| Parameter | Type    | Required | Description                                  |
+| --------- | ------- | -------- | -------------------------------------------- |
+| page      | integer | No       | Page number (default: 1)                     |
+| pageSize  | integer | No       | Number of items per page (default: 20)       |
+| search    | string  | No       | Search term for hotel name, code, or address |
+| isActive  | boolean | No       | Filter by active status                      |
+| sortBy    | string  | No       | Field to sort by (name, code, createdAt)     |
+| sortDir   | string  | No       | Sort direction (asc, desc)                   |
 
 - **Success Response**:
   - **Code**: 200 OK
@@ -90,14 +90,14 @@ Retrieves a paginated list of hotels with optional filtering.
 
 Retrieves detailed information about a specific hotel.
 
-- **URL**: `/api/admin/hotels/{id}`
+- **URL**: `/api/hotels/{id}`
 - **Method**: `GET`
 - **Auth Required**: Yes
 - **Permissions**: Admin, Manager
 - **URL Parameters**:
 
 | Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
+| --------- | ---- | -------- | ----------- |
 | id        | guid | Yes      | Hotel ID    |
 
 - **Success Response**:
@@ -133,7 +133,7 @@ Retrieves detailed information about a specific hotel.
 
 Creates a new hotel in the system.
 
-- **URL**: `/api/admin/hotels`
+- **URL**: `/api/hotels`
 - **Method**: `POST`
 - **Auth Required**: Yes
 - **Permissions**: Admin only
@@ -148,12 +148,12 @@ Creates a new hotel in the system.
 }
 ```
 
-| Field   | Type   | Required | Description                                |
-|---------|--------|----------|--------------------------------------------|
+| Field   | Type   | Required | Description                                        |
+| ------- | ------ | -------- | -------------------------------------------------- |
 | code    | string | Yes      | Unique hotel code (will be converted to uppercase) |
-| name    | string | Yes      | Hotel name                                 |
-| address | string | Yes      | Hotel physical address                     |
-| config  | object | No       | Optional configuration settings            |
+| name    | string | Yes      | Hotel name                                         |
+| address | string | Yes      | Hotel physical address                             |
+| config  | object | No       | Optional configuration settings                    |
 
 - **Success Response**:
   - **Code**: 201 Created
@@ -188,14 +188,14 @@ Creates a new hotel in the system.
 
 Updates an existing hotel's information.
 
-- **URL**: `/api/admin/hotels/{id}`
+- **URL**: `/api/hotels/{id}`
 - **Method**: `PUT`
 - **Auth Required**: Yes
 - **Permissions**: Admin only
 - **URL Parameters**:
 
 | Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
+| --------- | ---- | -------- | ----------- |
 | id        | guid | Yes      | Hotel ID    |
 
 - **Request Body**:
@@ -209,7 +209,7 @@ Updates an existing hotel's information.
 ```
 
 | Field    | Type    | Required | Description                |
-|----------|---------|----------|----------------------------|
+| -------- | ------- | -------- | -------------------------- |
 | name     | string  | No       | Updated hotel name         |
 | address  | string  | No       | Updated hotel address      |
 | isActive | boolean | No       | Updated hotel active state |
@@ -247,14 +247,14 @@ Updates an existing hotel's information.
 
 Changes the operational status of a hotel.
 
-- **URL**: `/api/admin/hotels/{id}/status`
+- **URL**: `/api/hotels/{id}/status`
 - **Method**: `POST`
 - **Auth Required**: Yes
 - **Permissions**: Admin only
 - **URL Parameters**:
 
 | Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
+| --------- | ---- | -------- | ----------- |
 | id        | guid | Yes      | Hotel ID    |
 
 - **Request Body**:
@@ -268,7 +268,7 @@ Changes the operational status of a hotel.
 ```
 
 | Field  | Type     | Required | Description                                                |
-|--------|----------|----------|------------------------------------------------------------|
+| ------ | -------- | -------- | ---------------------------------------------------------- |
 | action | string   | Yes      | Status action: "pause", "close", or "resume"               |
 | reason | string   | Yes      | Reason for the status change                               |
 | until  | datetime | No       | Optional date until when the status change should be valid |
@@ -317,6 +317,7 @@ The API uses standard HTTP status codes:
 ## Rate Limiting
 
 API requests are subject to rate limiting to prevent abuse. Current limits are:
+
 - 100 requests per minute for authenticated users
 - 5 requests per minute for unauthenticated users
 
@@ -326,11 +327,11 @@ API requests are subject to rate limiting to prevent abuse. Current limits are:
 
 ```csharp
 public record HotelSummaryDto(
-    Guid Id, 
-    string Code, 
-    string Name, 
-    string Address, 
-    bool IsActive, 
+    Guid Id,
+    string Code,
+    string Name,
+    string Address,
+    bool IsActive,
     DateTime CreatedAt
 );
 ```
@@ -339,11 +340,11 @@ public record HotelSummaryDto(
 
 ```csharp
 public record HotelDetailsDto(
-    Guid Id, 
-    string Code, 
-    string Name, 
-    string Address, 
-    bool IsActive, 
+    Guid Id,
+    string Code,
+    string Name,
+    string Address,
+    bool IsActive,
     DateTime CreatedAt
 );
 ```
@@ -365,9 +366,9 @@ public record HotelsQueryDto(
 
 ```csharp
 public record CreateHotelDto(
-    string Code, 
-    string Name, 
-    string Address, 
+    string Code,
+    string Name,
+    string Address,
     object? Config = null
 );
 ```
@@ -376,8 +377,8 @@ public record CreateHotelDto(
 
 ```csharp
 public record UpdateHotelDto(
-    string? Name, 
-    string? Address, 
+    string? Name,
+    string? Address,
     bool? IsActive
 );
 ```
@@ -386,8 +387,8 @@ public record UpdateHotelDto(
 
 ```csharp
 public record ChangeHotelStatusDto(
-    string Action, 
-    string Reason, 
+    string Action,
+    string Reason,
     DateTimeOffset? Until = null
 );
 ```

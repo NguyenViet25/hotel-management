@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace HotelManagement.Api.Controllers.Admin;
 
 [ApiController]
-[Route("api/admin/housekeeping/tasks")]
+[Route("api/housekeeping/tasks")]
 [Authorize]
 public class HousekeepingTasksController : ControllerBase
 {

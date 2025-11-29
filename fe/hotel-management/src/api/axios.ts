@@ -19,7 +19,7 @@ const navigateToCorrectPage = (user: any) => {
 
   switch (role) {
     case "admin":
-      redirectPath = "/admin/dashboard";
+      redirectPath = "/dashboard";
       break;
     case "facilitymanager":
       redirectPath = "/manager/dashboard";

@@ -7,7 +7,7 @@ This document provides detailed information about the Kitchen API endpoints that
 ## Base URL
 
 ```
-/api/admin/kitchen
+/api/kitchen
 ```
 
 ## Authentication and Authorization
@@ -15,6 +15,7 @@ This document provides detailed information about the Kitchen API endpoints that
 All endpoints require authentication via JWT, provided in the `Authorization: Bearer <token>` header.
 
 Authorized roles:
+
 - Admin
 - Manager
 - Staff
@@ -47,7 +48,7 @@ All responses use a standard wrapper consistent across the API:
 
 Generate an aggregated shopping list of ingredients across active, available menu items. Optionally filter by specific menu item IDs and attach a date range context.
 
-- **URL**: `/api/admin/kitchen/shopping-list`
+- **URL**: `/api/kitchen/shopping-list`
 - **Method**: `POST`
 - **Auth Required**: Yes
 - **Request Body** (`ShoppingListRequestDto`):
@@ -63,11 +64,11 @@ Generate an aggregated shopping list of ingredients across active, available men
 }
 ```
 
-| Field        | Type            | Required | Rules/Notes |
-|--------------|-----------------|----------|-------------|
-| `startDate`  | ISO datetime    | No       | Contextual; not currently used to filter in DB |
-| `endDate`    | ISO datetime    | No       | Contextual; not currently used to filter in DB |
-| `menuItemIds`| array of `guid` | No       | If provided, restricts aggregation to given menu items |
+| Field         | Type            | Required | Rules/Notes                                            |
+| ------------- | --------------- | -------- | ------------------------------------------------------ |
+| `startDate`   | ISO datetime    | No       | Contextual; not currently used to filter in DB         |
+| `endDate`     | ISO datetime    | No       | Contextual; not currently used to filter in DB         |
+| `menuItemIds` | array of `guid` | No       | If provided, restricts aggregation to given menu items |
 
 - **Success Response** (`ShoppingListDto`):
   - **Code**: `200 OK`
@@ -127,7 +128,7 @@ Generate an aggregated shopping list of ingredients across active, available men
 
 Record an ingredient quality check with optional replacement proposal, based on staff user identity.
 
-- **URL**: `/api/admin/kitchen/ingredient-quality-check`
+- **URL**: `/api/kitchen/ingredient-quality-check`
 - **Method**: `POST`
 - **Auth Required**: Yes
 - **Request Body** (`IngredientQualityCheckDto`):
@@ -143,14 +144,14 @@ Record an ingredient quality check with optional replacement proposal, based on 
 }
 ```
 
-| Field                | Type             | Required | Rules/Notes |
-|----------------------|------------------|----------|-------------|
-| `ingredientName`     | string           | Yes      | Non-empty; max length practical 100 (not enforced here) |
-| `status`             | `QualityStatus`  | Yes      | One of: 0 `Good`, 1 `Acceptable`, 2 `Poor`, 3 `Expired` |
-| `notes`              | string           | No       | Free text note |
-| `needsReplacement`   | boolean          | No       | If `true`, include quantity/unit as needed |
-| `replacementQuantity`| number (decimal) | No       | Should be positive if `needsReplacement` is `true` |
-| `replacementUnit`    | string           | No       | e.g., `kg`, `g`, `pcs` |
+| Field                 | Type             | Required | Rules/Notes                                             |
+| --------------------- | ---------------- | -------- | ------------------------------------------------------- |
+| `ingredientName`      | string           | Yes      | Non-empty; max length practical 100 (not enforced here) |
+| `status`              | `QualityStatus`  | Yes      | One of: 0 `Good`, 1 `Acceptable`, 2 `Poor`, 3 `Expired` |
+| `notes`               | string           | No       | Free text note                                          |
+| `needsReplacement`    | boolean          | No       | If `true`, include quantity/unit as needed              |
+| `replacementQuantity` | number (decimal) | No       | Should be positive if `needsReplacement` is `true`      |
+| `replacementUnit`     | string           | No       | e.g., `kg`, `g`, `pcs`                                  |
 
 - **Success Response** (`IngredientQualityCheckResultDto`):
   - **Code**: `200 OK`

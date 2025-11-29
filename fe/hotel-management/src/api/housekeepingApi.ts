@@ -34,7 +34,7 @@ const housekeepingApi = {
   async updateRoomStatus(
     payload: UpdateRoomStatusRequest
   ): Promise<ApiResponse<{ id: string }>> {
-    const res = await axios.put(`/admin/room-status/update`, payload);
+    const res = await axios.put(`/room-status/update`, payload);
     return res.data;
   },
 
@@ -45,7 +45,7 @@ const housekeepingApi = {
     const qp = new URLSearchParams();
     if (status !== undefined) qp.append("status", String(status));
     const res = await axios.get(
-      `/admin/room-status/hotel/${hotelId}?${qp.toString()}`
+      `/room-status/hotel/${hotelId}?${qp.toString()}`
     );
     return res.data;
   },
@@ -53,7 +53,7 @@ const housekeepingApi = {
   async getSummary(
     hotelId: string
   ): Promise<ApiResponse<RoomStatusSummaryDto>> {
-    const res = await axios.get(`/admin/room-status/summary/${hotelId}`);
+    const res = await axios.get(`/room-status/summary/${hotelId}`);
     return res.data;
   },
 };

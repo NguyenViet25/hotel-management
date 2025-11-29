@@ -7,7 +7,7 @@ This document provides detailed information about the Users Admin API endpoints 
 ## Base URL
 
 ```
-/api/admin/users
+/api/users
 ```
 
 ## Authentication and Authorization
@@ -33,18 +33,18 @@ All API responses follow a standard format:
 
 Retrieves a paginated list of users with optional filtering.
 
-- **URL**: `/api/admin/users`
+- **URL**: `/api/users`
 - **Method**: `GET`
 - **Auth Required**: Yes (Admin role)
 - **Query Parameters**:
 
-| Parameter | Type    | Required | Description                                      |
-|-----------|---------|----------|--------------------------------------------------|
-| page      | integer | No       | Page number (default: 1)                         |
-| pageSize  | integer | No       | Number of items per page (default: 20)           |
-| search    | string  | No       | Search by name, email, or username               |
-| role      | string  | No       | Filter by user role                              |
-| status    | string  | No       | Filter by user status                            |
+| Parameter | Type    | Required | Description                            |
+| --------- | ------- | -------- | -------------------------------------- |
+| page      | integer | No       | Page number (default: 1)               |
+| pageSize  | integer | No       | Number of items per page (default: 20) |
+| search    | string  | No       | Search by name, email, or username     |
+| role      | string  | No       | Filter by user role                    |
+| status    | string  | No       | Filter by user status                  |
 
 - **Success Response**:
   - **Code**: 200 OK
@@ -76,7 +76,7 @@ Retrieves a paginated list of users with optional filtering.
 
 Retrieves details for a specific user by ID.
 
-- **URL**: `/api/admin/users/{id}`
+- **URL**: `/api/users/{id}`
 - **Method**: `GET`
 - **Auth Required**: Yes (Admin role)
 - **URL Parameters**:
@@ -121,7 +121,7 @@ Retrieves details for a specific user by ID.
 
 Creates a new user account.
 
-- **URL**: `/api/admin/users`
+- **URL**: `/api/users`
 - **Method**: `POST`
 - **Auth Required**: Yes (Admin role)
 - **Request Body**:
@@ -173,7 +173,7 @@ Creates a new user account.
 
 Updates an existing user account.
 
-- **URL**: `/api/admin/users/{id}`
+- **URL**: `/api/users/{id}`
 - **Method**: `PUT`
 - **Auth Required**: Yes (Admin role)
 - **URL Parameters**:
@@ -225,7 +225,7 @@ Updates an existing user account.
 
 Activates or deactivates a user account.
 
-- **URL**: `/api/admin/users/{id}/status`
+- **URL**: `/api/users/{id}/status`
 - **Method**: `POST`
 - **Auth Required**: Yes (Admin role)
 - **URL Parameters**:

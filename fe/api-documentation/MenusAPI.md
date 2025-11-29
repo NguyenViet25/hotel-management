@@ -7,7 +7,7 @@ This document provides detailed information about the Menus (Dishes) API endpoin
 ## Base URL
 
 ```
-/api/admin/menu
+/api/menu
 ```
 
 ## Authentication and Authorization
@@ -15,6 +15,7 @@ This document provides detailed information about the Menus (Dishes) API endpoin
 All endpoints in this API require authentication. Authentication is handled via JWT tokens which should be included in the `Authorization` header of each request.
 
 Authorized roles:
+
 - Admin
 - Manager
 - Staff
@@ -39,17 +40,17 @@ All API responses follow a standard format:
 
 Display menu items filtered by dish group, shift, status, and active flag.
 
-- **URL**: `/api/admin/menu`
+- **URL**: `/api/menu`
 - **Method**: `GET`
 - **Auth Required**: Yes
 - **Query Parameters**:
 
-| Parameter | Type  | Required | Description |
-|-----------|-------|----------|-------------|
-| groupId   | guid  | No       | Filter by menu group ID |
-| shift     | string| No       | Filter by group shift (e.g., Breakfast/Lunch/Dinner) |
-| status    | string| No       | Menu item status (`Available`, `Unavailable`, `SeasonallyUnavailable`) or numeric enum value (0/1/2) |
-| isActive  | bool  | No       | Filter by active state |
+| Parameter | Type   | Required | Description                                                                                          |
+| --------- | ------ | -------- | ---------------------------------------------------------------------------------------------------- |
+| groupId   | guid   | No       | Filter by menu group ID                                                                              |
+| shift     | string | No       | Filter by group shift (e.g., Breakfast/Lunch/Dinner)                                                 |
+| status    | string | No       | Menu item status (`Available`, `Unavailable`, `SeasonallyUnavailable`) or numeric enum value (0/1/2) |
+| isActive  | bool   | No       | Filter by active state                                                                               |
 
 - **Success Response**:
   - **Code**: 200 OK
@@ -77,8 +78,18 @@ Display menu items filtered by dish group, shift, status, and active flag.
         "shift": "Lunch"
       },
       "ingredients": [
-        { "id": "b77f0000-0000-0000-0000-000000000001", "name": "Chicken breast", "quantity": "150", "unit": "g" },
-        { "id": "c88f0000-0000-0000-0000-000000000002", "name": "Lettuce", "quantity": "3", "unit": "leaves" }
+        {
+          "id": "b77f0000-0000-0000-0000-000000000001",
+          "name": "Chicken breast",
+          "quantity": "150",
+          "unit": "g"
+        },
+        {
+          "id": "c88f0000-0000-0000-0000-000000000002",
+          "name": "Lettuce",
+          "quantity": "3",
+          "unit": "leaves"
+        }
       ]
     }
   ],
@@ -110,7 +121,7 @@ Display menu items filtered by dish group, shift, status, and active flag.
 
 Create a new dish (menu item) with unit price, portion size, optional image URL, and ingredients.
 
-- **URL**: `/api/admin/menu`
+- **URL**: `/api/menu`
 - **Method**: `POST`
 - **Auth Required**: Yes
 - **Request Body** (`CreateMenuItemDto`):
@@ -132,19 +143,19 @@ Create a new dish (menu item) with unit price, portion size, optional image URL,
 }
 ```
 
-| Field         | Type    | Required | Rules/Notes |
-|---------------|---------|----------|-------------|
-| menuGroupId   | guid    | Yes      | Must exist |
-| name          | string  | Yes      | Max 100 characters |
-| description   | string  | No       | Max 500 characters |
-| unitPrice     | number  | Yes      | Range: 0.01 – 10,000,000 |
-| portionSize   | string  | Yes      | Max 50 characters |
-| imageUrl      | string  | No       | URL of uploaded image |
-| status        | string  | No       | Default `Available` |
-| ingredients   | array   | No       | See ingredient rules |
-| ingredients[].name     | string | Yes | Max 100 characters |
-| ingredients[].quantity | string | Yes | Max 20 characters |
-| ingredients[].unit     | string | Yes | Max 20 characters |
+| Field                  | Type   | Required | Rules/Notes              |
+| ---------------------- | ------ | -------- | ------------------------ |
+| menuGroupId            | guid   | Yes      | Must exist               |
+| name                   | string | Yes      | Max 100 characters       |
+| description            | string | No       | Max 500 characters       |
+| unitPrice              | number | Yes      | Range: 0.01 – 10,000,000 |
+| portionSize            | string | Yes      | Max 50 characters        |
+| imageUrl               | string | No       | URL of uploaded image    |
+| status                 | string | No       | Default `Available`      |
+| ingredients            | array  | No       | See ingredient rules     |
+| ingredients[].name     | string | Yes      | Max 100 characters       |
+| ingredients[].quantity | string | Yes      | Max 20 characters        |
+| ingredients[].unit     | string | Yes      | Max 20 characters        |
 
 - **Success Response**:
   - **Code**: 200 OK
@@ -165,9 +176,18 @@ Create a new dish (menu item) with unit price, portion size, optional image URL,
     "imageUrl": "https://cdn.example.com/images/pasta-carbonara.jpg",
     "isActive": true,
     "status": "Available",
-    "group": { "id": "5f3a9b24-3b1b-4b25-8aa2-0c2eaf913f9a", "name": "Main Course", "shift": "Dinner" },
+    "group": {
+      "id": "5f3a9b24-3b1b-4b25-8aa2-0c2eaf913f9a",
+      "name": "Main Course",
+      "shift": "Dinner"
+    },
     "ingredients": [
-      { "id": "c1000000-0000-0000-0000-000000000001", "name": "Spaghetti", "quantity": "200", "unit": "g" }
+      {
+        "id": "c1000000-0000-0000-0000-000000000001",
+        "name": "Spaghetti",
+        "quantity": "200",
+        "unit": "g"
+      }
     ]
   },
   "errors": null,
@@ -198,10 +218,11 @@ Create a new dish (menu item) with unit price, portion size, optional image URL,
 
 Update dish fields including price, portion size, image URL, status, active flag, and ingredients.
 
-- **URL**: `/api/admin/menu/{id}`
+- **URL**: `/api/menu/{id}`
 - **Method**: `PUT`
 - **Auth Required**: Yes
 - **URL Parameters**:
+
   - `id`: Dish ID (GUID)
 
 - **Request Body** (`UpdateMenuItemDto`): All fields optional.
@@ -217,27 +238,32 @@ Update dish fields including price, portion size, image URL, status, active flag
   "status": "Available",
   "isActive": true,
   "ingredients": [
-    { "id": "c1000000-0000-0000-0000-000000000001", "name": "Spaghetti", "quantity": "220", "unit": "g" },
+    {
+      "id": "c1000000-0000-0000-0000-000000000001",
+      "name": "Spaghetti",
+      "quantity": "220",
+      "unit": "g"
+    },
     { "name": "Parmesan", "quantity": "30", "unit": "g" }
   ]
 }
 ```
 
-| Field         | Type    | Required | Rules/Notes |
-|---------------|---------|----------|-------------|
-| menuGroupId   | guid    | No       | Must exist if provided |
-| name          | string  | No       | Max 100 characters |
-| description   | string  | No       | Max 500 characters |
-| unitPrice     | number  | No       | Range: 0.01 – 10,000,000 |
-| portionSize   | string  | No       | Max 50 characters |
-| imageUrl      | string  | No       | URL |
-| status        | string  | No       | `Available`, `Unavailable`, `SeasonallyUnavailable` |
-| isActive      | bool    | No       | Active flag |
-| ingredients   | array   | No       | Updates/adds ingredients |
-| ingredients[].id       | guid|null | No | Include to update existing |
-| ingredients[].name     | string    | No | Max 100 characters |
-| ingredients[].quantity | string    | No | Max 20 characters |
-| ingredients[].unit     | string    | No | Max 20 characters |
+| Field                  | Type   | Required | Rules/Notes                                         |
+| ---------------------- | ------ | -------- | --------------------------------------------------- | -------------------------- |
+| menuGroupId            | guid   | No       | Must exist if provided                              |
+| name                   | string | No       | Max 100 characters                                  |
+| description            | string | No       | Max 500 characters                                  |
+| unitPrice              | number | No       | Range: 0.01 – 10,000,000                            |
+| portionSize            | string | No       | Max 50 characters                                   |
+| imageUrl               | string | No       | URL                                                 |
+| status                 | string | No       | `Available`, `Unavailable`, `SeasonallyUnavailable` |
+| isActive               | bool   | No       | Active flag                                         |
+| ingredients            | array  | No       | Updates/adds ingredients                            |
+| ingredients[].id       | guid   | null     | No                                                  | Include to update existing |
+| ingredients[].name     | string | No       | Max 100 characters                                  |
+| ingredients[].quantity | string | No       | Max 20 characters                                   |
+| ingredients[].unit     | string | No       | Max 20 characters                                   |
 
 - **Success Response**:
   - **Code**: 200 OK
@@ -258,10 +284,24 @@ Update dish fields including price, portion size, image URL, status, active flag
     "imageUrl": "https://cdn.example.com/images/pasta-carbonara-v2.jpg",
     "isActive": true,
     "status": "Available",
-    "group": { "id": "5f3a9b24-3b1b-4b25-8aa2-0c2eaf913f9a", "name": "Main Course", "shift": "Dinner" },
+    "group": {
+      "id": "5f3a9b24-3b1b-4b25-8aa2-0c2eaf913f9a",
+      "name": "Main Course",
+      "shift": "Dinner"
+    },
     "ingredients": [
-      { "id": "c1000000-0000-0000-0000-000000000001", "name": "Spaghetti", "quantity": "220", "unit": "g" },
-      { "id": "c1000000-0000-0000-0000-000000000003", "name": "Parmesan", "quantity": "30", "unit": "g" }
+      {
+        "id": "c1000000-0000-0000-0000-000000000001",
+        "name": "Spaghetti",
+        "quantity": "220",
+        "unit": "g"
+      },
+      {
+        "id": "c1000000-0000-0000-0000-000000000003",
+        "name": "Parmesan",
+        "quantity": "30",
+        "unit": "g"
+      }
     ]
   },
   "errors": null,
@@ -292,10 +332,11 @@ Update dish fields including price, portion size, image URL, status, active flag
 
 Delete a dish. Intended rule: only if the dish has no order history.
 
-- **URL**: `/api/admin/menu/{id}`
+- **URL**: `/api/menu/{id}`
 - **Method**: `DELETE`
 - **Auth Required**: Yes
 - **URL Parameters**:
+
   - `id`: Dish ID (GUID)
 
 - **Success Response**:
@@ -334,6 +375,7 @@ Delete a dish. Intended rule: only if the dish has no order history.
 ## Status Enum — `MenuItemStatus`
 
 Allowed values:
+
 - `Available` (0)
 - `Unavailable` (1)
 - `SeasonallyUnavailable` (2)
@@ -345,7 +387,8 @@ Allowed values:
 These endpoints help manage dish groupings and shifts.
 
 ### List Groups
-- **URL**: `/api/admin/menu/groups`
+
+- **URL**: `/api/menu/groups`
 - **Method**: `GET`
 - **Auth Required**: Yes
 - **Success Response**:
@@ -357,7 +400,11 @@ These endpoints help manage dish groupings and shifts.
   "success": true,
   "message": null,
   "data": [
-    { "id": "5f3a9b24-3b1b-4b25-8aa2-0c2eaf913f9a", "name": "Sandwiches", "shift": "Lunch" }
+    {
+      "id": "5f3a9b24-3b1b-4b25-8aa2-0c2eaf913f9a",
+      "name": "Sandwiches",
+      "shift": "Lunch"
+    }
   ],
   "errors": null,
   "meta": null
@@ -365,7 +412,8 @@ These endpoints help manage dish groupings and shifts.
 ```
 
 ### Create Group
-- **URL**: `/api/admin/menu/groups`
+
+- **URL**: `/api/menu/groups`
 - **Method**: `POST`
 - **Auth Required**: Yes
 - **Request Body** (`CreateMenuGroupDto`):
@@ -377,10 +425,10 @@ These endpoints help manage dish groupings and shifts.
 }
 ```
 
-| Field | Type   | Required | Rules/Notes |
-|-------|--------|----------|-------------|
+| Field | Type   | Required | Rules/Notes        |
+| ----- | ------ | -------- | ------------------ |
 | name  | string | Yes      | Max 100 characters |
-| shift | string | No       | Max 50 characters |
+| shift | string | No       | Max 50 characters  |
 
 - **Success Response**:
   - **Code**: 200 OK
@@ -390,7 +438,11 @@ These endpoints help manage dish groupings and shifts.
 {
   "success": true,
   "message": null,
-  "data": { "id": "5f3a9b24-3b1b-4b25-8aa2-0c2eaf913f9a", "name": "Sandwiches", "shift": "Lunch" },
+  "data": {
+    "id": "5f3a9b24-3b1b-4b25-8aa2-0c2eaf913f9a",
+    "name": "Sandwiches",
+    "shift": "Lunch"
+  },
   "errors": null,
   "meta": null
 }
@@ -401,6 +453,7 @@ These endpoints help manage dish groupings and shifts.
 ## Error Codes and Handling
 
 The API uses standard HTTP status codes:
+
 - `200 OK`: Request succeeded
 - `400 Bad Request`: Invalid request parameters or validation error
 - `401 Unauthorized`: Authentication required or failed

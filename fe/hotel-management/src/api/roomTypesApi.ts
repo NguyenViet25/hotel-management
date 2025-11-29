@@ -74,19 +74,19 @@ const roomTypesApi = {
     qp.append("page", (params.page ?? 1).toString());
     qp.append("pageSize", (params.pageSize ?? 10).toString());
 
-    const res = await axios.get(`/admin/room-types?${qp.toString()}`);
+    const res = await axios.get(`/room-types?${qp.toString()}`);
     return res.data;
   },
 
   getRoomTypeById: async (id: string): Promise<ItemResponse<RoomType>> => {
-    const res = await axios.get(`/admin/room-types/${id}`);
+    const res = await axios.get(`/room-types/${id}`);
     return res.data;
   },
 
   createRoomType: async (
     payload: CreateRoomTypeRequest
   ): Promise<ItemResponse<RoomType>> => {
-    const res = await axios.post(`/admin/room-types`, payload);
+    const res = await axios.post(`/room-types`, payload);
     return res.data;
   },
 
@@ -94,21 +94,21 @@ const roomTypesApi = {
     id: string,
     payload: UpdateRoomTypeRequest
   ): Promise<ItemResponse<RoomType>> => {
-    const res = await axios.put(`/admin/room-types/${id}`, payload);
+    const res = await axios.put(`/room-types/${id}`, payload);
     return res.data;
   },
 
   deleteRoomType: async (
     id: string
   ): Promise<{ isSuccess: boolean; message: string | null }> => {
-    const res = await axios.delete(`/admin/room-types/${id}`);
+    const res = await axios.delete(`/room-types/${id}`);
     return res.data;
   },
 
   validateDelete: async (
     id: string
   ): Promise<{ isSuccess: boolean; message: string | null }> => {
-    const res = await axios.get(`/admin/room-types/${id}/can-delete`);
+    const res = await axios.get(`/room-types/${id}/can-delete`);
     return res.data;
   },
 };

@@ -11,9 +11,9 @@ The Audit Controller provides endpoints for accessing and querying the system's 
 Retrieves a paginated list of audit logs with optional filtering.
 
 - **HTTP Method**: GET
-- **URL**: `/api/admin/audit/logs`
+- **URL**: `/api/audit/logs`
 - **Authorization**: Requires `Admin` or `Manager` role
-- **Access Control**: 
+- **Access Control**:
   - Admins can view all audit logs
   - Managers can only view logs for hotels they have access to
 
@@ -21,15 +21,15 @@ Retrieves a paginated list of audit logs with optional filtering.
 
 All parameters are sent as query parameters:
 
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| page | integer | No | 1 | Page number for pagination |
-| pageSize | integer | No | 20 | Number of items per page |
-| from | DateTimeOffset | No | null | Filter logs from this timestamp |
-| to | DateTimeOffset | No | null | Filter logs up to this timestamp |
-| userId | Guid | No | null | Filter logs by specific user ID |
-| hotelId | Guid | No | null | Filter logs by specific hotel ID |
-| action | string | No | null | Filter logs by action (partial match, case-insensitive) |
+| Parameter | Type           | Required | Default | Description                                             |
+| --------- | -------------- | -------- | ------- | ------------------------------------------------------- |
+| page      | integer        | No       | 1       | Page number for pagination                              |
+| pageSize  | integer        | No       | 20      | Number of items per page                                |
+| from      | DateTimeOffset | No       | null    | Filter logs from this timestamp                         |
+| to        | DateTimeOffset | No       | null    | Filter logs up to this timestamp                        |
+| userId    | Guid           | No       | null    | Filter logs by specific user ID                         |
+| hotelId   | Guid           | No       | null    | Filter logs by specific hotel ID                        |
+| action    | string         | No       | null    | Filter logs by action (partial match, case-insensitive) |
 
 #### Response Format
 
@@ -49,7 +49,7 @@ All parameters are sent as query parameters:
         "browser": "Chrome 118.0.0",
         "success": true
       }
-    },
+    }
     // Additional audit log entries...
   ],
   "errors": null,
@@ -64,7 +64,7 @@ All parameters are sent as query parameters:
 #### Example Request
 
 ```
-GET /api/admin/audit/logs?page=1&pageSize=10&from=2025-10-01T00:00:00Z&to=2025-11-01T00:00:00Z&action=booking
+GET /api/audit/logs?page=1&pageSize=10&from=2025-10-01T00:00:00Z&to=2025-11-01T00:00:00Z&action=booking
 ```
 
 #### Example Response
@@ -83,7 +83,7 @@ GET /api/admin/audit/logs?page=1&pageSize=10&from=2025-10-01T00:00:00Z&to=2025-1
         "bookingId": "5fa85f64-5717-4562-b3fc-2c963f66afa6",
         "guestName": "John Smith",
         "roomCount": 1,
-        "totalAmount": 250.00
+        "totalAmount": 250.0
       }
     },
     {
@@ -100,8 +100,8 @@ GET /api/admin/audit/logs?page=1&pageSize=10&from=2025-10-01T00:00:00Z&to=2025-1
             "new": "2025-10-16"
           },
           "totalAmount": {
-            "old": 200.00,
-            "new": 250.00
+            "old": 200.0,
+            "new": 250.0
           }
         }
       }
@@ -170,6 +170,7 @@ public class ApiResponse<T>
 ### 403 Forbidden
 
 Returned when:
+
 - The user is not authenticated
 - The user's token doesn't contain a valid user ID
 - The user doesn't have the required role (Admin or Manager)
@@ -206,14 +207,17 @@ Returned when query parameters are invalid.
 1. **Pagination**: The API uses 1-based pagination with a default page size of 20 items.
 
 2. **Role-Based Access Control**:
+
    - Users with the `Admin` role can view all audit logs in the system
    - Users with the `Manager` role can only view logs for hotels they have access to
 
 3. **Filtering**:
+
    - Date filters use ISO 8601 format (e.g., `2025-10-01T00:00:00Z`)
    - Action filtering is case-insensitive and matches substrings
 
 4. **Metadata**:
+
    - The `metadata` field contains a JSON object with action-specific details
    - The structure varies depending on the action type
    - It's deserialized from the database's `MetadataJson` column

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace HotelManagement.Api.Controllers.Admin;
 
 [ApiController]
-[Route("api/admin/room-types")]
+[Route("api/room-types")]
 [Authorize]
 public class RoomTypesController : ControllerBase
 {

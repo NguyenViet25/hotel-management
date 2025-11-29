@@ -6,7 +6,7 @@ using System.Security.Claims;
 namespace HotelManagement.Api.Controllers.Admin;
 
 [ApiController]
-[Route("api/admin/menu")]
+[Route("api/menu")]
 [Authorize]
 public class MenuController : ControllerBase
 {

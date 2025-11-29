@@ -32,25 +32,37 @@ export interface UpdateOrderItemStatusRequest {
 }
 
 const orderItemsApi = {
-  async updateStatus(id: string, payload: UpdateOrderItemStatusRequest): Promise<ItemResponse<OrderItemStatusDto>> {
-    const res = await axios.put(`/admin/order-items/${id}/status`, payload);
+  async updateStatus(
+    id: string,
+    payload: UpdateOrderItemStatusRequest
+  ): Promise<ItemResponse<OrderItemStatusDto>> {
+    const res = await axios.put(`/order-items/${id}/status`, payload);
     return res.data;
   },
-  async listPending(hotelId: string, page = 1, pageSize = 10): Promise<ListResponse<OrderItemStatusListResponse>> {
+  async listPending(
+    hotelId: string,
+    page = 1,
+    pageSize = 10
+  ): Promise<ListResponse<OrderItemStatusListResponse>> {
     const qp = new URLSearchParams();
     qp.append("hotelId", hotelId);
     qp.append("page", String(page));
     qp.append("pageSize", String(pageSize));
-    const res = await axios.get(`/admin/order-items/pending?${qp.toString()}`);
+    const res = await axios.get(`/order-items/pending?${qp.toString()}`);
     return res.data;
   },
-  async listByStatus(hotelId: string, status: string, page = 1, pageSize = 10): Promise<ListResponse<OrderItemStatusListResponse>> {
+  async listByStatus(
+    hotelId: string,
+    status: string,
+    page = 1,
+    pageSize = 10
+  ): Promise<ListResponse<OrderItemStatusListResponse>> {
     const qp = new URLSearchParams();
     qp.append("hotelId", hotelId);
     qp.append("status", status);
     qp.append("page", String(page));
     qp.append("pageSize", String(pageSize));
-    const res = await axios.get(`/admin/order-items/by-status?${qp.toString()}`);
+    const res = await axios.get(`/order-items/by-status?${qp.toString()}`);
     return res.data;
   },
 };

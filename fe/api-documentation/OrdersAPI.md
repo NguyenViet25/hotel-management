@@ -6,7 +6,7 @@ This document describes the Orders API endpoints that implement UC-28 (Create wa
 
 ## Base URL
 
-`/api/admin/orders`
+`/api/orders`
 
 ## Authentication
 
@@ -21,9 +21,13 @@ All endpoints return a consistent wrapper:
 {
   "isSuccess": true,
   "message": null,
-  "data": { /* payload */ },
+  "data": {
+    /* payload */
+  },
   "errors": null,
-  "meta": { /* optional pagination */ }
+  "meta": {
+    /* optional pagination */
+  }
 }
 ```
 
@@ -84,7 +88,7 @@ All endpoints return a consistent wrapper:
 
 ## UC-28 — Create Walk-in Order
 
-- URL: `/api/admin/orders/walk-in`
+- URL: `/api/orders/walk-in`
 - Method: `POST`
 - Purpose: Create a walk-in F&B order with minimal customer info.
 
@@ -103,6 +107,7 @@ All endpoints return a consistent wrapper:
 ```
 
 Validation rules:
+
 - `hotelId`: required, must exist
 - `customerName`: required, max length 100
 - `customerPhone`: optional, max length 20
@@ -165,6 +170,7 @@ Validation rules:
 ```
 
 Notes:
+
 - Menu items are validated to belong to `hotelId` and be `IsActive`.
 - New orders start in `Draft` status.
 
@@ -172,7 +178,7 @@ Notes:
 
 ## UC-29 — Create Order for Existing Booking
 
-- URL: `/api/admin/orders/booking`
+- URL: `/api/orders/booking`
 - Method: `POST`
 - Purpose: Attach a new F&B order to an existing booking; add notes and items.
 
@@ -190,6 +196,7 @@ Notes:
 ```
 
 Validation rules:
+
 - `hotelId`: required
 - `bookingId`: required; must exist and belong to `hotelId`
 - `notes`: optional
@@ -244,13 +251,14 @@ Validation rules:
 ```
 
 Notes:
+
 - Orders created for bookings also start with `Draft`.
 
 ---
 
 ## UC-30 — List Orders
 
-- URL: `/api/admin/orders`
+- URL: `/api/orders`
 - Method: `GET`
 - Purpose: List orders that are currently being served or paid; supports filters and pagination.
 
@@ -266,7 +274,7 @@ Notes:
 
 Example:
 
-`GET /api/admin/orders?status=Serving&page=1&pageSize=10&search=doe`
+`GET /api/orders?status=Serving&page=1&pageSize=10&search=doe`
 
 ### Success Response (List of OrderSummaryDto)
 
@@ -323,6 +331,7 @@ Example:
 ```
 
 Notes:
+
 - `status` filter typically targets `Serving` and `Paid` for the UC.
 - Pagination returns `meta` when supported.
 
@@ -330,12 +339,12 @@ Notes:
 
 ## Supporting Endpoints (from OrdersController)
 
-- `GET /api/admin/orders/{id}` — Get order details by ID. Returns `404 Not Found` if not found.
-- `PUT /api/admin/orders/{id}` — Update order notes/status using `UpdateOrderDto`.
-- `POST /api/admin/orders/{orderId}/items` — Add an item (`AddOrderItemDto`).
-- `PUT /api/admin/orders/{orderId}/items/{itemId}` — Update item (`UpdateOrderItemDto`).
-- `DELETE /api/admin/orders/{orderId}/items/{itemId}` — Remove item.
-- `POST /api/admin/orders/{orderId}/apply-discount` — Apply discount code (`ApplyDiscountDto`), returns updated total as decimal.
+- `GET /api/orders/{id}` — Get order details by ID. Returns `404 Not Found` if not found.
+- `PUT /api/orders/{id}` — Update order notes/status using `UpdateOrderDto`.
+- `POST /api/orders/{orderId}/items` — Add an item (`AddOrderItemDto`).
+- `PUT /api/orders/{orderId}/items/{itemId}` — Update item (`UpdateOrderItemDto`).
+- `DELETE /api/orders/{orderId}/items/{itemId}` — Remove item.
+- `POST /api/orders/{orderId}/apply-discount` — Apply discount code (`ApplyDiscountDto`), returns updated total as decimal.
 
 ## Controller & Action Suggestions
 

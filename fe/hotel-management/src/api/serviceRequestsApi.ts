@@ -43,27 +43,38 @@ export interface ServiceRequestListResponse {
 }
 
 const serviceRequestsApi = {
-  async create(payload: CreateServiceRequestRequest): Promise<ItemResponse<ServiceRequestDto>> {
-    const res = await axios.post(`/admin/service-requests`, payload);
+  async create(
+    payload: CreateServiceRequestRequest
+  ): Promise<ItemResponse<ServiceRequestDto>> {
+    const res = await axios.post(`/service-requests`, payload);
     return res.data;
   },
-  async update(id: string, payload: UpdateServiceRequestRequest): Promise<ItemResponse<ServiceRequestDto>> {
-    const res = await axios.put(`/admin/service-requests/${id}`, payload);
+  async update(
+    id: string,
+    payload: UpdateServiceRequestRequest
+  ): Promise<ItemResponse<ServiceRequestDto>> {
+    const res = await axios.put(`/service-requests/${id}`, payload);
     return res.data;
   },
   async getById(id: string): Promise<ItemResponse<ServiceRequestDto>> {
-    const res = await axios.get(`/admin/service-requests/${id}`);
+    const res = await axios.get(`/service-requests/${id}`);
     return res.data;
   },
-  async listBySession(sessionId: string, page = 1, pageSize = 10): Promise<ListResponse<ServiceRequestListResponse>> {
+  async listBySession(
+    sessionId: string,
+    page = 1,
+    pageSize = 10
+  ): Promise<ListResponse<ServiceRequestListResponse>> {
     const qp = new URLSearchParams();
     qp.append("page", String(page));
     qp.append("pageSize", String(pageSize));
-    const res = await axios.get(`/admin/service-requests/by-session/${sessionId}?${qp.toString()}`);
+    const res = await axios.get(
+      `/service-requests/by-session/${sessionId}?${qp.toString()}`
+    );
     return res.data;
   },
   async complete(id: string): Promise<ItemResponse<boolean>> {
-    const res = await axios.post(`/admin/service-requests/${id}/complete`);
+    const res = await axios.post(`/service-requests/${id}/complete`);
     return res.data;
   },
 };

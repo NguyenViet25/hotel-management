@@ -78,19 +78,19 @@ const menusApi = {
     if (params.pageSize !== undefined)
       qp.append("pageSize", String(params.pageSize));
 
-    const res = await axios.get(`/admin/menu?${qp.toString()}`);
+    const res = await axios.get(`/menu?${qp.toString()}`);
     return res.data;
   },
 
   async getMenuGroups(): Promise<ListResponse<MenuGroupDto>> {
-    const res = await axios.get(`/admin/menu/groups`);
+    const res = await axios.get(`/menu/groups`);
     return res.data;
   },
 
   async createMenuItem(
     payload: CreateMenuItemRequest
   ): Promise<ItemResponse<MenuItemDto>> {
-    const res = await axios.post(`/admin/menu`, payload);
+    const res = await axios.post(`/menu`, payload);
     return res.data;
   },
 
@@ -98,14 +98,14 @@ const menusApi = {
     id: string,
     payload: UpdateMenuItemRequest
   ): Promise<ItemResponse<MenuItemDto>> {
-    const res = await axios.put(`/admin/menu/${id}`, payload);
+    const res = await axios.put(`/menu/${id}`, payload);
     return res.data;
   },
 
   async deleteMenuItem(
     id: string
   ): Promise<{ isSuccess: boolean; message: string | null }> {
-    const res = await axios.delete(`/admin/menu/${id}`);
+    const res = await axios.delete(`/menu/${id}`);
     return res.data;
   },
 };

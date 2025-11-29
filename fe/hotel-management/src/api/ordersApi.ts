@@ -124,26 +124,26 @@ const ordersApi = {
     if (params.search) qp.append("search", params.search);
     qp.append("page", String(params.page ?? 1));
     qp.append("pageSize", String(params.pageSize ?? 10));
-    const res = await axios.get(`/admin/orders?${qp.toString()}`);
+    const res = await axios.get(`/orders?${qp.toString()}`);
     return res.data;
   },
 
   async getById(id: string): Promise<ItemResponse<OrderDetailsDto>> {
-    const res = await axios.get(`/admin/orders/${id}`);
+    const res = await axios.get(`/orders/${id}`);
     return res.data;
   },
 
   async createWalkIn(
     payload: CreateOrderDto
   ): Promise<ItemResponse<OrderDetailsDto>> {
-    const res = await axios.post(`/admin/orders/walk-in`, payload);
+    const res = await axios.post(`/orders/walk-in`, payload);
     return res.data;
   },
 
   async createForBooking(
     payload: CreateOrderDto
   ): Promise<ItemResponse<OrderDetailsDto>> {
-    const res = await axios.post(`/admin/orders/booking`, payload);
+    const res = await axios.post(`/orders/booking`, payload);
     return res.data;
   },
 
@@ -151,7 +151,7 @@ const ordersApi = {
     id: string,
     payload: UpdateOrderDto
   ): Promise<ItemResponse<OrderDetailsDto>> {
-    const res = await axios.put(`/admin/orders/walk-in/${id}`, payload);
+    const res = await axios.put(`/orders/walk-in/${id}`, payload);
     return res.data;
   },
 
@@ -159,7 +159,7 @@ const ordersApi = {
     id: string,
     payload: UpdateOrderDto
   ): Promise<ItemResponse<OrderDetailsDto>> {
-    const res = await axios.put(`/admin/orders/booking/${id}`, payload);
+    const res = await axios.put(`/orders/booking/${id}`, payload);
     return res.data;
   },
 
@@ -167,7 +167,7 @@ const ordersApi = {
     orderId: string,
     payload: AddOrderItemDto
   ): Promise<ItemResponse<OrderDetailsDto>> {
-    const res = await axios.post(`/admin/orders/${orderId}/items`, payload);
+    const res = await axios.post(`/orders/${orderId}/items`, payload);
     return res.data;
   },
 
@@ -176,10 +176,7 @@ const ordersApi = {
     itemId: string,
     payload: UpdateOrderItemDto
   ): Promise<ItemResponse<OrderDetailsDto>> {
-    const res = await axios.put(
-      `/admin/orders/${orderId}/items/${itemId}`,
-      payload
-    );
+    const res = await axios.put(`/orders/${orderId}/items/${itemId}`, payload);
     return res.data;
   },
 
@@ -187,7 +184,7 @@ const ordersApi = {
     orderId: string,
     itemId: string
   ): Promise<ItemResponse<OrderDetailsDto>> {
-    const res = await axios.delete(`/admin/orders/${orderId}/items/${itemId}`);
+    const res = await axios.delete(`/orders/${orderId}/items/${itemId}`);
     return res.data;
   },
 
@@ -197,7 +194,7 @@ const ordersApi = {
     payload: ReplaceOrderItemDto
   ): Promise<ItemResponse<OrderDetailsDto>> {
     const res = await axios.post(
-      `/admin/orders/${orderId}/items/${itemId}/replace`,
+      `/orders/${orderId}/items/${itemId}/replace`,
       payload
     );
     return res.data;
@@ -207,10 +204,7 @@ const ordersApi = {
     orderId: string,
     payload: ApplyDiscountDto
   ): Promise<ItemResponse<number>> {
-    const res = await axios.post(
-      `/admin/orders/${orderId}/apply-discount`,
-      payload
-    );
+    const res = await axios.post(`/orders/${orderId}/apply-discount`, payload);
     return res.data;
   },
 };

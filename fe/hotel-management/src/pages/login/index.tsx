@@ -100,7 +100,7 @@ const LoginPage = () => {
     let path = "/dashboard";
     switch (role) {
       case "admin":
-        path = "/admin/dashboard";
+        path = "/dashboard";
         break;
       case "manager":
         path = "/manager/dashboard";

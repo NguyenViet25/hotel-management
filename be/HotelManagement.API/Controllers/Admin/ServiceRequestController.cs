@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace HotelManagement.Api.Controllers.Admin;
 
 [ApiController]
-[Route("api/admin/service-requests")]
+[Route("api/service-requests")]
 [Authorize]
 public class ServiceRequestController : ControllerBase
 {

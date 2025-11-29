@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace HotelManagement.Api.Controllers.Admin;
 
 [ApiController]
-[Route("api/admin/order-items")]
+[Route("api/order-items")]
 [Authorize(Roles = "Admin,Manager,Kitchen,Waiter")]
 public class OrderItemStatusController : ControllerBase
 {

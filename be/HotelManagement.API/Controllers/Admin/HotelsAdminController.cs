@@ -8,7 +8,7 @@ using System.Security.Claims;
 namespace HotelManagement.Api.Controllers.Admin;
 
 [ApiController]
-[Route("api/admin/hotels")]
+[Route("api/hotels")]
 public class HotelsAdminController : ControllerBase
 {
     private readonly IHotelsAdminService _svc;

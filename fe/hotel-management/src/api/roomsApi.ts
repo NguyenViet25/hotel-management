@@ -91,17 +91,17 @@ const roomsApi = {
     qp.append("page", String(params.page ?? 1));
     qp.append("pageSize", String(params.pageSize ?? 10));
 
-    const res = await axios.get(`/admin/rooms?${qp.toString()}`);
+    const res = await axios.get(`/rooms?${qp.toString()}`);
     return res.data;
   },
 
   async getRoomById(id: string): Promise<ItemResponse<RoomDto>> {
-    const res = await axios.get(`/admin/rooms/${id}`);
+    const res = await axios.get(`/rooms/${id}`);
     return res.data;
   },
 
   async createRoom(payload: CreateRoomRequest): Promise<ItemResponse<RoomDto>> {
-    const res = await axios.post(`/admin/rooms`, payload);
+    const res = await axios.post(`/rooms`, payload);
     return res.data;
   },
 
@@ -109,14 +109,14 @@ const roomsApi = {
     id: string,
     payload: UpdateRoomRequest
   ): Promise<ItemResponse<RoomDto>> {
-    const res = await axios.put(`/admin/rooms/${id}`, payload);
+    const res = await axios.put(`/rooms/${id}`, payload);
     return res.data;
   },
 
   async deleteRoom(
     id: string
   ): Promise<{ isSuccess: boolean; message: string | null }> {
-    const res = await axios.delete(`/admin/rooms/${id}`);
+    const res = await axios.delete(`/rooms/${id}`);
     return res.data;
   },
 
@@ -124,7 +124,7 @@ const roomsApi = {
     id: string
   ): Promise<{ isSuccess: boolean; message: string | null }> {
     // Optional endpoint; if not supported, server should enforce and return error on delete
-    const res = await axios.get(`/admin/rooms/${id}/can-delete`);
+    const res = await axios.get(`/rooms/${id}/can-delete`);
     return res.data;
   },
 };

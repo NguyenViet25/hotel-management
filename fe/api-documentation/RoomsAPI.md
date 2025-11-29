@@ -7,7 +7,7 @@ This document provides detailed information about the Rooms API endpoints in the
 ## Base URL
 
 ```
-/api/admin/rooms
+/api/rooms
 ```
 
 ## Authentication and Authorization
@@ -33,18 +33,18 @@ All API responses follow a standard format:
 
 Retrieves a list of rooms with optional filtering by status, floor, and type.
 
-- **URL**: `/api/admin/rooms`
+- **URL**: `/api/rooms`
 - **Method**: `GET`
 - **Auth Required**: Yes
 - **Query Parameters**:
 
-| Parameter | Type    | Required | Description                                      |
-|-----------|---------|----------|--------------------------------------------------|
-| hotelId   | guid    | No       | Filter by hotel ID                               |
-| status    | string  | No       | Filter by room status                            |
-| floor     | integer | No       | Filter by floor number                           |
-| typeId    | guid    | No       | Filter by room type ID                           |
-| number    | string  | No       | Filter by room number                            |
+| Parameter | Type    | Required | Description            |
+| --------- | ------- | -------- | ---------------------- |
+| hotelId   | guid    | No       | Filter by hotel ID     |
+| status    | string  | No       | Filter by room status  |
+| floor     | integer | No       | Filter by floor number |
+| typeId    | guid    | No       | Filter by room type ID |
+| number    | string  | No       | Filter by room number  |
 
 - **Success Response**:
   - **Code**: 200 OK
@@ -74,7 +74,7 @@ Retrieves a list of rooms with optional filtering by status, floor, and type.
 
 Retrieves details for a specific room by ID.
 
-- **URL**: `/api/admin/rooms/{id}`
+- **URL**: `/api/rooms/{id}`
 - **Method**: `GET`
 - **Auth Required**: Yes
 - **URL Parameters**:
@@ -117,7 +117,7 @@ Retrieves details for a specific room by ID.
 
 Creates a new room with assigned type, floor, and number.
 
-- **URL**: `/api/admin/rooms`
+- **URL**: `/api/rooms`
 - **Method**: `POST`
 - **Auth Required**: Yes
 - **Request Body**:

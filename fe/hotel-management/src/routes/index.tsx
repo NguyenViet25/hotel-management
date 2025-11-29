@@ -52,9 +52,9 @@ const NotFoundPage = lazy(() => import("../pages/not-found"));
 const LoginPage = lazy(() => import("../pages/login"));
 const ProfilePage = lazy(() => import("../pages/profile/ProfilePage"));
 const UserManagementPage = lazy(
-  () => import("../pages/dashboard/admin/user-management")
+  () => import("../pages/dashboard/user-management")
 );
-const AuditLogsPage = lazy(() => import("../pages/dashboard/admin/audit-logs"));
+const AuditLogsPage = lazy(() => import("../pages/dashboard/audit-logs"));
 const HotelsListPage = lazy(
   () => import("../features/hotels/pages/HotelsListPage")
 );
@@ -98,7 +98,9 @@ const LoadingFallback = () => (
 
 const AdminDashboard = () => <AdminDashboardPage />;
 const ManagerDashboard = () => <ManagerDashboardPage />;
-const FrontDeskDashboardPage = lazy(() => import("../pages/dashboard/frontdesk"));
+const FrontDeskDashboardPage = lazy(
+  () => import("../pages/dashboard/frontdesk")
+);
 const FrontDeskDashboard = () => (
   <Suspense fallback={<LoadingFallback />}>
     <FrontDeskDashboardPage />
@@ -172,7 +174,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: "",
-        element: <Navigate to="/admin/dashboard" replace />,
+        element: <Navigate to="/dashboard" replace />,
       },
       {
         path: "dashboard",

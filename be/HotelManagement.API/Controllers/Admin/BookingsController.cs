@@ -9,7 +9,7 @@ using System;
 namespace HotelManagement.Api.Controllers.Admin;
 
 [ApiController]
-[Route("api/admin/bookings")]
+[Route("api/bookings")]
 [Authorize]
 public class BookingsController(IBookingsService bookingsService, IWebHostEnvironment env, IMediaService service) : ControllerBase
 {

@@ -45,7 +45,7 @@ export interface HousekeeperDashboardSummary {
 
 const dashboardApi = {
   async getAdminSummary(): Promise<ApiResponse<AdminDashboardSummary>> {
-    const res = await axios.get(`/dashboard/admin/summary`);
+    const res = await axios.get(`/dashboard/summary`);
     return res.data;
   },
   async getManagerSummary(

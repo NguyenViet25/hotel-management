@@ -95,26 +95,26 @@ const invoicesApi = {
     if (params.toDate) qp.append("toDate", params.toDate);
     qp.append("page", String(params.page ?? 1));
     qp.append("pageSize", String(params.pageSize ?? 10));
-    const res = await axios.get(`/admin/invoices?${qp.toString()}`);
+    const res = await axios.get(`/invoices?${qp.toString()}`);
     return res.data;
   },
 
   async getById(id: string): Promise<ItemResponse<InvoiceDto>> {
-    const res = await axios.get(`/admin/invoices/${id}`);
+    const res = await axios.get(`/invoices/${id}`);
     return res.data;
   },
 
   async createWalkIn(
     payload: CreateWalkInInvoiceRequest
   ): Promise<ItemResponse<InvoiceDto>> {
-    const res = await axios.post(`/admin/invoices/walk-in`, payload);
+    const res = await axios.post(`/invoices/walk-in`, payload);
     return res.data;
   },
 
   async createBooking(
     payload: CreateBookingInvoiceRequest
   ): Promise<ItemResponse<InvoiceDto>> {
-    const res = await axios.post(`/admin/invoices/booking`, payload);
+    const res = await axios.post(`/invoices/booking`, payload);
     return res.data;
   },
 };

@@ -14,7 +14,7 @@ using Microsoft.EntityFrameworkCore;
 namespace HotelManagement.Api.Controllers.Admin;
 
 [ApiController]
-[Route("api/admin/invoices")]
+[Route("api/invoices")]
 [Authorize]
 public class InvoicesController : ControllerBase
 {
