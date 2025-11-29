@@ -178,3 +178,4 @@
 2025-11-28 - 3 - 01:44:52 UTC :: test: UC-33 Phan ca: gan ca, duyet doi ca/ngi phep. — don dep code va xoa doan thua (da kiem tra lint)
 2025-11-28 - 4 - 01:44:53 UTC :: perf: UC-36 Duyet ngoai le: duyet/tu choi theo han muc. — them log chi tiet phuc vu audit (da review so bo)
 2025-11-28 - 5 - 01:44:54 UTC :: chore: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — bo sung metrics/telemetry co ban (da kiem tra lint)
+2025-11-29 - 1 - 01:44:00 UTC :: refactor: UC-42 Phan quyen: thiet lap quyen theo co so. — bo sung index & toi uu DB (khong doi hanh vi)
