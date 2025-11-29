@@ -181,3 +181,4 @@
 2025-11-29 - 1 - 01:44:00 UTC :: feat: UC-23 Bao tri: tao ticket, dinh anh, mo ta loi. — chinh sua tai lieu & mo ta API (khong doi hanh vi)
 2025-11-29 - 2 - 01:44:02 UTC :: feat: UC-01 RBAC: tao, sua, khoa tai khoan; gan vai tro. — chinh sua tai lieu & mo ta API (dam bao backward-compatible)
 2025-11-29 - 3 - 01:44:03 UTC :: fix: UC-10 Goi gia: tao rate plan, thoi gian ap dung linh hoat. — dieu chinh UI & copy cho ro (da review so bo)
+2025-11-29 - 4 - 01:44:06 UTC :: refactor: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — fix race-condition nho trong thao tac (da smoke test)
