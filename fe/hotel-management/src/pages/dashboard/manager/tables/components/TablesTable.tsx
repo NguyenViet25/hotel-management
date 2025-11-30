@@ -238,43 +238,6 @@ const TablesTable: React.FC<TablesTableProps> = ({
                           <Box sx={{ position: "absolute", top: 8, left: 8 }}>
                             {statusChip(row.status)}
                           </Box>
-                          <Stack
-                            sx={{ position: "absolute", top: 6, right: 6 }}
-                            direction="row"
-                            spacing={0.5}
-                          >
-                            <Tooltip title="Xem">
-                              <IconButton
-                                size="small"
-                                color="primary"
-                                onClick={() => setViewItem(row)}
-                              >
-                                <Visibility fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                            {onEdit && (
-                              <Tooltip title="Sửa">
-                                <IconButton
-                                  size="small"
-                                  color="info"
-                                  onClick={() => onEdit(row)}
-                                >
-                                  <Edit fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-                            )}
-                            {onDelete && (
-                              <Tooltip title="Xóa">
-                                <IconButton
-                                  size="small"
-                                  color="error"
-                                  onClick={() => onDelete(row)}
-                                >
-                                  <Delete fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-                            )}
-                          </Stack>
                         </Box>
                         <Stack spacing={0.5} sx={{ px: 1.5, pb: 1.5 }}>
                           <Typography
@@ -296,6 +259,43 @@ const TablesTable: React.FC<TablesTableProps> = ({
                               {seats} người/bàn
                             </Typography>
                           </Stack>
+                        </Stack>
+                        <Stack
+                          sx={{ position: "absolute", bottom: 8, right: 8 }}
+                          direction="column"
+                          spacing={0.5}
+                        >
+                          <Tooltip title="Xem">
+                            <IconButton
+                              size="small"
+                              color="primary"
+                              onClick={() => setViewItem(row)}
+                            >
+                              <Visibility fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                          {onEdit && (
+                            <Tooltip title="Sửa">
+                              <IconButton
+                                size="small"
+                                color="info"
+                                onClick={() => onEdit(row)}
+                              >
+                                <Edit fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                          {onDelete && (
+                            <Tooltip title="Xóa">
+                              <IconButton
+                                size="small"
+                                color="error"
+                                onClick={() => onDelete(row)}
+                              >
+                                <Delete fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          )}
                         </Stack>
                       </Card>
                     );

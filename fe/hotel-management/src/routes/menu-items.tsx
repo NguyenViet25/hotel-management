@@ -17,6 +17,7 @@ import {
   Room as RoomIcon,
   Settings as SettingsIcon,
   ShoppingCart,
+  TableBar,
 } from "@mui/icons-material";
 
 export const menuItems = {
@@ -44,7 +45,7 @@ export const menuItems = {
       icon: <Discount />,
     },
     { title: "Thực đơn", path: "/manager/menus", icon: <DiningIcon /> },
-    { title: "Bàn ăn", path: "/manager/tables", icon: <RestaurantIcon /> },
+    { title: "Bàn ăn", path: "/manager/tables", icon: <TableBar /> },
     { title: "Minibar", path: "/manager/minibars", icon: <InsertEmoticon /> },
     // { title: "Media", path: "/manager/media", icon: <Image /> },
   ],

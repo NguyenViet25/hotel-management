@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Box,
@@ -8,14 +8,31 @@ import {
   DialogTitle,
   Snackbar,
   Button,
+  Grid,
+  Card,
+  CardHeader,
+  CardContent,
+  Chip,
+  Stack,
+  Typography,
+  Tooltip,
+  IconButton,
+  TableContainer,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
 } from "@mui/material";
+import { Edit } from "@mui/icons-material";
 import PageTitle from "../../../../components/common/PageTitle";
 import minibarApi, {
   type Minibar,
   type MinibarCreate,
   type MinibarUpdate,
 } from "../../../../api/minibarApi";
-import MinibarTable from "./components/MinibarTable";
+import mediaApi from "../../../../api/mediaApi";
+import roomTypesApi, { type RoomType } from "../../../../api/roomTypesApi";
 import MinibarFormModal from "./components/MinibarFormModal";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
 
@@ -24,6 +41,11 @@ const MinibarManagementPage: React.FC = () => {
   const [items, setItems] = useState<Minibar[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
+  const [roomTypesLoading, setRoomTypesLoading] = useState<boolean>(false);
+  const [minibarImages, setMinibarImages] = useState<Record<string, string>>(
+    {}
+  );
 
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -63,9 +85,62 @@ const MinibarManagementPage: React.FC = () => {
   }, [hotelId]);
 
   useEffect(() => {
+    const f = async () => {
+      if (!hotelId) return;
+      setRoomTypesLoading(true);
+      try {
+        const res = await roomTypesApi.getRoomTypes({ hotelId, pageSize: 100 });
+        setRoomTypes(res.data || []);
+      } catch {}
+      setRoomTypesLoading(false);
+    };
+    f();
+  }, [hotelId]);
+
+  useEffect(() => {
     fetchMinibars();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm]);
+
+  const groupedByRoomType = useMemo(() => {
+    const map: Record<string, Minibar[]> = {};
+    for (const it of items) {
+      const key = it.roomTypeId;
+      if (!map[key]) map[key] = [];
+      map[key].push(it);
+    }
+    return map;
+  }, [items]);
+
+  const handleUploadImage = async (minibarId: string, file?: File | null) => {
+    if (!file) return;
+    try {
+      const res = await mediaApi.upload(file);
+      if (res?.data?.fileUrl) {
+        setMinibarImages((prev) => ({
+          ...prev,
+          [minibarId]: res.data.fileUrl,
+        }));
+        setSnackbar({
+          open: true,
+          message: "Tải ảnh thành công",
+          severity: "success",
+        });
+      } else {
+        setSnackbar({
+          open: true,
+          message: "Không lấy được ảnh",
+          severity: "warning",
+        });
+      }
+    } catch {
+      setSnackbar({
+        open: true,
+        message: "Tải ảnh thất bại",
+        severity: "error",
+      });
+    }
+  };
 
   const openCreate = () => setCreateOpen(true);
   const closeCreate = () => setCreateOpen(false);
@@ -166,14 +241,113 @@ const MinibarManagementPage: React.FC = () => {
     <Box>
       <PageTitle title="Quản lý minibar" subtitle="Thêm, sửa, xóa minibar" />
 
-      <MinibarTable
-        data={items}
-        loading={loading}
-        onAdd={openCreate}
-        onEdit={openEdit}
-        onDelete={openDelete}
-        onSearch={(e) => setSearchTerm(e)}
-      />
+      <Stack spacing={2} sx={{ mb: 2 }}>
+        <Button variant="contained" onClick={openCreate}>
+          Thêm minibar
+        </Button>
+      </Stack>
+
+      {loading || roomTypesLoading ? (
+        <Alert severity="info">Đang tải dữ liệu...</Alert>
+      ) : (
+        <Grid container spacing={2}>
+          {roomTypes.map((rt) => {
+            const list = groupedByRoomType[rt.id] || [];
+            return (
+              <Grid key={rt.id} item xs={12} sm={6} md={4} lg={3}>
+                <Card variant="outlined" sx={{ borderRadius: 2 }}>
+                  <CardHeader
+                    title={
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <Typography
+                          variant="subtitle1"
+                          sx={{ fontWeight: 700 }}
+                        >
+                          {rt.name}
+                        </Typography>
+                        <Chip label={`${list.length} minibar`} size="small" />
+                      </Stack>
+                    }
+                  />
+                  <CardContent>
+                    {list.length === 0 ? (
+                      <Chip label="Không có minibar" />
+                    ) : (
+                      <TableContainer>
+                        <Table size="small">
+                          <TableHead>
+                            <TableRow>
+                              <TableCell>Hình</TableCell>
+                              <TableCell>Tên</TableCell>
+                              <TableCell>SL</TableCell>
+                              <TableCell>Giá</TableCell>
+                              <TableCell align="right">Sửa</TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {[...list]
+                              .sort((a, b) =>
+                                (a.name || "").localeCompare(b.name || "")
+                              )
+                              .map((mb) => (
+                                <TableRow key={mb.id} hover>
+                                  <TableCell width={92}>
+                                    {minibarImages[mb.id] ? (
+                                      <img
+                                        src={minibarImages[mb.id]}
+                                        alt={mb.name}
+                                        style={{
+                                          width: 72,
+                                          height: 48,
+                                          objectFit: "cover",
+                                          borderRadius: 8,
+                                          border: "1px solid #e0e0e0",
+                                        }}
+                                      />
+                                    ) : (
+                                      <Chip label="Chưa có ảnh" size="small" />
+                                    )}
+                                  </TableCell>
+                                  <TableCell>
+                                    <Typography
+                                      variant="body2"
+                                      sx={{ fontWeight: 700 }}
+                                    >
+                                      {mb.name}
+                                    </Typography>
+                                  </TableCell>
+                                  <TableCell width={100}>
+                                    {mb.quantity}
+                                  </TableCell>
+                                  <TableCell width={140}>
+                                    {mb.price.toLocaleString()}₫
+                                  </TableCell>
+                                  <TableCell align="right" width={80}>
+                                    <Tooltip title="Sửa minibar">
+                                      <span>
+                                        <IconButton
+                                          size="small"
+                                          color="primary"
+                                          onClick={() => openEdit(mb)}
+                                        >
+                                          <Edit fontSize="small" />
+                                        </IconButton>
+                                      </span>
+                                    </Tooltip>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    )}
+                  </CardContent>
+                </Card>
+              </Grid>
+            );
+          })}
+        </Grid>
+      )}
 
       <MinibarFormModal
         open={createOpen}
