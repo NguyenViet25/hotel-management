@@ -29,6 +29,7 @@ public static class DatabaseInitializationExtensions
             SeedRoles(roleManager).GetAwaiter().GetResult();
             SeedUsers(userManager, dbContext).GetAwaiter().GetResult();
             SeedMenuItemsAsync(dbContext).GetAwaiter().GetResult();
+            SeedMenuSetsAsync(dbContext).GetAwaiter().GetResult();
             SeedPromotionsAsync(dbContext).GetAwaiter().GetResult();
             SeedMinibarsAsync(dbContext).GetAwaiter().GetResult();
             SeedTablesAsync(dbContext).GetAwaiter().GetResult();
@@ -240,6 +241,76 @@ public static class DatabaseInitializationExtensions
         };
 
         dbContext.Set<MenuItem>().AddRange(menuItems);
+        await dbContext.SaveChangesAsync();
+    }
+
+    public static async Task SeedMenuSetsAsync(DbContext dbContext)
+    {
+        var hotelId = DEFAULT_HOTEL_ID;
+        bool setsExist = await dbContext.Set<MenuItem>()
+            .AnyAsync(mi => mi.HotelId == hotelId && mi.Category == "Set");
+        if (setsExist) return;
+
+        var set1 = string.Join("\n", new[]
+        {
+            "Tôm chao dầu",
+            "Mực xào cần tỏi",
+            "Cá biển sốt cà chua",
+            "Hầu nướng mỡ hành",
+            "Ngô chiên",
+            "Rau theo mùa",
+            "Canh theo ngày",
+            "Cơm trắng",
+            "Cà pháo"
+        });
+
+        var set2 = string.Join("\n", new[]
+        {
+            "Tôm nướng mọi",
+            "Mực nhảy hấp",
+            "Cá rim tiêu",
+            "Sò xào măng",
+            "Khoai chiên",
+            "Rau theo mùa",
+            "Canh theo ngày",
+            "Cơm trắng",
+            "Cà pháo"
+        });
+
+        var set3 = string.Join("\n", new[]
+        {
+            "Tôm rang muối",
+            "Mực chiên bơ",
+            "Gà rang gừng",
+            "Mòng tay xào răm",
+            "Trứng rán",
+            "Rau theo mùa",
+            "Canh theo ngày",
+            "Cơm trắng",
+            "Cà pháo"
+        });
+
+        var set4 = string.Join("\n", new[]
+        {
+            "Móng tay rang me",
+            "Mực chiên lá lốt",
+            "Ngao nướng mỡ hành",
+            "Thịt chưng mắm tép",
+            "Rau theo mùa",
+            "Canh theo ngày",
+            "Cơm trắng",
+            "Cà pháo"
+        });
+
+        var sets = new List<MenuItem>
+        {
+            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Set", Name = "Set 1", Description = set1, UnitPrice = 0, ImageUrl = "https://dummyimage.com/600x400/fff8e1/000.png&text=Set+1", Status = 0, IsActive = true },
+            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Set", Name = "Set 2", Description = set2, UnitPrice = 0, ImageUrl = "https://dummyimage.com/600x400/fff8e1/000.png&text=Set+2", Status = 0, IsActive = true },
+            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Set", Name = "Set 3", Description = set3, UnitPrice = 0, ImageUrl = "https://dummyimage.com/600x400/fff8e1/000.png&text=Set+3", Status = 0, IsActive = true },
+            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Set", Name = "Set 4", Description = set4, UnitPrice = 0, ImageUrl = "https://dummyimage.com/600x400/fff8e1/000.png&text=Set+4", Status = 0, IsActive = true },
+        };
+
+        dbContext.Set<MenuItem>().AddRange(sets);
         await dbContext.SaveChangesAsync();
     }
 

@@ -410,7 +410,7 @@ const MenuManagementPage: React.FC = () => {
                 </Stack>
                 <Grid container spacing={2}>
                   {setRecords.map((it) => (
-                    <Grid key={it.id} size={{ xs: 12, md: 6, lg: 3 }}>
+                    <Grid key={it.id} size={{ xs: 12, md: 6 }}>
                       <Card
                         elevation={0}
                         sx={{

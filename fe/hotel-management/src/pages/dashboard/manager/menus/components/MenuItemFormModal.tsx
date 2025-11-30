@@ -368,12 +368,18 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
                   borderRadius: 2,
                   overflow: "hidden",
                   border: "1px solid #eee",
+                  display: "flex",
+                  justifyContent: "center",
                 }}
               >
                 <img
                   src={watch("imageUrl")}
                   alt="preview"
-                  style={{ width: "100%", height: 160, objectFit: "cover" }}
+                  style={{
+                    width: 200,
+                    height: 200,
+                    objectFit: "contain",
+                  }}
                 />
               </Box>
             )}
