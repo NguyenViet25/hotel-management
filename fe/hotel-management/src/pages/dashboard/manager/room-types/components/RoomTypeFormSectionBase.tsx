@@ -42,15 +42,24 @@ const RoomTypeFormSectionBase: React.FC<BaseSectionProps> = ({
           render={({ field }) => (
             <Tooltip title="Nhập giá cơ bản theo VNĐ">
               <TextField
-                {...field}
                 name="basePriceFrom"
                 label="Giá từ (VND)"
-                type="number"
+                type="text"
                 fullWidth
                 margin="normal"
                 error={!!errors.basePriceFrom}
                 helperText={errors.basePriceFrom?.message}
-                inputProps={{ min: 0 }}
+                value={
+                  field.value !== undefined && field.value !== null
+                    ? new Intl.NumberFormat("vi-VN").format(Number(field.value))
+                    : ""
+                }
+                onChange={(e) => {
+                  const raw = e.target.value.replace(/[^0-9]/g, "");
+                  const num = raw ? Number(raw) : 0;
+                  field.onChange(num);
+                }}
+                inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="start">VND</InputAdornment>
@@ -66,14 +75,23 @@ const RoomTypeFormSectionBase: React.FC<BaseSectionProps> = ({
           render={({ field }) => (
             <Tooltip title="Nhập giá cơ bản theo VNĐ">
               <TextField
-                {...field}
                 label="Giá đến (VND)"
-                type="number"
+                type="text"
                 fullWidth
                 margin="normal"
                 error={!!errors.basePriceTo}
                 helperText={errors.basePriceTo?.message}
-                inputProps={{ min: 0 }}
+                value={
+                  field.value !== undefined && field.value !== null
+                    ? new Intl.NumberFormat("vi-VN").format(Number(field.value))
+                    : ""
+                }
+                onChange={(e) => {
+                  const raw = e.target.value.replace(/[^0-9]/g, "");
+                  const num = raw ? Number(raw) : 0;
+                  field.onChange(num);
+                }}
+                inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="start">VND</InputAdornment>

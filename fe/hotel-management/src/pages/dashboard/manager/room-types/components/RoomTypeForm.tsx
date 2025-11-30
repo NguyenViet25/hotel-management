@@ -59,7 +59,15 @@ const schema = yup.object({
     .number()
     .transform((val) => (isNaN(val as any) ? 0 : Number(val)))
     .min(0, "Giá base phải >= 0")
-    .required("Nhập giá base"),
+    .required("Nhập giá base")
+    .test(
+      "gt-from",
+      "Giá đến phải lớn hơn Giá từ",
+      function (value) {
+        const from = this.parent?.basePriceFrom ?? 0;
+        return typeof value === "number" && value > from;
+      }
+    ),
   prices: yup.array().of(
     yup.object({
       date: yup.date().required(),
