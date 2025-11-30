@@ -5,6 +5,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import LocalDiningIcon from "@mui/icons-material/LocalDining";
 import HotelIcon from "@mui/icons-material/Hotel";
 import {
+  Alert,
   Button,
   Dialog,
   DialogContent,
@@ -50,27 +51,44 @@ const DiscountCodesPage = () => {
   const [scopeFilter, setScopeFilter] = useState<"all" | "booking" | "food">(
     "all"
   );
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "active" | "inactive" | "expired"
+  >("all");
   const [searchTxt, setSearchTxt] = useState<string>("");
   const [viewMode, setViewMode] = useState<"table" | "cards">("cards");
 
   const applyFilters = (
     list: DiscountCode[],
     txt: string,
-    scope: "all" | "booking" | "food"
+    scope: "all" | "booking" | "food",
+    status: "all" | "active" | "inactive" | "expired"
   ) => {
     const q = (txt || "").toLowerCase();
+    const now = new Date();
     return list.filter((r) => {
       const matchesText =
         r.code.toLowerCase().includes(q) ||
         (r.description || "").toLowerCase().includes(q);
       const matchesScope = scope === "all" ? true : r.scope === scope;
-      return matchesText && matchesScope;
+      const started = new Date(r.startDate) <= now;
+      const notEnded = new Date(r.endDate) >= now;
+      const expired = new Date(r.endDate) < now;
+      const currentlyActive = r.isActive && started && notEnded;
+      const matchesStatus =
+        status === "all"
+          ? true
+          : status === "active"
+          ? currentlyActive
+          : status === "inactive"
+          ? !r.isActive
+          : expired;
+      return matchesText && matchesScope && matchesStatus;
     });
   };
 
   const onSearch = async (txt: string) => {
     setSearchTxt(txt);
-    setFilteredRows(applyFilters(rows, txt, scopeFilter));
+    setFilteredRows(applyFilters(rows, txt, scopeFilter, statusFilter));
   };
 
   const loadData = async () => {
@@ -82,7 +100,7 @@ const DiscountCodesPage = () => {
         throw new Error(res.message || "Tải dữ liệu thất bại");
       const data = res.data || [];
       setRows(data);
-      setFilteredRows(applyFilters(data, searchTxt, scopeFilter));
+      setFilteredRows(applyFilters(data, searchTxt, scopeFilter, statusFilter));
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -95,8 +113,8 @@ const DiscountCodesPage = () => {
   }, []);
 
   useEffect(() => {
-    setFilteredRows(applyFilters(rows, searchTxt, scopeFilter));
-  }, [rows, searchTxt, scopeFilter]);
+    setFilteredRows(applyFilters(rows, searchTxt, scopeFilter, statusFilter));
+  }, [rows, searchTxt, scopeFilter, statusFilter]);
 
   const onAdd = () => {
     setEditing(null);
@@ -194,6 +212,20 @@ const DiscountCodesPage = () => {
             </TextField>
 
             <TextField
+              select
+              label="Trạng thái"
+              size="small"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as any)}
+              sx={{ minWidth: 180 }}
+            >
+              <MenuItem value="all">Tất cả</MenuItem>
+              <MenuItem value="active">Đang hoạt động</MenuItem>
+              <MenuItem value="inactive">Ngưng hoạt động</MenuItem>
+              <MenuItem value="expired">Đã hết hạn</MenuItem>
+            </TextField>
+
+            <TextField
               placeholder="Tìm kiếm mã/điều kiện"
               size="small"
               value={searchTxt}
@@ -281,7 +313,10 @@ const DiscountCodesPage = () => {
                               p: 1.5,
                               width: 220,
                               border: "2px dashed",
-                              borderColor,
+                              borderColor:
+                                new Date(c.endDate) < new Date()
+                                  ? "error.main"
+                                  : borderColor,
                               borderRadius: "14px",
                               background: bg,
                               boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
@@ -298,7 +333,10 @@ const DiscountCodesPage = () => {
                                 borderRadius: "50%",
                                 backgroundColor: "background.paper",
                                 border: "2px solid",
-                                borderColor,
+                                borderColor:
+                                  new Date(c.endDate) < new Date()
+                                    ? "error.main"
+                                    : borderColor,
                               },
                               "&:after": {
                                 content: '""',
@@ -311,7 +349,10 @@ const DiscountCodesPage = () => {
                                 borderRadius: "50%",
                                 backgroundColor: "background.paper",
                                 border: "2px solid",
-                                borderColor,
+                                borderColor:
+                                  new Date(c.endDate) < new Date()
+                                    ? "error.main"
+                                    : borderColor,
                               },
                               opacity: c.isActive ? 1 : 0.55,
                             }}
@@ -333,13 +374,28 @@ const DiscountCodesPage = () => {
                                 >
                                   {c.value}%
                                 </Typography>
-                                <Chip
-                                  label={
-                                    c.scope === "food" ? "Ăn uống" : "Đặt phòng"
-                                  }
-                                  color={color as any}
-                                  size="small"
-                                />
+                                <Stack
+                                  direction="row"
+                                  spacing={0.5}
+                                  alignItems="center"
+                                >
+                                  <Chip
+                                    label={
+                                      c.scope === "food"
+                                        ? "Ăn uống"
+                                        : "Đặt phòng"
+                                    }
+                                    color={color as any}
+                                    size="small"
+                                  />
+                                  {new Date(c.endDate) < new Date() && (
+                                    <Chip
+                                      label="Hết hạn"
+                                      color="error"
+                                      size="small"
+                                    />
+                                  )}
+                                </Stack>
                               </Stack>
 
                               <Typography
@@ -362,6 +418,16 @@ const DiscountCodesPage = () => {
                               >
                                 {c.description || ""}
                               </Typography>
+
+                              {new Date(c.endDate) < new Date() && (
+                                <Alert
+                                  severity="error"
+                                  variant="outlined"
+                                  sx={{ p: 0.5 }}
+                                >
+                                  Đã hết hạn
+                                </Alert>
+                              )}
 
                               <Stack
                                 direction="row"
