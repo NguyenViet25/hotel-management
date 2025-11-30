@@ -98,6 +98,8 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
             fullWidth
             value={formData.phoneNumber}
             onChange={handleInputChange}
+            error={!!formErrors.phoneNumber}
+            helperText={formErrors.phoneNumber}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">

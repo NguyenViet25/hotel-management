@@ -33,10 +33,20 @@ const HotelsListPage: React.FC = () => {
     {
       id: "name",
       label: "Tên cơ sở",
+      minWidth: 150,
     },
     {
       id: "address",
       label: "Địa chỉ",
+    },
+    {
+      id: "phone",
+      label: "Số điện thoại",
+      minWidth: 150,
+    },
+    {
+      id: "email",
+      label: "Email",
     },
     {
       id: "isActive",
@@ -97,7 +107,7 @@ const HotelsListPage: React.FC = () => {
         }}
         onAdd={handleOpenCreateModal}
         onEdit={handleOpenEditModal}
-        onLock={handleOpenStatusModal}
+        // onLock={handleOpenStatusModal}
         getRowId={(row) => row.id}
         onSort={handleSort}
         onSearch={(e) => setSearchText(e)}

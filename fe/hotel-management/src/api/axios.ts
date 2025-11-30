@@ -64,7 +64,10 @@ axiosInstance.interceptors.request.use(
 
 // ✅ Response interceptor for handling errors
 axiosInstance.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log(response.data.data);
+    return response;
+  },
   (error) => {
     // if (error.response && error.response.status === 401) {
     //   toast.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");

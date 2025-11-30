@@ -191,6 +191,13 @@ const UserManagement: React.FC = () => {
       errors.fullName = "Họ và tên không được để trống";
     }
 
+    // TODO: help me check valid phone number (phone number is potional field)
+    if (formData.phoneNumber) {
+      if (!/^[0-9]{10,11}$/.test(formData.phoneNumber)) {
+        errors.phoneNumber = "Số điện thoại không hợp lệ";
+      }
+    }
+
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -321,7 +328,6 @@ const UserManagement: React.FC = () => {
   // Open edit dialog
   const openEditDialog = (user: User) => {
     setSelectedUser(user);
-    console.log(user);
     setFormData({
       username: user.userName,
       email: user.email,

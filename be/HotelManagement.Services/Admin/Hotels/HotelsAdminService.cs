@@ -44,7 +44,7 @@ public class HotelsAdminService : IHotelsAdminService
 
         var total = await baseQuery.CountAsync();
         var items = await baseQuery.Skip((query.Page - 1) * query.PageSize).Take(query.PageSize)
-            .Select(h => new HotelSummaryDto(h.Id, h.Code, h.Name, h.Address, h.IsActive, h.CreatedAt))
+            .Select(h => new HotelSummaryDto(h.Id, h.Code, h.Name, h.Address, h.IsActive, h.CreatedAt, h.Description, h.Phone, h.Email))
             .ToListAsync();
 
         return (items, total);
@@ -70,7 +70,7 @@ public class HotelsAdminService : IHotelsAdminService
         }
         var h = await query.FirstOrDefaultAsync(x => x.Id == id);
         if (h == null) return null;
-        return new HotelDetailsDto(h.Id, h.Code, h.Name, h.Address, h.IsActive, h.CreatedAt);
+        return new HotelDetailsDto(h.Id, h.Code, h.Name, h.Address, h.IsActive, h.CreatedAt, h.Description, h.Phone, h.Email);
     }
 
     public async Task<HotelDetailsDto> CreateAsync(CreateHotelDto dto, Guid actorUserId)
@@ -84,9 +84,11 @@ public class HotelsAdminService : IHotelsAdminService
         {
             Id = Guid.NewGuid(),
             Code = code,
-            Name = dto.Name.Trim(),
-            Address = dto.Address.Trim(),
+            Name = dto.Name!.Trim(),
+            Address = dto.Address!.Trim(),
             IsActive = true,
+            Phone = dto.Phone!,
+            Email = dto.Email!,
             CreatedAt = DateTime.UtcNow
         };
         _db.Hotels.Add(hotel);
@@ -105,6 +107,9 @@ public class HotelsAdminService : IHotelsAdminService
         var before = new { h.Name, h.Address, h.IsActive };
         if (!string.IsNullOrWhiteSpace(dto.Name)) h.Name = dto.Name.Trim();
         if (!string.IsNullOrWhiteSpace(dto.Address)) h.Address = dto.Address.Trim();
+        if (!string.IsNullOrWhiteSpace(dto.Phone)) h.Phone = dto.Phone.Trim();
+        if (!string.IsNullOrWhiteSpace(dto.Email)) h.Email = dto.Email.Trim();
+
         if (dto.IsActive != null) h.IsActive = dto.IsActive.Value;
 
         await _db.SaveChangesAsync();
@@ -126,16 +131,21 @@ public class HotelsAdminService : IHotelsAdminService
         {
             case "pause":
                 h.IsActive = false;
+                h.Description = dto.Reason;
                 break;
             case "close":
                 h.IsActive = false;
+                h.Description = dto.Reason;
                 break;
             case "resume":
                 h.IsActive = true;
+                h.Description = dto.Reason;
                 break;
             default:
                 throw new InvalidOperationException("Unsupported status action");
         }
+
+
         await _db.SaveChangesAsync();
         var after = new { h.IsActive };
         await AddAuditAsync(actorUserId, h.Id, $"hotel.status.{action}", new { dto.Reason, dto.Until, before, after });

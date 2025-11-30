@@ -101,6 +101,8 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
             fullWidth
             value={formData.phoneNumber}
             onChange={handleInputChange}
+            error={!!formErrors.phoneNumber}
+            helperText={formErrors.phoneNumber}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">

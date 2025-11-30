@@ -5,6 +5,8 @@ export interface Hotel {
   code: string;
   name: string;
   address: string;
+  phone?: string;
+  email?: string;
   isActive: boolean;
   createdAt: string;
 }
@@ -39,6 +41,8 @@ export interface CreateHotelRequest {
   code: string;
   name: string;
   address: string;
+  phone?: string;
+  email?: string;
   config?: Record<string, any>;
 }
 
@@ -46,6 +50,8 @@ export interface UpdateHotelRequest {
   name?: string;
   address?: string;
   isActive?: boolean;
+  phone?: string;
+  email?: string;
 }
 
 export interface ChangeHotelStatusRequest {

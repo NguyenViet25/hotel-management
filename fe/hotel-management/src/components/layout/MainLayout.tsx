@@ -48,7 +48,6 @@ const MainLayout = ({ menuItems }: MainLayoutProps) => {
   const muiTheme = useTheme();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down("sm"));
   const { user, removeUser } = useStore<StoreState>((state) => state);
-  console.log(user);
   const [open, setOpen] = useState(!isMobile);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
