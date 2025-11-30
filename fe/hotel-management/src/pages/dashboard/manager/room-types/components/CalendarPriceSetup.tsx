@@ -43,9 +43,8 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
     [priceMap]
   );
 
-  // TODO: handleSelectDate
   const handleSelectDate = (arg: any) => {
-    const key = arg.dateStr; // already in YYYY-MM-DD
+    const key = arg.format("YYYY-MM-DD");
     setSelectedDates((prev) => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
