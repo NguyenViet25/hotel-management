@@ -3,8 +3,9 @@ import { Box, Divider, Tooltip, Typography } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import React from "react";
-import { type Control } from "react-hook-form";
+import { Controller, type Control } from "react-hook-form";
 import CalendarPriceSetup from "./CalendarPriceSetup";
+import dayjs from "dayjs";
 
 export interface DateRangeSectionProps {
   control: Control<any>;
@@ -12,12 +13,9 @@ export interface DateRangeSectionProps {
 }
 
 const RoomTypeFormSectionDateRange: React.FC<DateRangeSectionProps> = ({
-  control: _control,
+  control,
   errors: _errors,
 }) => {
-  // Calendar-based price setup is stored locally for now
-  // Integrate with form when backend mapping is ready
-
   return (
     <Box sx={{ borderRadius: 2 }}>
       <Typography
@@ -44,7 +42,30 @@ const RoomTypeFormSectionDateRange: React.FC<DateRangeSectionProps> = ({
             todayButtonLabel: "Hôm nay",
           }}
         >
-          <CalendarPriceSetup />
+          <Controller
+            name="prices"
+            control={control}
+            render={({ field: { value, onChange } }) => {
+              const map = Object.fromEntries(
+                (value || []).map((p: any) => [
+                  dayjs(p.date).format("YYYY-MM-DD"),
+                  p.price,
+                ])
+              );
+              return (
+                <CalendarPriceSetup
+                  value={map}
+                  onChangePriceMap={(m) => {
+                    const list = Object.entries(m).map(([d, price]) => ({
+                      date: new Date(d),
+                      price,
+                    }));
+                    onChange(list);
+                  }}
+                />
+              );
+            }}
+          />
         </LocalizationProvider>
       </Box>
     </Box>

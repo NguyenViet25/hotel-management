@@ -10,13 +10,14 @@ import viLocale from "@fullcalendar/core/locales/vi";
 type PriceMap = Record<string, number>;
 
 export interface CalendarPriceSetupProps {
-  // Optional callback to expose selected prices to parent if needed in future
+  value?: PriceMap;
   onChangePriceMap?: (map: PriceMap) => void;
 }
 
 const toKey = (d: Date) => dayjs(d).format("YYYY-MM-DD");
 
 const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
+  value,
   onChangePriceMap,
 }) => {
   const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
@@ -68,16 +69,23 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
   const handleCloseDialog = () => setDialogOpen(false);
 
   const handleConfirmPrice = (price: number) => {
+    let next: PriceMap = {};
     setPriceMap((prev) => {
-      const next: PriceMap = { ...prev };
+      next = { ...prev };
       selectedDates.forEach((k) => {
         next[k] = price;
       });
       return next;
     });
     setDialogOpen(false);
-    if (onChangePriceMap) onChangePriceMap(priceMap);
+    if (onChangePriceMap) onChangePriceMap(next);
   };
+
+  React.useEffect(() => {
+    if (value) {
+      setPriceMap(value);
+    }
+  }, [value]);
 
   const selectedCount = selectedDates.size;
 

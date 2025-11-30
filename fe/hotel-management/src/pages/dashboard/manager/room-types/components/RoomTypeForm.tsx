@@ -62,7 +62,7 @@ const schema = yup.object({
     .required("Nhập giá base"),
   prices: yup.array().of(
     yup.object({
-      date: yup.number().min(0).max(6).required(),
+      date: yup.date().required(),
       price: yup.number().min(0).required(),
     })
   ),
@@ -105,13 +105,15 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
   useEffect(() => {
     if (isEdit && initialData) {
       reset({
-        ...initialData,
+        hotelId: user?.hotelId || "",
+        name: initialData?.name ?? "",
+        description: initialData?.description ?? "",
         capacity: initialData?.roomCount ?? 2,
         basePriceFrom: initialData?.priceFrom ?? 0,
         basePriceTo: initialData?.priceTo ?? 0,
         prices:
           initialData.priceByDates?.map((p) => ({
-            date: p.date.getDay(),
+            date: new Date((p as any).date),
             price: p.price,
           })) || [],
       });
@@ -128,12 +130,10 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
           capacity: values.capacity,
           priceFrom: values.basePriceFrom,
           priceTo: values.basePriceTo,
-          priceByDates: values.prices?.map((p) => ({
-            date: new Date(p.date),
-            price: p.price,
-          })),
+          priceByDates: values.prices || [],
         };
         onSubmit(payload);
+        return;
       }
 
       const createPayload: CreateRoomTypeRequest = {
@@ -143,10 +143,7 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
         capacity: values.capacity,
         priceFrom: values.basePriceFrom,
         priceTo: values.basePriceTo,
-        priceByDates: values.prices?.map((p) => ({
-          date: new Date(p.date),
-          price: p.price,
-        })),
+        priceByDates: values.prices || [],
       };
 
       onSubmit(createPayload);

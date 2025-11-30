@@ -60,6 +60,7 @@ public class RoomTypeService : IRoomTypeService
                 Description = dto.Description,
                 BasePriceFrom = dto.PriceFrom,
                 BasePriceTo = dto.PriceTo,
+                Capacity = dto.Capacity,
                 Prices = JsonSerializer.Serialize(dto.PriceByDates)
             };
 
@@ -108,6 +109,7 @@ public class RoomTypeService : IRoomTypeService
             roomType.Capacity = dto.Capacity;
             roomType.BasePriceFrom = dto.PriceFrom;
             roomType.BasePriceTo = dto.PriceTo;
+            roomType.Prices = JsonSerializer.Serialize(dto.PriceByDates);
 
             await _roomTypeRepository.UpdateAsync(roomType);
             await _roomTypeRepository.SaveChangesAsync();
@@ -294,6 +296,19 @@ public class RoomTypeService : IRoomTypeService
 
 
 
+        List<PriceByDate>? priceByDates = null;
+        if (!string.IsNullOrWhiteSpace(roomType.Prices))
+        {
+            try
+            {
+                priceByDates = JsonSerializer.Deserialize<List<PriceByDate>>(roomType.Prices);
+            }
+            catch
+            {
+                priceByDates = new List<PriceByDate>();
+            }
+        }
+
         return new RoomTypeDto
         {
             Id = roomType.Id,
@@ -306,7 +321,7 @@ public class RoomTypeService : IRoomTypeService
             CanDelete = canDelete,
             PriceFrom = roomType.BasePriceFrom,
             PriceTo = roomType.BasePriceTo,
-            PriceByDates = null,
+            PriceByDates = priceByDates,
 
         };
     }
@@ -338,8 +353,9 @@ public class RoomTypeService : IRoomTypeService
             CanDelete = baseDto.CanDelete,
             PriceFrom = baseDto.PriceFrom,
             PriceTo = baseDto.PriceTo,
+            PriceByDates = baseDto.PriceByDates,
             Rooms = rooms,
-            PricingInfo = null // TODO: Implement pricing info mapping
+            PricingInfo = null
         };
     }
 }

@@ -21,7 +21,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React from "react";
+import React, { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import type { Hotel } from "../../../api/hotelService";
@@ -88,6 +88,18 @@ const HotelFormModal: React.FC<HotelFormModalProps> = ({
           email: "",
         },
   });
+
+  useEffect(() => {
+    if (isEditMode && hotel) {
+      reset({
+        name: hotel?.name || "",
+        address: hotel?.address || "",
+        phone: hotel?.phone || "",
+        email: hotel?.email || "",
+        isActive: hotel?.isActive || false,
+      });
+    }
+  }, [isEditMode, hotel, reset]);
 
   const onSubmit = async (data: any) => {
     try {
