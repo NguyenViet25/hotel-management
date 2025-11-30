@@ -183,3 +183,8 @@
 2025-11-29 - 3 - 01:44:03 UTC :: fix: UC-10 Goi gia: tao rate plan, thoi gian ap dung linh hoat. — dieu chinh UI & copy cho ro (da review so bo)
 2025-11-29 - 4 - 01:44:06 UTC :: refactor: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — fix race-condition nho trong thao tac (da smoke test)
 2025-11-29 - 5 - 01:44:07 UTC :: ci: UC-37 Night Audit: kiem tra folio chua chot, khoa giao dich. — cap nhat mock data & seed test (chuan bi cho tinh nang tiep theo)
+2025-11-30 - 1 - 01:57:17 UTC :: docs: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — dieu chinh UI & copy cho ro (can theo doi them)
+2025-11-30 - 2 - 01:57:18 UTC :: fix: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — tach chuc nang de de bao tri (chuan bi cho tinh nang tiep theo)
+2025-11-30 - 3 - 01:57:20 UTC :: fix: UC-11 Goi gia: bat/tam ngung goi gia dang ap dung. — dieu chinh UI & copy cho ro (can theo doi them)
+2025-11-30 - 4 - 01:57:21 UTC :: refactor: UC-38 Audit Log: xem/loc thao tac, hanh dong, thoi gian. — cap nhat cau hinh va kiem tra bien (khong doi hanh vi)
+2025-11-30 - 5 - 01:57:24 UTC :: chore: UC-01 RBAC: tao, sua, khoa tai khoan; gan vai tro. — toi uu truy van va bo nho (dong bo voi BE/FE)
