@@ -192,3 +192,4 @@
 2025-11-30 - 2 - 01:57:19 UTC :: perf: UC-19 Lich phong: calendar trang thai phong theo ngay. — bo sung metrics/telemetry co ban (dam bao backward-compatible)
 2025-11-30 - 3 - 01:57:20 UTC :: build: UC-39 Xuat Audit Log: xuat CSV/PDF kiem tra tuan thu. — them kiem soat loi & retry nhe (can theo doi them)
 2025-11-30 - 4 - 01:57:22 UTC :: ci: UC-10 Goi gia: tao rate plan, thoi gian ap dung linh hoat. — bo sung unit test muc co ban (da review so bo)
+2025-11-30 - 5 - 01:57:23 UTC :: build: UC-21 Housekeeping: cap nhat Dirty/In-progress/Cleaned/Inspected. — dieu chinh UI & copy cho ro (da review so bo)
