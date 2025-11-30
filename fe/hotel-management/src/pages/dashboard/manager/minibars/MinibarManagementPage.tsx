@@ -24,7 +24,7 @@ import {
   TableCell,
   TableBody,
 } from "@mui/material";
-import { Edit } from "@mui/icons-material";
+import { AddCircle, Edit, Delete, Bed as BedIcon } from "@mui/icons-material";
 import PageTitle from "../../../../components/common/PageTitle";
 import minibarApi, {
   type Minibar,
@@ -208,7 +208,11 @@ const MinibarManagementPage: React.FC = () => {
       <PageTitle title="Quản lý minibar" subtitle="Thêm, sửa, xóa minibar" />
 
       <Stack spacing={2} sx={{ mb: 2 }}>
-        <Button variant="contained" onClick={openCreate}>
+        <Button
+          startIcon={<AddCircle />}
+          variant="contained"
+          onClick={openCreate}
+        >
           Thêm minibar
         </Button>
       </Stack>
@@ -222,20 +226,40 @@ const MinibarManagementPage: React.FC = () => {
             return (
               <Grid key={rt.id} size={{ xs: 12, sm: 6 }}>
                 <Card variant="outlined" sx={{ borderRadius: 2 }}>
-                  <CardHeader
-                    title={
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <Typography
-                          variant="subtitle1"
-                          sx={{ fontWeight: 700 }}
-                        >
-                          {rt.name}
-                        </Typography>
-                        <Chip label={`${list.length} minibar`} size="small" />
-                      </Stack>
-                    }
-                  />
-                  <CardContent>
+                  <Box>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        px: 2,
+                        py: 1,
+                        mb: 1,
+                        borderRadius: 2,
+                        bgcolor: "warning.light",
+                        border: "2px dashed",
+                        borderColor: "warning.main",
+                        borderBottomLeftRadius: 0,
+                        borderBottomRightRadius: 0,
+                      }}
+                    >
+                      <BedIcon color="warning" />
+                      <Typography
+                        variant="subtitle1"
+                        sx={{
+                          fontWeight: 800,
+                          textTransform: "uppercase",
+                          letterSpacing: 0.5,
+                          flexGrow: 1,
+                        }}
+                      >
+                        {rt.name}
+                      </Typography>
+                      <Chip
+                        label={`${list.length} minibar`}
+                        variant="outlined"
+                      />
+                    </Box>
                     {list.length === 0 ? (
                       <Chip label="Không có minibar" />
                     ) : (
@@ -248,7 +272,7 @@ const MinibarManagementPage: React.FC = () => {
                               )
                               .map((mb) => (
                                 <TableRow key={mb.id} hover>
-                                  <TableCell width={92}>
+                                  <TableCell>
                                     {mb.imageUrl ? (
                                       <img
                                         src={mb.imageUrl}
@@ -271,13 +295,13 @@ const MinibarManagementPage: React.FC = () => {
                                       {mb.name}
                                     </Typography>
                                   </TableCell>
-                                  <TableCell width={100}>
+                                  <TableCell width={80}>
                                     {mb.quantity}
                                   </TableCell>
                                   <TableCell width={140}>
                                     {mb.price.toLocaleString()}₫
                                   </TableCell>
-                                  <TableCell align="right" width={80}>
+                                  <TableCell align="right" width={120}>
                                     <Tooltip title="Sửa minibar">
                                       <span>
                                         <IconButton
@@ -289,6 +313,18 @@ const MinibarManagementPage: React.FC = () => {
                                         </IconButton>
                                       </span>
                                     </Tooltip>
+                                    <Tooltip title="Xóa minibar">
+                                      <span>
+                                        <IconButton
+                                          size="small"
+                                          color="error"
+                                          onClick={() => openDelete(mb)}
+                                          sx={{ ml: 0.5 }}
+                                        >
+                                          <Delete fontSize="small" />
+                                        </IconButton>
+                                      </span>
+                                    </Tooltip>
                                   </TableCell>
                                 </TableRow>
                               ))}
@@ -296,7 +332,7 @@ const MinibarManagementPage: React.FC = () => {
                         </Table>
                       </TableContainer>
                     )}
-                  </CardContent>
+                  </Box>
                 </Card>
               </Grid>
             );
