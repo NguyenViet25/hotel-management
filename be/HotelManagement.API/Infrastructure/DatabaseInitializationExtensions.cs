@@ -299,15 +299,16 @@ public static class DatabaseInitializationExtensions
             "Rau theo mùa",
             "Canh theo ngày",
             "Cơm trắng",
-            "Cà pháo"
+            "Cà pháo",
+            "Khoai chiên",
         });
 
         var sets = new List<MenuItem>
         {
-            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Set", Name = "Set 1", Description = set1, UnitPrice = 0, ImageUrl = "https://dummyimage.com/600x400/fff8e1/000.png&text=Set+1", Status = 0, IsActive = true },
-            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Set", Name = "Set 2", Description = set2, UnitPrice = 0, ImageUrl = "https://dummyimage.com/600x400/fff8e1/000.png&text=Set+2", Status = 0, IsActive = true },
-            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Set", Name = "Set 3", Description = set3, UnitPrice = 0, ImageUrl = "https://dummyimage.com/600x400/fff8e1/000.png&text=Set+3", Status = 0, IsActive = true },
-            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Set", Name = "Set 4", Description = set4, UnitPrice = 0, ImageUrl = "https://dummyimage.com/600x400/fff8e1/000.png&text=Set+4", Status = 0, IsActive = true },
+            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Set", Name = "Set 1", Description = set1, UnitPrice = 200000, ImageUrl = "https://chacadevuong.com/wp-content/uploads/2023/12/combo-8.png", Status = 0, IsActive = true },
+            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Set", Name = "Set 2", Description = set2, UnitPrice = 300000, ImageUrl = "https://rosepng.com/wp-content/uploads/2024/10/s11728_healthy_food_dish_isolated_on_white_background_-styli_170b6cc9-d8ba-46a5-89e5-537259b148f8_2-photoroom.png", Status = 0, IsActive = true },
+            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Set", Name = "Set 3", Description = set3, UnitPrice = 400000, ImageUrl = "https://freepngimg.com/save/152994-food-junk-combo-free-hq-image/636x397", Status = 0, IsActive = true },
+            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Set", Name = "Set 4", Description = set4, UnitPrice = 500000, ImageUrl = "https://png.pngtree.com/png-clipart/20240909/original/pngtree-best-combo-street-food-tasty-meal-combination-png-image_15972228.png", Status = 0, IsActive = true },
         };
 
         dbContext.Set<MenuItem>().AddRange(sets);

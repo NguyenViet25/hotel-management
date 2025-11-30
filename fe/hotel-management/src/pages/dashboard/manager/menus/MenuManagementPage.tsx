@@ -420,68 +420,101 @@ const MenuManagementPage: React.FC = () => {
                           boxShadow: "0 4px 16px rgba(0,0,0,0.06)",
                         }}
                       >
-                        <Stack spacing={1}>
+                        <Stack
+                          direction="row"
+                          spacing={2}
+                          alignItems="flex-start"
+                        >
                           <Stack
-                            direction="row"
-                            alignItems="center"
-                            justifyContent="space-between"
+                            justifyContent={"center"}
+                            sx={{ height: "100%" }}
                           >
+                            <Box
+                              sx={{
+                                width: 240,
+                                minWidth: 240,
+                                height: 240,
+                                borderRadius: 2,
+                                overflow: "hidden",
+                              }}
+                            >
+                              <img
+                                src={it.imageUrl || "/assets/logo.png"}
+                                alt={it.name}
+                                style={{
+                                  width: "100%",
+                                  height: "100%",
+                                  objectFit: "contain",
+                                }}
+                              />
+                            </Box>
+                          </Stack>
+
+                          <Stack spacing={1} sx={{ flexGrow: 1 }}>
                             <Stack
                               direction="row"
                               alignItems="center"
-                              spacing={1}
+                              justifyContent="space-between"
                             >
-                              <TableRestaurantIcon color="warning" />
-                              <Typography
-                                variant="subtitle1"
-                                sx={{ fontWeight: 800 }}
+                              <Stack
+                                direction="row"
+                                alignItems="center"
+                                spacing={1}
                               >
-                                {it.name}
-                              </Typography>
-                            </Stack>
-                            <Chip label="Set" color="warning" size="small" />
-                          </Stack>
-                          <Stack spacing={0.5} sx={{ mt: 0.5 }}>
-                            {(it.description || "")
-                              .split(/\n|,/)
-                              .map((s) => s.trim())
-                              .filter((s) => s.length > 0)
-                              .map((food, idx) => (
+                                <TableRestaurantIcon color="warning" />
                                 <Typography
-                                  key={idx}
-                                  variant="body2"
-                                  color="text.secondary"
+                                  variant="subtitle1"
+                                  sx={{ fontWeight: 800 }}
                                 >
-                                  {`${idx + 1}. ${food}`}
+                                  {it.name}
                                 </Typography>
-                              ))}
-                          </Stack>
-                          <Stack
-                            direction="row"
-                            spacing={0.5}
-                            justifyContent="space-between"
-                            alignItems="center"
-                          >
-                            <Chip
-                              label={it.status == 0 ? "Đang bán" : "Ngừng bán"}
-                              color={it.status == 0 ? "success" : "error"}
-                              size="small"
-                            />
-                            <Stack direction="row" spacing={0.5}>
-                              <IconButton
+                              </Stack>
+                              <Chip label="Set" color="warning" size="small" />
+                            </Stack>
+                            <Stack spacing={0.5} sx={{ mt: 0.5 }}>
+                              {(it.description || "")
+                                .split(/\n|,/)
+                                .map((s) => s.trim())
+                                .filter((s) => s.length > 0)
+                                .map((food, idx) => (
+                                  <Typography
+                                    key={idx}
+                                    variant="body2"
+                                    color="text.secondary"
+                                  >
+                                    {`${idx + 1}. ${food}`}
+                                  </Typography>
+                                ))}
+                            </Stack>
+                            <Stack
+                              direction="row"
+                              spacing={0.5}
+                              justifyContent="space-between"
+                              alignItems="center"
+                            >
+                              <Chip
+                                label={
+                                  it.status == 0 ? "Đang bán" : "Ngừng bán"
+                                }
+                                color={it.status == 0 ? "success" : "error"}
                                 size="small"
-                                color="primary"
-                                onClick={() => openEdit(it)}
-                              >
-                                <EditIcon fontSize="small" />
-                              </IconButton>
-                              <IconButton
-                                size="small"
-                                color="error"
-                                onClick={() => openDelete(it)}
-                              >
-                                <DeleteOutlineIcon fontSize="small" />
-                              </IconButton>
+                              />
+                              <Stack direction="row" spacing={0.5}>
+                                <IconButton
+                                  size="small"
+                                  color="primary"
+                                  onClick={() => openEdit(it)}
+                                >
+                                  <EditIcon fontSize="small" />
+                                </IconButton>
+                                <IconButton
+                                  size="small"
+                                  color="error"
+                                  onClick={() => openDelete(it)}
+                                >
+                                  <DeleteOutlineIcon fontSize="small" />
+                                </IconButton>
+                              </Stack>
                             </Stack>
                           </Stack>
                         </Stack>
