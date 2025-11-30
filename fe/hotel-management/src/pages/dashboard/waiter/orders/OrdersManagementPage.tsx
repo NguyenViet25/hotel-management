@@ -1,4 +1,4 @@
-import { Check, Close, Edit } from "@mui/icons-material";
+import { Add, Check, Close, Edit } from "@mui/icons-material";
 import LocalOfferIcon from "@mui/icons-material/LocalOffer";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import {
@@ -49,6 +49,8 @@ import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import CalculateIcon from "@mui/icons-material/Calculate";
 import ReceiptIcon from "@mui/icons-material/Receipt";
 import SearchIcon from "@mui/icons-material/Search";
+import CustomSelect from "../../../../components/common/CustomSelect";
+import EmptyState from "../../../../components/common/EmptyState";
 
 // Orders Management Page (UC-28, UC-29, UC-30)
 // - Lists orders with filters (status/search)
@@ -83,9 +85,6 @@ const OrdersManagementPage: React.FC = () => {
   const [value, setValue] = React.useState(0);
   const [viewMode, setViewMode] = useState<"table" | "card">("card");
 
-  const handleChange = (_: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue);
-  };
   // Feedback
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -93,6 +92,16 @@ const OrdersManagementPage: React.FC = () => {
     severity: "success" | "error";
   }>({ open: false, message: "", severity: "success" });
 
+  const [selectedStatus, setSelectedStatus] = useState<OrderStatus | undefined>(
+    "0"
+  );
+
+  const statusOptions = [
+    { value: "0", label: "Tất cả" },
+    { value: "1", label: "Đang chờ" },
+    { value: "2", label: "Đã thanh toán" },
+    { value: "3", label: "Đã hủy" },
+  ];
   const [invoiceOpen, setInvoiceOpen] = useState(false);
   const [selectedForInvoice, setSelectedForInvoice] =
     useState<OrderSummaryDto | null>(null);
@@ -330,66 +339,54 @@ const OrdersManagementPage: React.FC = () => {
         title="Quản lý yêu cầu đặt món"
         subtitle="Tạo yêu cầu đặt món khách vãng lai, khách đặt phòng, xem danh sách đang phục vụ/đã thanh toán"
       />
-      <Box
-        sx={{
-          backgroundColor: "#fff",
-          width: "100%",
-          borderRadius: 2,
-          borderEndEndRadius: 0,
-          borderEndStartRadius: 0,
-          border: "1px solid #e0e0e0",
-          borderBottom: "none",
-        }}
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        alignItems={{ xs: "flex-start", sm: "center" }}
+        sx={{ my: 1 }}
+        spacing={1}
+        justifyContent={"space-between"}
       >
-        <Tabs
-          value={value}
-          onChange={handleChange}
-          variant="fullWidth"
-          TabIndicatorProps={{
-            style: {
-              backgroundColor: "#1976d2",
-              height: 3,
-              borderRadius: 3,
-            },
-          }}
-          sx={{
-            "& .MuiTab-root": {
-              textTransform: "none",
-              fontWeight: 600,
-              fontSize: "1rem",
-              minHeight: 48,
-              color: "#555",
-              transition: "all 0.3s ease",
-            },
-            "& .MuiTab-root:hover": {
-              backgroundColor: "#f5f5f5",
-            },
-            "& .Mui-selected": {
-              color: "#1976d2",
-              backgroundColor: "#E3F2FD",
-            },
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
+          <Box sx={{ width: { xs: "100%", lg: 200 } }}>
+            <CustomSelect
+              name="orderType"
+              value={String(value)}
+              onChange={(e) => setValue(Number(e.target.value))}
+              label="Loại yêu cầu"
+              options={[
+                { value: "0", label: "Khách vãng lai" },
+                { value: "1", label: "Khách đặt phòng" },
+              ]}
+              placeholder="Chọn loại"
+              size="small"
+            />
+          </Box>
+          <Box sx={{ width: { xs: "100%", lg: 200 } }}>
+            <CustomSelect
+              name="orderStatus"
+              value={(selectedStatus as any) ?? "all"}
+              onChange={(e) => {
+                const v = e.target.value;
+                setSelectedStatus(v === "all" ? undefined : (v as OrderStatus));
+              }}
+              label="Lọc trạng thái"
+              options={statusOptions}
+              placeholder="Chọn trạng thái"
+              size="small"
+            />
+          </Box>
+        </Stack>
+        <Button
+          startIcon={<Add />}
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            setOpenOrder(true);
           }}
         >
-          <Tab
-            label="Khách vãng lai"
-            sx={{
-              borderRadius: 2,
-              borderEndEndRadius: 0,
-              borderEndStartRadius: 0,
-              borderStartEndRadius: 0,
-            }}
-          />
-          <Tab
-            label="Khách đặt phòng"
-            sx={{
-              borderRadius: 2,
-              borderEndEndRadius: 0,
-              borderEndStartRadius: 0,
-              borderStartStartRadius: 0,
-            }}
-          />
-        </Tabs>
-      </Box>
+          Thêm yêu cầu
+        </Button>
+      </Stack>
 
       {viewMode === "table" ? (
         <OrdersTable
@@ -422,218 +419,254 @@ const OrdersManagementPage: React.FC = () => {
         />
       ) : (
         <Stack spacing={2} sx={{ mt: 2 }}>
-          {(value === 1 ? bookingOrders : walkInOrders).map((o) => {
-            const items = orderItemsMap[o.id] || [];
-            const foods = items.filter((it) => {
-              const mi = menuItems.find((m) => m.id === it.menuItemId);
-              return (mi?.category || "").trim() !== "Set";
-            });
-            const sets = items.filter((it) => {
-              const mi = menuItems.find((m) => m.id === it.menuItemId);
-              return (mi?.category || "").trim() === "Set";
-            });
-            return (
-              <Card key={o.id} sx={{ borderRadius: 2, boxShadow: 2 }}>
-                <CardContent>
-                  <Stack spacing={1.5}>
-                    <Stack
-                      direction={{ xs: "column", sm: "row" }}
-                      justifyContent="space-between"
-                      alignItems={{ xs: "flex-start", sm: "center" }}
-                    >
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <ReceiptIcon color="primary" />
-                        <Typography fontWeight={700}>
-                          #{String(o.id).slice(0, 8).toUpperCase()}
-                        </Typography>
-                        <Chip
-                          label={o.isWalkIn ? "Vãng lai" : "Đặt phòng"}
-                          size="small"
-                        />
-                        <Chip label={`SL: ${o.itemsCount}`} size="small" />
-                        <Chip
-                          label={`${o.itemsTotal.toLocaleString()} đ`}
-                          size="small"
-                          color="primary"
-                        />
-                      </Stack>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <Typography color="text.secondary">
-                          {new Date(o.createdAt).toLocaleString()}
-                        </Typography>
-                        <Chip
-                          color={
-                            o.status === "2"
-                              ? "success"
-                              : o.status === "3"
-                              ? "error"
-                              : "default"
-                          }
-                          label={
-                            o.status === "2"
-                              ? "Đã thanh toán"
-                              : o.status === "3"
-                              ? "Đã hủy"
-                              : "Đang xử lý"
-                          }
-                        />
-                      </Stack>
+          {(() => {
+            const listData = value === 1 ? bookingOrders : walkInOrders;
+            if (!loading && listData.length === 0) {
+              return (
+                <EmptyState
+                  title="Không có yêu cầu"
+                  description="Chưa có yêu cầu đặt món. Hãy thêm yêu cầu mới."
+                  actions={
+                    <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
+                      <Button
+                        startIcon={<Add />}
+                        variant="contained"
+                        onClick={() => {
+                          setOpenOrder(true);
+                        }}
+                      >
+                        Thêm yêu cầu
+                      </Button>
                     </Stack>
-
-                    <Divider />
-
-                    <Stack
-                      direction={{ xs: "column", sm: "row" }}
-                      justifyContent="space-between"
-                      alignItems={{ xs: "flex-start", sm: "center" }}
-                      spacing={1}
-                    >
-                      <Stack direction="row" spacing={2} alignItems="center">
+                  }
+                />
+              );
+            }
+            return listData.map((o) => {
+              const items = orderItemsMap[o.id] || [];
+              const foods = items.filter((it) => {
+                const mi = menuItems.find((m) => m.id === it.menuItemId);
+                return (mi?.category || "").trim() !== "Set";
+              });
+              const sets = items.filter((it) => {
+                const mi = menuItems.find((m) => m.id === it.menuItemId);
+                return (mi?.category || "").trim() === "Set";
+              });
+              return (
+                <Card key={o.id} sx={{ borderRadius: 2, boxShadow: 2 }}>
+                  <CardContent>
+                    <Stack spacing={1.5}>
+                      <Stack
+                        direction={{ xs: "column", sm: "row" }}
+                        justifyContent="space-between"
+                        alignItems={{ xs: "flex-start", sm: "center" }}
+                      >
                         <Stack direction="row" spacing={1} alignItems="center">
-                          <PersonIcon color="action" />
-                          <Typography>{o.customerName || "—"}</Typography>
+                          <ReceiptIcon color="primary" />
+                          <Typography fontWeight={700}>
+                            #{String(o.id).slice(0, 8).toUpperCase()}
+                          </Typography>
+                          <Chip
+                            label={o.isWalkIn ? "Vãng lai" : "Đặt phòng"}
+                            size="small"
+                          />
+                          <Chip label={`SL: ${o.itemsCount}`} size="small" />
+                          <Chip
+                            label={`${o.itemsTotal.toLocaleString()} đ`}
+                            size="small"
+                            color="primary"
+                          />
                         </Stack>
                         <Stack direction="row" spacing={1} alignItems="center">
-                          <PhoneIphoneIcon color="action" />
-                          <Typography>{o.customerPhone || "—"}</Typography>
+                          <Typography color="text.secondary">
+                            {new Date(o.createdAt).toLocaleString()}
+                          </Typography>
+                          <Chip
+                            color={
+                              o.status === "2"
+                                ? "success"
+                                : o.status === "3"
+                                ? "error"
+                                : "default"
+                            }
+                            label={
+                              o.status === "2"
+                                ? "Đã thanh toán"
+                                : o.status === "3"
+                                ? "Đã hủy"
+                                : "Đang xử lý"
+                            }
+                          />
                         </Stack>
                       </Stack>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        {orderInvoiceMap[o.id] && (
-                          <Chip
-                            label={`HĐ: ${
-                              orderInvoiceMap[o.id].invoiceNumber || "đã tạo"
-                            }`}
-                            color="default"
-                          />
-                        )}
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          startIcon={<Edit />}
-                          onClick={() => openEditModal(o as any)}
-                        >
-                          Sửa
-                        </Button>
-                        {o.isWalkIn && (
+
+                      <Divider />
+
+                      <Stack
+                        direction={{ xs: "column", sm: "row" }}
+                        justifyContent="space-between"
+                        alignItems={{ xs: "flex-start", sm: "center" }}
+                        spacing={1}
+                      >
+                        <Stack direction="row" spacing={2} alignItems="center">
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            alignItems="center"
+                          >
+                            <PersonIcon color="action" />
+                            <Typography>{o.customerName || "—"}</Typography>
+                          </Stack>
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            alignItems="center"
+                          >
+                            <PhoneIphoneIcon color="action" />
+                            <Typography>{o.customerPhone || "—"}</Typography>
+                          </Stack>
+                        </Stack>
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          {orderInvoiceMap[o.id] && (
+                            <Chip
+                              label={`HĐ: ${
+                                orderInvoiceMap[o.id].invoiceNumber || "đã tạo"
+                              }`}
+                              color="default"
+                            />
+                          )}
                           <Button
                             size="small"
-                            variant="contained"
-                            startIcon={<ReceiptLongIcon />}
-                            disabled={o.status === "2" || o.status === "3"}
-                            onClick={() => {
-                              setSelectedForInvoice(o);
-                              setInvoiceOpen(true);
-                            }}
+                            variant="outlined"
+                            startIcon={<Edit />}
+                            onClick={() => openEditModal(o as any)}
                           >
-                            Xuất hóa đơn
+                            Sửa
                           </Button>
+                          {o.isWalkIn && (
+                            <Button
+                              size="small"
+                              variant="contained"
+                              startIcon={<ReceiptLongIcon />}
+                              disabled={o.status === "2" || o.status === "3"}
+                              onClick={() => {
+                                setSelectedForInvoice(o);
+                                setInvoiceOpen(true);
+                              }}
+                            >
+                              Xuất hóa đơn
+                            </Button>
+                          )}
+                        </Stack>
+                      </Stack>
+
+                      <Stack spacing={1}>
+                        <Typography variant="subtitle2" fontWeight={700}>
+                          Món ăn
+                        </Typography>
+                        {foods.length === 0 ? (
+                          <Typography color="text.secondary">
+                            Không có món
+                          </Typography>
+                        ) : (
+                          foods.map((it) => {
+                            const mi = menuItems.find(
+                              (m) => m.id === it.menuItemId
+                            );
+                            return (
+                              <Stack
+                                key={it.id}
+                                direction="row"
+                                spacing={1}
+                                alignItems="center"
+                              >
+                                <img
+                                  src={mi?.imageUrl || "/assets/logo.png"}
+                                  alt={mi?.name || it.menuItemName}
+                                  style={{
+                                    width: 36,
+                                    height: 36,
+                                    borderRadius: 6,
+                                    objectFit: "cover",
+                                    border: "1px solid #eee",
+                                  }}
+                                />
+                                <Stack sx={{ flexGrow: 1 }}>
+                                  <Typography>{it.menuItemName}</Typography>
+                                  <Typography color="text.secondary">
+                                    {it.unitPrice.toLocaleString()} đ
+                                  </Typography>
+                                </Stack>
+                                <Chip label={`x${it.quantity}`} />
+                                <Typography fontWeight={700}>
+                                  {(
+                                    it.quantity * it.unitPrice
+                                  ).toLocaleString()}{" "}
+                                  đ
+                                </Typography>
+                              </Stack>
+                            );
+                          })
+                        )}
+                      </Stack>
+
+                      <Divider />
+
+                      <Stack spacing={1}>
+                        <Typography variant="subtitle2" fontWeight={700}>
+                          Set
+                        </Typography>
+                        {sets.length === 0 ? (
+                          <Typography color="text.secondary">
+                            Không có set
+                          </Typography>
+                        ) : (
+                          sets.map((it) => {
+                            const mi = menuItems.find(
+                              (m) => m.id === it.menuItemId
+                            );
+                            return (
+                              <Stack
+                                key={it.id}
+                                direction="row"
+                                spacing={1}
+                                alignItems="center"
+                              >
+                                <img
+                                  src={mi?.imageUrl || "/assets/logo.png"}
+                                  alt={mi?.name || it.menuItemName}
+                                  style={{
+                                    width: 36,
+                                    height: 36,
+                                    borderRadius: 6,
+                                    objectFit: "contain",
+                                    border: "1px solid #eee",
+                                  }}
+                                />
+                                <Stack sx={{ flexGrow: 1 }}>
+                                  <Typography>{it.menuItemName}</Typography>
+                                  <Typography color="text.secondary">
+                                    {it.unitPrice.toLocaleString()} đ
+                                  </Typography>
+                                </Stack>
+                                <Chip label={`x${it.quantity}`} />
+                                <Typography fontWeight={700}>
+                                  {(
+                                    it.quantity * it.unitPrice
+                                  ).toLocaleString()}{" "}
+                                  đ
+                                </Typography>
+                              </Stack>
+                            );
+                          })
                         )}
                       </Stack>
                     </Stack>
-
-                    <Stack spacing={1}>
-                      <Typography variant="subtitle2" fontWeight={700}>
-                        Món ăn
-                      </Typography>
-                      {foods.length === 0 ? (
-                        <Typography color="text.secondary">
-                          Không có món
-                        </Typography>
-                      ) : (
-                        foods.map((it) => {
-                          const mi = menuItems.find(
-                            (m) => m.id === it.menuItemId
-                          );
-                          return (
-                            <Stack
-                              key={it.id}
-                              direction="row"
-                              spacing={1}
-                              alignItems="center"
-                            >
-                              <img
-                                src={mi?.imageUrl || "/assets/logo.png"}
-                                alt={mi?.name || it.menuItemName}
-                                style={{
-                                  width: 36,
-                                  height: 36,
-                                  borderRadius: 6,
-                                  objectFit: "cover",
-                                  border: "1px solid #eee",
-                                }}
-                              />
-                              <Stack sx={{ flexGrow: 1 }}>
-                                <Typography>{it.menuItemName}</Typography>
-                                <Typography color="text.secondary">
-                                  {it.unitPrice.toLocaleString()} đ
-                                </Typography>
-                              </Stack>
-                              <Chip label={`x${it.quantity}`} />
-                              <Typography fontWeight={700}>
-                                {(it.quantity * it.unitPrice).toLocaleString()}{" "}
-                                đ
-                              </Typography>
-                            </Stack>
-                          );
-                        })
-                      )}
-                    </Stack>
-
-                    <Divider />
-
-                    <Stack spacing={1}>
-                      <Typography variant="subtitle2" fontWeight={700}>
-                        Set
-                      </Typography>
-                      {sets.length === 0 ? (
-                        <Typography color="text.secondary">
-                          Không có set
-                        </Typography>
-                      ) : (
-                        sets.map((it) => {
-                          const mi = menuItems.find(
-                            (m) => m.id === it.menuItemId
-                          );
-                          return (
-                            <Stack
-                              key={it.id}
-                              direction="row"
-                              spacing={1}
-                              alignItems="center"
-                            >
-                              <img
-                                src={mi?.imageUrl || "/assets/logo.png"}
-                                alt={mi?.name || it.menuItemName}
-                                style={{
-                                  width: 36,
-                                  height: 36,
-                                  borderRadius: 6,
-                                  objectFit: "contain",
-                                  border: "1px solid #eee",
-                                }}
-                              />
-                              <Stack sx={{ flexGrow: 1 }}>
-                                <Typography>{it.menuItemName}</Typography>
-                                <Typography color="text.secondary">
-                                  {it.unitPrice.toLocaleString()} đ
-                                </Typography>
-                              </Stack>
-                              <Chip label={`x${it.quantity}`} />
-                              <Typography fontWeight={700}>
-                                {(it.quantity * it.unitPrice).toLocaleString()}{" "}
-                                đ
-                              </Typography>
-                            </Stack>
-                          );
-                        })
-                      )}
-                    </Stack>
-                  </Stack>
-                </CardContent>
-              </Card>
-            );
-          })}
+                  </CardContent>
+                </Card>
+              );
+            });
+          })()}
         </Stack>
       )}
       <OrderFormModal
