@@ -1,5 +1,7 @@
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import {
   Button,
   Dialog,
@@ -7,9 +9,17 @@ import {
   DialogTitle,
   InputAdornment,
   MenuItem,
+  Chip,
+  Card,
+  CardHeader,
+  CardContent,
+  Grid,
+  IconButton,
   Stack,
   TextField,
   Typography,
+  ToggleButtonGroup,
+  ToggleButton,
 } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -41,6 +51,7 @@ const DiscountCodesPage = () => {
     "all"
   );
   const [searchTxt, setSearchTxt] = useState<string>("");
+  const [viewMode, setViewMode] = useState<"table" | "cards">("table");
 
   const applyFilters = (
     list: DiscountCode[],
@@ -193,22 +204,129 @@ const DiscountCodesPage = () => {
               }}
             />
           </Stack>
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<AddIcon />}
-            onClick={onAdd}
-          >
-            Thêm mới
-          </Button>
+          <Stack direction="row" spacing={2} alignItems="center">
+            <ToggleButtonGroup
+              size="small"
+              value={viewMode}
+              exclusive
+              onChange={(_, v) => setViewMode(v ?? viewMode)}
+            >
+              <ToggleButton value="table">Bảng</ToggleButton>
+              <ToggleButton value="cards">Thẻ</ToggleButton>
+            </ToggleButtonGroup>
+
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<AddIcon />}
+              onClick={onAdd}
+            >
+              Thêm mới
+            </Button>
+          </Stack>
         </Stack>
 
-        <DiscountList
-          rows={filteredRows}
-          loading={loading}
-          onEdit={onEdit}
-          onDelete={onDelete}
-        />
+        {viewMode === "table" ? (
+          <DiscountList
+            rows={filteredRows}
+            loading={loading}
+            onEdit={onEdit}
+            onDelete={onDelete}
+          />
+        ) : (
+          <Stack spacing={3}>
+            {["booking", "food"].map((scope) => {
+              const items = filteredRows.filter((r) => r.scope === scope);
+              return (
+                <Stack key={scope} spacing={2}>
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <Typography variant="h6">
+                      {scope === "food" ? "Ăn uống" : "Đặt phòng"}
+                    </Typography>
+                    <Chip
+                      label={`${items.length}`}
+                      color={scope === "food" ? "success" : "primary"}
+                      size="small"
+                    />
+                  </Stack>
+                  <Grid container spacing={2}>
+                    {items.map((c) => (
+                      <Grid
+                        item
+                        key={c.id || c.code}
+                        xs={12}
+                        sm={6}
+                        md={4}
+                        lg={3}
+                      >
+                        <Card variant="outlined">
+                          <CardHeader
+                            title={c.code}
+                            subheader={
+                              c.isActive ? "Đang hoạt động" : "Ngưng hoạt động"
+                            }
+                            action={
+                              <Stack direction="row" spacing={1}>
+                                <IconButton
+                                  size="small"
+                                  color="primary"
+                                  onClick={() => onEdit(c)}
+                                >
+                                  <EditIcon fontSize="small" />
+                                </IconButton>
+                                <IconButton
+                                  size="small"
+                                  color="error"
+                                  onClick={() => onDelete(c)}
+                                >
+                                  <DeleteIcon fontSize="small" />
+                                </IconButton>
+                              </Stack>
+                            }
+                          />
+                          <CardContent>
+                            <Stack spacing={1}>
+                              <Stack
+                                direction="row"
+                                spacing={1}
+                                alignItems="center"
+                              >
+                                <Chip
+                                  label={`${c.value}%`}
+                                  color="success"
+                                  size="small"
+                                />
+                                <Chip
+                                  label={
+                                    c.scope === "food" ? "Ăn uống" : "Đặt phòng"
+                                  }
+                                  color={
+                                    c.scope === "food" ? "success" : "primary"
+                                  }
+                                  size="small"
+                                />
+                              </Stack>
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
+                                {new Date(c.startDate).toLocaleDateString()} -{" "}
+                                {new Date(c.endDate).toLocaleDateString()}
+                              </Typography>
+                              <Typography variant="body2">
+                                {c.description || ""}
+                              </Typography>
+                            </Stack>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Stack>
+              );
+            })}
+          </Stack>
+        )}
 
         <Dialog
           open={openForm}
