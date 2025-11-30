@@ -6,6 +6,8 @@ import {
   Search,
   TableRestaurant as TableRestaurantIcon,
   Visibility,
+  LineAxis,
+  TableBar,
 } from "@mui/icons-material";
 import {
   Box,
@@ -39,6 +41,7 @@ interface TablesTableProps {
   onEdit?: (record: TableDto) => void;
   onDelete?: (record: TableDto) => void;
   onSearch?: (search: string) => void;
+  onStatusFilterChange?: (status: string | number) => void;
 }
 
 const statusChip = (status: TableStatus) => {
@@ -59,19 +62,28 @@ const TablesTable: React.FC<TablesTableProps> = ({
   onEdit,
   onDelete,
   onSearch,
+  onStatusFilterChange,
 }) => {
   const [searchText, setSearchText] = useState("");
-  const [dayFilter, setDayFilter] = useState<string | number>("");
+  const [dayFilter, setDayFilter] = useState<number>(-1);
+  const [statusFilter, setStatusFilter] = useState<number>(0);
   const [viewItem, setViewItem] = useState<TableDto | null>(null);
 
   const dayOptions: Option[] = useMemo(() => {
     const caps = Array.from(new Set((data || []).map((t) => t.capacity))).sort(
       (a, b) => a - b
     );
-    return [{ value: "", label: "Tất cả dãy" }].concat(
+    return [{ value: -1, label: "Tất cả dãy" }].concat(
       caps.map((c) => ({ value: c, label: `Dãy ${c}` }))
     );
   }, [data]);
+
+  const statusOptions: Option[] = [
+    { value: 0, label: "Sẵn sàng" },
+    { value: 1, label: "Đang sử dụng" },
+    { value: 2, label: "Đã đặt" },
+    { value: 3, label: "Ngừng phục vụ" },
+  ];
 
   return (
     <Box>
@@ -81,24 +93,54 @@ const TablesTable: React.FC<TablesTableProps> = ({
         sx={{ mb: 2 }}
         justifyContent={"space-between"}
       >
-        <TextField
-          placeholder="Tìm kiếm..."
-          size="small"
-          value={searchText}
-          onChange={(e) => {
-            const v = e.target.value;
-            setSearchText(v);
-            onSearch?.(v);
-          }}
-          sx={{ width: 320 }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Search fontSize="small" />
-              </InputAdornment>
-            ),
-          }}
-        />
+        <Stack
+          direction={{ xs: "column", md: "row" }}
+          spacing={1}
+          alignItems="center"
+        >
+          <TextField
+            placeholder="Tìm kiếm..."
+            size="small"
+            value={searchText}
+            onChange={(e) => {
+              const v = e.target.value;
+              setSearchText(v);
+              onSearch?.(v);
+            }}
+            sx={{ width: 320 }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search fontSize="small" />
+                </InputAdornment>
+              ),
+            }}
+          />
+          <Box sx={{ minWidth: 200 }}>
+            <CustomSelect
+              size="small"
+              label="Dãy"
+              value={dayFilter}
+              onChange={(e) => setDayFilter(e.target.value)}
+              options={dayOptions}
+              startIcon={<LineAxis />}
+            />
+          </Box>
+          <Box sx={{ minWidth: 220 }}>
+            <CustomSelect
+              label="Trạng thái"
+              size="small"
+              value={statusFilter}
+              onChange={(e) => {
+                const v = e.target.value;
+                setStatusFilter(v);
+                onStatusFilterChange?.(v);
+              }}
+              options={statusOptions}
+              startIcon={<TableBar />}
+            />
+          </Box>
+        </Stack>
         {onAdd && (
           <Button
             variant="contained"
@@ -113,9 +155,9 @@ const TablesTable: React.FC<TablesTableProps> = ({
 
       <Stack spacing={2}>
         {dayOptions
-          .filter((o) => o.value !== "")
+          .filter((o) => o.value !== -1)
           .filter((o) =>
-            dayFilter === "" ? true : String(o.value) === String(dayFilter)
+            dayFilter === -1 ? true : String(o.value) === String(dayFilter)
           )
           .map((o) => {
             const rows = data.filter(

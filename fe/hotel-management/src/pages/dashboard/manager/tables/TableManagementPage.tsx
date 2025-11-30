@@ -24,6 +24,7 @@ const TableManagementPage: React.FC = () => {
   const [items, setItems] = useState<TableDto[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string | number>("");
 
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -44,7 +45,12 @@ const TableManagementPage: React.FC = () => {
     if (!hotelId) return;
     setLoading(true);
     try {
-      const res = await tablesApi.listTables({ hotelId, search: searchTerm });
+      const res = await tablesApi.listTables({
+        hotelId,
+        search: searchTerm,
+        status:
+          statusFilter === "" ? undefined : (statusFilter as string | number),
+      });
       if (res.isSuccess) setItems(res.data);
     } catch {
       setSnackbar({
@@ -66,6 +72,11 @@ const TableManagementPage: React.FC = () => {
     fetchTables();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm]);
+
+  useEffect(() => {
+    fetchTables();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusFilter]);
 
   const openCreate = () => setCreateOpen(true);
   const closeCreate = () => setCreateOpen(false);
@@ -174,6 +185,7 @@ const TableManagementPage: React.FC = () => {
         onEdit={openEdit}
         onDelete={openDelete}
         onSearch={(e) => setSearchTerm(e)}
+        onStatusFilterChange={(v) => setStatusFilter(v)}
       />
 
       <TableFormModal

@@ -3,7 +3,7 @@ import DataTable, {
   type Column,
 } from "../../../../../components/common/DataTable";
 import type { MenuItemDto } from "../../../../../api/menusApi";
-import { Chip, Avatar } from "@mui/material";
+import { Chip, Avatar, Typography } from "@mui/material";
 
 interface MenuTableProps {
   data: MenuItemDto[];
@@ -12,6 +12,7 @@ interface MenuTableProps {
   onEdit?: (record: MenuItemDto) => void;
   onDelete?: (record: MenuItemDto) => void;
   onSearch?: (e: string) => void;
+  isFood?: boolean;
 }
 
 const activeChip = (active?: boolean) => (
@@ -29,6 +30,7 @@ const MenuTable: React.FC<MenuTableProps> = ({
   onEdit,
   onDelete,
   onSearch,
+  isFood,
 }) => {
   const [page, setPage] = useState(1);
   const pageSize = 10;
@@ -60,21 +62,37 @@ const MenuTable: React.FC<MenuTableProps> = ({
     //       "-"
     //     ),
     // },
-    { id: "name", label: "Tên món", minWidth: 180 },
+    { id: "name", label: isFood ? "Tên món" : "Tên set", minWidth: 180 },
     {
       id: "category",
       label: "Nhóm",
       minWidth: 140,
     },
-    { id: "description", label: "Mô tả", minWidth: 160 },
+    {
+      id: "description",
+      label: isFood ? "Mô tả" : "Danh sách món",
+      minWidth: 160,
+      render: (row) =>
+        isFood
+          ? row.description
+          : (row.description || "")
+              .split(/\n|,/)
+              .map((s) => s.trim())
+              .filter((s) => s.length > 0)
+              .map((food, idx) => (
+                <Typography key={idx} variant="body2" color="text.secondary">
+                  {`${idx + 1}. ${food}`}
+                </Typography>
+              )) || "-",
+    },
     {
       id: "unitPrice",
       label: "Đơn giá",
       minWidth: 120,
       render: (row) =>
-        row.category === "Set"
-          ? "—"
-          : `${Number(row.unitPrice).toLocaleString()} ₫`,
+        isFood
+          ? `${Number(row.unitPrice).toLocaleString()}₫`
+          : `${Number(row.unitPrice).toLocaleString()}₫/người`,
     },
 
     {

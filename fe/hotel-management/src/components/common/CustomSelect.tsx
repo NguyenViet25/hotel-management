@@ -20,6 +20,7 @@ interface CustomSelectProps {
   startIcon?: React.ReactNode;
   options?: Option[];
   placeholder?: string;
+  size?: "small" | "medium";
 }
 const CustomSelect: React.FC<CustomSelectProps> = ({
   name,
@@ -29,9 +30,10 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   startIcon,
   options = [],
   placeholder,
+  size = "medium",
 }) => {
   return (
-    <FormControl fullWidth variant="outlined">
+    <FormControl fullWidth variant="outlined" size={size}>
       <InputLabel>{label}</InputLabel>
       <Select
         name={name}

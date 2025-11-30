@@ -251,12 +251,12 @@ const MenuManagementPage: React.FC = () => {
       <PageTitle title="Quản lý thực đơn" subtitle="Xem, thêm, sửa, xóa món" />
 
       <Stack
-        direction={{ xs: "column", md: "row" }}
+        direction={{ xs: "column", lg: "row" }}
         justifyContent={"space-between"}
         sx={{ mb: 2 }}
         spacing={2}
       >
-        <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
+        <Stack direction={{ xs: "column", lg: "row" }} spacing={2}>
           <ToggleButtonGroup
             size="small"
             value={viewMode}
@@ -343,6 +343,7 @@ const MenuManagementPage: React.FC = () => {
           loading={loading}
           onEdit={openEdit}
           onDelete={openDelete}
+          isFood={typeFilter === "food"}
         />
       ) : (
         <Grid container spacing={3}>
@@ -465,7 +466,7 @@ const MenuManagementPage: React.FC = () => {
                 </Stack>
                 <Grid container spacing={2}>
                   {setRecords.map((it) => (
-                    <Grid key={it.id} size={{ xs: 12, md: 6 }}>
+                    <Grid key={it.id} size={{ xs: 12, lg: 6 }}>
                       <Card
                         elevation={0}
                         sx={{
