@@ -1,4 +1,10 @@
 import {
+  Add,
+  Groups,
+  Search,
+  TableRestaurant as TableRestaurantIcon,
+} from "@mui/icons-material";
+import {
   Box,
   Button,
   Card,
@@ -8,20 +14,14 @@ import {
   Paper,
   Stack,
   TextField,
-  ToggleButton,
-  ToggleButtonGroup,
   Typography,
 } from "@mui/material";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import type { TableDto, TableStatus } from "../../../../../api/tablesApi";
-import DataTable, {
-  type Column,
-} from "../../../../../components/common/DataTable";
-import { Add, Groups, Search } from "@mui/icons-material";
+import tableImg from "../../../../../assets/table.png";
 import CustomSelect, {
   type Option,
 } from "../../../../../components/common/CustomSelect";
-import tableImg from "../../../../../assets/table.png";
 
 interface TablesTableProps {
   data: TableDto[];
@@ -43,32 +43,15 @@ const statusChip = (status: TableStatus) => {
   return <Chip label={s.label} color={s.color} size="small" />;
 };
 
-const activeChip = (active?: boolean) => (
-  <Chip
-    label={active ? "Hoạt động" : "Vô hiệu"}
-    color={active ? "info" : "default"}
-    size="small"
-  />
-);
-
 const TablesTable: React.FC<TablesTableProps> = ({
   data,
   loading,
   onAdd,
   onEdit,
-  onDelete,
   onSearch,
 }) => {
-  const [page, setPage] = useState(1);
-  const pageSize = 10;
-  const total = data.length;
   const [searchText, setSearchText] = useState("");
-  const [viewMode, setViewMode] = useState<"list" | "group">("list");
   const [dayFilter, setDayFilter] = useState<string | number>("");
-
-  useEffect(() => {
-    setPage(1);
-  }, [data, dayFilter, viewMode]);
 
   const dayOptions: Option[] = useMemo(() => {
     const caps = Array.from(new Set((data || []).map((t) => t.capacity))).sort(
@@ -79,231 +62,197 @@ const TablesTable: React.FC<TablesTableProps> = ({
     );
   }, [data]);
 
-  const filteredData = useMemo(() => {
-    if (dayFilter === "" || dayFilter === undefined) return data;
-    return data.filter((t) => String(t.capacity) === String(dayFilter));
-  }, [data, dayFilter]);
-
-  const pagedData = useMemo(() => {
-    const start = (page - 1) * pageSize;
-    const end = start + pageSize;
-    return filteredData.slice(start, end);
-  }, [filteredData, page]);
-
-  const columns: Column<TableDto>[] = [
-    {
-      id: "name",
-      label: "Tên bàn",
-      minWidth: 240,
-      render: (row) => (
-        <Stack direction="row" spacing={1} alignItems="center">
-          <Box
-            sx={{
-              width: 48,
-              height: 48,
-              borderRadius: 1,
-              overflow: "hidden",
-              bgcolor: "grey.100",
-              border: "1px solid",
-              borderColor: "divider",
-            }}
-          >
-            <img
-              src={tableImg}
-              alt={row.name}
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            />
-          </Box>
-          <Stack spacing={0.25}>
-            <Typography variant="body2" sx={{ fontWeight: 700 }}>
-              {row.name}
-            </Typography>
-            <Stack direction="row" spacing={0.5} alignItems="center">
-              <Groups fontSize="small" color="disabled" />
-              <Typography variant="caption" color="text.secondary">
-                {typeof row.capacity === "number" && row.capacity > 0
-                  ? `${row.capacity} người`
-                  : "6 người"}
-              </Typography>
-            </Stack>
-          </Stack>
-        </Stack>
-      ),
-    },
-    { id: "capacity", label: "Dãy", minWidth: 120 },
-    {
-      id: "status",
-      label: "Trạng thái",
-      minWidth: 140,
-      format: (v) => statusChip(v as TableStatus),
-    },
-  ];
-
   return (
     <Box>
       <Stack
         direction={{ xs: "column", md: "row" }}
         spacing={1}
-        alignItems={{ xs: "stretch", md: "center" }}
-        justifyContent="space-between"
         sx={{ mb: 2 }}
+        justifyContent={"space-between"}
       >
-        <Stack direction="row" spacing={1} alignItems="center">
-          <TextField
-            placeholder="Tìm kiếm..."
-            size="small"
-            value={searchText}
-            onChange={(e) => {
-              const v = e.target.value;
-              setSearchText(v);
-              onSearch?.(v);
-            }}
-            sx={{ width: 320 }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search fontSize="small" />
-                </InputAdornment>
-              ),
-            }}
-          />
-          {onAdd && (
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<Add />}
-              onClick={onAdd}
-            >
-              Thêm mới
-            </Button>
-          )}
-        </Stack>
-
-        <Stack direction="row" spacing={1} alignItems="center">
-          <CustomSelect
-            label="Lọc theo dãy"
-            value={dayFilter}
-            onChange={(e) => setDayFilter(e.target.value)}
-            options={dayOptions}
-          />
-          <ToggleButtonGroup
-            size="small"
+        <TextField
+          placeholder="Tìm kiếm..."
+          size="small"
+          value={searchText}
+          onChange={(e) => {
+            const v = e.target.value;
+            setSearchText(v);
+            onSearch?.(v);
+          }}
+          sx={{ width: 320 }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search fontSize="small" />
+              </InputAdornment>
+            ),
+          }}
+        />
+        {onAdd && (
+          <Button
+            variant="contained"
             color="primary"
-            exclusive
-            value={viewMode}
-            onChange={(_, v) => v && setViewMode(v)}
+            startIcon={<Add />}
+            onClick={onAdd}
           >
-            <ToggleButton value="list">Danh sách</ToggleButton>
-            <ToggleButton value="group">Theo dãy</ToggleButton>
-          </ToggleButtonGroup>
-        </Stack>
+            Thêm mới
+          </Button>
+        )}
       </Stack>
 
-      {viewMode === "list" ? (
-        <DataTable
-          title="Danh sách bàn"
-          columns={columns}
-          data={pagedData}
-          loading={loading}
-          onEdit={onEdit}
-          onDelete={onDelete}
-          getRowId={(row) => row.id}
-          pagination={{ page, pageSize, total, onPageChange: setPage }}
-        />
-      ) : (
-        <Stack spacing={2}>
-          {dayOptions
-            .filter((o) => o.value !== "")
-            .filter((o) =>
-              dayFilter === "" ? true : String(o.value) === String(dayFilter)
-            )
-            .map((o) => {
-              const rows = data.filter(
-                (t) => String(t.capacity) === String(o.value)
-              );
-              return (
-                <Paper key={o.value as any} variant="outlined" sx={{ p: 2 }}>
-                  <Stack
-                    direction="row"
-                    alignItems="center"
-                    justifyContent="space-between"
-                    sx={{ mb: 1 }}
+      <Stack spacing={2}>
+        {dayOptions
+          .filter((o) => o.value !== "")
+          .filter((o) =>
+            dayFilter === "" ? true : String(o.value) === String(dayFilter)
+          )
+          .map((o) => {
+            const rows = data.filter(
+              (t) => String(t.capacity) === String(o.value)
+            );
+            return (
+              <Paper
+                key={o.value as any}
+                variant="outlined"
+                sx={{
+                  p: 2,
+                  position: "relative",
+                  border: "2px dashed",
+                  borderColor: "warning.main",
+                  borderRadius: "14px",
+                  background:
+                    "linear-gradient(135deg, #FFF8E1 0%, #FFFDF5 100%)",
+                  "&:before": {
+                    content: '""',
+                    position: "absolute",
+                    top: "50%",
+                    left: -8,
+                    transform: "translateY(-50%)",
+                    width: 16,
+                    height: 16,
+                    borderRadius: "50%",
+                    backgroundColor: "background.paper",
+                    border: "2px solid",
+                    borderColor: "warning.main",
+                  },
+                  "&:after": {
+                    content: '""',
+                    position: "absolute",
+                    top: "50%",
+                    right: -8,
+                    transform: "translateY(-50%)",
+                    width: 16,
+                    height: 16,
+                    borderRadius: "50%",
+                    backgroundColor: "background.paper",
+                    border: "2px solid",
+                    borderColor: "warning.main",
+                  },
+                }}
+              >
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                    px: 2,
+                    py: 1,
+                    mb: 2,
+                    borderRadius: 2,
+                    bgcolor: "warning.light",
+                    border: "2px dashed",
+                    borderColor: "warning.main",
+                  }}
+                >
+                  <TableRestaurantIcon color="warning" />
+                  <Typography
+                    variant="subtitle1"
+                    sx={{
+                      fontWeight: 800,
+                      textTransform: "uppercase",
+                      letterSpacing: 0.5,
+                      flexGrow: 1,
+                    }}
                   >
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <Chip label={`Dãy ${o.value}`} color="warning" />
-                      <Chip label={`${rows.length} bàn`} variant="outlined" />
-                    </Stack>
-                  </Stack>
-                  <Stack direction="row" spacing={1.5} flexWrap="wrap">
-                    {rows.map((row) => {
-                      const seats =
-                        typeof row.capacity === "number" && row.capacity > 0
-                          ? row.capacity
-                          : 6;
-                      return (
-                        <Card
-                          key={row.id}
-                          variant="outlined"
-                          sx={{
-                            width: 240,
-                            borderRadius: 2,
-                            position: "relative",
-                            transition: "all .2s ease",
-                            "&:hover": {
-                              boxShadow: 2,
-                              borderColor: "grey.300",
-                            },
-                          }}
-                        >
-                          <Box sx={{ position: "relative" }}>
-                            <Box sx={{ height: 110, overflow: "hidden" }}>
-                              <img
-                                src={tableImg}
-                                alt={row.name}
-                                style={{
-                                  width: "100%",
-                                  height: "100%",
-                                  objectFit: "cover",
-                                  display: "block",
-                                }}
-                              />
-                            </Box>
-                            <Box sx={{ position: "absolute", top: 8, left: 8 }}>
-                              {statusChip(row.status)}
-                            </Box>
+                    {`Dãy ${o.value}`}
+                  </Typography>
+                  <Chip label={`${rows.length} bàn`} variant="outlined" />
+                </Box>
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
+                    gap: 1.5,
+                  }}
+                >
+                  {rows.map((row) => {
+                    const seats =
+                      typeof row.capacity === "number" && row.capacity > 0
+                        ? row.capacity
+                        : 6;
+                    return (
+                      <Card
+                        key={row.id}
+                        variant="outlined"
+                        sx={{
+                          width: "100%",
+                          borderRadius: 2,
+                          position: "relative",
+                          transition: "all .2s ease",
+                          "&:hover": {
+                            boxShadow: 2,
+                            borderColor: "grey.300",
+                          },
+                        }}
+                      >
+                        <Box sx={{ position: "relative" }}>
+                          <Box sx={{ height: 110, overflow: "hidden", mt: 1 }}>
+                            <img
+                              src={tableImg}
+                              alt={row.name}
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover",
+                                display: "block",
+                              }}
+                            />
                           </Box>
-                          <CardContent sx={{ p: 1.5 }}>
-                            <Stack spacing={0.5}>
+                          <Box sx={{ position: "absolute", top: 8, left: 8 }}>
+                            {statusChip(row.status)}
+                          </Box>
+                        </Box>
+                        <CardContent sx={{ p: 1.5 }}>
+                          <Stack spacing={0.5}>
+                            <Typography
+                              variant="subtitle2"
+                              sx={{ fontWeight: 700 }}
+                            >
+                              {row.name}
+                            </Typography>
+                            <Stack
+                              direction="row"
+                              spacing={0.5}
+                              alignItems="center"
+                            >
+                              <Groups fontSize="small" color="disabled" />
                               <Typography
-                                variant="subtitle2"
-                                sx={{ fontWeight: 700 }}
+                                variant="caption"
+                                color="text.secondary"
                               >
-                                {row.name}
+                                {seats} người/bàn
                               </Typography>
-                              <Stack
-                                direction="row"
-                                spacing={0.5}
-                                alignItems="center"
-                              >
-                                <Groups fontSize="small" color="disabled" />
-                                <Typography
-                                  variant="caption"
-                                  color="text.secondary"
-                                >
-                                  {seats} người/bàn
-                                </Typography>
-                              </Stack>
                             </Stack>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                  </Stack>
-                </Paper>
-              );
-            })}
-        </Stack>
-      )}
+                          </Stack>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </Box>
+              </Paper>
+            );
+          })}
+      </Stack>
     </Box>
   );
 };

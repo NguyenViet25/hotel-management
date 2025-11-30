@@ -582,13 +582,13 @@ public static class DatabaseInitializationExtensions
 
         for (int j = 1; j <= 5; j++)
         {
-            for (int i = 1; i <= 20; i++)
+            for (int i = 1; i <= 10; i++)
             {
                 tables.Add(new Table
                 {
                     Id = Guid.NewGuid(),
                     HotelId = hotelId,
-                    Name = $"Bàn {(j - 1) * 20 + i}",              // Table name T1 → T20
+                    Name = $"Bàn {(j - 1) * 10 + i}",              // Table name T1 → T20
                     Capacity = j,        // Capacity 2–5 seats (cycle)
                     IsActive = true,
                     TableStatus = 0              // 0 = Available
