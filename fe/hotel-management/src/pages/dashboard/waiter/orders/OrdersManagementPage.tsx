@@ -1,4 +1,4 @@
-import { Add, Check, Close, Edit } from "@mui/icons-material";
+import { Add, Check, Close, Edit, LocalOffer } from "@mui/icons-material";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import {
   Alert,
@@ -12,6 +12,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import PromotionDialog from "../../frontdesk/invoices/components/PromotionDialog";
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import invoicesApi from "../../../../api/invoicesApi";
@@ -99,6 +100,11 @@ const OrdersManagementPage: React.FC = () => {
   const [orderItemsMap, setOrderItemsMap] = useState<
     Record<string, OrderDetailsDto["items"]>
   >({});
+
+  // Promotion dialog state
+  const [promoOpen, setPromoOpen] = useState(false);
+  const [selectedForPromo, setSelectedForPromo] =
+    useState<OrderSummaryDto | null>(null);
 
   // Fetch orders based on filters and pagination
   const fetchOrders = async (pageNum = 1) => {
@@ -422,14 +428,17 @@ const OrdersManagementPage: React.FC = () => {
                       <Divider />
 
                       <Stack
-                        direction={{ xs: "column", sm: "row" }}
+                        direction={{ xs: "column", lg: "row" }}
                         justifyContent="space-between"
-                        alignItems={{ xs: "flex-start", sm: "center" }}
                         spacing={1}
+                        sx={{ width: "100%" }}
                       >
-                        <Stack direction="row" spacing={2} alignItems="center">
+                        <Stack
+                          direction={{ xs: "column", lg: "row" }}
+                          spacing={2}
+                        >
                           <Stack
-                            direction="row"
+                            direction={{ xs: "row" }}
                             spacing={1}
                             alignItems="center"
                           >
@@ -445,7 +454,10 @@ const OrdersManagementPage: React.FC = () => {
                             <Typography>{o.customerPhone || "—"}</Typography>
                           </Stack>
                         </Stack>
-                        <Stack direction="row" spacing={1} alignItems="center">
+                        <Stack
+                          direction={{ xs: "column", lg: "row" }}
+                          spacing={1}
+                        >
                           {orderInvoiceMap[o.id] && (
                             <Chip
                               label={`HĐ: ${
@@ -461,6 +473,19 @@ const OrdersManagementPage: React.FC = () => {
                             onClick={() => openEditModal(o as any)}
                           >
                             Sửa
+                          </Button>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            color="secondary"
+                            startIcon={<LocalOffer />}
+                            disabled={o.status === "2" || o.status === "3"}
+                            onClick={() => {
+                              setSelectedForPromo(o);
+                              setPromoOpen(true);
+                            }}
+                          >
+                            Áp dụng khuyến mãi
                           </Button>
                           {o.isWalkIn && (
                             <Button
@@ -617,6 +642,41 @@ const OrdersManagementPage: React.FC = () => {
       >
         <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
       </Snackbar>
+      <PromotionDialog
+        open={promoOpen}
+        onClose={() => setPromoOpen(false)}
+        allowedScope="food"
+        onApply={async (c) => {
+          if (!selectedForPromo) return;
+          try {
+            const res = await ordersApi.applyDiscount(selectedForPromo.id, {
+              code: c.code,
+            });
+            if (res.isSuccess) {
+              setSnackbar({
+                open: true,
+                severity: "success",
+                message: "Áp dụng khuyến mãi thành công",
+              });
+              fetchOrders(page);
+            } else {
+              setSnackbar({
+                open: true,
+                severity: "error",
+                message: res.message || "Không thể áp dụng khuyến mãi",
+              });
+            }
+          } catch {
+            setSnackbar({
+              open: true,
+              severity: "error",
+              message: "Đã xảy ra lỗi khi áp dụng khuyến mãi",
+            });
+          } finally {
+            setPromoOpen(false);
+          }
+        }}
+      />
       <WalkInInvoiceDialog
         open={invoiceOpen}
         onClose={() => setInvoiceOpen(false)}

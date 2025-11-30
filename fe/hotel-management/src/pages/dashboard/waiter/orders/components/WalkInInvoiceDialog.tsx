@@ -275,7 +275,7 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
                   </Stack>
                 </Stack>
                 <Grid container mt={1}>
-                  <Grid size={{ xs: 12, lg: 6 }}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <Stack justifyContent={"center"} alignItems="center">
                       <Typography sx={{ color: "#c62828", opacity: 0 }}>
                         Khách hàng
@@ -285,7 +285,7 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
                       </Typography>
                     </Stack>
                   </Grid>
-                  <Grid size={{ xs: 12, lg: 6 }}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <Stack justifyContent={"center"} alignItems="center">
                       <Typography
                         sx={{
