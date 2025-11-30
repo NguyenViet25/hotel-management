@@ -88,7 +88,7 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
     setValue,
   } = useForm<FormValues>({
     resolver: zodResolver(
-      createType === "set" && mode === "create"
+      createType === "set"
         ? z.object({
             category: z.string().optional(),
             name: z.string().min(1, "Tên set là bắt buộc").max(100),
@@ -96,23 +96,17 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
             imageUrl: z.string().optional().or(z.literal("")),
             status: z.number().int().min(0).max(1),
             isActive: z.boolean().optional(),
-            description: z
-              .string()
-              .max(2000)
-              .optional(),
+            description: z.string().max(2000).optional(),
           })
         : schema
     ),
     defaultValues: {
       category:
-        createType === "set" && mode === "create"
-          ? initialValues?.category ?? ""
+        createType === "set"
+          ? initialValues?.category ?? "Set"
           : initialValues?.category ?? "Món khai vị",
       name: initialValues?.name ?? "",
-      unitPrice:
-        createType === "set" && mode === "create"
-          ? 1
-          : initialValues?.unitPrice ?? 0,
+      unitPrice: createType === "set" ? 1 : initialValues?.unitPrice ?? 0,
       imageUrl: initialValues?.imageUrl ?? "",
       status: initialValues?.status ?? 0,
       isActive: initialValues?.isActive ?? true,
@@ -140,31 +134,23 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
         .split(/\n|,/)
         .map((s) => s.trim())
         .filter((s) => s.length > 0);
-      if (list.length === 0 && setName) {
-        await onSubmit({
-          hotelId: user?.hotelId,
-          category: setName,
-          name: setName,
-          unitPrice: 1,
-          imageUrl: values.imageUrl,
-          status: values.status,
-          isActive: values.isActive,
-          description: "",
-        });
-      } else {
-        for (const itemName of list) {
-          await onSubmit({
-            hotelId: user?.hotelId,
-            category: setName,
-            name: itemName,
-            unitPrice: 1,
-            imageUrl: values.imageUrl,
-            status: values.status,
-            isActive: values.isActive,
-            description: "",
-          });
-        }
-      }
+      const joined = list.join(", ");
+      await onSubmit({
+        hotelId: user?.hotelId,
+        category: "Set",
+        name: setName,
+        unitPrice: 0,
+        imageUrl: values.imageUrl,
+        status: values.status,
+        isActive: values.status === 0,
+        description: joined,
+      });
+    } else if (createType === "set" && mode === "edit") {
+      await onSubmit({
+        name: values.name,
+        description: values.description,
+        status: values.status,
+      } as any);
     } else {
       await onSubmit({
         hotelId: user?.hotelId,
@@ -197,12 +183,14 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
           ? createType === "set"
             ? "Thêm set mới"
             : "Thêm món mới"
+          : createType === "set"
+          ? "Chỉnh sửa set"
           : "Chỉnh sửa món"}
       </DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
           {/* Menu Group or Set Name */}
-          {createType === "set" && mode === "create" ? (
+          {createType === "set" ? (
             <Controller
               control={control}
               name="name"
@@ -256,7 +244,7 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
           )}
 
           {/* Name (food) - hidden in set create mode */}
-          {!(createType === "set" && mode === "create") && (
+          {!(createType === "set") && (
             <Controller
               control={control}
               name="name"
@@ -282,7 +270,7 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
           )}
 
           {/* Unit Price - hidden in set create mode */}
-          {!(createType === "set" && mode === "create") && (
+          {!(createType === "set") && (
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
               <Controller
                 control={control}
@@ -315,16 +303,14 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
             render={({ field }) => (
               <TextField
                 label={
-                  createType === "set" && mode === "create"
-                    ? "Danh sách món trong set"
-                    : "Mô tả"
+                  createType === "set" ? "Danh sách món trong set" : "Mô tả"
                 }
                 fullWidth
-                multiline={createType === "set" && mode === "create"}
-                minRows={createType === "set" && mode === "create" ? 3 : 1}
+                multiline={createType === "set"}
+                minRows={createType === "set" ? 3 : 1}
                 value={field.value}
                 placeholder={
-                  createType === "set" && mode === "create"
+                  createType === "set"
                     ? "Mỗi dòng một món hoặc ngăn cách bằng dấu phẩy"
                     : "Nhập mô tả món ăn"
                 }

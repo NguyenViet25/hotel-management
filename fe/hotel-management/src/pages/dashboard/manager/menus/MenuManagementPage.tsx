@@ -147,14 +147,23 @@ const MenuManagementPage: React.FC = () => {
     }
   };
 
-  const editSubmit = async (payload: UpdateMenuItemRequest) => {
+  const editSubmit = async (payload: UpdateMenuItemRequest | any) => {
     if (!editingItem) return;
     try {
-      const res = await menusApi.updateMenuItem(editingItem.id, payload);
+      const cast: UpdateMenuItemRequest = {
+        name: payload?.name,
+        description: payload?.description,
+        unitPrice: payload?.unitPrice,
+        imageUrl: payload?.imageUrl,
+        status:
+          payload?.status !== undefined ? String(payload.status) : undefined,
+        isActive: payload?.isActive,
+      };
+      const res = await menusApi.updateMenuItem(editingItem.id, cast);
       if (res.isSuccess) {
         setSnackbar({
           open: true,
-          message: "Cập nhật món thành công",
+          message: "Cập nhật thành công",
           severity: "success",
         });
         closeEdit();
@@ -162,7 +171,7 @@ const MenuManagementPage: React.FC = () => {
       } else {
         setSnackbar({
           open: true,
-          message: res.message || "Không thể cập nhật món",
+          message: res.message || "Không thể cập nhật",
           severity: "error",
         });
       }
@@ -182,16 +191,15 @@ const MenuManagementPage: React.FC = () => {
       if (res.isSuccess) {
         setSnackbar({
           open: true,
-          message: "Xóa món thành công",
+          message: "Xóa thành công",
           severity: "success",
         });
-        setDeleteTarget(null);
+        setDeleteTarget(undefined);
         fetchMenuItems();
       } else {
         setSnackbar({
           open: true,
-          message:
-            res.message || "Không thể xóa món (có thể có đơn hàng liên quan)",
+          message: res.message || "Không thể xóa",
           severity: "error",
         });
       }
@@ -206,26 +214,7 @@ const MenuManagementPage: React.FC = () => {
 
   const displayItems: MenuItemDto[] = React.useMemo(() => {
     if (typeFilter === "food") return items;
-    const groupsMap = new Map<string, MenuItemDto[]>();
-    items.forEach((it) => {
-      const key = it.category || "Khác";
-      if (!groupsMap.has(key)) groupsMap.set(key, []);
-      groupsMap.get(key)!.push(it);
-    });
-    const sets: MenuItemDto[] = Array.from(groupsMap.entries()).map(
-      ([key, arr]) => ({
-        id: `set:${key}`,
-        hotelId: arr[0]?.hotelId,
-        category: "Set",
-        name: key,
-        description: arr.map((x) => x.name).join(", "),
-        unitPrice: 0,
-        imageUrl: undefined,
-        isActive: arr.some((x) => x.status === 0),
-        status: arr.some((x) => x.status === 0) ? 0 : 1,
-      })
-    );
-    return sets;
+    return items.filter((it) => (it.category || "").trim() === "Set");
   }, [items, typeFilter]);
 
   return (
@@ -282,6 +271,7 @@ const MenuManagementPage: React.FC = () => {
         onSubmit={editSubmit}
         initialValues={editingItem}
         mode="edit"
+        createType={typeFilter}
       />
 
       {/* Delete confirm */}

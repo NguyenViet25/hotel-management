@@ -86,11 +86,9 @@ const MenuTable: React.FC<MenuTableProps> = ({
   ];
 
   const handleEdit = (row: MenuItemDto) => {
-    if ((row.category || "") === "Set") return;
     onEdit?.(row);
   };
   const handleDelete = (row: MenuItemDto) => {
-    if ((row.category || "") === "Set") return;
     onDelete?.(row);
   };
 
