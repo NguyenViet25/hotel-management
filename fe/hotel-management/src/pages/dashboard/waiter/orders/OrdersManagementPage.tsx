@@ -1,4 +1,4 @@
-import { Check, Close } from "@mui/icons-material";
+import { Check, Close, Edit } from "@mui/icons-material";
 import LocalOfferIcon from "@mui/icons-material/LocalOffer";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import {
@@ -39,6 +39,9 @@ import { useStore, type StoreState } from "../../../../hooks/useStore";
 import PromotionDialog from "../../frontdesk/invoices/components/PromotionDialog";
 import OrderFormModal from "./components/OrderFormModal";
 import OrdersTable from "./components/OrdersTable";
+import ViewModuleIcon from "@mui/icons-material/ViewModule";
+import TableRowsIcon from "@mui/icons-material/TableRows";
+import menusApi, { type MenuItemDto } from "../../../../api/menusApi";
 
 import PersonIcon from "@mui/icons-material/Person";
 import PhoneIphoneIcon from "@mui/icons-material/PhoneIphone";
@@ -78,6 +81,7 @@ const OrdersManagementPage: React.FC = () => {
     null
   );
   const [value, setValue] = React.useState(0);
+  const [viewMode, setViewMode] = useState<"table" | "card">("card");
 
   const handleChange = (_: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
@@ -103,6 +107,11 @@ const OrdersManagementPage: React.FC = () => {
   >({});
   const [disableForPrint, setDisableForPrint] = useState(false);
   const invoiceRef = useRef<HTMLDivElement>(null);
+
+  const [menuItems, setMenuItems] = useState<MenuItemDto[]>([]);
+  const [orderItemsMap, setOrderItemsMap] = useState<
+    Record<string, OrderDetailsDto["items"]>
+  >({});
 
   const handlePrint = useReactToPrint({
     contentRef: invoiceRef,
@@ -155,6 +164,42 @@ const OrdersManagementPage: React.FC = () => {
     fetchOrders(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, search, hotelId]);
+
+  useEffect(() => {
+    const loadMenu = async () => {
+      try {
+        const res = await menusApi.getMenuItems({
+          isActive: true,
+          page: 1,
+          pageSize: 200,
+        });
+        if (res.isSuccess) setMenuItems(res.data || []);
+      } catch {}
+    };
+    if (viewMode === "card") loadMenu();
+  }, [viewMode]);
+
+  useEffect(() => {
+    const loadDetailsForPage = async () => {
+      if (viewMode !== "card") return;
+      if (!orders?.length) {
+        setOrderItemsMap({});
+        return;
+      }
+      try {
+        const results = await Promise.all(
+          orders.map((o) => ordersApi.getById(o.id))
+        );
+        const map: Record<string, OrderDetailsDto["items"]> = {};
+        orders.forEach((o, idx) => {
+          const d = results[idx];
+          if (d?.isSuccess) map[o.id] = d.data.items || [];
+        });
+        setOrderItemsMap(map);
+      } catch {}
+    };
+    loadDetailsForPage();
+  }, [orders, viewMode]);
 
   const openEditModal = async (summary: OrderDetailsDto) => {
     setSelectedOrder(summary);
@@ -345,34 +390,252 @@ const OrdersManagementPage: React.FC = () => {
           />
         </Tabs>
       </Box>
-      <OrdersTable
-        data={value === 1 ? bookingOrders : walkInOrders}
-        loading={loading}
-        page={page}
-        pageSize={pageSize}
-        total={total}
-        onPageChange={(p) => fetchOrders(p)}
-        onAddOrder={() => setOpenOrder(true)}
-        onEdit={(o) => openEditModal(o as any)}
-        onCancel={(o) => {
-          setSelectedOrder(o as any);
-          setConfirmOpen(true);
-        }}
-        onSearch={(e) => setSearch(e)}
-        onCreateInvoice={(row) => {
-          setSelectedForInvoice(row);
-          setInvoiceOpen(true);
-        }}
-        onSelectPromotion={(row) => {
-          setSelectedForInvoice(row);
-          setPromoOpen(true);
-        }}
-        invoiceMap={orderInvoiceMap}
-        onPrintInvoice={(row) => {
-          setSelectedForInvoice(row);
-          setInvoiceOpen(true);
-        }}
-      />
+
+      {viewMode === "table" ? (
+        <OrdersTable
+          data={value === 1 ? bookingOrders : walkInOrders}
+          loading={loading}
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          onPageChange={(p) => fetchOrders(p)}
+          onAddOrder={() => setOpenOrder(true)}
+          onEdit={(o) => openEditModal(o as any)}
+          onCancel={(o) => {
+            setSelectedOrder(o as any);
+            setConfirmOpen(true);
+          }}
+          onSearch={(e) => setSearch(e)}
+          onCreateInvoice={(row) => {
+            setSelectedForInvoice(row);
+            setInvoiceOpen(true);
+          }}
+          onSelectPromotion={(row) => {
+            setSelectedForInvoice(row);
+            setPromoOpen(true);
+          }}
+          invoiceMap={orderInvoiceMap}
+          onPrintInvoice={(row) => {
+            setSelectedForInvoice(row);
+            setInvoiceOpen(true);
+          }}
+        />
+      ) : (
+        <Stack spacing={2} sx={{ mt: 2 }}>
+          {(value === 1 ? bookingOrders : walkInOrders).map((o) => {
+            const items = orderItemsMap[o.id] || [];
+            const foods = items.filter((it) => {
+              const mi = menuItems.find((m) => m.id === it.menuItemId);
+              return (mi?.category || "").trim() !== "Set";
+            });
+            const sets = items.filter((it) => {
+              const mi = menuItems.find((m) => m.id === it.menuItemId);
+              return (mi?.category || "").trim() === "Set";
+            });
+            return (
+              <Card key={o.id} sx={{ borderRadius: 2, boxShadow: 2 }}>
+                <CardContent>
+                  <Stack spacing={1.5}>
+                    <Stack
+                      direction={{ xs: "column", sm: "row" }}
+                      justifyContent="space-between"
+                      alignItems={{ xs: "flex-start", sm: "center" }}
+                    >
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <ReceiptIcon color="primary" />
+                        <Typography fontWeight={700}>
+                          #{String(o.id).slice(0, 8).toUpperCase()}
+                        </Typography>
+                        <Chip
+                          label={o.isWalkIn ? "Vãng lai" : "Đặt phòng"}
+                          size="small"
+                        />
+                        <Chip label={`SL: ${o.itemsCount}`} size="small" />
+                        <Chip
+                          label={`${o.itemsTotal.toLocaleString()} đ`}
+                          size="small"
+                          color="primary"
+                        />
+                      </Stack>
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <Typography color="text.secondary">
+                          {new Date(o.createdAt).toLocaleString()}
+                        </Typography>
+                        <Chip
+                          color={
+                            o.status === "2"
+                              ? "success"
+                              : o.status === "3"
+                              ? "error"
+                              : "default"
+                          }
+                          label={
+                            o.status === "2"
+                              ? "Đã thanh toán"
+                              : o.status === "3"
+                              ? "Đã hủy"
+                              : "Đang xử lý"
+                          }
+                        />
+                      </Stack>
+                    </Stack>
+
+                    <Divider />
+
+                    <Stack
+                      direction={{ xs: "column", sm: "row" }}
+                      justifyContent="space-between"
+                      alignItems={{ xs: "flex-start", sm: "center" }}
+                      spacing={1}
+                    >
+                      <Stack direction="row" spacing={2} alignItems="center">
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <PersonIcon color="action" />
+                          <Typography>{o.customerName || "—"}</Typography>
+                        </Stack>
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <PhoneIphoneIcon color="action" />
+                          <Typography>{o.customerPhone || "—"}</Typography>
+                        </Stack>
+                      </Stack>
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        {orderInvoiceMap[o.id] && (
+                          <Chip
+                            label={`HĐ: ${
+                              orderInvoiceMap[o.id].invoiceNumber || "đã tạo"
+                            }`}
+                            color="default"
+                          />
+                        )}
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          startIcon={<Edit />}
+                          onClick={() => openEditModal(o as any)}
+                        >
+                          Sửa
+                        </Button>
+                        {o.isWalkIn && (
+                          <Button
+                            size="small"
+                            variant="contained"
+                            startIcon={<ReceiptLongIcon />}
+                            disabled={o.status === "2" || o.status === "3"}
+                            onClick={() => {
+                              setSelectedForInvoice(o);
+                              setInvoiceOpen(true);
+                            }}
+                          >
+                            Xuất hóa đơn
+                          </Button>
+                        )}
+                      </Stack>
+                    </Stack>
+
+                    <Stack spacing={1}>
+                      <Typography variant="subtitle2" fontWeight={700}>
+                        Món ăn
+                      </Typography>
+                      {foods.length === 0 ? (
+                        <Typography color="text.secondary">
+                          Không có món
+                        </Typography>
+                      ) : (
+                        foods.map((it) => {
+                          const mi = menuItems.find(
+                            (m) => m.id === it.menuItemId
+                          );
+                          return (
+                            <Stack
+                              key={it.id}
+                              direction="row"
+                              spacing={1}
+                              alignItems="center"
+                            >
+                              <img
+                                src={mi?.imageUrl || "/assets/logo.png"}
+                                alt={mi?.name || it.menuItemName}
+                                style={{
+                                  width: 36,
+                                  height: 36,
+                                  borderRadius: 6,
+                                  objectFit: "cover",
+                                  border: "1px solid #eee",
+                                }}
+                              />
+                              <Stack sx={{ flexGrow: 1 }}>
+                                <Typography>{it.menuItemName}</Typography>
+                                <Typography color="text.secondary">
+                                  {it.unitPrice.toLocaleString()} đ
+                                </Typography>
+                              </Stack>
+                              <Chip label={`x${it.quantity}`} />
+                              <Typography fontWeight={700}>
+                                {(it.quantity * it.unitPrice).toLocaleString()}{" "}
+                                đ
+                              </Typography>
+                            </Stack>
+                          );
+                        })
+                      )}
+                    </Stack>
+
+                    <Divider />
+
+                    <Stack spacing={1}>
+                      <Typography variant="subtitle2" fontWeight={700}>
+                        Set
+                      </Typography>
+                      {sets.length === 0 ? (
+                        <Typography color="text.secondary">
+                          Không có set
+                        </Typography>
+                      ) : (
+                        sets.map((it) => {
+                          const mi = menuItems.find(
+                            (m) => m.id === it.menuItemId
+                          );
+                          return (
+                            <Stack
+                              key={it.id}
+                              direction="row"
+                              spacing={1}
+                              alignItems="center"
+                            >
+                              <img
+                                src={mi?.imageUrl || "/assets/logo.png"}
+                                alt={mi?.name || it.menuItemName}
+                                style={{
+                                  width: 36,
+                                  height: 36,
+                                  borderRadius: 6,
+                                  objectFit: "contain",
+                                  border: "1px solid #eee",
+                                }}
+                              />
+                              <Stack sx={{ flexGrow: 1 }}>
+                                <Typography>{it.menuItemName}</Typography>
+                                <Typography color="text.secondary">
+                                  {it.unitPrice.toLocaleString()} đ
+                                </Typography>
+                              </Stack>
+                              <Chip label={`x${it.quantity}`} />
+                              <Typography fontWeight={700}>
+                                {(it.quantity * it.unitPrice).toLocaleString()}{" "}
+                                đ
+                              </Typography>
+                            </Stack>
+                          );
+                        })
+                      )}
+                    </Stack>
+                  </Stack>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </Stack>
+      )}
       <OrderFormModal
         open={openOrder}
         onClose={() => setOpenOrder(false)}
