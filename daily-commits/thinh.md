@@ -187,3 +187,4 @@
 2025-11-30 - 2 - 01:57:18 UTC :: fix: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — tach chuc nang de de bao tri (chuan bi cho tinh nang tiep theo)
 2025-11-30 - 3 - 01:57:20 UTC :: fix: UC-11 Goi gia: bat/tam ngung goi gia dang ap dung. — dieu chinh UI & copy cho ro (can theo doi them)
 2025-11-30 - 4 - 01:57:21 UTC :: refactor: UC-38 Audit Log: xem/loc thao tac, hanh dong, thoi gian. — cap nhat cau hinh va kiem tra bien (khong doi hanh vi)
+2025-11-30 - 5 - 01:57:24 UTC :: chore: UC-01 RBAC: tao, sua, khoa tai khoan; gan vai tro. — toi uu truy van va bo nho (dong bo voi BE/FE)
