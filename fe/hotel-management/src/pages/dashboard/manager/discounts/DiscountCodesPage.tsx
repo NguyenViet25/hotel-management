@@ -5,7 +5,6 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import LocalDiningIcon from "@mui/icons-material/LocalDining";
 import HotelIcon from "@mui/icons-material/Hotel";
 import {
-  Alert,
   Button,
   Dialog,
   DialogContent,
@@ -357,6 +356,18 @@ const DiscountCodesPage = () => {
                               opacity: c.isActive ? 1 : 0.55,
                             }}
                           >
+                            {new Date(c.endDate) < new Date() && (
+                              <Chip
+                                label="Hết hạn"
+                                color="error"
+                                size="small"
+                                sx={{
+                                  position: "absolute",
+                                  bottom: 6,
+                                  left: 6,
+                                }}
+                              />
+                            )}
                             <Stack spacing={1}>
                               <Stack
                                 direction="row"
@@ -367,35 +378,23 @@ const DiscountCodesPage = () => {
                                   variant="h4"
                                   sx={{
                                     fontWeight: 800,
-                                    color: borderColor,
+                                    color:
+                                      new Date(c.endDate) < new Date()
+                                        ? "error.main"
+                                        : borderColor,
                                     letterSpacing: 1,
                                     lineHeight: 1,
                                   }}
                                 >
                                   {c.value}%
                                 </Typography>
-                                <Stack
-                                  direction="row"
-                                  spacing={0.5}
-                                  alignItems="center"
-                                >
-                                  <Chip
-                                    label={
-                                      c.scope === "food"
-                                        ? "Ăn uống"
-                                        : "Đặt phòng"
-                                    }
-                                    color={color as any}
-                                    size="small"
-                                  />
-                                  {new Date(c.endDate) < new Date() && (
-                                    <Chip
-                                      label="Hết hạn"
-                                      color="error"
-                                      size="small"
-                                    />
-                                  )}
-                                </Stack>
+                                <Chip
+                                  label={
+                                    c.scope === "food" ? "Ăn uống" : "Đặt phòng"
+                                  }
+                                  color={color as any}
+                                  size="small"
+                                />
                               </Stack>
 
                               <Typography
@@ -418,16 +417,6 @@ const DiscountCodesPage = () => {
                               >
                                 {c.description || ""}
                               </Typography>
-
-                              {new Date(c.endDate) < new Date() && (
-                                <Alert
-                                  severity="error"
-                                  variant="outlined"
-                                  sx={{ p: 0.5 }}
-                                >
-                                  Đã hết hạn
-                                </Alert>
-                              )}
 
                               <Stack
                                 direction="row"
