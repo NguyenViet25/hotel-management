@@ -183,3 +183,4 @@
 2025-11-29 - 3 - 01:44:05 UTC :: ci: UC-35 Ngoai le: gui yeu cau mien/giam phi, vuot tran. — tach chuc nang de de bao tri (da review so bo)
 2025-11-29 - 4 - 01:44:08 UTC :: build: UC-47 Dashboard: gioi han xem theo vai tro va co so. — dieu chinh quyen truy cap theo vai tro (da review so bo)
 2025-11-29 - 5 - 01:44:10 UTC :: fix: UC-29 Thanh toan nha hang: thu tien, in hoa don, dong giao dich. — dieu chinh quyen truy cap theo vai tro (chuan bi cho tinh nang tiep theo)
+2025-11-30 - 1 - 01:57:20 UTC :: ci: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — chuan hoa ten ham/bien theo convention (dam bao backward-compatible)
