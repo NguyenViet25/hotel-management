@@ -1,35 +1,30 @@
+import AddIcon from "@mui/icons-material/Add";
+import SearchIcon from "@mui/icons-material/Search";
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogTitle,
+  InputAdornment,
+  MenuItem,
   Stack,
+  TextField,
   Typography,
 } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import type { DiscountCode } from "../../../../api/discountCodesApi";
 import discountCodesApi from "../../../../api/discountCodesApi";
 import ConfirmModal from "../../../../components/common/ConfirmModel";
+import PageTitle from "../../../../components/common/PageTitle";
+import { useStore, type StoreState } from "../../../../hooks/useStore";
 import type { DiscountFormValues } from "./components/DiscountForm";
 import DiscountForm from "./components/DiscountForm";
 import DiscountList from "./components/DiscountList";
-import { useStore, type StoreState } from "../../../../hooks/useStore";
-import PageTitle from "../../../../components/common/PageTitle";
-
-const getCurrentHotelId = (): string | null => {
-  const userJson = localStorage.getItem("user");
-  if (!userJson) return null;
-  try {
-    const user = JSON.parse(userJson);
-    return user?.hotelId ?? null;
-  } catch (_) {
-    return null;
-  }
-};
 
 const DiscountCodesPage = () => {
   const [rows, setRows] = useState<DiscountCode[]>([]);
@@ -42,15 +37,29 @@ const DiscountCodesPage = () => {
   const [deleting, setDeleting] = useState<DiscountCode | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const { hotelId } = useStore<StoreState>((state) => state);
+  const [scopeFilter, setScopeFilter] = useState<"all" | "booking" | "food">(
+    "all"
+  );
+  const [searchTxt, setSearchTxt] = useState<string>("");
+
+  const applyFilters = (
+    list: DiscountCode[],
+    txt: string,
+    scope: "all" | "booking" | "food"
+  ) => {
+    const q = (txt || "").toLowerCase();
+    return list.filter((r) => {
+      const matchesText =
+        r.code.toLowerCase().includes(q) ||
+        (r.description || "").toLowerCase().includes(q);
+      const matchesScope = scope === "all" ? true : r.scope === scope;
+      return matchesText && matchesScope;
+    });
+  };
 
   const onSearch = async (txt: string) => {
-    const q = txt.toLowerCase();
-    const filtered = rows.filter(
-      (r) =>
-        r.code.toLowerCase().includes(q) ||
-        (r.name || "").toLowerCase().includes(q)
-    );
-    setFilteredRows(filtered);
+    setSearchTxt(txt);
+    setFilteredRows(applyFilters(rows, txt, scopeFilter));
   };
 
   const loadData = async () => {
@@ -62,7 +71,7 @@ const DiscountCodesPage = () => {
         throw new Error(res.message || "Tải dữ liệu thất bại");
       const data = res.data || [];
       setRows(data);
-      setFilteredRows(data);
+      setFilteredRows(applyFilters(data, searchTxt, scopeFilter));
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -73,6 +82,10 @@ const DiscountCodesPage = () => {
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    setFilteredRows(applyFilters(rows, searchTxt, scopeFilter));
+  }, [rows, searchTxt, scopeFilter]);
 
   const onAdd = () => {
     setEditing(null);
@@ -145,13 +158,56 @@ const DiscountCodesPage = () => {
           subtitle="Quản lý mã giảm giá của khách sạn"
         />
 
+        <Stack
+          direction="row"
+          spacing={2}
+          alignItems="center"
+          justifyContent={"space-between"}
+        >
+          <Stack direction="row" spacing={2} alignItems="center">
+            <TextField
+              select
+              label="Loại"
+              size="small"
+              value={scopeFilter}
+              onChange={(e) => setScopeFilter(e.target.value as any)}
+              sx={{ minWidth: 160 }}
+            >
+              <MenuItem value="all">Tất cả</MenuItem>
+              <MenuItem value="booking">Đặt phòng</MenuItem>
+              <MenuItem value="food">Ăn uống</MenuItem>
+            </TextField>
+
+            <TextField
+              placeholder="Tìm kiếm mã/điều kiện"
+              size="small"
+              value={searchTxt}
+              onChange={(e) => onSearch(e.target.value)}
+              sx={{ width: 280 }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon fontSize="small" />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Stack>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<AddIcon />}
+            onClick={onAdd}
+          >
+            Thêm mới
+          </Button>
+        </Stack>
+
         <DiscountList
           rows={filteredRows}
           loading={loading}
-          onAdd={onAdd}
           onEdit={onEdit}
           onDelete={onDelete}
-          onSearch={onSearch}
         />
 
         <Dialog

@@ -175,6 +175,7 @@ public class DiscountCodeService : IDiscountCodeService
         }
 
         if (dto.Value.HasValue && dto.Value.Value < 0) AddError(errors, "Value", "Value must be non-negative");
+        if (dto.Value.HasValue && dto.Value.Value > 100) AddError(errors, "Value", "Value must be less than or equal to 100");
         if (dto.StartDate.HasValue && dto.EndDate.HasValue && dto.StartDate > dto.EndDate)
             AddError(errors, "EndDate", "End date must be after start date");
 

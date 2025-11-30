@@ -32,7 +32,7 @@ const DiscountList: React.FC<DiscountListProps> = ({
     },
     {
       id: "value",
-      label: "Giá trị",
+      label: "Giá trị(%)",
       sortable: true,
       format: (v) => `${v}`,
     },
