@@ -1,4 +1,6 @@
-import { Chip } from "@mui/material";
+import LocalDiningIcon from "@mui/icons-material/LocalDining";
+import HotelIcon from "@mui/icons-material/Hotel";
+import { Chip, Tooltip, Typography } from "@mui/material";
 import React from "react";
 import type { DiscountCode } from "../../../../../api/discountCodesApi";
 import type { Column } from "../../../../../components/common/DataTable";
@@ -22,26 +24,59 @@ const DiscountList: React.FC<DiscountListProps> = ({
   onSearch,
 }) => {
   const columns: Column<DiscountCode>[] = [
-    { id: "code", label: "Mã", sortable: true },
+    {
+      id: "code",
+      label: "Mã",
+      sortable: true,
+      format: (v) => (
+        <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+          {String(v)}
+        </Typography>
+      ),
+    },
     {
       id: "scope",
       label: "Loại",
-      format: (v) => (
-        <Chip size="small" label={v === "food" ? "Ăn uống" : "Đặt phòng"} />
+      align: "center",
+      render: (row) => (
+        <Chip
+          size="small"
+          icon={row.scope === "food" ? <LocalDiningIcon /> : <HotelIcon />}
+          label={row.scope === "food" ? "Ăn uống" : "Đặt phòng"}
+          color={row.scope === "food" ? "success" : "primary"}
+          variant="filled"
+        />
       ),
     },
     {
       id: "value",
       label: "Giá trị(%)",
       sortable: true,
-      format: (v) => `${v}`,
+      align: "center",
+      render: (row) => {
+        const v = Number(row.value) || 0;
+        return (
+          <Chip
+            size="small"
+            label={`${v}%`}
+            sx={{ fontWeight: 800, letterSpacing: 0.5, minWidth: 64 }}
+          />
+        );
+      },
     },
     {
       id: "description",
       label: "Điều kiện",
-      format: (v) =>
-        (v ? String(v).slice(0, 50) : "") +
-        (v && String(v).length > 50 ? "…" : ""),
+      render: (row) => (
+        <Tooltip title={row.description || ""} arrow>
+          <Typography variant="body2" sx={{ maxWidth: 280 }} noWrap>
+            {(row.description ? String(row.description).slice(0, 50) : "") +
+              (row.description && String(row.description).length > 50
+                ? "…"
+                : "")}
+          </Typography>
+        </Tooltip>
+      ),
     },
     {
       id: "startDate",
@@ -51,7 +86,20 @@ const DiscountList: React.FC<DiscountListProps> = ({
     {
       id: "endDate",
       label: "Ngày hết hạn",
-      format: (v) => new Date(v).toLocaleDateString(),
+      render: (row) => {
+        const end = new Date(row.endDate);
+        const now = new Date();
+        const daysLeft = Math.ceil(
+          (end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+        );
+        const color = daysLeft <= 3 ? "warning.main" : "text.secondary";
+        const weight = daysLeft <= 3 ? 600 : undefined;
+        return (
+          <Typography variant="body2" sx={{ color, fontWeight: weight }}>
+            {end.toLocaleDateString()}
+          </Typography>
+        );
+      },
     },
     {
       id: "isActive",
@@ -61,7 +109,8 @@ const DiscountList: React.FC<DiscountListProps> = ({
           size="small"
           label={v ? "Đang hoạt động" : "Ngưng hoạt động"}
           color={v ? "success" : "error"}
-        ></Chip>
+          variant={v ? "filled" : "outlined"}
+        />
       ),
     },
   ];
@@ -76,6 +125,7 @@ const DiscountList: React.FC<DiscountListProps> = ({
       onDelete={onDelete}
       onSearch={onSearch}
       getRowId={(r) => r.id || r.code}
+      borderRadius={3}
     />
   );
 };
