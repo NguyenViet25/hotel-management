@@ -35,6 +35,13 @@ import { useStore, type StoreState } from "../../../../hooks/useStore";
 import type { DiscountFormValues } from "./components/DiscountForm";
 import DiscountForm from "./components/DiscountForm";
 import DiscountList from "./components/DiscountList";
+import {
+  CardGiftcard,
+  CardMembership,
+  CardTravel,
+  TableChart,
+  Tag,
+} from "@mui/icons-material";
 
 const DiscountCodesPage = () => {
   const [rows, setRows] = useState<DiscountCode[]>([]);
@@ -197,6 +204,21 @@ const DiscountCodesPage = () => {
             spacing={2}
             alignItems="left"
           >
+            <ToggleButtonGroup
+              size="small"
+              value={viewMode}
+              exclusive
+              onChange={(_, v) => setViewMode(v ?? viewMode)}
+            >
+              <ToggleButton value="table">
+                <TableChart sx={{ mr: 1 }} fontSize="small" />
+                Bảng
+              </ToggleButton>
+              <ToggleButton value="cards">
+                <CardMembership sx={{ mr: 1 }} fontSize="small" />
+                Thẻ
+              </ToggleButton>
+            </ToggleButtonGroup>
             <TextField
               select
               label="Loại"
@@ -240,16 +262,6 @@ const DiscountCodesPage = () => {
             />
           </Stack>
           <Stack direction="row" spacing={2} alignItems="center">
-            <ToggleButtonGroup
-              size="small"
-              value={viewMode}
-              exclusive
-              onChange={(_, v) => setViewMode(v ?? viewMode)}
-            >
-              <ToggleButton value="table">Bảng</ToggleButton>
-              <ToggleButton value="cards">Thẻ</ToggleButton>
-            </ToggleButtonGroup>
-
             <Button
               variant="contained"
               color="primary"

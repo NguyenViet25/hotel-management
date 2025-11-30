@@ -36,6 +36,7 @@ import TableRestaurantIcon from "@mui/icons-material/TableRestaurant";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import AddIcon from "@mui/icons-material/Add";
+import { CardMembership, TableChart } from "@mui/icons-material";
 
 // Menu Management Page implementing UC-45 to UC-48
 // - UC-45: View menu list with filters (group, shift, status, active)
@@ -241,39 +242,51 @@ const MenuManagementPage: React.FC = () => {
     <Box>
       <PageTitle title="Quản lý thực đơn" subtitle="Xem, thêm, sửa, xóa món" />
 
-      <Stack direction={{ xs: "column", md: "row" }} spacing={2} sx={{ mb: 2 }}>
-        <ToggleButtonGroup
-          size="small"
-          value={viewMode}
-          exclusive
-          onChange={(_, v) => setViewMode(v ?? viewMode)}
-        >
-          <ToggleButton value="table">Bảng</ToggleButton>
-          <ToggleButton value="card">Thẻ</ToggleButton>
-        </ToggleButtonGroup>
-        <TextField
-          select
-          label="Xem theo"
-          size="small"
-          value={typeFilter}
-          onChange={(e) => setTypeFilter(e.target.value as any)}
-          sx={{ minWidth: 180 }}
-        >
-          <MenuItem value="food">Theo món</MenuItem>
-          <MenuItem value="set">Theo set</MenuItem>
-        </TextField>
-        <TextField
-          select
-          label="Trạng thái"
-          size="small"
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          sx={{ minWidth: 180 }}
-        >
-          <MenuItem value="0">Đang bán</MenuItem>
-          <MenuItem value="1">Ngừng bán</MenuItem>
-        </TextField>
-
+      <Stack
+        direction={{ xs: "column", md: "row" }}
+        justifyContent={"space-between"}
+        sx={{ mb: 2 }}
+        spacing={2}
+      >
+        <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
+          <ToggleButtonGroup
+            size="small"
+            value={viewMode}
+            exclusive
+            onChange={(_, v) => setViewMode(v ?? viewMode)}
+          >
+            <ToggleButton value="table">
+              <TableChart sx={{ mr: 1 }} fontSize="small" />
+              Bảng
+            </ToggleButton>
+            <ToggleButton value="card">
+              <CardMembership sx={{ mr: 1 }} fontSize="small" />
+              Thẻ
+            </ToggleButton>
+          </ToggleButtonGroup>
+          <TextField
+            select
+            label="Xem theo"
+            size="small"
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value as any)}
+            sx={{ minWidth: 180 }}
+          >
+            <MenuItem value="food">Theo món</MenuItem>
+            <MenuItem value="set">Theo set</MenuItem>
+          </TextField>
+          <TextField
+            select
+            label="Trạng thái"
+            size="small"
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            sx={{ minWidth: 180 }}
+          >
+            <MenuItem value="0">Đang bán</MenuItem>
+            <MenuItem value="1">Ngừng bán</MenuItem>
+          </TextField>
+        </Stack>
         <Button
           variant="contained"
           color="primary"
@@ -421,6 +434,7 @@ const MenuManagementPage: React.FC = () => {
                           p: 2,
                           backgroundColor: "#FFF8E1",
                           boxShadow: "0 4px 16px rgba(0,0,0,0.06)",
+                          position: "relative",
                         }}
                       >
                         <Stack
@@ -505,14 +519,6 @@ const MenuManagementPage: React.FC = () => {
                                   color={it.status == 0 ? "success" : "error"}
                                   size="small"
                                 />
-                                <Typography
-                                  variant="subtitle2"
-                                  sx={{ fontWeight: 700 }}
-                                >
-                                  {`Giá/người: ${Number(
-                                    it.unitPrice
-                                  ).toLocaleString()} ₫`}
-                                </Typography>
                               </Stack>
                               <Stack direction="row" spacing={0.5}>
                                 <IconButton
@@ -533,6 +539,18 @@ const MenuManagementPage: React.FC = () => {
                             </Stack>
                           </Stack>
                         </Stack>
+                        <Chip
+                          label={`Giá/người: ${Number(
+                            it.unitPrice
+                          ).toLocaleString()} ₫`}
+                          color="warning"
+                          sx={{
+                            position: "absolute",
+                            left: 16,
+                            bottom: 16,
+                            fontWeight: 700,
+                          }}
+                        />
                       </Card>
                     </Grid>
                   ))}
