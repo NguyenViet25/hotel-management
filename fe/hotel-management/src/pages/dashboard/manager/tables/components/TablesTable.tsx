@@ -1,8 +1,11 @@
 import {
   Add,
+  Delete,
+  Edit,
   Groups,
   Search,
   TableRestaurant as TableRestaurantIcon,
+  Visibility,
 } from "@mui/icons-material";
 import {
   Box,
@@ -10,10 +13,16 @@ import {
   Card,
   CardContent,
   Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
   InputAdornment,
   Paper,
   Stack,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import React, { useMemo, useState } from "react";
@@ -48,10 +57,12 @@ const TablesTable: React.FC<TablesTableProps> = ({
   loading,
   onAdd,
   onEdit,
+  onDelete,
   onSearch,
 }) => {
   const [searchText, setSearchText] = useState("");
   const [dayFilter, setDayFilter] = useState<string | number>("");
+  const [viewItem, setViewItem] = useState<TableDto | null>(null);
 
   const dayOptions: Option[] = useMemo(() => {
     const caps = Array.from(new Set((data || []).map((t) => t.capacity))).sort(
@@ -181,15 +192,16 @@ const TablesTable: React.FC<TablesTableProps> = ({
                 <Box
                   sx={{
                     display: "grid",
-                    gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
+                    gridTemplateColumns: {
+                      xs: "repeat(1, minmax(0, 1fr))",
+                      md: "repeat(2, minmax(0, 1fr))",
+                      lg: "repeat(5, minmax(0, 1fr))",
+                    },
                     gap: 1.5,
                   }}
                 >
                   {rows.map((row) => {
-                    const seats =
-                      typeof row.capacity === "number" && row.capacity > 0
-                        ? row.capacity
-                        : 6;
+                    const seats = 6;
                     return (
                       <Card
                         key={row.id}
@@ -205,15 +217,20 @@ const TablesTable: React.FC<TablesTableProps> = ({
                           },
                         }}
                       >
-                        <Box sx={{ position: "relative" }}>
-                          <Box sx={{ height: 110, overflow: "hidden", mt: 1 }}>
+                        <Box sx={{ position: "relative", pt: 4 }}>
+                          <Box
+                            sx={{
+                              height: 110,
+                              overflow: "hidden",
+                            }}
+                          >
                             <img
                               src={tableImg}
                               alt={row.name}
                               style={{
                                 width: "100%",
                                 height: "100%",
-                                objectFit: "cover",
+                                objectFit: "contain",
                                 display: "block",
                               }}
                             />
@@ -221,30 +238,65 @@ const TablesTable: React.FC<TablesTableProps> = ({
                           <Box sx={{ position: "absolute", top: 8, left: 8 }}>
                             {statusChip(row.status)}
                           </Box>
-                        </Box>
-                        <CardContent sx={{ p: 1.5 }}>
-                          <Stack spacing={0.5}>
-                            <Typography
-                              variant="subtitle2"
-                              sx={{ fontWeight: 700 }}
-                            >
-                              {row.name}
-                            </Typography>
-                            <Stack
-                              direction="row"
-                              spacing={0.5}
-                              alignItems="center"
-                            >
-                              <Groups fontSize="small" color="disabled" />
-                              <Typography
-                                variant="caption"
-                                color="text.secondary"
+                          <Stack
+                            sx={{ position: "absolute", top: 6, right: 6 }}
+                            direction="row"
+                            spacing={0.5}
+                          >
+                            <Tooltip title="Xem">
+                              <IconButton
+                                size="small"
+                                color="primary"
+                                onClick={() => setViewItem(row)}
                               >
-                                {seats} người/bàn
-                              </Typography>
-                            </Stack>
+                                <Visibility fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                            {onEdit && (
+                              <Tooltip title="Sửa">
+                                <IconButton
+                                  size="small"
+                                  color="info"
+                                  onClick={() => onEdit(row)}
+                                >
+                                  <Edit fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                            )}
+                            {onDelete && (
+                              <Tooltip title="Xóa">
+                                <IconButton
+                                  size="small"
+                                  color="error"
+                                  onClick={() => onDelete(row)}
+                                >
+                                  <Delete fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                            )}
                           </Stack>
-                        </CardContent>
+                        </Box>
+                        <Stack spacing={0.5} sx={{ px: 1.5, pb: 1.5 }}>
+                          <Typography
+                            variant="subtitle2"
+                            sx={{ fontWeight: 700 }}
+                          >
+                            {row.name}
+                          </Typography>
+                          <Stack
+                            direction="row"
+                            spacing={0.5}
+                            alignItems="center"
+                          >
+                            <Groups fontSize="small" color="disabled" />
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
+                              {seats} người/bàn
+                            </Typography>
+                          </Stack>
+                        </Stack>
                       </Card>
                     );
                   })}
@@ -253,6 +305,38 @@ const TablesTable: React.FC<TablesTableProps> = ({
             );
           })}
       </Stack>
+
+      <Dialog
+        open={!!viewItem}
+        onClose={() => setViewItem(null)}
+        fullWidth
+        maxWidth="xs"
+      >
+        <DialogTitle>Chi tiết bàn</DialogTitle>
+        <DialogContent>
+          {viewItem && (
+            <Stack spacing={1.5} sx={{ mt: 1 }}>
+              <Stack direction="row" alignItems="center" spacing={1}>
+                <TableRestaurantIcon color="warning" />
+                <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+                  {viewItem.name}
+                </Typography>
+              </Stack>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Chip label={`Dãy ${viewItem.capacity}`} color="warning" />
+                {statusChip(viewItem.status)}
+                <Chip
+                  label={viewItem.isActive ? "Hoạt động" : "Vô hiệu"}
+                  size="small"
+                />
+              </Stack>
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setViewItem(null)}>Đóng</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

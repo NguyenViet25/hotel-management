@@ -25,6 +25,7 @@ import type {
   TableDto,
   UpdateTableRequest,
 } from "../../../../../api/tablesApi";
+import { LineAxis, TableBar } from "@mui/icons-material";
 
 type Mode = "create" | "edit";
 
@@ -154,7 +155,7 @@ const TableFormModal: React.FC<TableFormModalProps> = ({
             name="capacity"
             render={({ field }) => (
               <TextField
-                label="Sức chứa"
+                label="Dãy"
                 type="number"
                 fullWidth
                 value={field.value}
@@ -164,7 +165,7 @@ const TableFormModal: React.FC<TableFormModalProps> = ({
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <GroupsIcon />
+                      <LineAxis />
                     </InputAdornment>
                   ),
                 }}
