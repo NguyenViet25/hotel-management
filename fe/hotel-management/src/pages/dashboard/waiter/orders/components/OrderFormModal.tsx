@@ -5,6 +5,7 @@ import {
   NoteAdd,
   Person,
   Phone,
+  Groups,
 } from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -21,7 +22,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import type { BookingDetailsDto } from "../../../../../api/bookingsApi";
@@ -56,6 +57,7 @@ const schema = z.object({
       })
     )
     .min(1, "Chọn ít nhất 1 món"),
+  guestCount: z.number().min(1, "Số khách phải >= 1").optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -92,6 +94,7 @@ const OrderFormModal: React.FC<IProps> = ({
       customerPhone: initialValues?.customerPhone || "",
       items: initialValues?.items || [],
       status: initialValues?.status || "1",
+      guestCount: 1,
     },
   });
 
@@ -105,9 +108,18 @@ const OrderFormModal: React.FC<IProps> = ({
     }
   }, [initialValues, setValue]);
 
-  const [menuItems, setMenuItems] = useState<MenuItemDto[]>([]);
+  const [menuItems, setMenuItemss] = useState<MenuItemDto[]>([]);
   const [bookings, setBookings] = useState<BookingDetailsDto[]>([]);
   const [loadingItems, setLoadingItems] = useState(false);
+
+  const foodMenuItems = useMemo(
+    () => menuItems.filter((mi) => (mi.category || "").trim() !== "Set"),
+    [menuItems]
+  );
+  const setMenuItems = useMemo(
+    () => menuItems.filter((mi) => (mi.category || "").trim() === "Set"),
+    [menuItems]
+  );
 
   useEffect(() => {
     const fetchMenuItems = async () => {
@@ -118,8 +130,7 @@ const OrderFormModal: React.FC<IProps> = ({
           pageSize: 100,
           isActive: true,
         });
-        console.log("res", res);
-        if (res.isSuccess) setMenuItems(res.data);
+        if (res.isSuccess) setMenuItemss(res.data);
       } catch {}
       setLoadingItems(false);
     };
@@ -138,9 +149,9 @@ const OrderFormModal: React.FC<IProps> = ({
     if (!isWalkIn) fetchBookings();
   }, [open, isWalkIn]);
 
-  const addItemRow = (values: IMenuItem[]) => {
-    const next: IMenuItem[] = [...values, { menuItemId: "", quantity: 1 }];
-    setValue("items", next);
+  const addItemRow = (values: IMenuItem[], source?: "food" | "set") => {
+    const next: any[] = [...values, { menuItemId: "", quantity: 1, source }];
+    setValue("items", next as any);
   };
 
   const removeItemRow = (values: IMenuItem[], index: number) => {
@@ -153,10 +164,15 @@ const OrderFormModal: React.FC<IProps> = ({
       hotelId: hotelId ?? "",
       customerName: values.customerName,
       customerPhone: values.customerPhone || undefined,
-      items: values.items.filter((i) => i.menuItemId && i.quantity > 0),
+      items: values.items
+        .filter((i) => i.menuItemId && i.quantity > 0)
+        .map((i) => ({ menuItemId: i.menuItemId, quantity: i.quantity })),
       isWalkIn: isWalkIn,
       bookingId: values.bookingId || undefined,
-      notes: values.notes || undefined,
+      notes:
+        (values.notes || "") +
+          (values.guestCount ? ` | Số khách: ${values.guestCount}` : "") ||
+        undefined,
       status: Number(values.status || "1"),
     };
     try {
@@ -404,110 +420,247 @@ const OrderFormModal: React.FC<IProps> = ({
                     startIcon={<AddIcon />}
                     variant="outlined"
                     color="primary"
-                    onClick={() =>
-                      addItemRow(field.value as FormValues["items"] as any)
-                    }
+                    onClick={() => addItemRow(field.value as any, "food")}
                   >
                     Thêm món
                   </Button>
                 </Stack>
 
-                {(field.value || []).map((item, idx) => (
-                  <Stack
-                    key={idx}
-                    direction={{ xs: "column", sm: "row" }}
-                    spacing={1}
-                    alignItems="center"
-                    sx={{
-                      p: 2,
-                      borderRadius: 2,
-                      boxShadow: 1,
-                      backgroundColor: "#fafafa",
-                      "&:hover": { boxShadow: 3 },
-                      height: "100%",
-                    }}
+                {(field.value || [])
+                  .map((item: any, idx: number) => ({ item, idx }))
+                  .filter(({ item }) => {
+                    const sel = menuItems.find((m) => m.id === item.menuItemId);
+                    const cat = (sel?.category || "").trim();
+                    return (
+                      (item.source ?? (cat === "Set" ? "set" : "food")) ===
+                      "food"
+                    );
+                  })
+                  .map(({ item, idx }) => (
+                    <Stack
+                      key={idx}
+                      direction={{ xs: "column", sm: "row" }}
+                      spacing={1}
+                      alignItems="center"
+                      sx={{
+                        p: 2,
+                        borderRadius: 2,
+                        boxShadow: 1,
+                        backgroundColor: "#fafafa",
+                        "&:hover": { boxShadow: 3 },
+                        height: "100%",
+                      }}
+                    >
+                      {/* Order number */}
+                      <Typography
+                        variant="subtitle1"
+                        sx={{
+                          width: 30,
+                          textAlign: "center",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        {idx + 1}.
+                      </Typography>
+
+                      {/* Menu item select */}
+                      <TextField
+                        select
+                        label="Chọn món"
+                        value={item.menuItemId}
+                        onChange={(e) => {
+                          const next: any[] = [...field.value];
+                          next[idx] = {
+                            ...item,
+                            menuItemId: e.target.value,
+                            source: "food",
+                          };
+                          field.onChange(next);
+                        }}
+                        sx={{ minWidth: 240, flexGrow: 1 }}
+                        disabled={loadingItems}
+                        error={!!errors.items?.[idx]?.menuItemId}
+                        helperText={errors.items?.[idx]?.menuItemId?.message}
+                        SelectProps={{
+                          MenuProps: {
+                            PaperProps: { style: { maxHeight: 190 } },
+                          },
+                        }}
+                      >
+                        {foodMenuItems.map((mi) => (
+                          <MenuItem key={mi.id} value={mi.id}>
+                            <Stack>
+                              <Typography>{mi.name}</Typography>
+                              <Typography color="text.secondary">
+                                {mi.unitPrice.toLocaleString("vi-VN", {
+                                  style: "currency",
+                                  currency: "VND",
+                                })}
+                              </Typography>
+                            </Stack>
+                          </MenuItem>
+                        ))}
+                      </TextField>
+
+                      {/* Quantity */}
+                      <TextField
+                        type="number"
+                        label="Số lượng"
+                        value={item.quantity}
+                        onChange={(e) => {
+                          const next: any[] = [...field.value];
+                          next[idx] = {
+                            ...item,
+                            quantity: Math.max(1, Number(e.target.value || 1)),
+                          };
+                          field.onChange(next);
+                        }}
+                        sx={{
+                          width: 140,
+                          height: "100%", // 🔥 force equal height
+                          "& .MuiInputBase-root": {
+                            height: item.menuItemId ? "78px" : "100%", // 🔥 force equal height
+                            display: "flex",
+                            alignItems: "center",
+                          },
+                        }}
+                        inputProps={{ min: 1 }}
+                      />
+
+                      {/* Delete button */}
+                      <IconButton
+                        color="error"
+                        onClick={() => removeItemRow(field.value, idx)}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </Stack>
+                  ))}
+
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    Set
+                  </Typography>
+                  <Button
+                    startIcon={<AddIcon />}
+                    variant="outlined"
+                    color="warning"
+                    onClick={() => addItemRow(field.value as any, "set")}
                   >
-                    {/* Order number */}
-                    <Typography
-                      variant="subtitle1"
+                    Thêm set
+                  </Button>
+                </Stack>
+
+                {(field.value || [])
+                  .map((item: any, idx: number) => ({ item, idx }))
+                  .filter(({ item }) => {
+                    const sel = menuItems.find((m) => m.id === item.menuItemId);
+                    const cat = (sel?.category || "").trim();
+                    return (
+                      (item.source ?? (cat === "Set" ? "set" : "food")) ===
+                      "set"
+                    );
+                  })
+                  .map(({ item, idx }) => (
+                    <Stack
+                      key={idx}
+                      direction={{ xs: "column", sm: "row" }}
+                      spacing={1}
+                      alignItems="center"
                       sx={{
-                        width: 30,
-                        textAlign: "center",
-                        fontWeight: "bold",
+                        p: 2,
+                        borderRadius: 2,
+                        boxShadow: 1,
+                        backgroundColor: "#fff8e1",
+                        "&:hover": { boxShadow: 3 },
+                        height: "100%",
                       }}
                     >
-                      {idx + 1}.
-                    </Typography>
+                      <Typography
+                        variant="subtitle1"
+                        sx={{
+                          width: 30,
+                          textAlign: "center",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        {idx + 1}.
+                      </Typography>
 
-                    {/* Menu item select */}
-                    <TextField
-                      select
-                      label="Chọn món"
-                      value={item.menuItemId}
-                      onChange={(e) => {
-                        const next = [...field.value];
-                        next[idx] = { ...item, menuItemId: e.target.value };
-                        field.onChange(next);
-                      }}
-                      sx={{ minWidth: 240, flexGrow: 1 }}
-                      disabled={loadingItems}
-                      error={!!errors.items?.[idx]?.menuItemId}
-                      helperText={errors.items?.[idx]?.menuItemId?.message}
-                      SelectProps={{
-                        MenuProps: {
-                          PaperProps: { style: { maxHeight: 190 } },
-                        },
-                      }}
-                    >
-                      {menuItems.map((mi) => (
-                        <MenuItem key={mi.id} value={mi.id}>
-                          <Stack>
-                            <Typography>{mi.name}</Typography>
-                            <Typography color="text.secondary">
-                              {mi.unitPrice.toLocaleString("vi-VN", {
-                                style: "currency",
-                                currency: "VND",
-                              })}
-                            </Typography>
-                          </Stack>
-                        </MenuItem>
-                      ))}
-                    </TextField>
+                      <TextField
+                        select
+                        label="Chọn set"
+                        value={item.menuItemId}
+                        onChange={(e) => {
+                          const next: any[] = [...field.value];
+                          next[idx] = {
+                            ...item,
+                            menuItemId: e.target.value,
+                            source: "set",
+                          };
+                          field.onChange(next);
+                        }}
+                        sx={{ minWidth: 240, flexGrow: 1 }}
+                        disabled={loadingItems}
+                        error={!!errors.items?.[idx]?.menuItemId}
+                        helperText={errors.items?.[idx]?.menuItemId?.message}
+                        SelectProps={{
+                          MenuProps: {
+                            PaperProps: { style: { maxHeight: 190 } },
+                          },
+                        }}
+                      >
+                        {setMenuItems.map((mi) => (
+                          <MenuItem key={mi.id} value={mi.id}>
+                            <Stack>
+                              <Typography>{mi.name}</Typography>
+                              <Typography color="text.secondary">
+                                {mi.unitPrice.toLocaleString("vi-VN", {
+                                  style: "currency",
+                                  currency: "VND",
+                                })}
+                              </Typography>
+                            </Stack>
+                          </MenuItem>
+                        ))}
+                      </TextField>
 
-                    {/* Quantity */}
-                    <TextField
-                      type="number"
-                      label="Số lượng"
-                      value={item.quantity}
-                      onChange={(e) => {
-                        const next = [...field.value];
-                        next[idx] = {
-                          ...item,
-                          quantity: Math.max(1, Number(e.target.value || 1)),
-                        };
-                        field.onChange(next);
-                      }}
-                      sx={{
-                        width: 140,
-                        height: "100%", // 🔥 force equal height
-                        "& .MuiInputBase-root": {
-                          height: item.menuItemId ? "78px" : "100%", // 🔥 force equal height
-                          display: "flex",
-                          alignItems: "center",
-                        },
-                      }}
-                      inputProps={{ min: 1 }}
-                    />
+                      <TextField
+                        type="number"
+                        label="Số lượng"
+                        value={item.quantity}
+                        onChange={(e) => {
+                          const next: any[] = [...field.value];
+                          next[idx] = {
+                            ...item,
+                            quantity: Math.max(1, Number(e.target.value || 1)),
+                          };
+                          field.onChange(next);
+                        }}
+                        sx={{
+                          width: 140,
+                          height: "100%",
+                          "& .MuiInputBase-root": {
+                            height: item.menuItemId ? "78px" : "100%",
+                            display: "flex",
+                            alignItems: "center",
+                          },
+                        }}
+                        inputProps={{ min: 1 }}
+                      />
 
-                    {/* Delete button */}
-                    <IconButton
-                      color="error"
-                      onClick={() => removeItemRow(field.value, idx)}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </Stack>
-                ))}
+                      <IconButton
+                        color="error"
+                        onClick={() => removeItemRow(field.value, idx)}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </Stack>
+                  ))}
 
                 {errors.items && (
                   <Typography variant="caption" color="error">
