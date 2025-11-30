@@ -30,6 +30,7 @@ import {
 import React, { useMemo, useState } from "react";
 import type { TableDto, TableStatus } from "../../../../../api/tablesApi";
 import tableImg from "../../../../../assets/table.png";
+import EmptyState from "../../../../../components/common/EmptyState";
 import CustomSelect, {
   type Option,
 } from "../../../../../components/common/CustomSelect";
@@ -66,7 +67,7 @@ const TablesTable: React.FC<TablesTableProps> = ({
 }) => {
   const [searchText, setSearchText] = useState("");
   const [dayFilter, setDayFilter] = useState<number>(-1);
-  const [statusFilter, setStatusFilter] = useState<number>(0);
+  const [statusFilter, setStatusFilter] = useState<number>(-1);
   const [viewItem, setViewItem] = useState<TableDto | null>(null);
 
   const dayOptions: Option[] = useMemo(() => {
@@ -79,11 +80,20 @@ const TablesTable: React.FC<TablesTableProps> = ({
   }, [data]);
 
   const statusOptions: Option[] = [
+    { value: -1, label: "Tất cả trạng thái" },
     { value: 0, label: "Sẵn sàng" },
     { value: 1, label: "Đang sử dụng" },
     { value: 2, label: "Đã đặt" },
     { value: 3, label: "Ngừng phục vụ" },
   ];
+
+  const groupsToRender = useMemo(() => {
+    return dayOptions
+      .filter((o) => o.value !== -1)
+      .filter((o) =>
+        dayFilter === -1 ? true : String(o.value) === String(dayFilter)
+      );
+  }, [dayOptions, dayFilter]);
 
   return (
     <Box>
@@ -154,12 +164,15 @@ const TablesTable: React.FC<TablesTableProps> = ({
       </Stack>
 
       <Stack spacing={2}>
-        {dayOptions
-          .filter((o) => o.value !== -1)
-          .filter((o) =>
-            dayFilter === -1 ? true : String(o.value) === String(dayFilter)
-          )
-          .map((o) => {
+        {groupsToRender.length === 0 && !loading ? (
+          <EmptyState
+            title="Không có dữ liệu"
+            description="Không tìm thấy kết quả phù hợp. Thử thay đổi bộ lọc hoặc từ khóa."
+            icon={<TableBar color="disabled" sx={{ fontSize: 40 }} />}
+            height={200}
+          />
+        ) : (
+          groupsToRender.map((o) => {
             const rows = data.filter(
               (t) => String(t.capacity) === String(o.value)
             );
@@ -345,7 +358,8 @@ const TablesTable: React.FC<TablesTableProps> = ({
                 </Box>
               </Paper>
             );
-          })}
+          })
+        )}
       </Stack>
 
       <Dialog

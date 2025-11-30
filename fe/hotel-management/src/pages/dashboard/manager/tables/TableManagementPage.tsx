@@ -49,7 +49,9 @@ const TableManagementPage: React.FC = () => {
         hotelId,
         search: searchTerm,
         status:
-          statusFilter === "" ? undefined : (statusFilter as string | number),
+          statusFilter === "" || statusFilter === -1
+            ? undefined
+            : (statusFilter as string | number),
       });
       if (res.isSuccess) setItems(res.data);
     } catch {
