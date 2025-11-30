@@ -580,17 +580,20 @@ public static class DatabaseInitializationExtensions
 
         var tables = new List<Table>();
 
-        for (int i = 1; i <= 20; i++)
+        for (int j = 1; j <= 5; j++)
         {
-            tables.Add(new Table
+            for (int i = 1; i <= 20; i++)
             {
-                Id = Guid.NewGuid(),
-                HotelId = hotelId,
-                Name = $"T{i}",              // Table name T1 → T20
-                Capacity = i % 4 + 2,        // Capacity 2–5 seats (cycle)
-                IsActive = true,
-                TableStatus = 0              // 0 = Available
-            });
+                tables.Add(new Table
+                {
+                    Id = Guid.NewGuid(),
+                    HotelId = hotelId,
+                    Name = $"Bàn {(j - 1) * 20 + i}",              // Table name T1 → T20
+                    Capacity = j,        // Capacity 2–5 seats (cycle)
+                    IsActive = true,
+                    TableStatus = 0              // 0 = Available
+                });
+            }
         }
 
         dbContext.Set<Table>().AddRange(tables);

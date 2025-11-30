@@ -219,18 +219,6 @@ const DiscountCodesPage = () => {
                 Thẻ
               </ToggleButton>
             </ToggleButtonGroup>
-            <TextField
-              select
-              label="Loại"
-              size="small"
-              value={scopeFilter}
-              onChange={(e) => setScopeFilter(e.target.value as any)}
-              sx={{ minWidth: 160 }}
-            >
-              <MenuItem value="all">Tất cả</MenuItem>
-              <MenuItem value="booking">Đặt phòng</MenuItem>
-              <MenuItem value="food">Ăn uống</MenuItem>
-            </TextField>
 
             <TextField
               select
