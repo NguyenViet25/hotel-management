@@ -16,6 +16,8 @@ import {
   Select,
   Stack,
   TextField,
+  Box,
+  IconButton,
 } from "@mui/material";
 import React, { useEffect, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -37,7 +39,7 @@ const schema = z.object({
   price: z.number("Giá phải là số").min(0, "Giá không âm"),
   quantity: z.number("Số lượng phải là số").min(0, "Không âm"),
   roomTypeId: z.string().min(1, "Chọn loại phòng"),
-  imageUrl: z.string().url("URL không hợp lệ").optional().or(z.literal("")),
+  imageUrl: z.string().optional().or(z.literal("")),
 });
 
 interface MinibarFormModalProps {
@@ -63,6 +65,7 @@ const MinibarFormModal: React.FC<MinibarFormModalProps> = ({
     formState: { errors, isSubmitting },
     reset,
     setValue,
+    watch,
   } = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -73,6 +76,8 @@ const MinibarFormModal: React.FC<MinibarFormModalProps> = ({
       imageUrl: initialValues?.imageUrl ?? "",
     },
   });
+
+  const [uploading, setUploading] = React.useState(false);
 
   useEffect(() => {
     if (mode === "edit" && initialValues) {
@@ -242,8 +247,35 @@ const MinibarFormModal: React.FC<MinibarFormModalProps> = ({
                   onChange={field.onChange}
                   error={!!errors.imageUrl}
                   helperText={
-                    (errors.imageUrl?.message as string) ||
-                    "Dán liên kết ảnh hoặc tải ảnh lên"
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      {(errors.imageUrl?.message as string) ||
+                        "Dán liên kết ảnh hoặc tải ảnh lên"}
+                      <IconButton disabled={uploading}>
+                        <PhotoCamera />
+                        <input
+                          type="file"
+                          accept="image/*"
+                          hidden
+                          onChange={async (e) => {
+                            const f = e.target.files?.[0];
+                            if (!f) return;
+                            try {
+                              setUploading(true);
+                              const res = await mediaApi.upload(f);
+                              if (res?.isSuccess && res.data?.fileUrl) {
+                                setValue("imageUrl", res.data.fileUrl, {
+                                  shouldValidate: true,
+                                });
+                              }
+                            } catch {
+                            } finally {
+                              setUploading(false);
+                            }
+                            e.currentTarget.value = "";
+                          }}
+                        />
+                      </IconButton>
+                    </Stack>
                   }
                   InputProps={{
                     startAdornment: (
@@ -253,31 +285,33 @@ const MinibarFormModal: React.FC<MinibarFormModalProps> = ({
                     ),
                   }}
                 />
-                <Button
-                  variant="outlined"
-                  startIcon={<PhotoCamera />}
-                  component="label"
-                >
-                  Tải ảnh
-                  <input
-                    type="file"
-                    accept="image/*"
-                    hidden
-                    onChange={async (e) => {
-                      const f = e.target.files?.[0];
-                      if (!f) return;
-                      try {
-                        const res = await mediaApi.upload(f);
-                        const url = res?.data?.fileUrl || "";
-                        setValue("imageUrl", url, { shouldValidate: true });
-                      } catch {}
-                      e.currentTarget.value = "";
-                    }}
-                  />
-                </Button>
               </Stack>
             )}
           />
+          {watch("imageUrl") && (
+            <Box
+              sx={{
+                mt: 0.5,
+                borderRadius: 1,
+                overflow: "hidden",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                width: "100%",
+                height: 260,
+              }}
+            >
+              <img
+                src={watch("imageUrl")}
+                alt="preview"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "contain",
+                }}
+              />
+            </Box>
+          )}
         </Stack>
       </DialogContent>
       <DialogActions>

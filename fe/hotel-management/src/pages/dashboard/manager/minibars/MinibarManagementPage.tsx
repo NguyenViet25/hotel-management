@@ -224,7 +224,7 @@ const MinibarManagementPage: React.FC = () => {
           {roomTypes.map((rt) => {
             const list = groupedByRoomType[rt.id] || [];
             return (
-              <Grid key={rt.id} size={{ xs: 12, sm: 6 }}>
+              <Grid key={rt.id} size={{ xs: 12, lg: 6 }}>
                 <Card variant="outlined" sx={{ borderRadius: 2 }}>
                   <Box>
                     <Box
