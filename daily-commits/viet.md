@@ -184,3 +184,4 @@
 2025-11-29 - 4 - 01:44:07 UTC :: ci: UC-42 Phan quyen: thiet lap quyen theo co so. — fix race-condition nho trong thao tac (da smoke test)
 2025-11-29 - 5 - 01:44:08 UTC :: chore: UC-21 Housekeeping: cap nhat Dirty/In-progress/Cleaned/Inspected. — sua validate va bo sung thong bao loi (da kiem tra lint)
 2025-11-30 - 1 - 01:57:18 UTC :: ci: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — cap nhat cau hinh va kiem tra bien (chuan bi cho tinh nang tiep theo)
+2025-11-30 - 2 - 01:57:19 UTC :: ci: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — toi uu truy van va bo nho (dam bao backward-compatible)
