@@ -188,3 +188,4 @@
 2025-11-29 - 3 - 01:44:03 UTC :: ci: UC-43 Mat khau: quy dinh do manh, het han phien. — chinh sua tai lieu & mo ta API (can theo doi them)
 2025-11-29 - 4 - 01:44:06 UTC :: fix: UC-37 Night Audit: kiem tra folio chua chot, khoa giao dich. — fix race-condition nho trong thao tac (dong bo voi BE/FE)
 2025-11-29 - 5 - 01:44:07 UTC :: test: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — kiem tra tuong thich mui gio/tien te (can theo doi them)
+2025-11-30 - 1 - 01:57:18 UTC :: fix: UC-34 Cham cong: ghi nhan diem danh, ban giao ca. — chuan hoa ten ham/bien theo convention (da kiem tra lint)
