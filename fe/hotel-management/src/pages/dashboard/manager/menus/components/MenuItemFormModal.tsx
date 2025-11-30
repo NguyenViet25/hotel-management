@@ -86,19 +86,45 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
     formState: { errors, isSubmitting },
     reset,
     setValue,
+    watch,
   } = useForm<FormValues>({
     resolver: zodResolver(
-      createType === "set"
-        ? z.object({
-            category: z.string().optional(),
-            name: z.string().min(1, "Tên set là bắt buộc").max(100),
-            unitPrice: z.number().optional(),
-            imageUrl: z.string().optional().or(z.literal("")),
-            status: z.number().int().min(0).max(1),
-            isActive: z.boolean().optional(),
-            description: z.string().max(2000).optional(),
-          })
-        : schema
+      z
+        .object({
+          category: z.string().optional(),
+          name: z.string().min(1, "Tên là bắt buộc").max(100),
+          unitPrice: z
+            .number({ invalid_type_error: "Giá phải là số" })
+            .optional(),
+          imageUrl: z.string().optional().or(z.literal("")),
+          status: z.number().int().min(0).max(1),
+          isActive: z.boolean().optional(),
+          description: z.string().max(2000, "Tối đa 2000 ký tự").optional(),
+        })
+        .superRefine((data, ctx) => {
+          const isSet =
+            (data.category || "").trim() === "Set" || createType === "set";
+          if (!isSet) {
+            if (!data.category || (data.category || "").trim().length === 0) {
+              ctx.addIssue({
+                path: ["category"],
+                code: z.ZodIssueCode.custom,
+                message: "Vui lòng chọn nhóm món",
+              });
+            }
+            if (
+              typeof data.unitPrice !== "number" ||
+              Number.isNaN(data.unitPrice) ||
+              data.unitPrice < 0.01
+            ) {
+              ctx.addIssue({
+                path: ["unitPrice"],
+                code: z.ZodIssueCode.custom,
+                message: "Giá phải lớn hơn 0",
+              });
+            }
+          }
+        })
     ),
     defaultValues: {
       category:
@@ -115,6 +141,8 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
   });
 
   console.log("errors", errors);
+
+  const isSetMode = (watch("category") || "") === "Set" || createType === "set";
   useEffect(() => {
     if (mode === "edit") {
       setValue("category", initialValues?.category ?? "Món khai vị");
@@ -128,7 +156,9 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
   }, [initialValues]);
 
   const submitHandler = async (values: FormValues) => {
-    if (createType === "set" && mode === "create") {
+    const isSetSubmit =
+      (values.category || "") === "Set" || createType === "set";
+    if (isSetSubmit && mode === "create") {
       const setName = (values.name || "").trim();
       const list = (values.description || "")
         .split(/\n|,/)
@@ -145,7 +175,7 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
         isActive: values.status === 0,
         description: joined,
       });
-    } else if (createType === "set" && mode === "edit") {
+    } else if (isSetSubmit && mode === "edit") {
       await onSubmit({
         name: values.name,
         description: values.description,
@@ -180,97 +210,75 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle fontWeight={600}>
         {mode === "create"
-          ? createType === "set"
+          ? isSetMode
             ? "Thêm set mới"
             : "Thêm món mới"
-          : createType === "set"
+          : isSetMode
           ? "Chỉnh sửa set"
           : "Chỉnh sửa món"}
       </DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
-          {/* Menu Group or Set Name */}
-          {createType === "set" ? (
+          {/* Menu Group */}
+          <FormControl fullWidth>
+            <InputLabel id="menuGroup-label">Nhóm món</InputLabel>
             <Controller
               control={control}
-              name="name"
+              name="category"
               render={({ field }) => (
-                <TextField
-                  label="Tên set (Nhóm món)"
-                  fullWidth
+                <Select
+                  labelId="menuGroup-label"
+                  label="Nhóm món"
                   value={field.value}
-                  placeholder="Nhập tên set (ví dụ: BBQ Set)"
-                  onChange={field.onChange}
-                  error={!!errors.name}
-                  helperText={(errors as any).name?.message}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <GroupIcon />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
+                  onChange={(e) => field.onChange(e.target.value)}
+                  error={!!errors.category}
+                  startAdornment={
+                    <InputAdornment position="start">
+                      <GroupIcon />
+                    </InputAdornment>
+                  }
+                >
+                  {foodGroups.map((g) => (
+                    <MenuItem key={g.id} value={g.id}>
+                      {g.name}
+                    </MenuItem>
+                  ))}
+                  <MenuItem value="Set">Set</MenuItem>
+                </Select>
               )}
             />
-          ) : (
-            <FormControl fullWidth>
-              <InputLabel id="menuGroup-label">Nhóm món</InputLabel>
-              <Controller
-                control={control}
-                name="category"
-                render={({ field }) => (
-                  <Select
-                    labelId="menuGroup-label"
-                    label="Nhóm món"
-                    value={field.value}
-                    onChange={(e) => field.onChange(e.target.value)}
-                    error={!!errors.category}
-                    startAdornment={
-                      <InputAdornment position="start">
-                        <GroupIcon />
-                      </InputAdornment>
-                    }
-                  >
-                    {foodGroups.map((g) => (
-                      <MenuItem key={g.id} value={g.id}>
-                        {g.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                )}
-              />
-            </FormControl>
-          )}
+          </FormControl>
 
-          {/* Name (food) - hidden in set create mode */}
-          {!(createType === "set") && (
-            <Controller
-              control={control}
-              name="name"
-              render={({ field }) => (
-                <TextField
-                  label="Tên món"
-                  fullWidth
-                  value={field.value}
-                  placeholder="Nhập tên món ăn"
-                  onChange={field.onChange}
-                  error={!!errors.name}
-                  helperText={errors.name?.message}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <FastfoodIcon />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              )}
-            />
-          )}
+          {/* Name */}
+          <Controller
+            control={control}
+            name="name"
+            render={({ field }) => (
+              <TextField
+                label={isSetMode ? "Tên set (Nhóm món)" : "Tên món"}
+                fullWidth
+                value={field.value}
+                placeholder={
+                  isSetMode
+                    ? "Nhập tên set (ví dụ: BBQ Set)"
+                    : "Nhập tên món ăn"
+                }
+                onChange={field.onChange}
+                error={!!errors.name}
+                helperText={errors.name?.message}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      {isSetMode ? <GroupIcon /> : <FastfoodIcon />}
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            )}
+          />
 
           {/* Unit Price - hidden in set create mode */}
-          {!(createType === "set") && (
+          {!isSetMode && (
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
               <Controller
                 control={control}
@@ -302,15 +310,13 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
             name="description"
             render={({ field }) => (
               <TextField
-                label={
-                  createType === "set" ? "Danh sách món trong set" : "Mô tả"
-                }
+                label={isSetMode ? "Danh sách món trong set" : "Mô tả"}
                 fullWidth
-                multiline={createType === "set"}
-                minRows={createType === "set" ? 3 : 1}
+                multiline={isSetMode}
+                minRows={isSetMode ? 3 : 1}
                 value={field.value}
                 placeholder={
-                  createType === "set"
+                  isSetMode
                     ? "Mỗi dòng một món hoặc ngăn cách bằng dấu phẩy"
                     : "Nhập mô tả món ăn"
                 }

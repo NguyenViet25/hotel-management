@@ -33,6 +33,7 @@ import FastfoodIcon from "@mui/icons-material/Fastfood";
 import TableRestaurantIcon from "@mui/icons-material/TableRestaurant";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import AddIcon from "@mui/icons-material/Add";
 
 // Menu Management Page implementing UC-45 to UC-48
 // - UC-45: View menu list with filters (group, shift, status, active)
@@ -47,7 +48,7 @@ const MenuManagementPage: React.FC = () => {
   const [groups, setGroups] = useState<MenuGroupDto[]>([]);
   const [status, setStatus] = useState<string>("");
   const [typeFilter, setTypeFilter] = useState<"food" | "set">("food");
-  const [viewMode, setViewMode] = useState<"table" | "card">("card");
+  const [viewMode, setViewMode] = useState<"table" | "card">("table");
 
   // Modal state
   const [createOpen, setCreateOpen] = useState(false);
@@ -261,243 +262,278 @@ const MenuManagementPage: React.FC = () => {
           <ToggleButton value="table">Bảng</ToggleButton>
           <ToggleButton value="card">Thẻ</ToggleButton>
         </ToggleButtonGroup>
+
+        <ToggleButtonGroup
+          size="small"
+          value={typeFilter}
+          exclusive
+          onChange={(_, v) => setTypeFilter(v ?? typeFilter)}
+        >
+          <ToggleButton value="food">Theo món</ToggleButton>
+          <ToggleButton value="set">Theo set</ToggleButton>
+        </ToggleButtonGroup>
+
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<AddIcon />}
+          onClick={openCreate}
+        >
+          {typeFilter === "set" ? "Thêm set" : "Thêm món"}
+        </Button>
       </Stack>
 
       {viewMode === "table" ? (
         <MenuTable
           data={displayItems}
           loading={loading}
-          onAdd={openCreate}
           onEdit={openEdit}
           onDelete={openDelete}
           onSearch={(e) => setSearchTerm(e)}
         />
       ) : (
         <Grid container spacing={3}>
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Stack spacing={2}>
-              <Stack direction="row" alignItems="center" spacing={1}>
-                <FastfoodIcon color="primary" />
-                <Typography variant="h6">Theo món</Typography>
-                <Chip
-                  label={`${foodItems.length}`}
-                  color="primary"
-                  size="small"
-                />
-              </Stack>
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5 }}>
-                {foodItems.map((it) => (
-                  <Box
-                    key={it.id}
-                    sx={{
-                      position: "relative",
-                      p: 1.5,
-                      width: 240,
-                      border: "2px dashed",
-                      borderColor: "primary.main",
-                      borderRadius: "14px",
-                      background:
-                        "linear-gradient(135deg, #E3F2FD 0%, #F5FAFF 100%)",
-                      boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-                      transition: "transform 120ms ease",
-                      "&:hover": { transform: "translateY(-2px)" },
-                      "&:before": {
-                        content: '""',
-                        position: "absolute",
-                        top: "50%",
-                        left: -8,
-                        transform: "translateY(-50%)",
-                        width: 16,
-                        height: 16,
-                        borderRadius: "50%",
-                        backgroundColor: "background.paper",
-                        border: "2px solid",
+          {typeFilter === "food" ? (
+            <Grid size={{ xs: 12 }}>
+              <Stack spacing={2}>
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <FastfoodIcon color="primary" />
+                  <Typography variant="h6">Theo món</Typography>
+                  <Chip
+                    label={`${foodItems.length}`}
+                    color="primary"
+                    size="small"
+                  />
+                </Stack>
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5 }}>
+                  {foodItems.map((it) => (
+                    <Box
+                      key={it.id}
+                      sx={{
+                        position: "relative",
+                        p: 1.5,
+                        width: 240,
+                        border: "2px dashed",
                         borderColor: "primary.main",
-                      },
-                      "&:after": {
-                        content: '""',
-                        position: "absolute",
-                        top: "50%",
-                        right: -8,
-                        transform: "translateY(-50%)",
-                        width: 16,
-                        height: 16,
-                        borderRadius: "50%",
-                        backgroundColor: "background.paper",
-                        border: "2px solid",
-                        borderColor: "primary.main",
-                      },
-                      opacity: it.status == 0 ? 1 : 0.55,
-                    }}
-                  >
-                    <Stack spacing={1}>
-                      <Stack
-                        direction="row"
-                        alignItems="center"
-                        justifyContent="space-between"
-                      >
-                        <Typography
-                          variant="subtitle1"
-                          sx={{ fontWeight: 600, color: "primary.main" }}
+                        borderRadius: "14px",
+                        background:
+                          "linear-gradient(135deg, #E3F2FD 0%, #F5FAFF 100%)",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+                        transition: "transform 120ms ease",
+                        "&:hover": { transform: "translateY(-2px)" },
+                        "&:before": {
+                          content: '""',
+                          position: "absolute",
+                          top: "50%",
+                          left: -8,
+                          transform: "translateY(-50%)",
+                          width: 16,
+                          height: 16,
+                          borderRadius: "50%",
+                          backgroundColor: "background.paper",
+                          border: "2px solid",
+                          borderColor: "primary.main",
+                        },
+                        "&:after": {
+                          content: '""',
+                          position: "absolute",
+                          top: "50%",
+                          right: -8,
+                          transform: "translateY(-50%)",
+                          width: 16,
+                          height: 16,
+                          borderRadius: "50%",
+                          backgroundColor: "background.paper",
+                          border: "2px solid",
+                          borderColor: "primary.main",
+                        },
+                        opacity: it.status == 0 ? 1 : 0.55,
+                      }}
+                    >
+                      <Stack spacing={1}>
+                        <Stack
+                          direction="row"
+                          alignItems="center"
+                          justifyContent="space-between"
                         >
-                          {it.name}
-                        </Typography>
-                        <Chip
-                          label={it.category || ""}
-                          color="primary"
-                          size="small"
-                        />
-                      </Stack>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                        {`${Number(it.unitPrice).toLocaleString()} ₫`}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" noWrap>
-                        {it.description || ""}
-                      </Typography>
-                      <Stack
-                        direction="row"
-                        spacing={0.5}
-                        justifyContent="space-between"
-                        alignItems="center"
-                      >
-                        <Chip
-                          label={it.status == 0 ? "Đang bán" : "Ngừng bán"}
-                          color={it.status == 0 ? "success" : "error"}
-                          size="small"
-                        />
-                        <Stack direction="row" spacing={0.5}>
-                          <IconButton
-                            size="small"
+                          <Typography
+                            variant="subtitle1"
+                            sx={{ fontWeight: 600, color: "primary.main" }}
+                          >
+                            {it.name}
+                          </Typography>
+                          <Chip
+                            label={it.category || ""}
                             color="primary"
-                            onClick={() => openEdit(it)}
-                          >
-                            <EditIcon fontSize="small" />
-                          </IconButton>
-                          <IconButton
                             size="small"
-                            color="error"
-                            onClick={() => openDelete(it)}
-                          >
-                            <DeleteOutlineIcon fontSize="small" />
-                          </IconButton>
+                          />
+                        </Stack>
+                        <Typography
+                          variant="subtitle2"
+                          sx={{ fontWeight: 700 }}
+                        >
+                          {`${Number(it.unitPrice).toLocaleString()} ₫`}
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          noWrap
+                        >
+                          {it.description || ""}
+                        </Typography>
+                        <Stack
+                          direction="row"
+                          spacing={0.5}
+                          justifyContent="space-between"
+                          alignItems="center"
+                        >
+                          <Chip
+                            label={it.status == 0 ? "Đang bán" : "Ngừng bán"}
+                            color={it.status == 0 ? "success" : "error"}
+                            size="small"
+                          />
+                          <Stack direction="row" spacing={0.5}>
+                            <IconButton
+                              size="small"
+                              color="primary"
+                              onClick={() => openEdit(it)}
+                            >
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              color="error"
+                              onClick={() => openDelete(it)}
+                            >
+                              <DeleteOutlineIcon fontSize="small" />
+                            </IconButton>
+                          </Stack>
                         </Stack>
                       </Stack>
-                    </Stack>
-                  </Box>
-                ))}
-              </Box>
-            </Stack>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Stack spacing={2}>
-              <Stack direction="row" alignItems="center" spacing={1}>
-                <TableRestaurantIcon color="success" />
-                <Typography variant="h6">Theo set</Typography>
-                <Chip
-                  label={`${setRecords.length}`}
-                  color="success"
-                  size="small"
-                />
+                    </Box>
+                  ))}
+                </Box>
               </Stack>
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5 }}>
-                {setRecords.map((it) => (
-                  <Box
-                    key={it.id}
-                    sx={{
-                      position: "relative",
-                      p: 1.5,
-                      width: 240,
-                      border: "2px dashed",
-                      borderColor: "success.main",
-                      borderRadius: "14px",
-                      background:
-                        "linear-gradient(135deg, #E8F5E9 0%, #F1FFF4 100%)",
-                      boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-                      transition: "transform 120ms ease",
-                      "&:hover": { transform: "translateY(-2px)" },
-                      "&:before": {
-                        content: '""',
-                        position: "absolute",
-                        top: "50%",
-                        left: -8,
-                        transform: "translateY(-50%)",
-                        width: 16,
-                        height: 16,
-                        borderRadius: "50%",
-                        backgroundColor: "background.paper",
-                        border: "2px solid",
+            </Grid>
+          ) : (
+            <Grid item xs={12} md={6}>
+              <Stack spacing={2}>
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <TableRestaurantIcon color="success" />
+                  <Typography variant="h6">Theo set</Typography>
+                  <Chip
+                    label={`${setRecords.length}`}
+                    color="success"
+                    size="small"
+                  />
+                </Stack>
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5 }}>
+                  {setRecords.map((it) => (
+                    <Box
+                      key={it.id}
+                      sx={{
+                        position: "relative",
+                        p: 1.5,
+                        width: 240,
+                        border: "2px dashed",
                         borderColor: "success.main",
-                      },
-                      "&:after": {
-                        content: '""',
-                        position: "absolute",
-                        top: "50%",
-                        right: -8,
-                        transform: "translateY(-50%)",
-                        width: 16,
-                        height: 16,
-                        borderRadius: "50%",
-                        backgroundColor: "background.paper",
-                        border: "2px solid",
-                        borderColor: "success.main",
-                      },
-                      opacity: it.status == 0 ? 1 : 0.55,
-                    }}
-                  >
-                    <Stack spacing={1}>
-                      <Stack
-                        direction="row"
-                        alignItems="center"
-                        justifyContent="space-between"
-                      >
-                        <Typography
-                          variant="subtitle1"
-                          sx={{ fontWeight: 800, color: "success.main" }}
+                        borderRadius: "14px",
+                        background:
+                          "linear-gradient(135deg, #E8F5E9 0%, #F1FFF4 100%)",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+                        transition: "transform 120ms ease",
+                        "&:hover": { transform: "translateY(-2px)" },
+                        "&:before": {
+                          content: '""',
+                          position: "absolute",
+                          top: "50%",
+                          left: -8,
+                          transform: "translateY(-50%)",
+                          width: 16,
+                          height: 16,
+                          borderRadius: "50%",
+                          backgroundColor: "background.paper",
+                          border: "2px solid",
+                          borderColor: "success.main",
+                        },
+                        "&:after": {
+                          content: '""',
+                          position: "absolute",
+                          top: "50%",
+                          right: -8,
+                          transform: "translateY(-50%)",
+                          width: 16,
+                          height: 16,
+                          borderRadius: "50%",
+                          backgroundColor: "background.paper",
+                          border: "2px solid",
+                          borderColor: "success.main",
+                        },
+                        opacity: it.status == 0 ? 1 : 0.55,
+                      }}
+                    >
+                      <Stack spacing={1}>
+                        <Stack
+                          direction="row"
+                          alignItems="center"
+                          justifyContent="space-between"
                         >
-                          {it.name}
+                          <Typography
+                            variant="subtitle1"
+                            sx={{ fontWeight: 800, color: "success.main" }}
+                          >
+                            {it.name}
+                          </Typography>
+                          <Chip label="Set" color="success" size="small" />
+                        </Stack>
+                        <Typography
+                          variant="subtitle2"
+                          sx={{ fontWeight: 700 }}
+                        >
+                          —
                         </Typography>
-                        <Chip label="Set" color="success" size="small" />
-                      </Stack>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                        —
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" noWrap>
-                        {it.description || ""}
-                      </Typography>
-                      <Stack
-                        direction="row"
-                        spacing={0.5}
-                        justifyContent="space-between"
-                        alignItems="center"
-                      >
-                        <Chip
-                          label={it.status == 0 ? "Đang bán" : "Ngừng bán"}
-                          color={it.status == 0 ? "success" : "error"}
-                          size="small"
-                        />
-                        <Stack direction="row" spacing={0.5}>
-                          <IconButton
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          noWrap
+                        >
+                          {it.description || ""}
+                        </Typography>
+                        <Stack
+                          direction="row"
+                          spacing={0.5}
+                          justifyContent="space-between"
+                          alignItems="center"
+                        >
+                          <Chip
+                            label={it.status == 0 ? "Đang bán" : "Ngừng bán"}
+                            color={it.status == 0 ? "success" : "error"}
                             size="small"
-                            color="primary"
-                            onClick={() => openEdit(it)}
-                          >
-                            <EditIcon fontSize="small" />
-                          </IconButton>
-                          <IconButton
-                            size="small"
-                            color="error"
-                            onClick={() => openDelete(it)}
-                          >
-                            <DeleteOutlineIcon fontSize="small" />
-                          </IconButton>
+                          />
+                          <Stack direction="row" spacing={0.5}>
+                            <IconButton
+                              size="small"
+                              color="primary"
+                              onClick={() => openEdit(it)}
+                            >
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              color="error"
+                              onClick={() => openDelete(it)}
+                            >
+                              <DeleteOutlineIcon fontSize="small" />
+                            </IconButton>
+                          </Stack>
                         </Stack>
                       </Stack>
-                    </Stack>
-                  </Box>
-                ))}
-              </Box>
-            </Stack>
-          </Grid>
+                    </Box>
+                  ))}
+                </Box>
+              </Stack>
+            </Grid>
+          )}
         </Grid>
       )}
 
