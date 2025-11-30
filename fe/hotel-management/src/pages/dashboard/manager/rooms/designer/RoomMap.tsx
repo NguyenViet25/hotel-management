@@ -1005,7 +1005,8 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                 } else {
                   setSnackbar({
                     open: true,
-                    message: res.message || "Không thể xóa phòng",
+                    message:
+                      "Phòng đã tồn tại dữ liệu liên quan, không thể xóa",
                     severity: "error",
                   });
                 }

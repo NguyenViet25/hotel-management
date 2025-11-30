@@ -61,6 +61,8 @@ public class RoomsService : IRoomsService
                 q = q.Where(r => r.Number.Contains(query.Search!));
             }
 
+            var total = await q.CountAsync();
+
             var items = await q
                 .OrderBy(r => r.Status == RoomStatus.Dirty ? 0 : (r.Status == RoomStatus.Cleaning ? 1 : (r.Status == RoomStatus.Maintenance ? 2 : 3)))
                 .ThenBy(r => r.Floor)
@@ -79,8 +81,9 @@ public class RoomsService : IRoomsService
                 Floor = r.Floor,
                 Status = r.Status
             }).ToList();
+            var meta = new { total, page = query.Page, pageSize = query.PageSize };
 
-            return ApiResponse<List<RoomSummaryDto>>.Ok(dtos);
+            return ApiResponse<List<RoomSummaryDto>>.Ok(dtos, meta: meta);
         }
         catch (Exception ex)
         {
