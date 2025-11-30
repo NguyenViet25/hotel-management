@@ -46,7 +46,7 @@ export const menuItems = {
     { title: "Món ăn", path: "/manager/menus", icon: <DiningIcon /> },
     { title: "Bàn ăn", path: "/manager/tables", icon: <RestaurantIcon /> },
     { title: "Minibar", path: "/manager/minibars", icon: <InsertEmoticon /> },
-    { title: "Media", path: "/manager/media", icon: <Image /> },
+    // { title: "Media", path: "/manager/media", icon: <Image /> },
   ],
   frontDesk: [
     {

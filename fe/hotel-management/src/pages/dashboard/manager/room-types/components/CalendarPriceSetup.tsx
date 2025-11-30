@@ -2,11 +2,16 @@ import React, { useMemo, useState } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import { Box, Button, Stack, Typography } from "@mui/material";
-import { DatePicker } from "@mui/x-date-pickers";
+import {
+  Box,
+  Button,
+  Stack,
+  Typography,
+  ToggleButton,
+  ToggleButtonGroup,
+} from "@mui/material";
 import SetPriceDialog from "./SetPriceDialog";
 import dayjs from "dayjs";
-import type { Dayjs } from "dayjs";
 import viLocale from "@fullcalendar/core/locales/vi";
 
 type PriceMap = Record<string, number>;
@@ -24,7 +29,6 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
 }) => {
   const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
   const [priceMap, setPriceMap] = useState<PriceMap>({});
-  const [singleDate, setSingleDate] = useState<Dayjs | null>(dayjs());
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const events: any[] = useMemo(
@@ -39,7 +43,8 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
     [priceMap]
   );
 
-  const handleDateClick = (arg: any) => {
+  // TODO: handleSelectDate
+  const handleSelectDate = (arg: any) => {
     const key = arg.dateStr; // already in YYYY-MM-DD
     setSelectedDates((prev) => {
       const next = new Set(prev);
@@ -82,6 +87,20 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
     });
     setDialogOpen(false);
     if (onChangePriceMap) onChangePriceMap(next);
+    setSelectedDates(new Set());
+  };
+
+  const handleClearPrices = () => {
+    let next: PriceMap = {};
+    setPriceMap((prev) => {
+      next = { ...prev };
+      selectedDates.forEach((k) => {
+        delete next[k];
+      });
+      return next;
+    });
+    if (onChangePriceMap) onChangePriceMap(next);
+    setSelectedDates(new Set());
   };
 
   React.useEffect(() => {
@@ -92,15 +111,6 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
 
   const selectedCount = selectedDates.size;
   const handleClearSelection = () => setSelectedDates(new Set());
-  const handleAddSingleDate = () => {
-    if (!singleDate) return;
-    const key = singleDate.format("YYYY-MM-DD");
-    setSelectedDates((prev) => {
-      const next = new Set(prev);
-      next.add(key);
-      return next;
-    });
-  };
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -113,30 +123,27 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
         <Typography variant="subtitle1" color="text.secondary">
           Chọn các ngày để cài đặt giá
         </Typography>
-        <Stack direction="row" spacing={1}>
-          <DatePicker
-            value={singleDate}
-            onChange={(v) => setSingleDate(v)}
-            slotProps={{ textField: { size: "small" } } as any}
-          />
-          <Button size="small" variant="outlined" onClick={handleAddSingleDate}>
-            Thêm
-          </Button>
-          {selectedCount > 0 && (
-            <>
-              <Button
-                variant="outlined"
-                color="inherit"
-                onClick={handleClearSelection}
-              >
-                Xóa chọn
-              </Button>
-              <Button variant="contained" onClick={handleOpenDialog}>
-                Cài đặt giá chung ({selectedCount})
-              </Button>
-            </>
-          )}
-        </Stack>
+        {selectedCount > 0 && (
+          <Stack direction="row" spacing={1}>
+            <Button
+              variant="outlined"
+              color="inherit"
+              onClick={handleClearSelection}
+            >
+              Xóa chọn
+            </Button>
+            <Button
+              variant="outlined"
+              color="warning"
+              onClick={handleClearPrices}
+            >
+              Xóa giá
+            </Button>
+            <Button variant="contained" onClick={handleOpenDialog}>
+              Cài đặt giá chung ({selectedCount})
+            </Button>
+          </Stack>
+        )}
       </Stack>
 
       <Box
@@ -178,7 +185,7 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
           selectMirror={false}
           dayMaxEvents
           events={events}
-          dateClick={handleDateClick}
+          dateClick={handleSelectDate}
           select={handleSelectRange}
           headerToolbar={{
             left: "prev,next today",
