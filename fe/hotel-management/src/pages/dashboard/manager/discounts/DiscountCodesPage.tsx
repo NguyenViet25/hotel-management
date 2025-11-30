@@ -2,6 +2,8 @@ import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import LocalDiningIcon from "@mui/icons-material/LocalDining";
+import HotelIcon from "@mui/icons-material/Hotel";
 import {
   Button,
   Dialog,
@@ -10,10 +12,8 @@ import {
   InputAdornment,
   MenuItem,
   Chip,
-  Card,
-  CardHeader,
-  CardContent,
   Grid,
+  Box,
   IconButton,
   Stack,
   TextField,
@@ -51,7 +51,7 @@ const DiscountCodesPage = () => {
     "all"
   );
   const [searchTxt, setSearchTxt] = useState<string>("");
-  const [viewMode, setViewMode] = useState<"table" | "cards">("table");
+  const [viewMode, setViewMode] = useState<"table" | "cards">("cards");
 
   const applyFilters = (
     list: DiscountCode[],
@@ -170,12 +170,16 @@ const DiscountCodesPage = () => {
         />
 
         <Stack
-          direction="row"
+          direction={{ xs: "column", md: "row" }}
           spacing={2}
-          alignItems="center"
+          alignItems="left"
           justifyContent={"space-between"}
         >
-          <Stack direction="row" spacing={2} alignItems="center">
+          <Stack
+            direction={{ xs: "column", md: "row" }}
+            spacing={2}
+            alignItems="left"
+          >
             <TextField
               select
               label="Loại"
@@ -194,7 +198,7 @@ const DiscountCodesPage = () => {
               size="small"
               value={searchTxt}
               onChange={(e) => onSearch(e.target.value)}
-              sx={{ width: 280 }}
+              sx={{ width: { md: 280, xs: "100%" } }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -234,39 +238,136 @@ const DiscountCodesPage = () => {
             onDelete={onDelete}
           />
         ) : (
-          <Stack spacing={3}>
-            {["booking", "food"].map((scope) => {
+          <Grid container spacing={3}>
+            {(["booking", "food"] as const).map((scope) => {
               const items = filteredRows.filter((r) => r.scope === scope);
+              const color = scope === "food" ? "success" : "primary";
+              const borderColor =
+                scope === "food" ? "success.main" : "primary.main";
+              const bg =
+                scope === "food"
+                  ? "linear-gradient(135deg, #E8F5E9 0%, #F1FFF4 100%)"
+                  : "linear-gradient(135deg, #E3F2FD 0%, #F5FAFF 100%)";
               return (
-                <Stack key={scope} spacing={2}>
-                  <Stack direction="row" alignItems="center" spacing={1}>
-                    <Typography variant="h6">
-                      {scope === "food" ? "Ăn uống" : "Đặt phòng"}
-                    </Typography>
-                    <Chip
-                      label={`${items.length}`}
-                      color={scope === "food" ? "success" : "primary"}
-                      size="small"
-                    />
-                  </Stack>
-                  <Grid container spacing={2}>
-                    {items.map((c) => (
-                      <Grid
-                        item
-                        key={c.id || c.code}
-                        xs={12}
-                        sm={6}
-                        md={4}
-                        lg={3}
-                      >
-                        <Card variant="outlined">
-                          <CardHeader
-                            title={c.code}
-                            subheader={
-                              c.isActive ? "Đang hoạt động" : "Ngưng hoạt động"
-                            }
-                            action={
-                              <Stack direction="row" spacing={1}>
+                <Grid size={{ xs: 12, md: 6 }} key={scope}>
+                  <Stack spacing={2}>
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      {scope === "food" ? (
+                        <LocalDiningIcon color={color as any} />
+                      ) : (
+                        <HotelIcon color={color as any} />
+                      )}
+                      <Typography variant="h6">
+                        {scope === "food" ? "Ăn uống" : "Đặt phòng"}
+                      </Typography>
+                      <Chip
+                        label={`${items.length}`}
+                        color={color as any}
+                        size="small"
+                      />
+                    </Stack>
+
+                    {items.length === 0 ? (
+                      <Typography variant="body2" color="text.secondary">
+                        Không có mã
+                      </Typography>
+                    ) : (
+                      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5 }}>
+                        {items.map((c) => (
+                          <Box
+                            key={c.id || c.code}
+                            sx={{
+                              position: "relative",
+                              p: 1.5,
+                              width: 220,
+                              border: "2px dashed",
+                              borderColor,
+                              borderRadius: "14px",
+                              background: bg,
+                              boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+                              transition: "transform 120ms ease",
+                              "&:hover": { transform: "translateY(-2px)" },
+                              "&:before": {
+                                content: '""',
+                                position: "absolute",
+                                top: "50%",
+                                left: -8,
+                                transform: "translateY(-50%)",
+                                width: 16,
+                                height: 16,
+                                borderRadius: "50%",
+                                backgroundColor: "background.paper",
+                                border: "2px solid",
+                                borderColor,
+                              },
+                              "&:after": {
+                                content: '""',
+                                position: "absolute",
+                                top: "50%",
+                                right: -8,
+                                transform: "translateY(-50%)",
+                                width: 16,
+                                height: 16,
+                                borderRadius: "50%",
+                                backgroundColor: "background.paper",
+                                border: "2px solid",
+                                borderColor,
+                              },
+                              opacity: c.isActive ? 1 : 0.55,
+                            }}
+                          >
+                            <Stack spacing={1}>
+                              <Stack
+                                direction="row"
+                                alignItems="center"
+                                justifyContent="space-between"
+                              >
+                                <Typography
+                                  variant="h4"
+                                  sx={{
+                                    fontWeight: 800,
+                                    color: borderColor,
+                                    letterSpacing: 1,
+                                    lineHeight: 1,
+                                  }}
+                                >
+                                  {c.value}%
+                                </Typography>
+                                <Chip
+                                  label={
+                                    c.scope === "food" ? "Ăn uống" : "Đặt phòng"
+                                  }
+                                  color={color as any}
+                                  size="small"
+                                />
+                              </Stack>
+
+                              <Typography
+                                variant="subtitle2"
+                                sx={{ fontWeight: 700 }}
+                              >
+                                {c.code}
+                              </Typography>
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                              >
+                                {new Date(c.startDate).toLocaleDateString()} -{" "}
+                                {new Date(c.endDate).toLocaleDateString()}
+                              </Typography>
+                              <Typography
+                                variant="body2"
+                                color="text.primary"
+                                noWrap
+                              >
+                                {c.description || ""}
+                              </Typography>
+
+                              <Stack
+                                direction="row"
+                                spacing={0.5}
+                                justifyContent="flex-end"
+                              >
                                 <IconButton
                                   size="small"
                                   color="primary"
@@ -282,50 +383,16 @@ const DiscountCodesPage = () => {
                                   <DeleteIcon fontSize="small" />
                                 </IconButton>
                               </Stack>
-                            }
-                          />
-                          <CardContent>
-                            <Stack spacing={1}>
-                              <Stack
-                                direction="row"
-                                spacing={1}
-                                alignItems="center"
-                              >
-                                <Chip
-                                  label={`${c.value}%`}
-                                  color="success"
-                                  size="small"
-                                />
-                                <Chip
-                                  label={
-                                    c.scope === "food" ? "Ăn uống" : "Đặt phòng"
-                                  }
-                                  color={
-                                    c.scope === "food" ? "success" : "primary"
-                                  }
-                                  size="small"
-                                />
-                              </Stack>
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                              >
-                                {new Date(c.startDate).toLocaleDateString()} -{" "}
-                                {new Date(c.endDate).toLocaleDateString()}
-                              </Typography>
-                              <Typography variant="body2">
-                                {c.description || ""}
-                              </Typography>
                             </Stack>
-                          </CardContent>
-                        </Card>
-                      </Grid>
-                    ))}
-                  </Grid>
-                </Stack>
+                          </Box>
+                        ))}
+                      </Box>
+                    )}
+                  </Stack>
+                </Grid>
               );
             })}
-          </Stack>
+          </Grid>
         )}
 
         <Dialog
