@@ -80,7 +80,7 @@ public class MenuService : IMenuService
                 Description = dto.Description,
                 UnitPrice = dto.UnitPrice,
                 ImageUrl = dto.ImageUrl,
-                Status = dto.Status,
+                Status = dto.Status ?? MenuItemStatus.Available,
                 IsActive = true,
                 HotelId = dto.HotelId
             };

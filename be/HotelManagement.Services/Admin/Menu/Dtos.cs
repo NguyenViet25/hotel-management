@@ -55,7 +55,7 @@ public class CreateMenuItemDto
     
     public string ImageUrl { get; set; } = string.Empty;
     
-    public MenuItemStatus Status { get; set; } = MenuItemStatus.Available;
+    public MenuItemStatus? Status { get; set; } = MenuItemStatus.Available;
     
     public List<CreateMenuItemIngredientDto> Ingredients { get; set; } = new();
 }
