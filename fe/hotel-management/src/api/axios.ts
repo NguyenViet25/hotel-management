@@ -65,7 +65,7 @@ axiosInstance.interceptors.request.use(
 // ✅ Response interceptor for handling errors
 axiosInstance.interceptors.response.use(
   (response) => {
-    console.log(response.data.data);
+    console.log(response.data);
     return response;
   },
   (error) => {

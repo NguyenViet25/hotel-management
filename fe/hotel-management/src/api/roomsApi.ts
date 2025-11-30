@@ -86,8 +86,8 @@ const roomsApi = {
     if (params.hotelId) qp.append("hotelId", params.hotelId);
     if (params.status) qp.append("status", params.status);
     if (params.floor !== undefined) qp.append("floor", String(params.floor));
-    if (params.typeId) qp.append("typeId", params.typeId);
-    if (params.number) qp.append("number", params.number);
+    if (params.typeId) qp.append("roomTypeId", params.typeId);
+    if (params.number) qp.append("search", params.number);
     qp.append("page", String(params.page ?? 1));
     qp.append("pageSize", String(params.pageSize ?? 10));
 

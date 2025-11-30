@@ -1,3 +1,4 @@
+import { Recycling, RestartAlt } from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -258,11 +259,7 @@ const DataTable = <T extends object>({
                                 onClick={() => onLock(row)}
                                 aria-label="lock"
                               >
-                                {(row as any).status === "Locked" ? (
-                                  <LockOpenIcon fontSize="small" />
-                                ) : (
-                                  <LockIcon fontSize="small" />
-                                )}
+                                <RestartAlt fontSize="small" />
                               </IconButton>
                             )}
                             {onResetPassword && (
