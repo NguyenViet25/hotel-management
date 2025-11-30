@@ -44,7 +44,7 @@ export interface UpdateMenuItemRequest {
   unitPrice?: number;
   portionSize?: string;
   imageUrl?: string;
-  status?: string;
+  status?: number;
   isActive?: boolean;
 }
 

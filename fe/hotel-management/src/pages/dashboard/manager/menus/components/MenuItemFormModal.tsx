@@ -13,6 +13,7 @@ import {
   FormControlLabel,
   Stack,
   InputAdornment,
+  Box,
 } from "@mui/material";
 import React, { use, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
@@ -93,9 +94,7 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
         .object({
           category: z.string().optional(),
           name: z.string().min(1, "Tên là bắt buộc").max(100),
-          unitPrice: z
-            .number({ invalid_type_error: "Giá phải là số" })
-            .optional(),
+          unitPrice: z.number("Giá phải là số").optional(),
           imageUrl: z.string().optional().or(z.literal("")),
           status: z.number().int().min(0).max(1),
           isActive: z.boolean().optional(),
@@ -143,6 +142,14 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
   console.log("errors", errors);
 
   const isSetMode = (watch("category") || "") === "Set" || createType === "set";
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const handleSelectImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setValue("imageUrl", String(reader.result || ""));
+    reader.readAsDataURL(file);
+  };
   useEffect(() => {
     if (mode === "edit") {
       setValue("category", initialValues?.category ?? "Món khai vị");
@@ -156,6 +163,7 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
   }, [initialValues]);
 
   const submitHandler = async (values: FormValues) => {
+    console.log("values", values);
     const isSetSubmit =
       (values.category || "") === "Set" || createType === "set";
     if (isSetSubmit && mode === "create") {
@@ -169,18 +177,22 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
         hotelId: user?.hotelId,
         category: "Set",
         name: setName,
-        unitPrice: 0,
+        unitPrice: values.unitPrice,
         imageUrl: values.imageUrl,
-        status: values.status,
+        status: Number(values.status),
         isActive: values.status === 0,
         description: joined,
       });
     } else if (isSetSubmit && mode === "edit") {
       await onSubmit({
+        hotelId: user?.hotelId,
         name: values.name,
         description: values.description,
-        status: values.status,
-      } as any);
+        status: Number(values.status),
+        isActive: values.status === 0,
+        category: values.category,
+        unitPrice: values.unitPrice,
+      });
     } else {
       await onSubmit({
         hotelId: user?.hotelId,
@@ -188,7 +200,7 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
         name: values.name,
         unitPrice: values.unitPrice,
         imageUrl: values.imageUrl,
-        status: values.status,
+        status: Number(values.status),
         isActive: values.isActive,
         description: values.description,
       });
@@ -278,32 +290,92 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
           />
 
           {/* Unit Price - hidden in set create mode */}
-          {!isSetMode && (
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              <Controller
-                control={control}
-                name="unitPrice"
-                render={({ field }) => (
-                  <TextField
-                    label="Đơn giá"
-                    type="number"
-                    fullWidth
-                    value={field.value}
-                    onChange={(e) => field.onChange(Number(e.target.value))}
-                    error={!!errors.unitPrice}
-                    helperText={errors.unitPrice?.message}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <MonetizationOnIcon />
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                )}
-              />
-            </Stack>
-          )}
+
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+            <Controller
+              control={control}
+              name="unitPrice"
+              render={({ field }) => (
+                <TextField
+                  label="Đơn giá"
+                  type="number"
+                  fullWidth
+                  value={field.value}
+                  onChange={(e) => field.onChange(Number(e.target.value))}
+                  error={!!errors.unitPrice}
+                  helperText={errors.unitPrice?.message}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <MonetizationOnIcon />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              )}
+            />
+          </Stack>
+
+          <Stack spacing={1}>
+            <Controller
+              control={control}
+              name="imageUrl"
+              render={({ field }) => (
+                <TextField
+                  label={
+                    isSetMode
+                      ? "Ảnh set (URL hoặc tải lên)"
+                      : "Ảnh món (URL hoặc tải lên)"
+                  }
+                  fullWidth
+                  value={field.value || ""}
+                  placeholder="Dán URL ảnh hoặc dùng nút Tải ảnh"
+                  onChange={field.onChange}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <ImageIcon />
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          Tải ảnh
+                        </Button>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          style={{ display: "none" }}
+                          onChange={handleSelectImage}
+                        />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              )}
+            />
+            {watch("imageUrl") && (
+              <Box
+                sx={{
+                  mt: 1,
+                  borderRadius: 2,
+                  overflow: "hidden",
+                  border: "1px solid #eee",
+                }}
+              >
+                <img
+                  src={watch("imageUrl")}
+                  alt="preview"
+                  style={{ width: "100%", height: 160, objectFit: "cover" }}
+                />
+              </Box>
+            )}
+          </Stack>
           {/* Description or Set Items List */}
           <Controller
             control={control}

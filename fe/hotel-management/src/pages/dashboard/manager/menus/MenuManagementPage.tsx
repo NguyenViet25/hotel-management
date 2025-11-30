@@ -28,6 +28,8 @@ import {
   Chip,
   IconButton,
   Typography,
+  Card,
+  CardContent,
 } from "@mui/material";
 import FastfoodIcon from "@mui/icons-material/Fastfood";
 import TableRestaurantIcon from "@mui/icons-material/TableRestaurant";
@@ -166,7 +168,7 @@ const MenuManagementPage: React.FC = () => {
         unitPrice: payload?.unitPrice,
         imageUrl: payload?.imageUrl,
         status:
-          payload?.status !== undefined ? String(payload.status) : undefined,
+          payload?.status !== undefined ? Number(payload.status) : undefined,
         isActive: payload?.isActive,
       };
       const res = await menusApi.updateMenuItem(editingItem.id, cast);
@@ -305,114 +307,93 @@ const MenuManagementPage: React.FC = () => {
                     size="small"
                   />
                 </Stack>
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5 }}>
+                <Grid container spacing={2}>
                   {foodItems.map((it) => (
-                    <Box
-                      key={it.id}
-                      sx={{
-                        position: "relative",
-                        p: 1.5,
-                        width: 240,
-                        border: "2px dashed",
-                        borderColor: "primary.main",
-                        borderRadius: "14px",
-                        background:
-                          "linear-gradient(135deg, #E3F2FD 0%, #F5FAFF 100%)",
-                        boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-                        transition: "transform 120ms ease",
-                        "&:hover": { transform: "translateY(-2px)" },
-                        "&:before": {
-                          content: '""',
-                          position: "absolute",
-                          top: "50%",
-                          left: -8,
-                          transform: "translateY(-50%)",
-                          width: 16,
-                          height: 16,
-                          borderRadius: "50%",
-                          backgroundColor: "background.paper",
-                          border: "2px solid",
-                          borderColor: "primary.main",
-                        },
-                        "&:after": {
-                          content: '""',
-                          position: "absolute",
-                          top: "50%",
-                          right: -8,
-                          transform: "translateY(-50%)",
-                          width: 16,
-                          height: 16,
-                          borderRadius: "50%",
-                          backgroundColor: "background.paper",
-                          border: "2px solid",
-                          borderColor: "primary.main",
-                        },
-                        opacity: it.status == 0 ? 1 : 0.55,
-                      }}
-                    >
-                      <Stack spacing={1}>
-                        <Stack
-                          direction="row"
-                          alignItems="center"
-                          justifyContent="space-between"
-                        >
+                    <Grid key={it.id} size={{ xs: 12, md: 6, lg: 3 }}>
+                      <Card
+                        elevation={0}
+                        sx={{
+                          borderRadius: 3,
+                          p: 2,
+                          backgroundColor: "#F5FAEE",
+                          boxShadow: "0 4px 16px rgba(0,0,0,0.06)",
+                        }}
+                      >
+                        <Stack spacing={1}>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              justifyContent: "center",
+                              alignItems: "center",
+                            }}
+                          >
+                            <img
+                              src={it.imageUrl || "/assets/logo.png"}
+                              alt={it.name}
+                              style={{
+                                width: "100%",
+                                height: 160,
+                                objectFit: "contain",
+                              }}
+                            />
+                          </Box>
                           <Typography
                             variant="subtitle1"
-                            sx={{ fontWeight: 600, color: "primary.main" }}
+                            sx={{ fontWeight: 700 }}
                           >
                             {it.name}
                           </Typography>
-                          <Chip
-                            label={it.category || ""}
-                            color="primary"
-                            size="small"
-                          />
-                        </Stack>
-                        <Typography
-                          variant="subtitle2"
-                          sx={{ fontWeight: 700 }}
-                        >
-                          {`${Number(it.unitPrice).toLocaleString()} ₫`}
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          noWrap
-                        >
-                          {it.description || ""}
-                        </Typography>
-                        <Stack
-                          direction="row"
-                          spacing={0.5}
-                          justifyContent="space-between"
-                          alignItems="center"
-                        >
-                          <Chip
-                            label={it.status == 0 ? "Đang bán" : "Ngừng bán"}
-                            color={it.status == 0 ? "success" : "error"}
-                            size="small"
-                          />
-                          <Stack direction="row" spacing={0.5}>
-                            <IconButton
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            sx={{ flexWrap: "wrap" }}
+                          >
+                            <Chip
+                              label={it.category || ""}
+                              color="success"
                               size="small"
-                              color="primary"
-                              onClick={() => openEdit(it)}
-                            >
-                              <EditIcon fontSize="small" />
-                            </IconButton>
-                            <IconButton
+                              variant="outlined"
+                            />
+                            <Chip
+                              label={it.status == 0 ? "Đang bán" : "Ngừng bán"}
+                              color={it.status == 0 ? "success" : "error"}
                               size="small"
-                              color="error"
-                              onClick={() => openDelete(it)}
-                            >
-                              <DeleteOutlineIcon fontSize="small" />
-                            </IconButton>
+                            />
+                          </Stack>
+                          <Typography variant="body2" color="text.secondary">
+                            {it.description || ""}
+                          </Typography>
+                          <Stack
+                            direction="row"
+                            alignItems="center"
+                            justifyContent="space-between"
+                            sx={{ mt: 1 }}
+                          >
+                            <Typography variant="h6" sx={{ fontWeight: 800 }}>
+                              {`${Number(it.unitPrice).toLocaleString()} ₫`}
+                            </Typography>
+                            <Stack direction="row" spacing={0.5}>
+                              <IconButton
+                                size="small"
+                                color="primary"
+                                onClick={() => openEdit(it)}
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                              <IconButton
+                                size="small"
+                                color="error"
+                                onClick={() => openDelete(it)}
+                              >
+                                <DeleteOutlineIcon fontSize="small" />
+                              </IconButton>
+                            </Stack>
                           </Stack>
                         </Stack>
-                      </Stack>
-                    </Box>
+                      </Card>
+                    </Grid>
                   ))}
-                </Box>
+                </Grid>
               </Stack>
             </Grid>
           ) : (
