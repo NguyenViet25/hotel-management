@@ -71,16 +71,28 @@ const MenuTable: React.FC<MenuTableProps> = ({
       id: "unitPrice",
       label: "Đơn giá",
       minWidth: 120,
-      format: (v) => `${Number(v).toLocaleString()} ₫`,
+      render: (row) =>
+        row.category === "Set"
+          ? "—"
+          : `${Number(row.unitPrice).toLocaleString()} ₫`,
     },
 
     {
       id: "status",
       label: "Trạng thái",
       minWidth: 120,
-      format: (v) => activeChip(v == 0),
+      render: (row) => activeChip(row.status == 0),
     },
   ];
+
+  const handleEdit = (row: MenuItemDto) => {
+    if ((row.category || "") === "Set") return;
+    onEdit?.(row);
+  };
+  const handleDelete = (row: MenuItemDto) => {
+    if ((row.category || "") === "Set") return;
+    onDelete?.(row);
+  };
 
   return (
     <DataTable
@@ -88,8 +100,8 @@ const MenuTable: React.FC<MenuTableProps> = ({
       data={pagedData}
       loading={loading}
       onAdd={onAdd}
-      onEdit={onEdit}
-      onDelete={onDelete}
+      onEdit={handleEdit}
+      onDelete={handleDelete}
       getRowId={(row) => row.id}
       onSearch={onSearch}
       pagination={{

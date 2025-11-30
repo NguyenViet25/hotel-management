@@ -18,6 +18,13 @@ import menusApi, {
 import PageTitle from "../../../../components/common/PageTitle";
 import MenuItemFormModal from "./components/MenuItemFormModal";
 import MenuTable from "./components/MenuTable";
+import {
+  Stack,
+  TextField,
+  MenuItem,
+  ToggleButtonGroup,
+  ToggleButton,
+} from "@mui/material";
 
 // Menu Management Page implementing UC-45 to UC-48
 // - UC-45: View menu list with filters (group, shift, status, active)
@@ -31,6 +38,7 @@ const MenuManagementPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [groups, setGroups] = useState<MenuGroupDto[]>([]);
   const [status, setStatus] = useState<string>("");
+  const [typeFilter, setTypeFilter] = useState<"food" | "set">("food");
 
   // Modal state
   const [createOpen, setCreateOpen] = useState(false);
@@ -196,13 +204,60 @@ const MenuManagementPage: React.FC = () => {
     }
   };
 
+  const displayItems: MenuItemDto[] = React.useMemo(() => {
+    if (typeFilter === "food") return items;
+    const groupsMap = new Map<string, MenuItemDto[]>();
+    items.forEach((it) => {
+      const key = it.category || "Khác";
+      if (!groupsMap.has(key)) groupsMap.set(key, []);
+      groupsMap.get(key)!.push(it);
+    });
+    const sets: MenuItemDto[] = Array.from(groupsMap.entries()).map(
+      ([key, arr]) => ({
+        id: `set:${key}`,
+        hotelId: arr[0]?.hotelId,
+        category: "Set",
+        name: key,
+        description: arr.map((x) => x.name).join(", "),
+        unitPrice: 0,
+        imageUrl: undefined,
+        isActive: arr.some((x) => x.status === 0),
+        status: arr.some((x) => x.status === 0) ? 0 : 1,
+      })
+    );
+    return sets;
+  }, [items, typeFilter]);
+
   return (
     <Box>
       <PageTitle title="Quản lý thực đơn" subtitle="Xem, thêm, sửa, xóa món" />
 
-      {/* Table with actions */}
+      <Stack direction={{ xs: "column", md: "row" }} spacing={2} sx={{ mb: 2 }}>
+        <TextField
+          select
+          label="Trạng thái"
+          size="small"
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+          sx={{ minWidth: 180 }}
+        >
+          <MenuItem value="">Tất cả</MenuItem>
+          <MenuItem value="0">Đang bán</MenuItem>
+          <MenuItem value="1">Ngừng bán</MenuItem>
+        </TextField>
+        <ToggleButtonGroup
+          size="small"
+          value={typeFilter}
+          exclusive
+          onChange={(_, v) => setTypeFilter(v ?? typeFilter)}
+        >
+          <ToggleButton value="food">Theo món</ToggleButton>
+          <ToggleButton value="set">Theo set</ToggleButton>
+        </ToggleButtonGroup>
+      </Stack>
+
       <MenuTable
-        data={items}
+        data={displayItems}
         loading={loading}
         onAdd={openCreate}
         onEdit={openEdit}
@@ -217,6 +272,7 @@ const MenuManagementPage: React.FC = () => {
         onSubmit={createSubmit}
         menuGroups={groups}
         mode="create"
+        createType={typeFilter}
       />
 
       {/* Edit modal */}

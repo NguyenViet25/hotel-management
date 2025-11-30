@@ -68,6 +68,7 @@ export interface MenuItemFormModalProps {
   ) => Promise<void> | void;
   initialValues?: MenuItemDto;
   mode?: "create" | "edit";
+  createType?: "food" | "set";
 }
 
 const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
@@ -76,6 +77,7 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
   onSubmit,
   initialValues,
   mode = "create",
+  createType = "food",
 }) => {
   const { user } = useStore<StoreState>((state) => state);
   const {
@@ -85,11 +87,32 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
     reset,
     setValue,
   } = useForm<FormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(
+      createType === "set" && mode === "create"
+        ? z.object({
+            category: z.string().optional(),
+            name: z.string().min(1, "Tên set là bắt buộc").max(100),
+            unitPrice: z.number().optional(),
+            imageUrl: z.string().optional().or(z.literal("")),
+            status: z.number().int().min(0).max(1),
+            isActive: z.boolean().optional(),
+            description: z
+              .string()
+              .max(2000)
+              .optional(),
+          })
+        : schema
+    ),
     defaultValues: {
-      category: initialValues?.category ?? "Món khai vị",
+      category:
+        createType === "set" && mode === "create"
+          ? initialValues?.category ?? ""
+          : initialValues?.category ?? "Món khai vị",
       name: initialValues?.name ?? "",
-      unitPrice: initialValues?.unitPrice ?? 0,
+      unitPrice:
+        createType === "set" && mode === "create"
+          ? 1
+          : initialValues?.unitPrice ?? 0,
       imageUrl: initialValues?.imageUrl ?? "",
       status: initialValues?.status ?? 0,
       isActive: initialValues?.isActive ?? true,
@@ -111,16 +134,49 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
   }, [initialValues]);
 
   const submitHandler = async (values: FormValues) => {
-    await onSubmit({
-      hotelId: user?.hotelId,
-      category: values.category,
-      name: values.name,
-      unitPrice: values.unitPrice,
-      imageUrl: values.imageUrl,
-      status: values.status,
-      isActive: values.isActive,
-      description: values.description,
-    });
+    if (createType === "set" && mode === "create") {
+      const setName = (values.name || "").trim();
+      const list = (values.description || "")
+        .split(/\n|,/)
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
+      if (list.length === 0 && setName) {
+        await onSubmit({
+          hotelId: user?.hotelId,
+          category: setName,
+          name: setName,
+          unitPrice: 1,
+          imageUrl: values.imageUrl,
+          status: values.status,
+          isActive: values.isActive,
+          description: "",
+        });
+      } else {
+        for (const itemName of list) {
+          await onSubmit({
+            hotelId: user?.hotelId,
+            category: setName,
+            name: itemName,
+            unitPrice: 1,
+            imageUrl: values.imageUrl,
+            status: values.status,
+            isActive: values.isActive,
+            description: "",
+          });
+        }
+      }
+    } else {
+      await onSubmit({
+        hotelId: user?.hotelId,
+        category: values.category,
+        name: values.name,
+        unitPrice: values.unitPrice,
+        imageUrl: values.imageUrl,
+        status: values.status,
+        isActive: values.isActive,
+        description: values.description,
+      });
+    }
 
     reset();
   };
@@ -137,105 +193,148 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle fontWeight={600}>
-        {mode === "create" ? "Thêm món mới" : "Chỉnh sửa món"}
+        {mode === "create"
+          ? createType === "set"
+            ? "Thêm set mới"
+            : "Thêm món mới"
+          : "Chỉnh sửa món"}
       </DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
-          {/* Menu Group */}
-          <FormControl fullWidth>
-            <InputLabel id="menuGroup-label">Nhóm món</InputLabel>
+          {/* Menu Group or Set Name */}
+          {createType === "set" && mode === "create" ? (
             <Controller
               control={control}
-              name="category"
-              render={({ field }) => (
-                <Select
-                  labelId="menuGroup-label"
-                  label="Nhóm món"
-                  value={field.value}
-                  onChange={(e) => field.onChange(e.target.value)}
-                  error={!!errors.category}
-                  startAdornment={
-                    <InputAdornment position="start">
-                      <GroupIcon />
-                    </InputAdornment>
-                  }
-                >
-                  {foodGroups.map((g) => (
-                    <MenuItem key={g.id} value={g.id}>
-                      {g.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              )}
-            />
-          </FormControl>
-
-          {/* Name */}
-          <Controller
-            control={control}
-            name="name"
-            render={({ field }) => (
-              <TextField
-                label="Tên món"
-                fullWidth
-                value={field.value}
-                placeholder="Nhập tên món ăn"
-                onChange={field.onChange}
-                error={!!errors.name}
-                helperText={errors.name?.message}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <FastfoodIcon />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            )}
-          />
-
-          {/* Horizontal Stack: Unit Price & Portion Size */}
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-            <Controller
-              control={control}
-              name="unitPrice"
+              name="name"
               render={({ field }) => (
                 <TextField
-                  label="Đơn giá"
-                  type="number"
+                  label="Tên set (Nhóm món)"
                   fullWidth
                   value={field.value}
-                  onChange={(e) => field.onChange(Number(e.target.value))}
-                  error={!!errors.unitPrice}
-                  helperText={errors.unitPrice?.message}
+                  placeholder="Nhập tên set (ví dụ: BBQ Set)"
+                  onChange={field.onChange}
+                  error={!!errors.name}
+                  helperText={(errors as any).name?.message}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <MonetizationOnIcon />
+                        <GroupIcon />
                       </InputAdornment>
                     ),
                   }}
                 />
               )}
             />
-          </Stack>
-          {/* Description */}
+          ) : (
+            <FormControl fullWidth>
+              <InputLabel id="menuGroup-label">Nhóm món</InputLabel>
+              <Controller
+                control={control}
+                name="category"
+                render={({ field }) => (
+                  <Select
+                    labelId="menuGroup-label"
+                    label="Nhóm món"
+                    value={field.value}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    error={!!errors.category}
+                    startAdornment={
+                      <InputAdornment position="start">
+                        <GroupIcon />
+                      </InputAdornment>
+                    }
+                  >
+                    {foodGroups.map((g) => (
+                      <MenuItem key={g.id} value={g.id}>
+                        {g.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                )}
+              />
+            </FormControl>
+          )}
+
+          {/* Name (food) - hidden in set create mode */}
+          {!(createType === "set" && mode === "create") && (
+            <Controller
+              control={control}
+              name="name"
+              render={({ field }) => (
+                <TextField
+                  label="Tên món"
+                  fullWidth
+                  value={field.value}
+                  placeholder="Nhập tên món ăn"
+                  onChange={field.onChange}
+                  error={!!errors.name}
+                  helperText={errors.name?.message}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <FastfoodIcon />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              )}
+            />
+          )}
+
+          {/* Unit Price - hidden in set create mode */}
+          {!(createType === "set" && mode === "create") && (
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+              <Controller
+                control={control}
+                name="unitPrice"
+                render={({ field }) => (
+                  <TextField
+                    label="Đơn giá"
+                    type="number"
+                    fullWidth
+                    value={field.value}
+                    onChange={(e) => field.onChange(Number(e.target.value))}
+                    error={!!errors.unitPrice}
+                    helperText={errors.unitPrice?.message}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <MonetizationOnIcon />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                )}
+              />
+            </Stack>
+          )}
+          {/* Description or Set Items List */}
           <Controller
             control={control}
             name="description"
             render={({ field }) => (
               <TextField
-                label="Mô tả"
+                label={
+                  createType === "set" && mode === "create"
+                    ? "Danh sách món trong set"
+                    : "Mô tả"
+                }
                 fullWidth
+                multiline={createType === "set" && mode === "create"}
+                minRows={createType === "set" && mode === "create" ? 3 : 1}
                 value={field.value}
-                placeholder="Nhập mô tả món ăn"
+                placeholder={
+                  createType === "set" && mode === "create"
+                    ? "Mỗi dòng một món hoặc ngăn cách bằng dấu phẩy"
+                    : "Nhập mô tả món ăn"
+                }
                 onChange={field.onChange}
                 error={!!errors.description}
-                helperText={errors.description?.message}
+                helperText={errors.description?.message as any}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <InfoIcon />
+                      <RestaurantMenuIcon />
                     </InputAdornment>
                   ),
                 }}
