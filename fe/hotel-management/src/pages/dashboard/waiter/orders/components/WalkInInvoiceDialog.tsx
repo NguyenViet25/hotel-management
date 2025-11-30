@@ -2,11 +2,13 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Box,
   Button,
+  capitalize,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   Divider,
+  Grid,
   Stack,
   Table,
   TableBody,
@@ -22,12 +24,17 @@ import ordersApi, {
 } from "../../../../../api/ordersApi";
 import invoicesApi, { type InvoiceDto } from "../../../../../api/invoicesApi";
 import hotelService, { type Hotel } from "../../../../../api/hotelService";
+import {
+  moneyToVietnameseWords,
+  formatDateVN,
+} from "../../../../../utils/money-to-words";
+import { useStore, type StoreState } from "../../../../../hooks/useStore";
+import { Close, Print } from "@mui/icons-material";
 
 type Props = {
   open: boolean;
   onClose: () => void;
   order: OrderSummaryDto | null;
-  hotelId?: string | null;
   onInvoiceCreated?: (invoice: InvoiceDto) => void;
 };
 
@@ -37,7 +44,6 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
   open,
   onClose,
   order,
-  hotelId,
   onInvoiceCreated,
 }) => {
   const [details, setDetails] = useState<OrderDetailsDto | null>(null);
@@ -45,6 +51,7 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
   const [invoice, setInvoice] = useState<InvoiceDto | null>(null);
   const [disableForPrint, setDisableForPrint] = useState(false);
   const invoiceRef = useRef<HTMLDivElement>(null);
+  const { user, hotelId } = useStore<StoreState>((state) => state);
 
   const handlePrint = useReactToPrint({
     contentRef: invoiceRef,
@@ -113,97 +120,111 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
       <Box ref={invoiceRef}>
-        <DialogTitle
-          sx={{
-            fontSize: "1.3rem",
-            fontWeight: 800,
-            textAlign: "center",
-            color: "#d32f2f",
-          }}
-        >
-          HÓA ĐƠN THANH TOÁN
-        </DialogTitle>
-
         <DialogContent
           sx={{
-            mt: 1,
             pb: 1,
-            fontSize: "0.85rem",
-            "& .MuiTypography-root": { fontSize: "0.9rem" },
-            "& .MuiButton-root": { fontSize: "0.85rem", py: 1, px: 1.5 },
-            "& .MuiChip-root": { fontSize: "0.75rem" },
-            "& .MuiTextField-root input": { fontSize: "0.85rem" },
           }}
         >
-          <Stack spacing={2}>
-            <Box sx={{ p: 2 }}>
-              <Stack spacing={1}>
-                {hotel && (
-                  <Stack spacing={0.5}>
-                    <Typography fontWeight={800}>{hotel.name}</Typography>
-                    <Typography color="text.secondary">
-                      {hotel.address}
-                    </Typography>
-                    <Stack direction="row" spacing={2}>
-                      <Typography>ĐT: {hotel.phone || "—"}</Typography>
-                      <Typography>Email: {hotel.email || "—"}</Typography>
-                    </Stack>
-                  </Stack>
+          <Stack spacing={1.5}>
+            <Stack>
+              <Typography
+                sx={{
+                  fontSize: "1.5rem",
+                  fontWeight: 600,
+                  textAlign: "center",
+                  color: "#d32f2f",
+                }}
+              >
+                HÓA ĐƠN THANH TOÁN
+              </Typography>
+              <Stack
+                direction={{ sm: "row" }}
+                alignItems="center"
+                justifyContent="center"
+              >
+                {invoice && (
+                  <Typography sx={{ fontSize: "0.8rem" }}>
+                    Số hóa đơn: <b>{invoice.invoiceNumber}</b>
+                  </Typography>
                 )}
-
-                <Stack
-                  direction={{ xs: "column", sm: "row" }}
-                  spacing={2}
-                  alignItems="center"
-                  justifyContent="space-between"
-                >
-                  <Stack>
-                    <Typography>
-                      Ngày: {new Date().toLocaleDateString("vi-VN")} | Mã đơn: #
-                      {order?.id?.slice(0, 8).toUpperCase()}
-                    </Typography>
-                    {invoice && (
-                      <Typography>
-                        Số hóa đơn: <b>{invoice.invoiceNumber}</b>
-                      </Typography>
-                    )}
+              </Stack>
+            </Stack>
+            <Stack spacing={1}>
+              {hotel && (
+                <Stack spacing={0.2} sx={{ color: "#c62828" }}>
+                  <Typography fontWeight={800}>{hotel.name}</Typography>
+                  <Typography>ĐC: {hotel.address || "—"}</Typography>
+                  <Stack direction="row" spacing={1}>
+                    <Typography>ĐT: {hotel.phone || "—"}</Typography>
+                    <Typography>Email: {hotel.email || "—"}</Typography>
                   </Stack>
                 </Stack>
+              )}
 
-                <Divider sx={{ my: 1.5 }} />
-
-                <Stack spacing={0.5}>
-                  <Typography>
-                    Khách hàng: {order?.customerName || "—"}
+              <Stack
+                direction={{ sx: "column", lg: "row" }}
+                spacing={1}
+                justifyContent={"space-between"}
+              >
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  sx={{ color: "#c62828" }}
+                >
+                  <Typography>Tên khách hàng:</Typography>
+                  <Typography sx={{ ml: 1, color: "text.primary" }}>
+                    {order?.customerName || "—"}
+                  </Typography>
+                </Stack>
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  sx={{ color: "#c62828" }}
+                >
+                  <Typography>SĐT:</Typography>
+                  <Typography sx={{ ml: 1, color: "text.primary" }}>
+                    {order?.customerPhone || "—"}
                   </Typography>
                 </Stack>
               </Stack>
-            </Box>
+            </Stack>
 
             {details && (
-              <Box sx={{ p: 1 }}>
+              <Box>
                 <Table
                   size="small"
                   sx={{
-                    border: "1px solid #d32f2f",
-                    "& td, & th": { border: "1px dotted #d32f2f" },
+                    width: "100%",
+                    border: "2px solid #c62828",
+                    borderCollapse: "collapse",
+                    "& .MuiTableCell-root": {
+                      borderBottom: "1px dotted #c62828",
+                      padding: "8px",
+                    },
+                    "& .MuiTableCell-root:not(:last-of-type)": {
+                      borderRight: "2px solid #c62828",
+                    },
+                    "& thead .MuiTableCell-root": {
+                      borderBottom: "2px solid #c62828",
+                      fontWeight: 700,
+                    },
                   }}
                 >
                   <TableHead>
                     <TableRow>
-                      <TableCell align="center">
+                      <TableCell align="center" sx={{ width: "8%" }}>
                         <b>TT</b>
                       </TableCell>
-                      <TableCell>
+                      <TableCell sx={{ width: "52%" }}>
                         <b>Nội dung</b>
                       </TableCell>
-                      <TableCell align="right">
+                      <TableCell align="right" sx={{ width: "10%" }}>
                         <b>SL</b>
                       </TableCell>
-                      <TableCell align="right">
+                      <TableCell align="right" sx={{ width: "15%" }}>
                         <b>Đơn giá</b>
                       </TableCell>
-                      <TableCell align="right">
+                      <TableCell align="right" sx={{ width: "15%" }}>
                         <b>Thành tiền</b>
                       </TableCell>
                     </TableRow>
@@ -213,53 +234,95 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
                       <TableRow key={it.id}>
                         <TableCell align="center">{idx + 1}</TableCell>
                         <TableCell>{it.menuItemName}</TableCell>
+                        <TableCell align="right">{it.quantity}</TableCell>
                         <TableCell align="right">
                           {currency(it.unitPrice)}
                         </TableCell>
-                        <TableCell align="right">{it.quantity}</TableCell>
                         <TableCell align="right">
                           {currency(it.quantity * it.unitPrice)}
                         </TableCell>
                       </TableRow>
                     ))}
+                    <TableRow>
+                      <TableCell align="center"></TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>Tổng cộng</TableCell>
+                      <TableCell align="right"></TableCell>
+                      <TableCell align="right"></TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 800 }}>
+                        {currency(totals.total)}
+                      </TableCell>
+                    </TableRow>
                   </TableBody>
                 </Table>
 
-                <Stack spacing={1.2} sx={{ mt: 2 }}>
-                  <Stack direction="row" justifyContent="space-between">
-                    <Typography fontWeight={700}>Tổng cộng</Typography>
-                    <Typography fontWeight={800}>
-                      {currency(totals.total)}
+                <Stack spacing={0.8} sx={{ mt: 1 }}>
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    spacing={1}
+                    sx={{ color: "#c62828" }}
+                  >
+                    <Typography>Bằng chữ:</Typography>
+                    <Typography
+                      sx={{
+                        fontStyle: "italic",
+                        fontWeight: 600,
+                        color: "text.primary",
+                      }}
+                    >
+                      {capitalize(moneyToVietnameseWords(totals.total))}
                     </Typography>
                   </Stack>
-                  <Typography>Bằng chữ: ——</Typography>
-                  <Typography>
-                    Ngày {new Date().getDate()} tháng{" "}
-                    {new Date().getMonth() + 1} năm {new Date().getFullYear()}
-                  </Typography>
                 </Stack>
-
-                <Divider sx={{ my: 1.5 }} />
-
-                <Stack
-                  direction={{ xs: "column", sm: "row" }}
-                  spacing={6}
-                  justifyContent="space-between"
-                >
-                  <Typography>Khách hàng</Typography>
-                  <Typography>Thu ngân</Typography>
-                </Stack>
+                <Grid container mt={1}>
+                  <Grid size={{ xs: 12, lg: 6 }}>
+                    <Stack justifyContent={"center"} alignItems="center">
+                      <Typography sx={{ color: "#c62828", opacity: 0 }}>
+                        Khách hàng
+                      </Typography>
+                      <Typography sx={{ color: "#c62828" }}>
+                        Khách hàng
+                      </Typography>
+                    </Stack>
+                  </Grid>
+                  <Grid size={{ xs: 12, lg: 6 }}>
+                    <Stack justifyContent={"center"} alignItems="center">
+                      <Typography
+                        sx={{
+                          fontStyle: "italic",
+                          color: "#c62828",
+                        }}
+                      >
+                        {formatDateVN(new Date())}
+                      </Typography>
+                      <Typography sx={{ color: "#c62828" }}>Lễ tân</Typography>
+                      <Typography>{user?.fullname || "—"} </Typography>
+                    </Stack>
+                  </Grid>
+                </Grid>
               </Box>
             )}
           </Stack>
         </DialogContent>
       </Box>
 
+      <Divider sx={{ mb: 1, mt: 1 }} />
       {!disableForPrint && (
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={onClose}>Đóng</Button>
+          <Button
+            variant="outlined"
+            startIcon={<Close />}
+            color="error"
+            onClick={onClose}
+          >
+            Đóng
+          </Button>
           {invoice ? (
-            <Button variant="contained" onClick={() => handlePrint?.()}>
+            <Button
+              startIcon={<Print />}
+              variant="contained"
+              onClick={() => handlePrint?.()}
+            >
               In hóa đơn
             </Button>
           ) : (

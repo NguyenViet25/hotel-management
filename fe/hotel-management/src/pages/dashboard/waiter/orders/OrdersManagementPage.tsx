@@ -7,36 +7,26 @@ import {
   Card,
   CardContent,
   Chip,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   Divider,
   Snackbar,
   Stack,
-  Tab,
-  Tabs,
   Typography,
 } from "@mui/material";
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { useReactToPrint } from "react-to-print";
 import { useSearchParams } from "react-router-dom";
+import invoicesApi from "../../../../api/invoicesApi";
+import menusApi, { type MenuItemDto } from "../../../../api/menusApi";
 import ordersApi, {
   type OrderDetailsDto,
   type OrderStatus,
   type OrderSummaryDto,
 } from "../../../../api/ordersApi";
-import invoicesApi from "../../../../api/invoicesApi";
 import ConfirmModal from "../../../../components/common/ConfirmModel";
 import PageTitle from "../../../../components/common/PageTitle";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
-import WalkInInvoiceDialog from "./components/WalkInInvoiceDialog";
 import OrderFormModal from "./components/OrderFormModal";
 import OrdersTable from "./components/OrdersTable";
-import ViewModuleIcon from "@mui/icons-material/ViewModule";
-import TableRowsIcon from "@mui/icons-material/TableRows";
-import menusApi, { type MenuItemDto } from "../../../../api/menusApi";
-import hotelService, { type Hotel } from "../../../../api/hotelService";
+import WalkInInvoiceDialog from "./components/WalkInInvoiceDialog";
 
 import PersonIcon from "@mui/icons-material/Person";
 import PhoneIphoneIcon from "@mui/icons-material/PhoneIphone";
@@ -339,7 +329,6 @@ const OrdersManagementPage: React.FC = () => {
           }}
           onSelectPromotion={(row) => {
             setSelectedForInvoice(row);
-            setPromoOpen(true);
           }}
           invoiceMap={orderInvoiceMap}
           onPrintInvoice={(row) => {
@@ -632,7 +621,6 @@ const OrdersManagementPage: React.FC = () => {
         open={invoiceOpen}
         onClose={() => setInvoiceOpen(false)}
         order={selectedForInvoice}
-        hotelId={hotelId}
         onInvoiceCreated={(inv) => {
           if (selectedForInvoice)
             setOrderInvoiceMap((m) => ({
