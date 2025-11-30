@@ -5,7 +5,7 @@ import {
   NoteAdd,
   Person,
   Phone,
-  Groups,
+  Visibility,
 } from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -18,6 +18,7 @@ import {
   IconButton,
   InputAdornment,
   MenuItem,
+  Tooltip,
   Stack,
   TextField,
   Typography,
@@ -111,6 +112,11 @@ const OrderFormModal: React.FC<IProps> = ({
   const [menuItems, setMenuItemss] = useState<MenuItemDto[]>([]);
   const [bookings, setBookings] = useState<BookingDetailsDto[]>([]);
   const [loadingItems, setLoadingItems] = useState(false);
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewerTitle, setViewerTitle] = useState<string>("");
+  const [viewerItems, setViewerItems] = useState<
+    { name: string; imageUrl?: string }[]
+  >([]);
 
   const foodMenuItems = useMemo(
     () => menuItems.filter((mi) => (mi.category || "").trim() !== "Set"),
@@ -120,6 +126,28 @@ const OrderFormModal: React.FC<IProps> = ({
     () => menuItems.filter((mi) => (mi.category || "").trim() === "Set"),
     [menuItems]
   );
+
+  const parseSetItems = (mi?: MenuItemDto | null) => {
+    const desc = (mi?.description || "").trim();
+    const parts = desc
+      .split(/\n|,/)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+    return parts.map((name) => {
+      const match = foodMenuItems.find(
+        (f) => (f.name || "").toLowerCase() === name.toLowerCase()
+      );
+      return { name, imageUrl: match?.imageUrl, unitPrice: match?.unitPrice };
+    });
+  };
+
+  const openSetViewer = (setId?: string) => {
+    const mi = menuItems.find((m) => m.id === (setId || ""));
+    const items = parseSetItems(mi);
+    setViewerTitle(mi?.name || "Chi tiết set");
+    setViewerItems(items);
+    setViewerOpen(true);
+  };
 
   useEffect(() => {
     const fetchMenuItems = async () => {
@@ -489,14 +517,31 @@ const OrderFormModal: React.FC<IProps> = ({
                       >
                         {foodMenuItems.map((mi) => (
                           <MenuItem key={mi.id} value={mi.id}>
-                            <Stack>
-                              <Typography>{mi.name}</Typography>
-                              <Typography color="text.secondary">
-                                {mi.unitPrice.toLocaleString("vi-VN", {
-                                  style: "currency",
-                                  currency: "VND",
-                                })}
-                              </Typography>
+                            <Stack
+                              direction="row"
+                              spacing={1}
+                              alignItems="center"
+                            >
+                              <img
+                                src={mi.imageUrl || "/assets/logo.png"}
+                                alt={mi.name}
+                                style={{
+                                  width: 36,
+                                  height: 36,
+                                  borderRadius: 6,
+                                  objectFit: "cover",
+                                  border: "1px solid #eee",
+                                }}
+                              />
+                              <Stack>
+                                <Typography>{mi.name}</Typography>
+                                <Typography color="text.secondary">
+                                  {mi.unitPrice.toLocaleString("vi-VN", {
+                                    style: "currency",
+                                    currency: "VND",
+                                  })}
+                                </Typography>
+                              </Stack>
                             </Stack>
                           </MenuItem>
                         ))}
@@ -616,15 +661,73 @@ const OrderFormModal: React.FC<IProps> = ({
                       >
                         {setMenuItems.map((mi) => (
                           <MenuItem key={mi.id} value={mi.id}>
-                            <Stack>
-                              <Typography>{mi.name}</Typography>
-                              <Typography color="text.secondary">
-                                {mi.unitPrice.toLocaleString("vi-VN", {
-                                  style: "currency",
-                                  currency: "VND",
-                                })}
-                              </Typography>
-                            </Stack>
+                            <Tooltip
+                              arrow
+                              placement="right"
+                              title={(() => {
+                                const items = parseSetItems(mi);
+                                return (
+                                  <Stack spacing={0.5} sx={{ p: 0.5 }}>
+                                    {items.length === 0 ? (
+                                      <Typography color="text.secondary">
+                                        Chưa có món trong set
+                                      </Typography>
+                                    ) : (
+                                      items.map((si, idx) => (
+                                        <Stack
+                                          key={idx}
+                                          direction="row"
+                                          spacing={1}
+                                          alignItems="center"
+                                        >
+                                          <Typography>{`${idx + 1}. ${
+                                            si.name
+                                          }`}</Typography>
+                                          {typeof si.unitPrice === "number" && (
+                                            <Typography color="text.secondary">
+                                              {si.unitPrice.toLocaleString(
+                                                "vi-VN",
+                                                {
+                                                  style: "currency",
+                                                  currency: "VND",
+                                                }
+                                              )}
+                                            </Typography>
+                                          )}
+                                        </Stack>
+                                      ))
+                                    )}
+                                  </Stack>
+                                );
+                              })()}
+                            >
+                              <Stack
+                                direction="row"
+                                spacing={1}
+                                alignItems="center"
+                              >
+                                <img
+                                  src={mi.imageUrl || "/assets/logo.png"}
+                                  alt={mi.name}
+                                  style={{
+                                    width: 36,
+                                    height: 36,
+                                    borderRadius: 6,
+                                    objectFit: "contain",
+                                    border: "1px solid #eee",
+                                  }}
+                                />
+                                <Stack>
+                                  <Typography>{mi.name}</Typography>
+                                  <Typography color="text.secondary">
+                                    {mi.unitPrice.toLocaleString("vi-VN", {
+                                      style: "currency",
+                                      currency: "VND",
+                                    })}
+                                  </Typography>
+                                </Stack>
+                              </Stack>
+                            </Tooltip>
                           </MenuItem>
                         ))}
                       </TextField>
@@ -696,6 +799,48 @@ const OrderFormModal: React.FC<IProps> = ({
           {isEdit ? "Cập nhật yêu cầu" : "Tạo yêu cầu"}
         </Button>
       </DialogActions>
+      <Dialog
+        open={viewerOpen}
+        onClose={() => setViewerOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 600 }}>{viewerTitle}</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            {viewerItems.length === 0 ? (
+              <Typography color="text.secondary">
+                Chưa có danh sách món trong set
+              </Typography>
+            ) : (
+              viewerItems.map((it, idx) => (
+                <Stack
+                  key={idx}
+                  direction="row"
+                  spacing={1}
+                  alignItems="center"
+                >
+                  <img
+                    src={it.imageUrl || "/assets/logo.png"}
+                    alt={it.name}
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 6,
+                      objectFit: "cover",
+                      border: "1px solid #eee",
+                    }}
+                  />
+                  <Typography>{it.name}</Typography>
+                </Stack>
+              ))
+            )}
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setViewerOpen(false)}>Đóng</Button>
+        </DialogActions>
+      </Dialog>
     </Dialog>
   );
 };
