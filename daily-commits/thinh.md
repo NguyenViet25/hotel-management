@@ -185,3 +185,4 @@
 2025-11-29 - 5 - 01:44:07 UTC :: ci: UC-37 Night Audit: kiem tra folio chua chot, khoa giao dich. — cap nhat mock data & seed test (chuan bi cho tinh nang tiep theo)
 2025-11-30 - 1 - 01:57:17 UTC :: docs: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — dieu chinh UI & copy cho ro (can theo doi them)
 2025-11-30 - 2 - 01:57:18 UTC :: fix: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — tach chuc nang de de bao tri (chuan bi cho tinh nang tiep theo)
+2025-11-30 - 3 - 01:57:20 UTC :: fix: UC-11 Goi gia: bat/tam ngung goi gia dang ap dung. — dieu chinh UI & copy cho ro (can theo doi them)
