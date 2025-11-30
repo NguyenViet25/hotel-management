@@ -6,6 +6,7 @@ public class Promotion
     public Guid HotelId { get; set; }
     public string Code { get; set; } = string.Empty;
     public string? Description { get; set; }
+    public string Scope { get; set; } = "booking";
     public decimal Value { get; set; }
     public bool IsActive { get; set; } = true;
     public DateTime StartDate { get; set; }

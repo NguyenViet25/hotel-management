@@ -95,7 +95,7 @@ public class InvoicesController : ControllerBase
                 .FirstOrDefaultAsync(p => p.HotelId == order.HotelId && p.Code == request.DiscountCode && p.IsActive && p.StartDate <= now && p.EndDate >= now);
             if (promo is not null && promo.Value > 0)
             {
-                var scope = ExtractScopeFromDescription(promo.Description);
+                var scope = promo.Scope;
                 if (!string.Equals(scope, "food", StringComparison.OrdinalIgnoreCase))
                 {
                     return BadRequest(ApiResponse<InvoiceDto>.Fail("Mã giảm giá chỉ áp dụng cho dịch vụ ăn uống"));
@@ -163,23 +163,7 @@ public class InvoicesController : ControllerBase
         return Ok(ApiResponse<InvoiceDto>.Ok(dto, "Created"));
     }
 
-    private static string? ExtractScopeFromDescription(string? description)
-    {
-        if (string.IsNullOrWhiteSpace(description)) return null;
-        var text = description!;
-        var idx = text.IndexOf("@scope=", StringComparison.OrdinalIgnoreCase);
-        if (idx < 0) return null;
-        var start = idx + 7;
-        int end = start;
-        while (end < text.Length)
-        {
-            var ch = text[end];
-            if (char.IsWhiteSpace(ch) || ch == ';' || ch == ',') break;
-            end++;
-        }
-        var value = text.Substring(start, end - start).Trim().ToLowerInvariant();
-        return value == "booking" || value == "food" ? value : null;
-    }
+    
 }
 
 public class CreateWalkInInvoiceRequest

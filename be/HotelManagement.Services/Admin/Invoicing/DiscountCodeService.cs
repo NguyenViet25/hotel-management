@@ -70,7 +70,8 @@ public class DiscountCodeService : IDiscountCodeService
                 Id = Guid.NewGuid(),
                 HotelId = hotelId,
                 Code = dto.Code,
-                Description = NormalizeDescriptionWithScope(dto.Description, dto.Scope),
+                Description = dto.Description,
+                Scope = (dto.Scope ?? "booking").Trim().ToLowerInvariant(),
                 Value = dto.Value!.Value,
                 IsActive = dto.IsActive ?? true,
                 StartDate = dto.StartDate!.Value,
@@ -110,7 +111,8 @@ public class DiscountCodeService : IDiscountCodeService
                 entity.Code = dto.Code;
             }
 
-            if (dto.Description != null || dto.Scope != null) entity.Description = NormalizeDescriptionWithScope(dto.Description ?? entity.Description, dto.Scope);
+            if (dto.Description != null) entity.Description = dto.Description;
+            if (dto.Scope != null) entity.Scope = dto.Scope.Trim().ToLowerInvariant();
             if (dto.Value.HasValue) entity.Value = dto.Value.Value;
             if (dto.IsActive.HasValue) entity.IsActive = dto.IsActive.Value;
             if (dto.StartDate.HasValue) entity.StartDate = dto.StartDate.Value;
@@ -149,17 +151,17 @@ public class DiscountCodeService : IDiscountCodeService
 
     private PromotionDto MapToDto(Promotion e)
     {
-        return new PromotionDto
-        {
-            Id = e.Id,
-            Code = e.Code,
-            Description = e.Description,
-            Scope = ExtractScope(e.Description),
-            Value = e.Value,
-            IsActive = e.IsActive,
-            StartDate = e.StartDate,
-            EndDate = e.EndDate
-        };
+            return new PromotionDto
+            {
+                Id = e.Id,
+                Code = e.Code,
+                Description = e.Description,
+                Scope = e.Scope,
+                Value = e.Value,
+                IsActive = e.IsActive,
+                StartDate = e.StartDate,
+                EndDate = e.EndDate
+            };
     }
 
     private IDictionary<string, string[]>? Validate(PromotionDto dto, bool isUpdate)
@@ -204,46 +206,5 @@ public class DiscountCodeService : IDiscountCodeService
         list.Add(message);
     }
 
-    private static string? ExtractScope(string? description)
-    {
-        if (string.IsNullOrWhiteSpace(description)) return null;
-        var text = description!;
-        var idx = text.IndexOf("@scope=", StringComparison.OrdinalIgnoreCase);
-        if (idx < 0) return null;
-        var start = idx + 7;
-        int end = start;
-        while (end < text.Length)
-        {
-            var ch = text[end];
-            if (char.IsWhiteSpace(ch) || ch == ';' || ch == ',') break;
-            end++;
-        }
-        var value = text.Substring(start, end - start).Trim().ToLowerInvariant();
-        return value == "booking" || value == "food" ? value : null;
-    }
-
-    private static string NormalizeDescriptionWithScope(string? description, string? scope)
-    {
-        var desc = (description ?? string.Empty).Trim();
-        var existing = ExtractScope(desc);
-        var s = (scope ?? existing ?? "booking").Trim().ToLowerInvariant();
-        if (existing != null)
-        {
-            var idx = desc.IndexOf("@scope=", StringComparison.OrdinalIgnoreCase);
-            if (idx >= 0)
-            {
-                var start = idx + 7;
-                int end = start;
-                while (end < desc.Length)
-                {
-                    var ch = desc[end];
-                    if (char.IsWhiteSpace(ch) || ch == ';' || ch == ',') break;
-                    end++;
-                }
-                desc = desc.Remove(idx, end - idx).Insert(idx, "@scope=" + s);
-            }
-            return desc;
-        }
-        return string.IsNullOrEmpty(desc) ? "@scope=" + s : "@scope=" + s + " " + desc;
-    }
+    
 }
