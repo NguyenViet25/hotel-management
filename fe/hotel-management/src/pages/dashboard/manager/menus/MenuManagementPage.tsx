@@ -48,7 +48,7 @@ const MenuManagementPage: React.FC = () => {
   const [items, setItems] = useState<MenuItemDto[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [groups, setGroups] = useState<MenuGroupDto[]>([]);
-  const [status, setStatus] = useState<string>("");
+  const [status, setStatus] = useState<string>("0");
   const [typeFilter, setTypeFilter] = useState<"food" | "set">("food");
   const [viewMode, setViewMode] = useState<"table" | "card">("card");
 
@@ -242,19 +242,6 @@ const MenuManagementPage: React.FC = () => {
       <PageTitle title="Quản lý thực đơn" subtitle="Xem, thêm, sửa, xóa món" />
 
       <Stack direction={{ xs: "column", md: "row" }} spacing={2} sx={{ mb: 2 }}>
-        <TextField
-          select
-          label="Trạng thái"
-          size="small"
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          sx={{ minWidth: 180 }}
-        >
-          <MenuItem value="">Tất cả</MenuItem>
-          <MenuItem value="0">Đang bán</MenuItem>
-          <MenuItem value="1">Ngừng bán</MenuItem>
-        </TextField>
-
         <ToggleButtonGroup
           size="small"
           value={viewMode}
@@ -264,16 +251,28 @@ const MenuManagementPage: React.FC = () => {
           <ToggleButton value="table">Bảng</ToggleButton>
           <ToggleButton value="card">Thẻ</ToggleButton>
         </ToggleButtonGroup>
-
-        <ToggleButtonGroup
+        <TextField
+          select
+          label="Xem theo"
           size="small"
           value={typeFilter}
-          exclusive
-          onChange={(_, v) => setTypeFilter(v ?? typeFilter)}
+          onChange={(e) => setTypeFilter(e.target.value as any)}
+          sx={{ minWidth: 180 }}
         >
-          <ToggleButton value="food">Theo món</ToggleButton>
-          <ToggleButton value="set">Theo set</ToggleButton>
-        </ToggleButtonGroup>
+          <MenuItem value="food">Theo món</MenuItem>
+          <MenuItem value="set">Theo set</MenuItem>
+        </TextField>
+        <TextField
+          select
+          label="Trạng thái"
+          size="small"
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+          sx={{ minWidth: 180 }}
+        >
+          <MenuItem value="0">Đang bán</MenuItem>
+          <MenuItem value="1">Ngừng bán</MenuItem>
+        </TextField>
 
         <Button
           variant="contained"
@@ -372,7 +371,11 @@ const MenuManagementPage: React.FC = () => {
                             <Typography variant="h6" sx={{ fontWeight: 800 }}>
                               {`${Number(it.unitPrice).toLocaleString()} ₫`}
                             </Typography>
-                            <Stack direction="row" spacing={0.5}>
+                            <Stack
+                              direction="row"
+                              spacing={1}
+                              alignItems="center"
+                            >
                               <IconButton
                                 size="small"
                                 color="primary"
@@ -421,9 +424,8 @@ const MenuManagementPage: React.FC = () => {
                         }}
                       >
                         <Stack
-                          direction="row"
+                          direction={{ xs: "column", md: "row" }}
                           spacing={2}
-                          alignItems="flex-start"
                         >
                           <Stack
                             justifyContent={"center"}
@@ -488,17 +490,30 @@ const MenuManagementPage: React.FC = () => {
                             </Stack>
                             <Stack
                               direction="row"
-                              spacing={0.5}
                               justifyContent="space-between"
                               alignItems="center"
                             >
-                              <Chip
-                                label={
-                                  it.status == 0 ? "Đang bán" : "Ngừng bán"
-                                }
-                                color={it.status == 0 ? "success" : "error"}
-                                size="small"
-                              />
+                              <Stack
+                                direction="row"
+                                spacing={1}
+                                alignItems="center"
+                              >
+                                <Chip
+                                  label={
+                                    it.status == 0 ? "Đang bán" : "Ngừng bán"
+                                  }
+                                  color={it.status == 0 ? "success" : "error"}
+                                  size="small"
+                                />
+                                <Typography
+                                  variant="subtitle2"
+                                  sx={{ fontWeight: 700 }}
+                                >
+                                  {`Giá/người: ${Number(
+                                    it.unitPrice
+                                  ).toLocaleString()} ₫`}
+                                </Typography>
+                              </Stack>
                               <Stack direction="row" spacing={0.5}>
                                 <IconButton
                                   size="small"
