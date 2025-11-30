@@ -1,5 +1,4 @@
 import { Add, Check, Close, Edit } from "@mui/icons-material";
-import LocalOfferIcon from "@mui/icons-material/LocalOffer";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import {
   Alert,
@@ -16,11 +15,6 @@ import {
   Snackbar,
   Stack,
   Tab,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
   Tabs,
   Typography,
 } from "@mui/material";
@@ -36,19 +30,17 @@ import invoicesApi from "../../../../api/invoicesApi";
 import ConfirmModal from "../../../../components/common/ConfirmModel";
 import PageTitle from "../../../../components/common/PageTitle";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
-import PromotionDialog from "../../frontdesk/invoices/components/PromotionDialog";
+import WalkInInvoiceDialog from "./components/WalkInInvoiceDialog";
 import OrderFormModal from "./components/OrderFormModal";
 import OrdersTable from "./components/OrdersTable";
 import ViewModuleIcon from "@mui/icons-material/ViewModule";
 import TableRowsIcon from "@mui/icons-material/TableRows";
 import menusApi, { type MenuItemDto } from "../../../../api/menusApi";
+import hotelService, { type Hotel } from "../../../../api/hotelService";
 
 import PersonIcon from "@mui/icons-material/Person";
 import PhoneIphoneIcon from "@mui/icons-material/PhoneIphone";
-import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
-import CalculateIcon from "@mui/icons-material/Calculate";
 import ReceiptIcon from "@mui/icons-material/Receipt";
-import SearchIcon from "@mui/icons-material/Search";
 import CustomSelect from "../../../../components/common/CustomSelect";
 import EmptyState from "../../../../components/common/EmptyState";
 
@@ -105,36 +97,18 @@ const OrdersManagementPage: React.FC = () => {
   const [invoiceOpen, setInvoiceOpen] = useState(false);
   const [selectedForInvoice, setSelectedForInvoice] =
     useState<OrderSummaryDto | null>(null);
-  const [promoOpen, setPromoOpen] = useState(false);
-  const [discountCode, setDiscountCode] = useState("");
-  const [discountPercent, setDiscountPercent] = useState<number>(0);
   const [orderDetails, setOrderDetails] = useState<OrderDetailsDto | null>(
     null
   );
   const [orderInvoiceMap, setOrderInvoiceMap] = useState<
     Record<string, { id: string; invoiceNumber?: string }>
   >({});
-  const [disableForPrint, setDisableForPrint] = useState(false);
   const invoiceRef = useRef<HTMLDivElement>(null);
 
   const [menuItems, setMenuItems] = useState<MenuItemDto[]>([]);
   const [orderItemsMap, setOrderItemsMap] = useState<
     Record<string, OrderDetailsDto["items"]>
   >({});
-
-  const handlePrint = useReactToPrint({
-    contentRef: invoiceRef,
-    documentTitle: `Hoa don ${selectedForInvoice?.id?.slice(0, 8) ?? ""}`,
-    onBeforePrint: () => {
-      setDisableForPrint(true);
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          resolve();
-        }, 100);
-      });
-    },
-    onAfterPrint: () => setDisableForPrint(false),
-  });
 
   // Fetch orders based on filters and pagination
   const fetchOrders = async (pageNum = 1) => {
@@ -232,50 +206,6 @@ const OrdersManagementPage: React.FC = () => {
         open: true,
         severity: "error",
         message: "Không thể hủy order",
-      });
-    }
-  };
-
-  const onCreateInvoice = async () => {
-    if (!selectedForInvoice) return;
-    try {
-      const res = await invoicesApi.createWalkIn({
-        orderId: selectedForInvoice.id,
-        discountCode: discountCode || undefined,
-      });
-      if (res.isSuccess) {
-        setSnackbar({
-          open: true,
-          severity: "success",
-          message: `Đã xuất hóa đơn khách vãng lai: ${
-            res.data?.invoiceNumber || ""
-          }`,
-        });
-        const created = res.data;
-        if (created && selectedForInvoice) {
-          setOrderInvoiceMap((m) => ({
-            ...m,
-            [selectedForInvoice.id]: {
-              id: created.id,
-              invoiceNumber: created.invoiceNumber,
-            },
-          }));
-        }
-        setDiscountCode("");
-        fetchOrders(page);
-        handlePrint?.();
-      } else {
-        setSnackbar({
-          open: true,
-          severity: "error",
-          message: res.message || "Không thể xuất hóa đơn",
-        });
-      }
-    } catch (err) {
-      setSnackbar({
-        open: true,
-        severity: "error",
-        message: "Không thể xuất hóa đơn",
       });
     }
   };
@@ -698,329 +628,21 @@ const OrdersManagementPage: React.FC = () => {
       >
         <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
       </Snackbar>
-      <Dialog
+      <WalkInInvoiceDialog
         open={invoiceOpen}
         onClose={() => setInvoiceOpen(false)}
-        fullWidth
-        maxWidth="md"
-      >
-        {/* ========================= HEADER ========================= */}
-        <Box ref={invoiceRef}>
-          <DialogTitle
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 1.5,
-              fontWeight: "bold",
-              fontSize: "1.35rem",
-              py: 1.5,
-            }}
-          >
-            <ReceiptLongIcon color="primary" sx={{ fontSize: 32 }} />
-            {selectedForInvoice && orderInvoiceMap[selectedForInvoice.id]
-              ? "Hóa đơn Khách vãng lai"
-              : "Xuất hóa đơn Khách vãng lai"}
-          </DialogTitle>
-
-          <DialogContent>
-            <Box>
-              <Stack spacing={2} sx={{ mt: 1 }}>
-                {/* ============================================================
-          SECTION 1 — CUSTOMER INFO + PROMOTION
-      ============================================================ */}
-                <Card
-                  sx={{
-                    borderRadius: 2,
-                    overflow: "hidden",
-                    boxShadow: 2,
-                    borderLeft: "5px solid #1976d2",
-                  }}
-                >
-                  <CardContent sx={{ p: 2 }}>
-                    <Typography
-                      variant="subtitle1"
-                      fontWeight={700}
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1,
-                        mb: 1,
-                      }}
-                    >
-                      <PersonIcon color="primary" />
-                      Thông tin khách hàng
-                    </Typography>
-
-                    {/* Order ID */}
-                    <Box sx={{ mb: 1 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Mã đơn
-                      </Typography>
-                      <Typography fontWeight={700} color="primary">
-                        {selectedForInvoice?.id
-                          ? String(selectedForInvoice.id)
-                              .slice(0, 8)
-                              .toUpperCase()
-                          : ""}
-                      </Typography>
-                    </Box>
-
-                    {/* Customer name */}
-                    <Box sx={{ mb: 1 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Khách hàng
-                      </Typography>
-                      <Typography fontWeight={600}>
-                        {selectedForInvoice?.customerName || "—"}
-                      </Typography>
-                    </Box>
-
-                    {/* Phone */}
-                    <Box sx={{ mb: 2 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Số điện thoại
-                      </Typography>
-                      <Typography
-                        fontWeight={600}
-                        sx={{ display: "flex", gap: 1 }}
-                      >
-                        <PhoneIphoneIcon fontSize="small" color="action" />
-                        {selectedForInvoice?.customerPhone || "—"}
-                      </Typography>
-                    </Box>
-
-                    {/* Promotion Button */}
-                    <Divider sx={{ my: 1 }} />
-
-                    {!(
-                      selectedForInvoice &&
-                      orderInvoiceMap[selectedForInvoice.id]
-                    ) && (
-                      <>
-                        <Typography
-                          variant="subtitle1"
-                          fontWeight={700}
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 1,
-                            mb: 1,
-                          }}
-                        >
-                          <LocalOfferIcon color="success" />
-                          Khuyến mãi
-                        </Typography>
-                        <Stack spacing={2}>
-                          <Button
-                            startIcon={<SearchIcon />}
-                            variant="contained"
-                            color="success"
-                            sx={{ width: 220 }}
-                            size="small"
-                            onClick={() => setPromoOpen(true)}
-                          >
-                            Chọn mã khuyến mãi
-                          </Button>
-                          {discountCode && (
-                            <Chip
-                              label={`Áp dụng: ${discountCode} - giảm giá ${discountPercent}%`}
-                              color="default"
-                              icon={<LocalOfferIcon />}
-                              sx={{ mt: 1, px: 2, fontWeight: 600 }}
-                            />
-                          )}
-                        </Stack>
-                      </>
-                    )}
-                  </CardContent>
-                </Card>
-
-                {/* ============================================================
-          SECTION 2 — ORDER ITEMS + TOTAL SUMMARY
-      ============================================================ */}
-                {orderDetails && (
-                  <Card
-                    sx={{
-                      borderRadius: 2,
-                      overflow: "hidden",
-                      boxShadow: 2,
-                      borderLeft: "5px solid #009688",
-                    }}
-                  >
-                    <CardContent sx={{ p: 2 }}>
-                      {/* Title */}
-                      <Typography
-                        variant="subtitle1"
-                        fontWeight={700}
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 1,
-                          mb: 1,
-                        }}
-                      >
-                        <ShoppingBagIcon color="primary" />
-                        Chi tiết đơn hàng
-                      </Typography>
-
-                      {/* Table */}
-                      <Table size="small">
-                        <TableHead>
-                          <TableRow sx={{ background: "#f1f4ff" }}>
-                            <TableCell>
-                              <b>Tên món</b>
-                            </TableCell>
-                            <TableCell align="right">
-                              <b>SL</b>
-                            </TableCell>
-                            <TableCell align="right">
-                              <b>Đơn giá</b>
-                            </TableCell>
-                            <TableCell align="right">
-                              <b>Thành tiền</b>
-                            </TableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {(orderDetails.items || []).map((it) => (
-                            <TableRow key={it.id}>
-                              <TableCell>{it.menuItemName}</TableCell>
-                              <TableCell align="right">{it.quantity}</TableCell>
-                              <TableCell align="right">
-                                {it.unitPrice.toLocaleString()} đ
-                              </TableCell>
-                              <TableCell align="right">
-                                {(it.quantity * it.unitPrice).toLocaleString()}{" "}
-                                đ
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-
-                      {/* ================= SUMMARY CARD ================= */}
-                      {(() => {
-                        const subtotal = (orderDetails.items || []).reduce(
-                          (acc, it) => acc + it.quantity * it.unitPrice,
-                          0
-                        );
-                        const discountAmt = Math.round(
-                          (subtotal * (discountPercent || 0)) / 100
-                        );
-                        const afterDiscount = subtotal - discountAmt;
-
-                        return (
-                          <Card
-                            sx={{
-                              mt: 2,
-                              p: 2,
-                              borderRadius: 2,
-                              background: "#f1faf6",
-                              border: "1px solid #b7e2cd",
-                            }}
-                          >
-                            <Typography
-                              variant="subtitle1"
-                              fontWeight={700}
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 1,
-                                mb: 1,
-                              }}
-                            >
-                              <CalculateIcon color="success" />
-                              Tổng kết hóa đơn
-                            </Typography>
-
-                            <Stack spacing={1}>
-                              <Stack
-                                direction="row"
-                                justifyContent="space-between"
-                              >
-                                <Typography>Tạm tính</Typography>
-                                <Typography fontWeight={700}>
-                                  {subtotal.toLocaleString()} đ
-                                </Typography>
-                              </Stack>
-
-                              <Stack
-                                direction="row"
-                                justifyContent="space-between"
-                              >
-                                <Typography>
-                                  Giảm giá
-                                  {discountPercent
-                                    ? ` (${discountPercent}%)`
-                                    : ""}
-                                </Typography>
-                                <Typography fontWeight={700} color="error">
-                                  -{discountAmt.toLocaleString()} đ
-                                </Typography>
-                              </Stack>
-
-                              <Divider />
-
-                              <Stack
-                                direction="row"
-                                justifyContent="space-between"
-                              >
-                                <Typography variant="h6">Tổng cộng</Typography>
-                                <Typography
-                                  variant="h6"
-                                  fontWeight={800}
-                                  color="primary"
-                                >
-                                  {afterDiscount.toLocaleString()} đ
-                                </Typography>
-                              </Stack>
-                            </Stack>
-                          </Card>
-                        );
-                      })()}
-                    </CardContent>
-                  </Card>
-                )}
-              </Stack>
-            </Box>
-          </DialogContent>
-        </Box>
-
-        {/* ========================= FOOTER ========================= */}
-        {!disableForPrint && (
-          <DialogActions sx={{ px: 3, pb: 2 }}>
-            <Button onClick={() => setInvoiceOpen(false)}>Đóng</Button>
-            {selectedForInvoice && orderInvoiceMap[selectedForInvoice.id] ? (
-              <Button
-                variant="contained"
-                startIcon={<ReceiptIcon />}
-                onClick={() => handlePrint?.()}
-                sx={{ px: 3, py: 1 }}
-              >
-                In hóa đơn
-              </Button>
-            ) : (
-              <Button
-                variant="contained"
-                startIcon={<ReceiptIcon />}
-                onClick={onCreateInvoice}
-                sx={{ px: 3, py: 1 }}
-              >
-                Xuất hóa đơn
-              </Button>
-            )}
-          </DialogActions>
-        )}
-      </Dialog>
-
-      <PromotionDialog
-        open={promoOpen}
-        onClose={() => setPromoOpen(false)}
-        allowedScope={"food"}
-        onApply={(code) => {
-          setDiscountCode(code.code);
-          setDiscountPercent(code.value);
-          setPromoOpen(false);
+        order={selectedForInvoice}
+        hotelId={hotelId}
+        onInvoiceCreated={(inv) => {
+          if (selectedForInvoice)
+            setOrderInvoiceMap((m) => ({
+              ...m,
+              [selectedForInvoice.id]: {
+                id: inv.id,
+                invoiceNumber: inv.invoiceNumber,
+              },
+            }));
+          fetchOrders(page);
         }}
       />
     </Box>
