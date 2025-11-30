@@ -1,4 +1,4 @@
-﻿using HotelManagement.Domain;
+using HotelManagement.Domain;
 using HotelManagement.Repository.Common;
 using HotelManagement.Services.Admin.Minibar.Dtos;
 using HotelManagement.Services.Common;
@@ -29,6 +29,7 @@ public class MinibarService : IMinibarService
                 HotelId = request.HotelId,
                 RoomTypeId = request.RoomTypeId,
                 Name = request.Name,
+                ImageUrl = request.ImageUrl,
                 Price = request.Price,
                 Quantity = request.Quantity
             };
@@ -60,6 +61,7 @@ public class MinibarService : IMinibarService
             entity.HotelId = request.HotelId;
             entity.RoomTypeId = request.RoomTypeId;
             entity.Name = request.Name;
+            if (!string.IsNullOrEmpty(request.ImageUrl)) entity.ImageUrl = request.ImageUrl;
             entity.Price = request.Price;
             entity.Quantity = request.Quantity;
 
@@ -114,6 +116,7 @@ public class MinibarService : IMinibarService
                 HotelId = x.HotelId,
                 RoomTypeId = x.RoomTypeId,
                 Name = x.Name,
+                ImageUrl = x.ImageUrl,
                 Price = x.Price,
                 Quantity = x.Quantity,
                 RoomTypeName = x.RoomType!.Name ?? string.Empty
@@ -150,6 +153,7 @@ public class MinibarService : IMinibarService
             HotelId = e.HotelId,
             RoomTypeId = e.RoomTypeId,
             Name = e.Name,
+            ImageUrl = e.ImageUrl,
             Price = e.Price,
             Quantity = e.Quantity
         };

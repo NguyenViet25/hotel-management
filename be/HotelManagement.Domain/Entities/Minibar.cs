@@ -6,6 +6,7 @@ public class Minibar
     public Guid HotelId { get; set; }
     public Guid RoomTypeId { get; set; }
     public string Name { get; set; } = string.Empty;
+    public string ImageUrl { get; set; } = string.Empty;
     public decimal Price { get; set; }
     public int Quantity { get; set; }
     public Hotel Hotel { get; set; } = null!;

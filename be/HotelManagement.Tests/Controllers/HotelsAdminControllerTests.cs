@@ -60,7 +60,7 @@ public class HotelsAdminControllerTests
     {
         var mock = new Mock<IHotelsAdminService>();
         var controller = CreateController(mock);
-        var result = await controller.Create(new CreateHotelDto("H","Hotel","Addr", null));
+        var result = await controller.Create(new CreateHotelDto("H","Hotel","Addr", "0123456789", "hotel@example.com"));
         Assert.IsType<ForbidResult>(result.Result);
     }
 
@@ -74,7 +74,7 @@ public class HotelsAdminControllerTests
         mock.Setup(s => s.UpdateAsync(It.IsAny<Guid>(), It.IsAny<UpdateHotelDto>(), It.IsAny<Guid>())).ReturnsAsync(dto);
         var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString()), new Claim(ClaimTypes.Role, "Admin") }, "TestAuth"));
         var controller = CreateController(mock, user);
-        var result = await controller.Update(Guid.NewGuid(), new UpdateHotelDto("Hotel","Addr", true));
+        var result = await controller.Update(Guid.NewGuid(), new UpdateHotelDto("Hotel","Addr", true, "0123456789", "hotel@example.com"));
         if (found) Assert.IsType<OkObjectResult>(result.Result); else Assert.IsType<NotFoundObjectResult>(result.Result);
     }
 

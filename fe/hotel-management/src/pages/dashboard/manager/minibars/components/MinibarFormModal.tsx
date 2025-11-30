@@ -241,7 +241,10 @@ const MinibarFormModal: React.FC<MinibarFormModalProps> = ({
                   value={field.value}
                   onChange={field.onChange}
                   error={!!errors.imageUrl}
-                  helperText={(errors.imageUrl?.message as string) || "Dán liên kết ảnh hoặc để trống"}
+                  helperText={
+                    (errors.imageUrl?.message as string) ||
+                    "Dán liên kết ảnh hoặc tải ảnh lên"
+                  }
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -250,8 +253,12 @@ const MinibarFormModal: React.FC<MinibarFormModalProps> = ({
                     ),
                   }}
                 />
-                <Button variant="outlined" startIcon={<PhotoCamera />} component="label">
-                  Tải lên
+                <Button
+                  variant="outlined"
+                  startIcon={<PhotoCamera />}
+                  component="label"
+                >
+                  Tải ảnh
                   <input
                     type="file"
                     accept="image/*"
