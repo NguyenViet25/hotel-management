@@ -190,3 +190,4 @@
 2025-11-29 - 5 - 01:44:07 UTC :: test: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — kiem tra tuong thich mui gio/tien te (can theo doi them)
 2025-11-30 - 1 - 01:57:18 UTC :: fix: UC-34 Cham cong: ghi nhan diem danh, ban giao ca. — chuan hoa ten ham/bien theo convention (da kiem tra lint)
 2025-11-30 - 2 - 01:57:19 UTC :: perf: UC-19 Lich phong: calendar trang thai phong theo ngay. — bo sung metrics/telemetry co ban (dam bao backward-compatible)
+2025-11-30 - 3 - 01:57:20 UTC :: build: UC-39 Xuat Audit Log: xuat CSV/PDF kiem tra tuan thu. — them kiem soat loi & retry nhe (can theo doi them)
