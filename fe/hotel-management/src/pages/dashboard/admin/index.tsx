@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import dayjs from "dayjs";
 import React, { useEffect, useMemo, useState } from "react";
-import auditService from "../../../api/auditService";
+import auditService, { type AuditLogDto } from "../../../api/auditService";
 import dashboardApi, {
   type AdminDashboardSummary,
 } from "../../../api/dashboardApi";
@@ -60,12 +60,7 @@ const AdminDashboardPage: React.FC = () => {
         const from = dayjs().subtract(24, "hour").toISOString();
         const res = await auditService.getLogs({ page, pageSize, from });
         if ((res as any).isSuccess) {
-          const rows: any[] = ((res as any).data || []).map((l: any) => ({
-            id: l.id,
-            action: l.action,
-            user: l.userId || null,
-            timestamp: l.timestamp,
-          }));
+          const rows = res.data;
           setAuditLogs(rows);
           setTotal((res as any).meta?.total ?? rows.length);
         } else {
@@ -80,25 +75,52 @@ const AdminDashboardPage: React.FC = () => {
     run();
   }, [page, pageSize]);
 
-  const columns: Column<any>[] = useMemo(
-    () => [
-      { id: "id", label: "ID", minWidth: 80 },
-      { id: "action", label: "Hành động", minWidth: 160 },
-      {
-        id: "user",
-        label: "Người dùng",
-        minWidth: 160,
-        format: (value) => (value ? (value as string) : "Hệ thống"),
+  const columns: Column<AuditLogDto>[] = [
+    {
+      id: "action",
+      label: "Hành động",
+      minWidth: 150,
+      sortable: true,
+    },
+    {
+      id: "userId",
+      label: "Người dùng",
+      minWidth: 150,
+      format: (value) => value || "Hệ thống",
+    },
+    {
+      id: "hotelId",
+      label: "Cơ sở",
+      minWidth: 150,
+      format: (value) => value || "N/A",
+    },
+    {
+      id: "timestamp",
+      label: "Thời gian",
+      minWidth: 180,
+      sortable: true,
+      format: (value) => dayjs(value).format("DD/MM/YYYY HH:mm:ss"),
+    },
+    {
+      id: "metadata",
+      label: "Chi tiết",
+      minWidth: 200,
+      format: (value) => {
+        if (!value) return "Không có chi tiết";
+        try {
+          return (
+            <Box sx={{ maxWidth: 300, maxHeight: 100, overflow: "auto" }}>
+              <pre style={{ margin: 0, fontSize: "0.75rem" }}>
+                {JSON.stringify(value, null, 2)}
+              </pre>
+            </Box>
+          );
+        } catch (e) {
+          return "Định dạng chi tiết không hợp lệ";
+        }
       },
-      {
-        id: "timestamp",
-        label: "Thời gian",
-        minWidth: 180,
-        format: (value) => dayjs(value as string).format("DD/MM/YYYY HH:mm"),
-      },
-    ],
-    []
-  );
+    },
+  ];
 
   return (
     <Box>
@@ -212,11 +234,12 @@ const AdminDashboardPage: React.FC = () => {
           {tableError}
         </Alert>
       )}
-
+      <PageTitle subtitle="Hoạt động gần đây" />
       <DataTable
         columns={columns}
         data={auditLogs}
         loading={tableLoading}
+        title="Nhật ký hoạt động"
         pagination={{
           page,
           pageSize,

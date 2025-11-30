@@ -1,4 +1,5 @@
 using HotelManagement.Api.Infrastructure;
+using HotelManagement.Api.Infrastructure.Middleware;
 using HotelManagement.Services;
 using HotelManagement.Repository;
 
@@ -39,6 +40,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseStaticFiles();
+
+app.UseMiddleware<AuditMiddleware>();
 
 app.MapControllers();
 

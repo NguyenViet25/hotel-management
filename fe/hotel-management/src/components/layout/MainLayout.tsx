@@ -190,16 +190,16 @@ const MainLayout = ({ menuItems }: MainLayoutProps) => {
           },
         }}
       >
-        <Toolbar
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "flex-start",
-            pt: 1,
-            width: "100%",
-          }}
-        >
-          {user && (
+        {user && !user.roles?.includes("Admin") && (
+          <Toolbar
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-start",
+              pt: 1,
+              width: "100%",
+            }}
+          >
             <Stack direction="row" alignItems="center" spacing={1}>
               <Logo />
               <Stack>
@@ -213,8 +213,8 @@ const MainLayout = ({ menuItems }: MainLayoutProps) => {
                 </Typography>
               </Stack>
             </Stack>
-          )}
-        </Toolbar>
+          </Toolbar>
+        )}
 
         <List sx={{ overflowY: "auto", mt: 2 }}>
           {menuItems.map((item) => {
