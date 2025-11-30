@@ -241,15 +241,6 @@ const MinibarManagementPage: React.FC = () => {
                     ) : (
                       <TableContainer>
                         <Table size="small">
-                          <TableHead>
-                            <TableRow>
-                              <TableCell>Hình</TableCell>
-                              <TableCell>Tên</TableCell>
-                              <TableCell>SL</TableCell>
-                              <TableCell>Giá</TableCell>
-                              <TableCell align="right">Sửa</TableCell>
-                            </TableRow>
-                          </TableHead>
                           <TableBody>
                             {[...list]
                               .sort((a, b) =>
@@ -263,11 +254,9 @@ const MinibarManagementPage: React.FC = () => {
                                         src={mb.imageUrl}
                                         alt={mb.name}
                                         style={{
-                                          width: 72,
-                                          height: 48,
-                                          objectFit: "cover",
-                                          borderRadius: 8,
-                                          border: "1px solid #e0e0e0",
+                                          width: 64,
+                                          height: 64,
+                                          objectFit: "contain",
                                         }}
                                       />
                                     ) : (

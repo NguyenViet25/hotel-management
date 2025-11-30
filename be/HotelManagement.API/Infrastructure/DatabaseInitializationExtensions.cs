@@ -523,6 +523,7 @@ public static class DatabaseInitializationExtensions
                 HotelId = hotelId,
                 RoomTypeId = roomType.Id,
                 Name = "Nước suối Aquafina",
+                ImageUrl = "https://thanhhaphat.vn/wp-content/uploads/2020/08/nuoc-tinh-khiet-aquafina-350ml-chai.png",
                 Price = 10000,
                 Quantity = 2
             },
@@ -532,6 +533,7 @@ public static class DatabaseInitializationExtensions
                 HotelId = hotelId,
                 RoomTypeId = roomType.Id,
                 Name = "Coca-Cola",
+                ImageUrl = "https://shopstocktc.com/cdn/shop/products/stock_coca_cola_800x.png?v=1631722202",
                 Price = 15000,
                 Quantity = 2
             },
@@ -541,6 +543,7 @@ public static class DatabaseInitializationExtensions
                 HotelId = hotelId,
                 RoomTypeId = roomType.Id,
                 Name = "Snack khoai tây",
+                ImageUrl = "https://orion.vn/media/u1ldttkf/orion-post-new-26.png",
                 Price = 20000,
                 Quantity = 1
             },
@@ -550,6 +553,7 @@ public static class DatabaseInitializationExtensions
                 HotelId = hotelId,
                 RoomTypeId = roomType.Id,
                 Name = "Bia Heineken",
+                ImageUrl = "https://boozy.ph/cdn/shop/files/2024_-_2nd_Platforms_-_Product_Image_Template_11_grande.png?v=1727745062",
                 Price = 25000,
                 Quantity = 2
             },
@@ -559,6 +563,7 @@ public static class DatabaseInitializationExtensions
                 HotelId = hotelId,
                 RoomTypeId = roomType.Id,
                 Name = "Trà xanh Không Độ",
+                ImageUrl = "https://www.thp.com.vn/wp-content/uploads/2017/01/slider-zero5.png",
                 Price = 12000,
                 Quantity = 1
             }
