@@ -30,6 +30,7 @@ import {
   Typography,
   Card,
   CardContent,
+  InputAdornment,
 } from "@mui/material";
 import FastfoodIcon from "@mui/icons-material/Fastfood";
 import TableRestaurantIcon from "@mui/icons-material/TableRestaurant";
@@ -37,6 +38,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import AddIcon from "@mui/icons-material/Add";
 import { CardMembership, TableChart } from "@mui/icons-material";
+import { Search as SearchIcon } from "@mui/icons-material";
 
 // Menu Management Page implementing UC-45 to UC-48
 // - UC-45: View menu list with filters (group, shift, status, active)
@@ -52,6 +54,7 @@ const MenuManagementPage: React.FC = () => {
   const [status, setStatus] = useState<string>("0");
   const [typeFilter, setTypeFilter] = useState<"food" | "set">("food");
   const [viewMode, setViewMode] = useState<"table" | "card">("card");
+  const [categoryFilter, setCategoryFilter] = useState<string>(" ");
 
   // Modal state
   const [createOpen, setCreateOpen] = useState(false);
@@ -233,9 +236,14 @@ const MenuManagementPage: React.FC = () => {
     () => items.filter((it) => (it.category || "").trim() === "Set"),
     [items]
   );
-  const displayItems: MenuItemDto[] = React.useMemo(
-    () => (typeFilter === "food" ? foodItems : setRecords),
-    [typeFilter, foodItems, setRecords]
+  const foodItemsFiltered: MenuItemDto[] = React.useMemo(
+    () =>
+      foodItems.filter(
+        (it) =>
+          !categoryFilter.trim() ||
+          (it.category || "") === categoryFilter.trim()
+      ),
+    [foodItems, categoryFilter]
   );
 
   return (
@@ -275,6 +283,24 @@ const MenuManagementPage: React.FC = () => {
             <MenuItem value="food">Theo món</MenuItem>
             <MenuItem value="set">Theo set</MenuItem>
           </TextField>
+          {typeFilter === "food" && (
+            <TextField
+              select
+              label="Nhóm món"
+              size="small"
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              sx={{ minWidth: 200 }}
+            >
+              <MenuItem value=" ">Tất cả</MenuItem>
+              <MenuItem value="Món khai vị">Món khai vị</MenuItem>
+              <MenuItem value="Món chính">Món chính</MenuItem>
+              <MenuItem value="Món lẩu">Món lẩu</MenuItem>
+              <MenuItem value="Món nướng">Món nướng</MenuItem>
+              <MenuItem value="Món tráng miệng">Món tráng miệng</MenuItem>
+              <MenuItem value="Thức uống">Thức uống</MenuItem>
+            </TextField>
+          )}
           <TextField
             select
             label="Trạng thái"
@@ -286,6 +312,20 @@ const MenuManagementPage: React.FC = () => {
             <MenuItem value="0">Đang bán</MenuItem>
             <MenuItem value="1">Ngừng bán</MenuItem>
           </TextField>
+          <TextField
+            label="Tìm kiếm"
+            size="small"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            sx={{ minWidth: 240 }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
         </Stack>
         <Button
           variant="contained"
@@ -299,11 +339,10 @@ const MenuManagementPage: React.FC = () => {
 
       {viewMode === "table" ? (
         <MenuTable
-          data={displayItems}
+          data={typeFilter === "food" ? foodItemsFiltered : setRecords}
           loading={loading}
           onEdit={openEdit}
           onDelete={openDelete}
-          onSearch={(e) => setSearchTerm(e)}
         />
       ) : (
         <Grid container spacing={3}>
@@ -314,13 +353,13 @@ const MenuManagementPage: React.FC = () => {
                   <FastfoodIcon color="primary" />
                   <Typography variant="h6">Theo món</Typography>
                   <Chip
-                    label={`${foodItems.length}`}
+                    label={`${foodItemsFiltered.length}`}
                     color="primary"
                     size="small"
                   />
                 </Stack>
                 <Grid container spacing={2}>
-                  {foodItems.map((it) => (
+                  {foodItemsFiltered.map((it) => (
                     <Grid key={it.id} size={{ xs: 12, md: 6, lg: 3 }}>
                       <Card
                         elevation={0}

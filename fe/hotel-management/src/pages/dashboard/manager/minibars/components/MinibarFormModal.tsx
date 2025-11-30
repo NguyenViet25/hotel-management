@@ -250,7 +250,7 @@ const MinibarFormModal: React.FC<MinibarFormModalProps> = ({
                     <Stack direction="row" spacing={1} alignItems="center">
                       {(errors.imageUrl?.message as string) ||
                         "Dán liên kết ảnh hoặc tải ảnh lên"}
-                      <IconButton disabled={uploading}>
+                      <IconButton component="label" disabled={uploading}>
                         <PhotoCamera />
                         <input
                           type="file"
