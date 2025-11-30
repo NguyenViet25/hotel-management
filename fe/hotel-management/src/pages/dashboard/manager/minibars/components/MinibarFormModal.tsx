@@ -26,6 +26,9 @@ import type {
   Minibar,
 } from "../../../../../api/minibarApi";
 import roomTypesApi, { type RoomType } from "../../../../../api/roomTypesApi";
+import mediaApi from "../../../../../api/mediaApi";
+import LinkIcon from "@mui/icons-material/Link";
+import PhotoCamera from "@mui/icons-material/PhotoCamera";
 
 type Mode = "create" | "edit";
 
@@ -34,6 +37,7 @@ const schema = z.object({
   price: z.number("Giá phải là số").min(0, "Giá không âm"),
   quantity: z.number("Số lượng phải là số").min(0, "Không âm"),
   roomTypeId: z.string().min(1, "Chọn loại phòng"),
+  imageUrl: z.string().url("URL không hợp lệ").optional().or(z.literal("")),
 });
 
 interface MinibarFormModalProps {
@@ -66,6 +70,7 @@ const MinibarFormModal: React.FC<MinibarFormModalProps> = ({
       price: initialValues?.price ?? 0,
       quantity: initialValues?.quantity ?? 0,
       roomTypeId: initialValues?.roomTypeId ?? "",
+      imageUrl: initialValues?.imageUrl ?? "",
     },
   });
 
@@ -76,6 +81,7 @@ const MinibarFormModal: React.FC<MinibarFormModalProps> = ({
         price: initialValues.price,
         quantity: initialValues.quantity,
         roomTypeId: initialValues.roomTypeId,
+        imageUrl: initialValues.imageUrl ?? "",
       });
     }
   }, [mode, initialValues, reset]);
@@ -103,6 +109,7 @@ const MinibarFormModal: React.FC<MinibarFormModalProps> = ({
       name: values.name,
       price: values.price,
       quantity: values.quantity,
+      imageUrl: values.imageUrl || undefined,
     };
     await onSubmit(payload);
     reset();
@@ -222,6 +229,48 @@ const MinibarFormModal: React.FC<MinibarFormModalProps> = ({
               )}
             />
           </FormControl>
+
+          <Controller
+            control={control}
+            name="imageUrl"
+            render={({ field }) => (
+              <Stack direction="row" spacing={1} alignItems="flex-start">
+                <TextField
+                  label="Hình (URL)"
+                  fullWidth
+                  value={field.value}
+                  onChange={field.onChange}
+                  error={!!errors.imageUrl}
+                  helperText={(errors.imageUrl?.message as string) || "Dán liên kết ảnh hoặc để trống"}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <LinkIcon />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+                <Button variant="outlined" startIcon={<PhotoCamera />} component="label">
+                  Tải lên
+                  <input
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    onChange={async (e) => {
+                      const f = e.target.files?.[0];
+                      if (!f) return;
+                      try {
+                        const res = await mediaApi.upload(f);
+                        const url = res?.data?.fileUrl || "";
+                        setValue("imageUrl", url, { shouldValidate: true });
+                      } catch {}
+                      e.currentTarget.value = "";
+                    }}
+                  />
+                </Button>
+              </Stack>
+            )}
+          />
         </Stack>
       </DialogContent>
       <DialogActions>

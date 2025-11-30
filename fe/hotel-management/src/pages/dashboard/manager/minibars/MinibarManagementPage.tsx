@@ -31,7 +31,6 @@ import minibarApi, {
   type MinibarCreate,
   type MinibarUpdate,
 } from "../../../../api/minibarApi";
-import mediaApi from "../../../../api/mediaApi";
 import roomTypesApi, { type RoomType } from "../../../../api/roomTypesApi";
 import MinibarFormModal from "./components/MinibarFormModal";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
@@ -43,9 +42,6 @@ const MinibarManagementPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
   const [roomTypesLoading, setRoomTypesLoading] = useState<boolean>(false);
-  const [minibarImages, setMinibarImages] = useState<Record<string, string>>(
-    {}
-  );
 
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -111,36 +107,6 @@ const MinibarManagementPage: React.FC = () => {
     }
     return map;
   }, [items]);
-
-  const handleUploadImage = async (minibarId: string, file?: File | null) => {
-    if (!file) return;
-    try {
-      const res = await mediaApi.upload(file);
-      if (res?.data?.fileUrl) {
-        setMinibarImages((prev) => ({
-          ...prev,
-          [minibarId]: res.data.fileUrl,
-        }));
-        setSnackbar({
-          open: true,
-          message: "Tải ảnh thành công",
-          severity: "success",
-        });
-      } else {
-        setSnackbar({
-          open: true,
-          message: "Không lấy được ảnh",
-          severity: "warning",
-        });
-      }
-    } catch {
-      setSnackbar({
-        open: true,
-        message: "Tải ảnh thất bại",
-        severity: "error",
-      });
-    }
-  };
 
   const openCreate = () => setCreateOpen(true);
   const closeCreate = () => setCreateOpen(false);
@@ -254,7 +220,7 @@ const MinibarManagementPage: React.FC = () => {
           {roomTypes.map((rt) => {
             const list = groupedByRoomType[rt.id] || [];
             return (
-              <Grid key={rt.id} item xs={12} sm={6} md={4} lg={3}>
+              <Grid key={rt.id} size={{ xs: 12, sm: 6 }}>
                 <Card variant="outlined" sx={{ borderRadius: 2 }}>
                   <CardHeader
                     title={
@@ -292,9 +258,9 @@ const MinibarManagementPage: React.FC = () => {
                               .map((mb) => (
                                 <TableRow key={mb.id} hover>
                                   <TableCell width={92}>
-                                    {minibarImages[mb.id] ? (
+                                    {mb.imageUrl ? (
                                       <img
-                                        src={minibarImages[mb.id]}
+                                        src={mb.imageUrl}
                                         alt={mb.name}
                                         style={{
                                           width: 72,

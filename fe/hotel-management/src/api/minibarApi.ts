@@ -7,6 +7,7 @@ export interface Minibar {
   name: string;
   price: number;
   quantity: number;
+  imageUrl?: string;
 }
 
 export interface MinibarCreate {
@@ -15,6 +16,7 @@ export interface MinibarCreate {
   name: string;
   price: number;
   quantity: number;
+  imageUrl?: string;
 }
 
 export interface MinibarUpdate {
@@ -23,6 +25,7 @@ export interface MinibarUpdate {
   name: string;
   price: number;
   quantity: number;
+  imageUrl?: string;
 }
 
 export interface MinibarQueryParams {
