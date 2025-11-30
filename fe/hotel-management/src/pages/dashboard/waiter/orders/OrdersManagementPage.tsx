@@ -720,6 +720,7 @@ const OrdersManagementPage: React.FC = () => {
       <PromotionDialog
         open={promoOpen}
         onClose={() => setPromoOpen(false)}
+        allowedScope={"food"}
         onApply={(code) => {
           setDiscountCode(code.code);
           setDiscountPercent(code.value);

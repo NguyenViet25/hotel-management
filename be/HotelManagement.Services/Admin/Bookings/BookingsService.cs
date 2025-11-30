@@ -1345,7 +1345,11 @@ public class BookingsService(
                 {
                     return ApiResponse<CheckoutResultDto>.Fail("Mã giảm giá không hợp lệ hoặc hết hạn");
                 }
-
+                var scope = ExtractScopeFromDescription(promo.Description);
+                if (!string.Equals(scope, "booking", StringComparison.OrdinalIgnoreCase))
+                {
+                    return ApiResponse<CheckoutResultDto>.Fail("Mã giảm giá chỉ áp dụng cho đặt phòng");
+                }
                 var baseAmount = lines.Where(l => l.Amount > 0).Sum(l => l.Amount);
                 var discountAmt = Math.Round(baseAmount * promo.Value / 100m, 2);
                 if (discountAmt > 0)
@@ -1453,6 +1457,24 @@ public class BookingsService(
 
             return ApiResponse<CheckoutResultDto>.Fail(ex.Message);
         }
+    }
+
+    private static string? ExtractScopeFromDescription(string? description)
+    {
+        if (string.IsNullOrWhiteSpace(description)) return null;
+        var text = description!;
+        var idx = text.IndexOf("@scope=", StringComparison.OrdinalIgnoreCase);
+        if (idx < 0) return null;
+        var start = idx + 7;
+        int end = start;
+        while (end < text.Length)
+        {
+            var ch = text[end];
+            if (char.IsWhiteSpace(ch) || ch == ';' || ch == ',') break;
+            end++;
+        }
+        var value = text.Substring(start, end - start).Trim().ToLowerInvariant();
+        return value == "booking" || value == "food" ? value : null;
     }
 
     public async Task<ApiResponse<AdditionalChargesDto>> GetAdditionalChargesPreviewAsync(Guid bookingId)

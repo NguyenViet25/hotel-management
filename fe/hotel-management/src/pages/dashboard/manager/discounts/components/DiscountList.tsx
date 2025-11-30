@@ -24,6 +24,13 @@ const DiscountList: React.FC<DiscountListProps> = ({
   const columns: Column<DiscountCode>[] = [
     { id: "code", label: "Mã", sortable: true },
     {
+      id: "scope",
+      label: "Loại",
+      format: (v) => (
+        <Chip size="small" label={v === "food" ? "Ăn uống" : "Đặt phòng"} />
+      ),
+    },
+    {
       id: "value",
       label: "Giá trị",
       sortable: true,

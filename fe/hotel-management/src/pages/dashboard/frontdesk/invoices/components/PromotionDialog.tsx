@@ -22,9 +22,10 @@ type Props = {
   open: boolean;
   onClose: () => void;
   onApply: (code: DiscountCode) => void;
+  allowedScope?: "booking" | "food";
 };
 
-const PromotionDialog: React.FC<Props> = ({ open, onClose, onApply }) => {
+const PromotionDialog: React.FC<Props> = ({ open, onClose, onApply, allowedScope }) => {
   const [codes, setCodes] = useState<DiscountCode[]>([]);
   const [search, setSearch] = useState("");
 
@@ -41,10 +42,9 @@ const PromotionDialog: React.FC<Props> = ({ open, onClose, onApply }) => {
 
   const filtered = codes.filter((c) => {
     const s = search.toLowerCase();
-    return (
-      c.code.toLowerCase().includes(s) ||
-      (c.description || "").toLowerCase().includes(s)
-    );
+    const matchesText = c.code.toLowerCase().includes(s) || (c.description || "").toLowerCase().includes(s);
+    const matchesScope = allowedScope ? c.scope === allowedScope : true;
+    return matchesText && matchesScope;
   });
 
   return (
@@ -103,6 +103,17 @@ const PromotionDialog: React.FC<Props> = ({ open, onClose, onApply }) => {
                   <Typography variant="body1">
                     {c.description || "-"}
                   </Typography>
+                </Box>
+
+                <Box sx={{ width: 140, textAlign: "center" }}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Loại
+                  </Typography>
+                  <Chip
+                    label={c.scope === "food" ? "Ăn uống" : "Đặt phòng"}
+                    color={c.scope === "food" ? "success" : "primary"}
+                    sx={{ fontWeight: "bold", mt: 0.5 }}
+                  />
                 </Box>
 
                 <Box sx={{ width: 120, textAlign: "center" }}>

@@ -442,6 +442,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
       <PromotionDialog
         open={promoOpen}
         onClose={() => setPromoOpen(false)}
+        allowedScope={"booking"}
         onApply={(code) => {
           setDiscountCode(code.code);
           setDiscountPercent(code.value);

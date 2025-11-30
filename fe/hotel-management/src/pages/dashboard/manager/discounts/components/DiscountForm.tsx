@@ -16,6 +16,7 @@ export type DiscountFormValues = {
   code: string;
   name: string;
   description?: string | null;
+  scope: "booking" | "food";
   value: number;
   isActive: boolean;
   startDate: Dayjs | null;
@@ -24,6 +25,7 @@ export type DiscountFormValues = {
 
 const schema = yup.object({
   code: yup.string().required("Mã là bắt buộc"),
+  scope: yup.string().oneOf(["booking", "food"], "Chọn loại áp dụng").required("Chọn loại áp dụng"),
   value: yup
     .number()
     .typeError("Giá trị phải là số")
@@ -62,6 +64,7 @@ const DiscountForm: React.FC<DiscountFormProps> = ({
       code: initialValues?.code || "",
       name: initialValues?.name || "",
       description: initialValues?.description || "",
+      scope: (initialValues as any)?.scope || "booking",
       value: typeof initialValues?.value === "number" ? initialValues.value : 0,
       isActive:
         typeof initialValues?.isActive === "boolean"
@@ -92,6 +95,17 @@ const DiscountForm: React.FC<DiscountFormProps> = ({
             </InputAdornment>
           ),
         }}
+      />
+
+      <Controller
+        name="scope"
+        control={control}
+        render={({ field }) => (
+          <TextField select label="Áp dụng cho" {...field} error={!!errors.scope} helperText={errors.scope?.toString()}>
+            <MenuItem value="booking">Đặt phòng</MenuItem>
+            <MenuItem value="food">Ăn uống</MenuItem>
+          </TextField>
+        )}
       />
 
       <TextField

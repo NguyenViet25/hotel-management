@@ -5,6 +5,7 @@ export type DiscountCode = {
   hotelId: string;
   code: string;
   description?: string | null;
+  scope?: "booking" | "food";
   value: number;
   isActive: boolean;
   startDate: string; // ISO date string

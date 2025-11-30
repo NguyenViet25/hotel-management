@@ -18,6 +18,7 @@ import type { DiscountFormValues } from "./components/DiscountForm";
 import DiscountForm from "./components/DiscountForm";
 import DiscountList from "./components/DiscountList";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
+import PageTitle from "../../../../components/common/PageTitle";
 
 const getCurrentHotelId = (): string | null => {
   const userJson = localStorage.getItem("user");
@@ -97,6 +98,7 @@ const DiscountCodesPage = () => {
       hotelId,
       code: values.code.trim(),
       description: values.description || null,
+      scope: values.scope,
       value: Number(values.value),
       isActive: values.isActive,
       startDate: values.startDate!.toISOString(),
@@ -138,9 +140,10 @@ const DiscountCodesPage = () => {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Stack spacing={2}>
-        <Typography variant="h5" fontWeight={700}>
-          Quản lý mã giảm giá
-        </Typography>
+        <PageTitle
+          title="Mã giảm giá"
+          subtitle="Quản lý mã giảm giá của khách sạn"
+        />
 
         <DiscountList
           rows={filteredRows}
@@ -168,6 +171,7 @@ const DiscountCodesPage = () => {
                       code: editing.code,
                       name: editing.name,
                       description: editing.description || "",
+                      scope: (editing as any)?.scope || "booking",
                       conditions: editing.conditions || "",
                       value: editing.value,
                       isActive: editing.isActive,

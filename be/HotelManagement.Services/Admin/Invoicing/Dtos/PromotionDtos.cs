@@ -8,6 +8,7 @@ public class PromotionDto
     public Guid? HotelId { get; set; }
     public string Code { get; set; } = string.Empty;
     public string? Description { get; set; }
+    public string? Scope { get; set; }
     public decimal? Value { get; set; }
     public bool? IsActive { get; set; }
     public DateTime? StartDate { get; set; }

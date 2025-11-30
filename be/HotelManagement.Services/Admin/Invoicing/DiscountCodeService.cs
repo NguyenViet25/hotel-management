@@ -70,7 +70,7 @@ public class DiscountCodeService : IDiscountCodeService
                 Id = Guid.NewGuid(),
                 HotelId = hotelId,
                 Code = dto.Code,
-                Description = dto.Description,
+                Description = NormalizeDescriptionWithScope(dto.Description, dto.Scope),
                 Value = dto.Value!.Value,
                 IsActive = dto.IsActive ?? true,
                 StartDate = dto.StartDate!.Value,
@@ -110,7 +110,7 @@ public class DiscountCodeService : IDiscountCodeService
                 entity.Code = dto.Code;
             }
 
-            if (dto.Description != null) entity.Description = dto.Description;
+            if (dto.Description != null || dto.Scope != null) entity.Description = NormalizeDescriptionWithScope(dto.Description ?? entity.Description, dto.Scope);
             if (dto.Value.HasValue) entity.Value = dto.Value.Value;
             if (dto.IsActive.HasValue) entity.IsActive = dto.IsActive.Value;
             if (dto.StartDate.HasValue) entity.StartDate = dto.StartDate.Value;
@@ -154,6 +154,7 @@ public class DiscountCodeService : IDiscountCodeService
             Id = e.Id,
             Code = e.Code,
             Description = e.Description,
+            Scope = ExtractScope(e.Description),
             Value = e.Value,
             IsActive = e.IsActive,
             StartDate = e.StartDate,
@@ -180,6 +181,15 @@ public class DiscountCodeService : IDiscountCodeService
         if (!isUpdate && (!dto.HotelId.HasValue || dto.HotelId == Guid.Empty))
             AddError(errors, "HotelId", "HotelId is required");
 
+        if (!string.IsNullOrWhiteSpace(dto.Scope))
+        {
+            var s = dto.Scope!.Trim().ToLowerInvariant();
+            if (s != "booking" && s != "food")
+            {
+                AddError(errors, "Scope", "Scope must be either 'booking' or 'food'");
+            }
+        }
+
         return errors.Count == 0 ? null : errors.ToDictionary(k => k.Key, v => v.Value.ToArray());
     }
 
@@ -191,5 +201,48 @@ public class DiscountCodeService : IDiscountCodeService
             dict[key] = list;
         }
         list.Add(message);
+    }
+
+    private static string? ExtractScope(string? description)
+    {
+        if (string.IsNullOrWhiteSpace(description)) return null;
+        var text = description!;
+        var idx = text.IndexOf("@scope=", StringComparison.OrdinalIgnoreCase);
+        if (idx < 0) return null;
+        var start = idx + 7;
+        int end = start;
+        while (end < text.Length)
+        {
+            var ch = text[end];
+            if (char.IsWhiteSpace(ch) || ch == ';' || ch == ',') break;
+            end++;
+        }
+        var value = text.Substring(start, end - start).Trim().ToLowerInvariant();
+        return value == "booking" || value == "food" ? value : null;
+    }
+
+    private static string NormalizeDescriptionWithScope(string? description, string? scope)
+    {
+        var desc = (description ?? string.Empty).Trim();
+        var existing = ExtractScope(desc);
+        var s = (scope ?? existing ?? "booking").Trim().ToLowerInvariant();
+        if (existing != null)
+        {
+            var idx = desc.IndexOf("@scope=", StringComparison.OrdinalIgnoreCase);
+            if (idx >= 0)
+            {
+                var start = idx + 7;
+                int end = start;
+                while (end < desc.Length)
+                {
+                    var ch = desc[end];
+                    if (char.IsWhiteSpace(ch) || ch == ';' || ch == ',') break;
+                    end++;
+                }
+                desc = desc.Remove(idx, end - idx).Insert(idx, "@scope=" + s);
+            }
+            return desc;
+        }
+        return string.IsNullOrEmpty(desc) ? "@scope=" + s : "@scope=" + s + " " + desc;
     }
 }
