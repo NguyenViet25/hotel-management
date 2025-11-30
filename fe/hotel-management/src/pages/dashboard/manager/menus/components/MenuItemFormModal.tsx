@@ -232,34 +232,36 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
           {/* Menu Group */}
-          <FormControl fullWidth>
-            <InputLabel id="menuGroup-label">Nhóm món</InputLabel>
-            <Controller
-              control={control}
-              name="category"
-              render={({ field }) => (
-                <Select
-                  labelId="menuGroup-label"
-                  label="Nhóm món"
-                  value={field.value}
-                  onChange={(e) => field.onChange(e.target.value)}
-                  error={!!errors.category}
-                  startAdornment={
-                    <InputAdornment position="start">
-                      <GroupIcon />
-                    </InputAdornment>
-                  }
-                >
-                  {foodGroups.map((g) => (
-                    <MenuItem key={g.id} value={g.id}>
-                      {g.name}
-                    </MenuItem>
-                  ))}
-                  <MenuItem value="Set">Set</MenuItem>
-                </Select>
-              )}
-            />
-          </FormControl>
+          {!isSetMode && (
+            <FormControl fullWidth>
+              <InputLabel id="menuGroup-label">Nhóm món</InputLabel>
+              <Controller
+                control={control}
+                name="category"
+                render={({ field }) => (
+                  <Select
+                    labelId="menuGroup-label"
+                    label="Nhóm món"
+                    value={field.value}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    error={!!errors.category}
+                    startAdornment={
+                      <InputAdornment position="start">
+                        <GroupIcon />
+                      </InputAdornment>
+                    }
+                  >
+                    {foodGroups.map((g) => (
+                      <MenuItem key={g.id} value={g.id}>
+                        {g.name}
+                      </MenuItem>
+                    ))}
+                    <MenuItem value="Set">Set</MenuItem>
+                  </Select>
+                )}
+              />
+            </FormControl>
+          )}
 
           {/* Name */}
           <Controller

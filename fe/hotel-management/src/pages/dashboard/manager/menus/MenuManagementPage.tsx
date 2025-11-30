@@ -50,7 +50,7 @@ const MenuManagementPage: React.FC = () => {
   const [groups, setGroups] = useState<MenuGroupDto[]>([]);
   const [status, setStatus] = useState<string>("");
   const [typeFilter, setTypeFilter] = useState<"food" | "set">("food");
-  const [viewMode, setViewMode] = useState<"table" | "card">("table");
+  const [viewMode, setViewMode] = useState<"table" | "card">("card");
 
   // Modal state
   const [createOpen, setCreateOpen] = useState(false);
@@ -397,7 +397,7 @@ const MenuManagementPage: React.FC = () => {
               </Stack>
             </Grid>
           ) : (
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12 }}>
               <Stack spacing={2}>
                 <Stack direction="row" alignItems="center" spacing={1}>
                   <TableRestaurantIcon color="success" />
@@ -408,110 +408,87 @@ const MenuManagementPage: React.FC = () => {
                     size="small"
                   />
                 </Stack>
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5 }}>
+                <Grid container spacing={2}>
                   {setRecords.map((it) => (
-                    <Box
-                      key={it.id}
-                      sx={{
-                        position: "relative",
-                        p: 1.5,
-                        width: 240,
-                        border: "2px dashed",
-                        borderColor: "success.main",
-                        borderRadius: "14px",
-                        background:
-                          "linear-gradient(135deg, #E8F5E9 0%, #F1FFF4 100%)",
-                        boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-                        transition: "transform 120ms ease",
-                        "&:hover": { transform: "translateY(-2px)" },
-                        "&:before": {
-                          content: '""',
-                          position: "absolute",
-                          top: "50%",
-                          left: -8,
-                          transform: "translateY(-50%)",
-                          width: 16,
-                          height: 16,
-                          borderRadius: "50%",
-                          backgroundColor: "background.paper",
-                          border: "2px solid",
-                          borderColor: "success.main",
-                        },
-                        "&:after": {
-                          content: '""',
-                          position: "absolute",
-                          top: "50%",
-                          right: -8,
-                          transform: "translateY(-50%)",
-                          width: 16,
-                          height: 16,
-                          borderRadius: "50%",
-                          backgroundColor: "background.paper",
-                          border: "2px solid",
-                          borderColor: "success.main",
-                        },
-                        opacity: it.status == 0 ? 1 : 0.55,
-                      }}
-                    >
-                      <Stack spacing={1}>
-                        <Stack
-                          direction="row"
-                          alignItems="center"
-                          justifyContent="space-between"
-                        >
-                          <Typography
-                            variant="subtitle1"
-                            sx={{ fontWeight: 800, color: "success.main" }}
+                    <Grid key={it.id} size={{ xs: 12, md: 6, lg: 3 }}>
+                      <Card
+                        elevation={0}
+                        sx={{
+                          borderRadius: 3,
+                          p: 2,
+                          backgroundColor: "#FFF8E1",
+                          boxShadow: "0 4px 16px rgba(0,0,0,0.06)",
+                        }}
+                      >
+                        <Stack spacing={1}>
+                          <Stack
+                            direction="row"
+                            alignItems="center"
+                            justifyContent="space-between"
                           >
-                            {it.name}
-                          </Typography>
-                          <Chip label="Set" color="success" size="small" />
-                        </Stack>
-                        <Typography
-                          variant="subtitle2"
-                          sx={{ fontWeight: 700 }}
-                        >
-                          —
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          noWrap
-                        >
-                          {it.description || ""}
-                        </Typography>
-                        <Stack
-                          direction="row"
-                          spacing={0.5}
-                          justifyContent="space-between"
-                          alignItems="center"
-                        >
-                          <Chip
-                            label={it.status == 0 ? "Đang bán" : "Ngừng bán"}
-                            color={it.status == 0 ? "success" : "error"}
-                            size="small"
-                          />
-                          <Stack direction="row" spacing={0.5}>
-                            <IconButton
-                              size="small"
-                              color="primary"
-                              onClick={() => openEdit(it)}
+                            <Stack
+                              direction="row"
+                              alignItems="center"
+                              spacing={1}
                             >
-                              <EditIcon fontSize="small" />
-                            </IconButton>
-                            <IconButton
+                              <TableRestaurantIcon color="warning" />
+                              <Typography
+                                variant="subtitle1"
+                                sx={{ fontWeight: 800 }}
+                              >
+                                {it.name}
+                              </Typography>
+                            </Stack>
+                            <Chip label="Set" color="warning" size="small" />
+                          </Stack>
+                          <Stack spacing={0.5} sx={{ mt: 0.5 }}>
+                            {(it.description || "")
+                              .split(/\n|,/)
+                              .map((s) => s.trim())
+                              .filter((s) => s.length > 0)
+                              .map((food, idx) => (
+                                <Typography
+                                  key={idx}
+                                  variant="body2"
+                                  color="text.secondary"
+                                >
+                                  {`${idx + 1}. ${food}`}
+                                </Typography>
+                              ))}
+                          </Stack>
+                          <Stack
+                            direction="row"
+                            spacing={0.5}
+                            justifyContent="space-between"
+                            alignItems="center"
+                          >
+                            <Chip
+                              label={it.status == 0 ? "Đang bán" : "Ngừng bán"}
+                              color={it.status == 0 ? "success" : "error"}
                               size="small"
-                              color="error"
-                              onClick={() => openDelete(it)}
-                            >
-                              <DeleteOutlineIcon fontSize="small" />
-                            </IconButton>
+                            />
+                            <Stack direction="row" spacing={0.5}>
+                              <IconButton
+                                size="small"
+                                color="primary"
+                                onClick={() => openEdit(it)}
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                              <IconButton
+                                size="small"
+                                color="error"
+                                onClick={() => openDelete(it)}
+                              >
+                                <DeleteOutlineIcon fontSize="small" />
+                              </IconButton>
+                            </Stack>
                           </Stack>
                         </Stack>
-                      </Stack>
-                    </Box>
+                      </Card>
+                    </Grid>
                   ))}
-                </Box>
+                </Grid>
               </Stack>
             </Grid>
           )}
