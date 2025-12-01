@@ -29,6 +29,7 @@ public class UpdateDiningSessionRequest
     public string? Status { get; set; }
     public string? Notes { get; set; }
     public int? TotalGuests { get; set; }
+    public DateTime? StartedAt { get; set; }
 }
 
 public class SessionTableDto

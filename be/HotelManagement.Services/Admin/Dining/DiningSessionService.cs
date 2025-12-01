@@ -126,6 +126,10 @@ public class DiningSessionService : IDiningSessionService
         {
             session.TotalGuests = request.TotalGuests.Value;
         }
+        if (request.StartedAt.HasValue)
+        {
+            session.StartedAt = request.StartedAt.Value;
+        }
 
         await _diningSessionRepository.UpdateAsync(session);
         await _diningSessionRepository.SaveChangesAsync();

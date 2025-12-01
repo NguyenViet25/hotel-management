@@ -29,7 +29,11 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
+import {
+  LocalizationProvider,
+  DatePicker,
+  DateTimePicker,
+} from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
 import { useEffect, useMemo, useState } from "react";
@@ -49,6 +53,7 @@ import { useStore, type StoreState } from "../../../../hooks/useStore";
 import AssignOrderDialog from "./components/AssignOrderDialog";
 import CreateSessionDialog from "./components/CreateSessionDialog";
 import AssignMultipleTableDialog from "./components/AssignMultipleTableDialog";
+import { toast } from "react-toastify";
 
 export default function SessionBoardPage() {
   const { hotelId } = useStore<StoreState>((s) => s);
@@ -81,6 +86,8 @@ export default function SessionBoardPage() {
   const [editSession, setEditSession] = useState<DiningSessionDto | null>(null);
   const [editNotes, setEditNotes] = useState("");
   const [editGuests, setEditGuests] = useState<number>(0);
+  const [editStartedAt, setEditStartedAt] = useState<Dayjs | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
   const { data: tablesRes, mutate: mutateTables } = useSWR(
     ["tables", hotelId, statusFilter],
@@ -185,24 +192,17 @@ export default function SessionBoardPage() {
         selectedTable.id
       );
       if (res.isSuccess) {
-        setSnackbar({
-          open: true,
-          message: "Đã gắn bàn vào phiên",
-          severity: "success",
-        });
+        toast.success("Đã gắn bàn vào phiên");
+
         setAttachOpen(false);
         setSelectedSessionId("");
         await mutateSessions();
         await mutateTables();
       } else {
-        setSnackbar({
-          open: true,
-          message: res.message || "Gắn bàn thất bại",
-          severity: "error",
-        });
+        toast.error(res.message || "Gắn bàn thất bại");
       }
     } catch {
-      setSnackbar({ open: true, message: "Đã xảy ra lỗi", severity: "error" });
+      toast.error("Đã xảy ra lỗi");
     }
   };
 
@@ -210,22 +210,15 @@ export default function SessionBoardPage() {
     try {
       const res = await diningSessionsApi.deleteSession(sessionId);
       if (res.isSuccess) {
-        setSnackbar({
-          open: true,
-          message: "Đã xóa phiên",
-          severity: "success",
-        });
+        toast.success("Đã xóa phiên");
+
         await mutateSessions();
         await mutateTables();
       } else {
-        setSnackbar({
-          open: true,
-          message: res.message || "Xóa phiên thất bại",
-          severity: "error",
-        });
+        toast.error(res.message || "Xóa phiên thất bại");
       }
     } catch {
-      setSnackbar({ open: true, message: "Đã xảy ra lỗi", severity: "error" });
+      toast.error("Đã xảy ra lỗi");
     }
   };
 
@@ -233,6 +226,7 @@ export default function SessionBoardPage() {
     setEditSession(s);
     setEditNotes(s.notes || "");
     setEditGuests(Number(s.totalGuests || 0));
+    setEditStartedAt(dayjs(s.startedAt));
     setEditOpen(true);
   };
 
@@ -242,25 +236,20 @@ export default function SessionBoardPage() {
       const res = await diningSessionsApi.updateSession(editSession.id, {
         notes: editNotes,
         totalGuests: editGuests,
+        startedAt: editStartedAt ? editStartedAt.toISOString() : undefined,
       });
       if (res.isSuccess) {
-        setSnackbar({
-          open: true,
-          message: "Đã cập nhật phiên",
-          severity: "success",
-        });
+        toast.success("Đã cập nhật phiên");
+
         setEditOpen(false);
         setEditSession(null);
+        setEditStartedAt(null);
         await mutateSessions();
       } else {
-        setSnackbar({
-          open: true,
-          message: res.message || "Cập nhật thất bại",
-          severity: "error",
-        });
+        toast.error(res.message || "Cập nhật thất bại");
       }
     } catch {
-      setSnackbar({ open: true, message: "Đã xảy ra lỗi", severity: "error" });
+      toast.error("Đã xảy ra lỗi");
     }
   };
 
@@ -406,9 +395,34 @@ export default function SessionBoardPage() {
                     <Stack direction="row" spacing={1} alignItems="center">
                       <TableRestaurantIcon fontSize="small" color="disabled" />
                       <Typography variant="caption" color="text.secondary">
-                        Bàn đã gắn: {(s.tables || []).length}
+                        {(s.tables || []).length} bàn đã gắn:
+                        {(s.tables || []).length > 0 && (
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            fontWeight={600}
+                          >
+                            {" "}
+                            {(
+                              s.tables.sort((a, b) =>
+                                a.tableName.localeCompare(b.tableName)
+                              ) || []
+                            )
+                              .map((t) => t.tableName)
+                              .join(", ")}
+                          </Typography>
+                        )}
                       </Typography>
                     </Stack>
+
+                    {!!s.notes && (
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <Info fontSize="small" color="disabled" />
+                        <Typography variant="caption" color="text.secondary">
+                          Ghi chú: {s.notes}
+                        </Typography>
+                      </Stack>
+                    )}
                   </Stack>
                   <Stack
                     direction={{ xs: "column", lg: "row" }}
@@ -450,7 +464,7 @@ export default function SessionBoardPage() {
                       fullWidth
                       startIcon={<Delete />}
                       variant="contained"
-                      onClick={() => deleteSessionAction(s.id)}
+                      onClick={() => setDeleteTargetId(s.id)}
                     >
                       Xóa
                     </Button>
@@ -477,12 +491,6 @@ export default function SessionBoardPage() {
           }}
         />
       )}
-
-      <Snackbar
-        open={!!snackbar?.open}
-        onClose={() => setSnackbar(null)}
-        message={snackbar?.message}
-      />
 
       <Dialog
         open={attachFromSessionOpen}
@@ -553,6 +561,14 @@ export default function SessionBoardPage() {
         <DialogTitle>Sửa phiên</DialogTitle>
         <DialogContent>
           <Stack spacing={1.5} sx={{ mt: 1 }}>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DateTimePicker
+                label="Thời gian bắt đầu"
+                value={editStartedAt}
+                onChange={(v) => setEditStartedAt(v)}
+                slotProps={{ textField: { size: "small" } }}
+              />
+            </LocalizationProvider>
             <TextField
               label="Ghi chú"
               value={editNotes}
@@ -573,6 +589,30 @@ export default function SessionBoardPage() {
           <Button onClick={() => setEditOpen(false)}>Đóng</Button>
           <Button variant="contained" onClick={submitEdit}>
             Lưu
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={!!deleteTargetId} onClose={() => setDeleteTargetId(null)}>
+        <DialogTitle>Xóa phiên</DialogTitle>
+        <DialogContent>
+          <Typography>Bạn có chắc chắn muốn xóa phiên này?</Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            Hành động này sẽ gỡ tất cả bàn đã gắn khỏi phiên.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteTargetId(null)}>Hủy</Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={async () => {
+              if (!deleteTargetId) return;
+              await deleteSessionAction(deleteTargetId);
+              setDeleteTargetId(null);
+            }}
+          >
+            Xóa
           </Button>
         </DialogActions>
       </Dialog>

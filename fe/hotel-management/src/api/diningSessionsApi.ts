@@ -33,6 +33,7 @@ export interface UpdateDiningSessionRequest {
   status?: string;
   notes?: string;
   totalGuests?: number;
+  startedAt?: string;
 }
 
 export interface DiningSessionListResponse {
