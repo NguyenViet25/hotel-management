@@ -195,3 +195,4 @@
 2025-11-30 - 5 - 01:57:23 UTC :: build: UC-21 Housekeeping: cap nhat Dirty/In-progress/Cleaned/Inspected. — dieu chinh UI & copy cho ro (da review so bo)
 2025-12-01 - 1 - 02:05:07 UTC :: ci: UC-06 Co so: gan quan ly phu trach va quyen truy cap. — tach chuc nang de de bao tri (dam bao backward-compatible)
 2025-12-01 - 2 - 02:05:08 UTC :: refactor: UC-29 Thanh toan nha hang: thu tien, in hoa don, dong giao dich. — sua validate va bo sung thong bao loi (chuan bi cho tinh nang tiep theo)
+2025-12-01 - 3 - 02:05:11 UTC :: ci: UC-26 Order: tao/chinh sua order, ghi chu, void/discount. — kiem tra tuong thich mui gio/tien te (da kiem tra lint)
