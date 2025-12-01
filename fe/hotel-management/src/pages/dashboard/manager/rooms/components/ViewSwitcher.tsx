@@ -20,7 +20,8 @@ export default function ViewSwitcher({ view, onChange }: ViewSwitcherProps) {
       onChange={handleChange}
       size="small"
       color="primary"
-      sx={{ mb: 2 }}
+      sx={{ mb: 2, display: "flex", direction: { xs: "column", sm: "row" } }}
+      dir="ltr"
     >
       <ToggleButton value="map">
         <MapIcon sx={{ mr: 1 }} />

@@ -1,4 +1,4 @@
-import { Add, Info } from "@mui/icons-material";
+import { Add, Bed, Info, Room } from "@mui/icons-material";
 import BlockIcon from "@mui/icons-material/Block";
 import ChangeCircleIcon from "@mui/icons-material/ChangeCircle";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -17,6 +17,7 @@ import {
   Card,
   CardContent,
   Chip,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -54,6 +55,7 @@ import { useStore, type StoreState } from "../../../../../hooks/useStore";
 import ChangeRoomStatusModal from "../components/ChangeRoomStatusModal";
 import RoomFormModal from "../components/RoomFormModal";
 import { ROOM_STATUS_OPTIONS } from "../components/roomsConstants";
+import EmptyState from "../../../../../components/common/EmptyState";
 
 interface IProps {
   allowAddNew?: boolean;
@@ -62,6 +64,8 @@ interface IProps {
 const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
   const [rooms, setRooms] = useState<RoomDto[]>([]);
   const [loading, setLoading] = useState(false);
+  const [filterFloor, setFilterFloor] = useState<number>(0);
+  const [filterStatus, setFilterStatus] = useState<number>(-1);
   const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
   const [roomTypesLoading, setRoomTypesLoading] = useState(false);
 
@@ -151,9 +155,25 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
     }
   }, [rooms]);
 
+  const uniqueFloors = useMemo(() => {
+    const s = new Set<number>();
+    for (const r of rooms) {
+      const f = r.floor ?? 0;
+      if (f > 0) s.add(f);
+    }
+    return Array.from(s).sort((a, b) => a - b);
+  }, [rooms]);
+
   const floors = useMemo(() => {
     const map: Record<number, RoomDto[]> = {};
-    for (const r of rooms) {
+    const list = rooms.filter((r) => {
+      const f = r.floor ?? 0;
+      const s = (r.status as number) ?? -1;
+      const floorOk = filterFloor === 0 || f === filterFloor;
+      const statusOk = filterStatus === -1 || s === filterStatus;
+      return floorOk && statusOk;
+    });
+    for (const r of list) {
       const f = r.floor ?? 0;
       if (!map[f]) map[f] = [];
       map[f].push(r);
@@ -179,7 +199,7 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
           return 0;
         }),
       }));
-  }, [rooms]);
+  }, [rooms, filterFloor, filterStatus]);
 
   const roomTypeImgMap = useMemo(() => {
     const map: Record<string, string | undefined> = {};
@@ -489,21 +509,69 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
 
   return (
     <Box>
-      {allowAddNew && (
-        <Button
-          sx={{ mb: 2 }}
-          variant="contained"
-          startIcon={<Add />}
-          onClick={openCreate}
-        >
-          Thêm Mới
-        </Button>
+      <Stack
+        direction={{ xs: "column", lg: "row" }}
+        justifyContent={"space-between"}
+        sx={{ mb: 2 }}
+        spacing={2}
+      >
+        <Stack direction={{ xs: "column", lg: "row" }} spacing={2}>
+          <TextField
+            select
+            label="Lọc theo tầng"
+            size="small"
+            value={filterFloor}
+            onChange={(e) => setFilterFloor(Number(e.target.value))}
+            SelectProps={{ native: false }}
+            sx={{ minWidth: 180 }}
+          >
+            <MenuItem value={0}>Tất cả tầng</MenuItem>
+            {uniqueFloors.map((f) => (
+              <MenuItem key={f} value={f}>{`Tầng ${f}`}</MenuItem>
+            ))}
+          </TextField>
+
+          <TextField
+            select
+            label="Lọc theo trạng thái"
+            size="small"
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(Number(e.target.value))}
+            SelectProps={{ native: false }}
+            sx={{ minWidth: 180 }}
+          >
+            <MenuItem value={-1}>Tất cả trạng thái</MenuItem>
+            {ROOM_STATUS_OPTIONS.map((opt) => (
+              <MenuItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Stack>
+        {allowAddNew && (
+          <Button
+            sx={{ mb: 2 }}
+            variant="contained"
+            startIcon={<Add />}
+            onClick={openCreate}
+          >
+            Thêm Mới
+          </Button>
+        )}
+      </Stack>
+
+      {loading && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          <Typography>Đang tải danh sách phòng</Typography>{" "}
+        </Alert>
       )}
 
-      {floors.length === 0 && (
-        <Typography variant="body2" color="text.secondary">
-          Chưa có phòng. Vui lòng thêm phòng mới.
-        </Typography>
+      {floors.length === 0 && !loading && (
+        <EmptyState
+          icon={<Bed />}
+          title="Không tìm thấy phòng"
+          description="Vui lòng thay đổi bộ lọc hoặc thêm phòng mới."
+        />
       )}
 
       <Stack spacing={3}>
