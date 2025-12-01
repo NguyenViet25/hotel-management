@@ -117,7 +117,7 @@ public static class DatabaseInitializationExtensions
                 BasePriceFrom = 500000,
                 BasePriceTo = 700000,
                 Prices = "", // JSON string or empty for now
-                ImageUrl = "https://png.pngtree.com/png-vector/20230329/ourmid/pngtree-room-model-cute-cartoon-pattern-png-image_6671847.png"
+                ImageUrl = "https://static.vecteezy.com/system/resources/previews/056/668/404/non_2x/vibrant-abstract-cozy-3d-bedroom-illustration-authentic-png.png"
             },
             new RoomType
             {

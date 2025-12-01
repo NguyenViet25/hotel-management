@@ -2,12 +2,26 @@ import {
   Alert,
   Box,
   Button,
+  Card,
+  CardContent,
+  CardMedia,
+  Chip,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  Grid,
+  InputAdornment,
   Snackbar,
+  Stack,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
 } from "@mui/material";
+import TableChartIcon from "@mui/icons-material/TableChart";
+import GridViewIcon from "@mui/icons-material/GridView";
+import SearchIcon from "@mui/icons-material/Search";
 import React, { useEffect, useState } from "react";
 import roomTypesApi, {
   type CreateRoomTypeRequest,
@@ -18,6 +32,7 @@ import PageTitle from "../../../../components/common/PageTitle";
 import RoomTypeForm from "./components/RoomTypeForm";
 import RoomTypeTable from "./components/RoomTypeTable";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
+import { Add } from "@mui/icons-material";
 
 const RoomTypePage: React.FC = () => {
   const [items, setItems] = useState<RoomType[]>([]);
@@ -26,6 +41,7 @@ const RoomTypePage: React.FC = () => {
   const [pageSize] = useState<number>(10);
   const [total, setTotal] = useState<number>(0);
   const [search, setSearch] = useState<string>();
+  const [view, setView] = useState<"table" | "card">("table");
   const { hotelId } = useStore<StoreState>((state) => state);
   const [createOpen, setCreateOpen] = useState<boolean>(false);
   const [editOpen, setEditOpen] = useState<boolean>(false);
@@ -193,18 +209,167 @@ const RoomTypePage: React.FC = () => {
         title="Loại phòng & Giá"
         subtitle="Quản lý loại phòng, sức chứa, giá base/giá theo thứ/giá theo ngày"
       />
-      <RoomTypeTable
-        data={items}
-        loading={loading}
-        page={page}
-        pageSize={pageSize}
-        total={total}
-        onPageChange={handlePageChange}
-        onAdd={handleAdd}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onSearch={(e) => setSearch(e)}
-      />
+      <Stack
+        direction={{ xs: "column", lg: "row" }}
+        alignItems={{ xs: "stretch", lg: "center" }}
+        justifyContent="space-between"
+        sx={{ mb: 2 }}
+        spacing={1}
+      >
+        <ToggleButtonGroup
+          value={view}
+          exclusive
+          onChange={(_, v) => v && setView(v)}
+          size="small"
+          color="primary"
+        >
+          <ToggleButton value="table">
+            <TableChartIcon sx={{ mr: 1 }} /> Bảng
+          </ToggleButton>
+          <ToggleButton value="card">
+            <GridViewIcon sx={{ mr: 1 }} /> Thẻ
+          </ToggleButton>
+        </ToggleButtonGroup>
+
+        <Stack
+          direction="row"
+          spacing={1}
+          justifyContent={{ xs: "flex-start", lg: "flex-end" }}
+        >
+          <TextField
+            size="small"
+            placeholder="Tìm kiếm..."
+            onChange={(e) => setSearch(e.target.value)}
+            sx={{ width: 280 }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon fontSize="small" />
+                </InputAdornment>
+              ),
+            }}
+          />
+          <Button startIcon={<Add />} variant="contained" onClick={handleAdd}>
+            Thêm mới
+          </Button>
+        </Stack>
+      </Stack>
+
+      {view === "table" ? (
+        <RoomTypeTable
+          data={items}
+          loading={loading}
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          onPageChange={handlePageChange}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+      ) : (
+        <Grid container spacing={2}>
+          {items.map((rt) => (
+            <Grid size={{ xs: 12, md: 6, lg: 3 }} key={rt.id}>
+              <Card
+                variant="outlined"
+                sx={{
+                  borderRadius: 2,
+                  overflow: "hidden",
+                  boxShadow: 0,
+                  "&:hover": { boxShadow: 3 },
+                }}
+              >
+                <Box sx={{ position: "relative" }}>
+                  <CardMedia
+                    component="img"
+                    height="160"
+                    image={
+                      rt.imageUrl ||
+                      "https://via.placeholder.com/640x360?text=Room+Type"
+                    }
+                    alt={rt.name}
+                    sx={{ objectFit: "contain" }}
+                  />
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      inset: 0,
+                      background:
+                        "linear-gradient(180deg, rgba(0,0,0,0.0) 40%, rgba(0,0,0,0.55) 100%)",
+                    }}
+                  />
+                  <Stack
+                    sx={{ position: "absolute", bottom: 8, left: 8, right: 8 }}
+                    spacing={0.5}
+                  >
+                    <Typography
+                      variant="subtitle1"
+                      sx={{ color: "common.white", fontWeight: 700 }}
+                    >
+                      {rt.name}
+                    </Typography>
+                    <Stack direction="row" spacing={1}>
+                      <Chip
+                        size="small"
+                        label={`Sức chứa: ${rt.roomCount || 0}`}
+                        sx={{ bgcolor: "rgba(255,255,255,0.2)", color: "#fff" }}
+                      />
+                      <Chip
+                        size="small"
+                        label={`Giá: ${(
+                          rt.priceFrom ?? 0
+                        ).toLocaleString()}đ - ${(
+                          rt.priceTo ?? 0
+                        ).toLocaleString()}đ`}
+                        sx={{ bgcolor: "rgba(255,255,255,0.2)", color: "#fff" }}
+                      />
+                    </Stack>
+                  </Stack>
+                </Box>
+                <CardContent sx={{ p: 1.5 }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: "text.secondary",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
+                      minHeight: 40,
+                    }}
+                  >
+                    {rt.description || "Chưa có mô tả"}
+                  </Typography>
+                  <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => handleEdit(rt)}
+                    >
+                      Sửa
+                    </Button>
+                    <Button
+                      size="small"
+                      color="error"
+                      variant="outlined"
+                      onClick={() => handleDelete(rt)}
+                    >
+                      Xóa
+                    </Button>
+                  </Stack>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+          {items.length === 0 && !loading && (
+            <Grid item xs={12}>
+              <Box sx={{ p: 2, textAlign: "center", color: "text.secondary" }}>
+                Không có dữ liệu
+              </Box>
+            </Grid>
+          )}
+        </Grid>
+      )}
 
       {/* Create */}
       <RoomTypeForm

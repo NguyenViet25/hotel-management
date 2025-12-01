@@ -15,8 +15,8 @@ export const roomTypeColumns: Column<RoomType>[] = [
             alt: row.name,
             style: {
               width: 48,
-              height: 36,
-              objectFit: "cover",
+              height: 48,
+              objectFit: "contain",
               borderRadius: 6,
             },
           })
