@@ -189,3 +189,4 @@
 2025-11-30 - 4 - 01:57:28 UTC :: ci: UC-36 Duyet ngoai le: duyet/tu choi theo han muc. — them log chi tiet phuc vu audit (da kiem tra lint)
 2025-11-30 - 5 - 01:57:29 UTC :: refactor: UC-37 Night Audit: kiem tra folio chua chot, khoa giao dich. — chinh sua tai lieu & mo ta API (dam bao backward-compatible)
 2025-12-01 - 1 - 02:05:08 UTC :: perf: UC-34 Cham cong: ghi nhan diem danh, ban giao ca. — chuan hoa ten ham/bien theo convention (da smoke test)
+2025-12-01 - 2 - 02:05:09 UTC :: test: UC-28 Room charge F&B: ghi hoa don ban an vao folio. — bo sung metrics/telemetry co ban (can theo doi them)
