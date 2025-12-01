@@ -243,7 +243,7 @@ const MinibarManagementPage: React.FC = () => {
                         borderBottomRightRadius: 0,
                       }}
                     >
-                      <BedIcon color="warning" />
+                      <BedIcon color="warning" sx={{ color: "white" }} />
                       <Typography
                         variant="subtitle1"
                         sx={{
@@ -251,6 +251,7 @@ const MinibarManagementPage: React.FC = () => {
                           textTransform: "uppercase",
                           letterSpacing: 0.5,
                           flexGrow: 1,
+                          color: "white",
                         }}
                       >
                         {rt.name}
@@ -258,6 +259,7 @@ const MinibarManagementPage: React.FC = () => {
                       <Chip
                         label={`${list.length} minibar`}
                         variant="outlined"
+                        sx={{ color: "white" }}
                       />
                     </Box>
                     {list.length === 0 ? (

@@ -582,9 +582,9 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
               p: 2,
               position: "relative",
               border: "2px dashed",
-              borderColor: "info.main",
+              borderColor: "warning.main",
               borderRadius: "14px",
-              background: "linear-gradient(135deg, #E3F2FD 0%, #F5FAFF 100%)",
+              background: "linear-gradient(135deg, #FFF8E1 0%, #FFFDF5 100%)",
               "&:before": {
                 content: '""',
                 position: "absolute",
@@ -596,7 +596,7 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                 borderRadius: "50%",
                 backgroundColor: "background.paper",
                 border: "2px solid",
-                borderColor: "info.main",
+                borderColor: "warning.main",
               },
               "&:after": {
                 content: '""',
@@ -609,7 +609,7 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                 borderRadius: "50%",
                 backgroundColor: "background.paper",
                 border: "2px solid",
-                borderColor: "info.main",
+                borderColor: "warning.main",
               },
             }}
           >

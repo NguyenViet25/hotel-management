@@ -449,6 +449,7 @@ const OrderFormModal: React.FC<IProps> = ({
                     variant="outlined"
                     color="primary"
                     onClick={() => addItemRow(field.value as any, "food")}
+                    sx={{ minWidth: 130 }}
                   >
                     Thêm món
                   </Button>
@@ -595,6 +596,7 @@ const OrderFormModal: React.FC<IProps> = ({
                     variant="outlined"
                     color="warning"
                     onClick={() => addItemRow(field.value as any, "set")}
+                    sx={{ minWidth: 130 }}
                   >
                     Thêm set
                   </Button>

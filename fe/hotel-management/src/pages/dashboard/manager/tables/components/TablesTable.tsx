@@ -236,7 +236,10 @@ const TablesTable: React.FC<TablesTableProps> = ({
                     borderColor: "warning.main",
                   }}
                 >
-                  <TableRestaurantIcon color="warning" />
+                  <TableRestaurantIcon
+                    color="warning"
+                    sx={{ color: "white" }}
+                  />
                   <Typography
                     variant="subtitle1"
                     sx={{
@@ -244,11 +247,16 @@ const TablesTable: React.FC<TablesTableProps> = ({
                       textTransform: "uppercase",
                       letterSpacing: 0.5,
                       flexGrow: 1,
+                      color: "white",
                     }}
                   >
                     {`Dãy ${o.value}`}
                   </Typography>
-                  <Chip label={`${rows.length} bàn`} variant="outlined" />
+                  <Chip
+                    label={`${rows.length} bàn`}
+                    sx={{ color: "white" }}
+                    variant="outlined"
+                  />
                 </Box>
                 <Box
                   sx={{

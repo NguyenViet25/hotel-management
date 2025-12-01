@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogTitle } from "@mui/material";
+import { Box, Dialog, DialogContent, DialogTitle } from "@mui/material";
 import React from "react";
 import RoomMap from "../../../manager/rooms/designer/RoomMap";
 
@@ -12,7 +12,9 @@ const RoomMapDialog: React.FC<RoomMapDialogProps> = ({ open, onClose }) => {
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
       <DialogTitle>Sơ đồ phòng</DialogTitle>
       <DialogContent>
-        <RoomMap allowAddNew={false} />
+        <Box pt={1}>
+          <RoomMap allowAddNew={false} />
+        </Box>
       </DialogContent>
     </Dialog>
   );
