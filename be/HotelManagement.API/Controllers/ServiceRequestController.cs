@@ -66,4 +66,15 @@ public class ServiceRequestController : ControllerBase
         }
         return Ok(response);
     }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteRequest(Guid id)
+    {
+        var response = await _serviceRequestService.DeleteRequestAsync(id);
+        if (!response.IsSuccess)
+        {
+            return NotFound(response);
+        }
+        return Ok(response);
+    }
 }

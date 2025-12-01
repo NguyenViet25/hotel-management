@@ -15,6 +15,7 @@ public interface IServiceRequestService
     Task<ApiResponse<ServiceRequestDto>> GetRequestAsync(Guid id);
     Task<ApiResponse<ServiceRequestListResponse>> GetRequestsBySessionAsync(Guid sessionId, int page = 1, int pageSize = 10);
     Task<ApiResponse<bool>> CompleteRequestAsync(Guid id);
+    Task<ApiResponse<bool>> DeleteRequestAsync(Guid id);
 }
 
 public class ServiceRequestService : IServiceRequestService
@@ -79,6 +80,15 @@ public class ServiceRequestService : IServiceRequestService
             serviceRequest.AssignedToUserId = request.AssignedToUserId;
         }
 
+        if (!string.IsNullOrWhiteSpace(request.RequestType))
+        {
+            serviceRequest.RequestType = request.RequestType!;
+        }
+        if (request.Description != null)
+        {
+            serviceRequest.Description = request.Description!;
+        }
+
         await _serviceRequestRepository.UpdateAsync(serviceRequest);
         await _unitOfWork.SaveChangesAsync();
 
@@ -135,6 +145,18 @@ public class ServiceRequestService : IServiceRequestService
         await _serviceRequestRepository.UpdateAsync(serviceRequest);
         await _unitOfWork.SaveChangesAsync();
 
+        return ApiResponse<bool>.Success(true);
+    }
+
+    public async Task<ApiResponse<bool>> DeleteRequestAsync(Guid id)
+    {
+        var serviceRequest = await _serviceRequestRepository.FindAsync(id);
+        if (serviceRequest == null)
+        {
+            return ApiResponse<bool>.Fail("Service request not found");
+        }
+        await _serviceRequestRepository.RemoveAsync(serviceRequest);
+        await _unitOfWork.SaveChangesAsync();
         return ApiResponse<bool>.Success(true);
     }
 

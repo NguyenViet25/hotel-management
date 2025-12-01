@@ -28,6 +28,8 @@ public class UpdateServiceRequestRequest
 {
     public string Status { get; set; } = string.Empty;
     public Guid? AssignedToUserId { get; set; }
+    public string? RequestType { get; set; }
+    public string? Description { get; set; }
 }
 
 public class ServiceRequestListResponse

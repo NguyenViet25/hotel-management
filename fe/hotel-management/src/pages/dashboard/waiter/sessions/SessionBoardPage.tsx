@@ -8,6 +8,7 @@ import {
   Search,
   TableBar,
   TableRestaurant as TableRestaurantIcon,
+  CleanHands,
 } from "@mui/icons-material";
 import {
   Box,
@@ -28,6 +29,9 @@ import {
   Stack,
   TextField,
   Typography,
+  List,
+  ListItem,
+  ListItemText,
 } from "@mui/material";
 import {
   LocalizationProvider,
@@ -42,6 +46,9 @@ import useSWR from "swr";
 import diningSessionsApi, {
   type DiningSessionDto,
 } from "../../../../api/diningSessionsApi";
+import serviceRequestsApi, {
+  type ServiceRequestDto,
+} from "../../../../api/serviceRequestsApi";
 import tablesApi, {
   TableStatus,
   type TableDto,
@@ -88,6 +95,172 @@ export default function SessionBoardPage() {
   const [editGuests, setEditGuests] = useState<number>(0);
   const [editStartedAt, setEditStartedAt] = useState<Dayjs | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [requestsOpen, setRequestsOpen] = useState(false);
+  const [requestsSessionId, setRequestsSessionId] = useState<string>("");
+  const [requests, setRequests] = useState<ServiceRequestDto[]>([]);
+  const [requestsLoading, setRequestsLoading] = useState(false);
+  const [reqTypeFilter, setReqTypeFilter] = useState<string>("all");
+  const [reqStatusFilter, setReqStatusFilter] = useState<string>("all");
+  const [reqSearch, setReqSearch] = useState<string>("");
+  const [newReqType, setNewReqType] = useState<string>("water");
+  const [newReqDesc, setNewReqDesc] = useState<string>("");
+  const requestTypes = useMemo(
+    () => [
+      { value: "water", label: "Nước" },
+      { value: "towel", label: "Khăn" },
+      { value: "ice", label: "Đá" },
+      { value: "napkin", label: "Khăn giấy" },
+      { value: "utensils", label: "Muỗng/Đĩa" },
+      { value: "other", label: "Khác" },
+    ],
+    []
+  );
+  const [editReq, setEditReq] = useState<ServiceRequestDto | null>(null);
+  const [editReqType, setEditReqType] = useState<string>("water");
+  const [editReqDesc, setEditReqDesc] = useState<string>("");
+  const [editReqStatus, setEditReqStatus] = useState<string>("Pending");
+  const [deleteReqId, setDeleteReqId] = useState<string | null>(null);
+
+  const openRequestsForSession = async (sessionId: string) => {
+    setRequestsSessionId(sessionId);
+    setRequestsOpen(true);
+    setRequestsLoading(true);
+    try {
+      const res = await serviceRequestsApi.listBySession(sessionId, 1, 100);
+      setRequests(res.data?.requests || []);
+    } finally {
+      setRequestsLoading(false);
+    }
+  };
+
+  const filteredRequests = useMemo(() => {
+    return (requests || []).filter((r) => {
+      const byType = reqTypeFilter === "all" || r.requestType === reqTypeFilter;
+      const byStatus =
+        reqStatusFilter === "all" || r.status === reqStatusFilter;
+      const bySearch =
+        !reqSearch ||
+        r.description.toLowerCase().includes(reqSearch.toLowerCase()) ||
+        r.requestType.toLowerCase().includes(reqSearch.toLowerCase());
+      return byType && byStatus && bySearch;
+    });
+  }, [requests, reqTypeFilter, reqStatusFilter, reqSearch]);
+
+  const createRequest = async () => {
+    try {
+      if (!hotelId || !requestsSessionId) return;
+      const res = await serviceRequestsApi.create({
+        hotelId,
+        diningSessionId: requestsSessionId,
+        requestType: newReqType,
+        description: newReqDesc,
+      });
+      if (res.isSuccess) {
+        toast.success("Đã tạo yêu cầu");
+        setNewReqDesc("");
+        const l = await serviceRequestsApi.listBySession(
+          requestsSessionId,
+          1,
+          100
+        );
+        setRequests(l.data?.requests || []);
+      } else {
+        toast.error(res.message || "Tạo yêu cầu thất bại");
+      }
+    } catch {
+      toast.error("Đã xảy ra lỗi");
+    }
+  };
+
+  const startRequest = async (id: string) => {
+    try {
+      const res = await serviceRequestsApi.update(id, { status: "InProgress" });
+      if (res.isSuccess) {
+        const l = await serviceRequestsApi.listBySession(
+          requestsSessionId,
+          1,
+          100
+        );
+        setRequests(l.data?.requests || []);
+      }
+    } catch {}
+  };
+  const completeRequest = async (id: string) => {
+    try {
+      const res = await serviceRequestsApi.update(id, { status: "Completed" });
+      if (res.isSuccess) {
+        const l = await serviceRequestsApi.listBySession(
+          requestsSessionId,
+          1,
+          100
+        );
+        setRequests(l.data?.requests || []);
+      }
+    } catch {}
+  };
+  const cancelRequest = async (id: string) => {
+    try {
+      const res = await serviceRequestsApi.update(id, { status: "Cancelled" });
+      if (res.isSuccess) {
+        const l = await serviceRequestsApi.listBySession(
+          requestsSessionId,
+          1,
+          100
+        );
+        setRequests(l.data?.requests || []);
+      }
+    } catch {}
+  };
+  const confirmDeleteRequest = async () => {
+    try {
+      if (!deleteReqId) return;
+      const res = await serviceRequestsApi.delete(deleteReqId);
+      if (res.isSuccess) {
+        toast.success("Đã xóa yêu cầu");
+        const l = await serviceRequestsApi.listBySession(
+          requestsSessionId,
+          1,
+          100
+        );
+        setRequests(l.data?.requests || []);
+        setDeleteReqId(null);
+      } else {
+        toast.error(res.message || "Xóa yêu cầu thất bại");
+      }
+    } catch {
+      toast.error("Đã xảy ra lỗi");
+    }
+  };
+  const openEditRequest = (r: ServiceRequestDto) => {
+    setEditReq(r);
+    setEditReqType(r.requestType);
+    setEditReqDesc(r.description);
+    setEditReqStatus(r.status);
+  };
+  const saveEditRequest = async () => {
+    try {
+      if (!editReq) return;
+      const res = await serviceRequestsApi.update(editReq.id, {
+        status: editReqStatus,
+        requestType: editReqType,
+        description: editReqDesc,
+      });
+      if (res.isSuccess) {
+        toast.success("Đã cập nhật yêu cầu");
+        const l = await serviceRequestsApi.listBySession(
+          requestsSessionId,
+          1,
+          100
+        );
+        setRequests(l.data?.requests || []);
+        setEditReq(null);
+      } else {
+        toast.error(res.message || "Cập nhật yêu cầu thất bại");
+      }
+    } catch {
+      toast.error("Đã xảy ra lỗi");
+    }
+  };
 
   const { data: tablesRes, mutate: mutateTables } = useSWR(
     ["tables", hotelId, statusFilter],
@@ -177,11 +350,7 @@ export default function SessionBoardPage() {
   const handleCreated = async () => {
     await mutateSessions();
     await mutateTables();
-    setSnackbar({
-      open: true,
-      message: "Tạo phiên thành công",
-      severity: "success",
-    });
+    toast.success("Tạo phiên thành công");
   };
 
   const attachSelectedTable = async () => {
@@ -448,6 +617,7 @@ export default function SessionBoardPage() {
                     >
                       Gắn bàn
                     </Button>
+
                     <Button
                       size="small"
                       variant="contained"
@@ -516,6 +686,232 @@ export default function SessionBoardPage() {
         </DialogActions>
       </Dialog>
 
+      <Dialog
+        open={requestsOpen}
+        onClose={() => setRequestsOpen(false)}
+        fullWidth
+        maxWidth="md"
+      >
+        <DialogTitle>Yêu cầu thêm</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <Stack
+              direction={{ xs: "column", md: "row" }}
+              spacing={1}
+              alignItems="center"
+            >
+              <TextField
+                select
+                label="Loại"
+                size="small"
+                sx={{ minWidth: 180 }}
+                value={reqTypeFilter}
+                onChange={(e) => setReqTypeFilter(String(e.target.value))}
+              >
+                <MenuItem value="all">Tất cả</MenuItem>
+                {requestTypes.map((t) => (
+                  <MenuItem key={t.value} value={t.value}>
+                    {t.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <TextField
+                select
+                label="Trạng thái"
+                size="small"
+                sx={{ minWidth: 180 }}
+                value={reqStatusFilter}
+                onChange={(e) => setReqStatusFilter(String(e.target.value))}
+              >
+                <MenuItem value="all">Tất cả</MenuItem>
+                <MenuItem value="Pending">Chờ</MenuItem>
+                <MenuItem value="InProgress">Đang làm</MenuItem>
+                <MenuItem value="Completed">Hoàn tất</MenuItem>
+                <MenuItem value="Cancelled">Huỷ</MenuItem>
+              </TextField>
+              <TextField
+                label="Tìm kiếm"
+                size="small"
+                value={reqSearch}
+                onChange={(e) => setReqSearch(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Search />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Stack>
+
+            <Stack
+              direction={{ xs: "column", md: "row" }}
+              spacing={1}
+              alignItems="center"
+            >
+              <TextField
+                select
+                label="Loại yêu cầu"
+                size="small"
+                value={newReqType}
+                onChange={(e) => setNewReqType(String(e.target.value))}
+                sx={{ minWidth: 200 }}
+              >
+                {requestTypes.map((t) => (
+                  <MenuItem key={t.value} value={t.value}>
+                    {t.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <TextField
+                label="Mô tả"
+                size="small"
+                value={newReqDesc}
+                onChange={(e) => setNewReqDesc(e.target.value)}
+                fullWidth
+              />
+              <Button
+                variant="contained"
+                onClick={createRequest}
+                disabled={!newReqDesc}
+              >
+                Thêm
+              </Button>
+            </Stack>
+
+            <List>
+              {requestsLoading && (
+                <Typography variant="body2" color="text.secondary">
+                  Đang tải...
+                </Typography>
+              )}
+              {!requestsLoading &&
+                filteredRequests.map((r) => (
+                  <ListItem
+                    key={r.id}
+                    secondaryAction={
+                      <Stack direction="row" spacing={1}>
+                        <Button size="small" onClick={() => startRequest(r.id)}>
+                          Bắt đầu
+                        </Button>
+                        <Button
+                          size="small"
+                          variant="contained"
+                          onClick={() => completeRequest(r.id)}
+                        >
+                          Hoàn tất
+                        </Button>
+                        <Button
+                          size="small"
+                          color="warning"
+                          onClick={() => cancelRequest(r.id)}
+                        >
+                          Huỷ
+                        </Button>
+                        <Button
+                          size="small"
+                          color="info"
+                          onClick={() => openEditRequest(r)}
+                        >
+                          Sửa
+                        </Button>
+                        <Button
+                          size="small"
+                          color="error"
+                          onClick={() => setDeleteReqId(r.id)}
+                        >
+                          Xóa
+                        </Button>
+                      </Stack>
+                    }
+                  >
+                    <ListItemText
+                      primary={`${
+                        requestTypes.find((t) => t.value === r.requestType)
+                          ?.label || r.requestType
+                      } • ${r.description}`}
+                      secondary={`${new Date(r.createdAt).toLocaleString()} • ${
+                        r.status
+                      }${r.assignedToName ? " • " + r.assignedToName : ""}`}
+                    />
+                  </ListItem>
+                ))}
+              {!requestsLoading && filteredRequests.length === 0 && (
+                <Typography variant="body2" color="text.secondary">
+                  Không có yêu cầu
+                </Typography>
+              )}
+            </List>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRequestsOpen(false)}>Đóng</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={!!editReq} onClose={() => setEditReq(null)}>
+        <DialogTitle>Sửa yêu cầu</DialogTitle>
+        <DialogContent>
+          <Stack spacing={1.5} sx={{ mt: 1 }}>
+            <TextField
+              select
+              label="Loại"
+              size="small"
+              value={editReqType}
+              onChange={(e) => setEditReqType(String(e.target.value))}
+            >
+              {requestTypes.map((t) => (
+                <MenuItem key={t.value} value={t.value}>
+                  {t.label}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              label="Mô tả"
+              size="small"
+              value={editReqDesc}
+              onChange={(e) => setEditReqDesc(e.target.value)}
+              multiline
+              minRows={2}
+            />
+            <TextField
+              select
+              label="Trạng thái"
+              size="small"
+              value={editReqStatus}
+              onChange={(e) => setEditReqStatus(String(e.target.value))}
+            >
+              <MenuItem value="Pending">Chờ</MenuItem>
+              <MenuItem value="InProgress">Đang làm</MenuItem>
+              <MenuItem value="Completed">Hoàn tất</MenuItem>
+              <MenuItem value="Cancelled">Huỷ</MenuItem>
+            </TextField>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditReq(null)}>Đóng</Button>
+          <Button variant="contained" onClick={saveEditRequest}>
+            Lưu
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={!!deleteReqId} onClose={() => setDeleteReqId(null)}>
+        <DialogTitle>Xóa yêu cầu</DialogTitle>
+        <DialogContent>
+          <Typography>Bạn có chắc muốn xóa yêu cầu này?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteReqId(null)}>Hủy</Button>
+          <Button
+            color="error"
+            variant="contained"
+            onClick={confirmDeleteRequest}
+          >
+            Xóa
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Dialog
         open={attachOpen}
         onClose={() => setAttachOpen(false)}

@@ -16,12 +16,19 @@ import {
   ListItem,
   ListItemText,
   Stack,
-  Snackbar,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
+  Tabs,
+  Tab,
 } from "@mui/material";
+import {
+  AccessTime,
+  Groups,
+  TableRestaurant as TableRestaurantIcon,
+  CleanHands,
+} from "@mui/icons-material";
 import useSWR from "swr";
 import diningSessionsApi from "../../../../api/diningSessionsApi";
 import tablesApi, {
@@ -35,6 +42,8 @@ import serviceRequestsApi, {
 } from "../../../../api/serviceRequestsApi";
 import { useEffect, useMemo, useState } from "react";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
+import { toast } from "react-toastify";
+import PageTitle from "../../../../components/common/PageTitle";
 
 export default function SessionDetailsPage() {
   const { id } = useParams();
@@ -42,11 +51,7 @@ export default function SessionDetailsPage() {
   const [orderId, setOrderId] = useState<string>("");
   const [requestType, setRequestType] = useState("water");
   const [requestDesc, setRequestDesc] = useState("");
-  const [snackbar, setSnackbar] = useState<{
-    open: boolean;
-    message: string;
-    severity: "success" | "error";
-  } | null>(null);
+  const [tab, setTab] = useState<number>(0);
   const [attachOpen, setAttachOpen] = useState(false);
   const [availableTables, setAvailableTables] = useState<TableDto[]>([]);
   const [selectedTableId, setSelectedTableId] = useState<string>("");
@@ -95,22 +100,14 @@ export default function SessionDetailsPage() {
         description: requestDesc,
       });
       if (res.isSuccess) {
-        setSnackbar({
-          open: true,
-          message: "Đã ghi nhận yêu cầu",
-          severity: "success",
-        });
+        toast.success("Đã ghi nhận yêu cầu");
         setRequestDesc("");
         await mutateReq();
       } else {
-        setSnackbar({
-          open: true,
-          message: res.message || "Ghi nhận yêu cầu thất bại",
-          severity: "error",
-        });
+        toast.error(res.message || "Ghi nhận yêu cầu thất bại");
       }
     } catch {
-      setSnackbar({ open: true, message: "Đã xảy ra lỗi", severity: "error" });
+      toast.error("Đã xảy ra lỗi");
     }
   };
 
@@ -118,21 +115,13 @@ export default function SessionDetailsPage() {
     try {
       const res = await serviceRequestsApi.update(reqId, { status });
       if (res.isSuccess) {
-        setSnackbar({
-          open: true,
-          message: "Đã cập nhật yêu cầu",
-          severity: "success",
-        });
+        toast.success("Đã cập nhật yêu cầu");
         await mutateReq();
       } else {
-        setSnackbar({
-          open: true,
-          message: res.message || "Cập nhật yêu cầu thất bại",
-          severity: "error",
-        });
+        toast.error(res.message || "Cập nhật yêu cầu thất bại");
       }
     } catch {
-      setSnackbar({ open: true, message: "Đã xảy ra lỗi", severity: "error" });
+      toast.error("Đã xảy ra lỗi");
     }
   };
 
@@ -158,17 +147,13 @@ export default function SessionDetailsPage() {
     try {
       const res = await diningSessionsApi.attachTable(id, selectedTableId);
       if (res.isSuccess) {
-        setSnackbar({ open: true, message: "Đã gắn bàn", severity: "success" });
+        toast.success("Đã gắn bàn");
         setAttachOpen(false);
       } else {
-        setSnackbar({
-          open: true,
-          message: res.message || "Gắn bàn thất bại",
-          severity: "error",
-        });
+        toast.error(res.message || "Gắn bàn thất bại");
       }
     } catch {
-      setSnackbar({ open: true, message: "Đã xảy ra lỗi", severity: "error" });
+      toast.error("Đã xảy ra lỗi");
     }
   };
 
@@ -177,162 +162,218 @@ export default function SessionDetailsPage() {
     try {
       const res = await diningSessionsApi.detachTable(id, tableId);
       if (res.isSuccess) {
-        setSnackbar({
-          open: true,
-          message: "Đã tách bàn",
-          severity: "success",
-        });
+        toast.success("Đã tách bàn");
       } else {
-        setSnackbar({
-          open: true,
-          message: res.message || "Tách bàn thất bại",
-          severity: "error",
-        });
+        toast.error(res.message || "Tách bàn thất bại");
       }
     } catch {
-      setSnackbar({ open: true, message: "Đã xảy ra lỗi", severity: "error" });
+      toast.error("Đã xảy ra lỗi");
     }
   };
 
   return (
-    <Box p={2}>
-      <Typography variant="h5">Phiên bàn</Typography>
+    <Box>
+      <PageTitle
+        title="Chi tiết phiên"
+        subtitle={`Xem chi tiết phiên phục vụ`}
+      />
+
       {session && (
-        <Box mt={1}>
-          <Typography variant="subtitle1">Phiên đang mở</Typography>
-          <Chip
-            label={session.status}
-            color={session.status === "Open" ? "success" : "default"}
-            size="small"
-          />
-          <Box mt={1}>
-            <Typography variant="subtitle2">Bàn đang phục vụ</Typography>
-            <List>
-              {(session.tables || []).map((t) => (
-                <ListItem key={t.tableId}>
-                  <ListItemText
-                    primary={`${t.tableName} • ${t.capacity} chỗ`}
-                    secondary={`Gắn lúc ${new Date(
-                      t.attachedAt
-                    ).toLocaleString()}`}
-                  />
-                  <Button
-                    size="small"
-                    color="warning"
-                    onClick={() => detachTable(t.tableId)}
-                  >
-                    Tách
-                  </Button>
-                </ListItem>
-              ))}
-            </List>
-            <Button variant="outlined" onClick={() => setAttachOpen(true)}>
-              Gắn thêm bàn
-            </Button>
-          </Box>
-        </Box>
-      )}
-
-      <Box mt={2}>
-        <TextField
-          label="Order Id"
-          value={orderId}
-          onChange={(e) => setOrderId(e.target.value)}
-          size="small"
-        />
-        <Button sx={{ ml: 1 }} variant="contained" disabled={!orderId}>
-          Xem Order
-        </Button>
-      </Box>
-
-      {order && (
-        <Box mt={2}>
-          <Typography variant="h6">Món trong Order</Typography>
-          <Grid container spacing={2}>
-            {order.items.map((item) => (
-              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={item.id}>
-                <Card>
-                  <CardContent>
-                    <Typography variant="subtitle2">
-                      {item.menuItemName}
-                    </Typography>
-                    <Typography variant="caption">
-                      SL: {item.quantity}
-                    </Typography>
-                    <Box mt={1}>
-                      <Chip label={item.status} size="small" />
-                    </Box>
-                    <FormControl fullWidth sx={{ mt: 1 }}>
-                      <InputLabel>Trạng thái</InputLabel>
-                      <Select
-                        label="Trạng thái"
-                        value={item.status}
-                        onChange={(e) =>
-                          handleUpdateItemStatus(
-                            item.id,
-                            String(e.target.value)
-                          )
-                        }
-                      >
-                        {statusOptions.map((s) => (
-                          <MenuItem key={s} value={s}>
-                            {s}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
-      )}
-
-      <Box mt={4}>
-        <Typography variant="h6">Yêu cầu thêm</Typography>
-        <Box mt={1} display="flex" gap={1}>
-          <FormControl size="small" sx={{ minWidth: 160 }}>
-            <InputLabel>Loại</InputLabel>
-            <Select
-              label="Loại"
-              value={requestType}
-              onChange={(e) => setRequestType(String(e.target.value))}
+        <Card variant="outlined" sx={{ borderRadius: 2, mb: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              px: 2,
+              py: 1,
+              borderRadius: 2,
+              bgcolor: "primary.light",
+              border: "2px dashed",
+              borderColor: "primary.main",
+            }}
+          >
+            <AccessTime color="primary" />
+            <Typography
+              variant="subtitle2"
+              sx={{ fontWeight: 800, flexGrow: 1 }}
             >
-              {requestTypes.map((t) => (
-                <MenuItem key={t.value} value={t.value}>
-                  {t.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <TextField
-            label="Mô tả"
-            value={requestDesc}
-            onChange={(e) => setRequestDesc(e.target.value)}
-            size="small"
-            fullWidth
-          />
-          <Button variant="contained" onClick={handleCreateRequest}>
-            Gửi
+              {new Date(session.startedAt).toLocaleString()}
+            </Typography>
+            <Chip
+              label={session.status}
+              color={session.status === "Open" ? "primary" : "default"}
+              size="small"
+            />
+          </Box>
+          <Stack spacing={0.5} sx={{ px: 2, py: 1.5 }}>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Groups fontSize="small" color="disabled" />
+              <Typography variant="caption" color="text.secondary">
+                {session.totalGuests} khách
+              </Typography>
+            </Stack>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <TableRestaurantIcon fontSize="small" color="disabled" />
+              <Typography variant="caption" color="text.secondary">
+                {(session.tables || []).length} bàn đã gắn:
+                {(session.tables || []).length > 0 && (
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    fontWeight={600}
+                  >
+                    {" "}
+                    {(session.tables || [])
+                      .sort((a, b) => a.tableName.localeCompare(b.tableName))
+                      .map((t) => t.tableName)
+                      .join(", ")}
+                  </Typography>
+                )}
+              </Typography>
+            </Stack>
+            {!!session.notes && (
+              <Stack direction="row" spacing={1} alignItems="center">
+                <CleanHands fontSize="small" color="disabled" />
+                <Typography variant="caption" color="text.secondary">
+                  Ghi chú: {session.notes}
+                </Typography>
+              </Stack>
+            )}
+          </Stack>
+        </Card>
+      )}
+
+      <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }}>
+        <Tab label="Bàn" />
+        <Tab label="Order" />
+        <Tab label="Yêu cầu" />
+      </Tabs>
+
+      {tab === 0 && session && (
+        <Box>
+          <Typography variant="subtitle2">Bàn đang phục vụ</Typography>
+          <List>
+            {(session.tables || []).map((t) => (
+              <ListItem key={t.tableId}>
+                <ListItemText
+                  primary={`${t.tableName} • ${t.capacity} chỗ`}
+                  secondary={`Gắn lúc ${new Date(
+                    t.attachedAt
+                  ).toLocaleString()}`}
+                />
+                <Button
+                  size="small"
+                  color="warning"
+                  onClick={() => detachTable(t.tableId)}
+                >
+                  Tách
+                </Button>
+              </ListItem>
+            ))}
+          </List>
+          <Button variant="outlined" onClick={() => setAttachOpen(true)}>
+            Gắn thêm bàn
           </Button>
         </Box>
-        <List>
-          {requests.map((r) => (
-            <ListItem key={r.id}>
-              <ListItemText
-                primary={`${r.requestType} • ${r.description}`}
-                secondary={`${new Date(r.createdAt).toLocaleString()} • ${
-                  r.status
-                }`}
-              />
-              <Stack direction="row" spacing={1} alignItems="center">
-                <Chip label={r.status} size="small" />
-                {r.status !== "Completed" && r.status !== "Cancelled" && (
-                  <>
+      )}
+
+      {tab === 1 && (
+        <Box>
+          <Box>
+            <TextField
+              label="Order Id"
+              value={orderId}
+              onChange={(e) => setOrderId(e.target.value)}
+              size="small"
+            />
+            <Button sx={{ ml: 1 }} variant="contained" disabled={!orderId}>
+              Xem Order
+            </Button>
+          </Box>
+          {order && (
+            <Box mt={2}>
+              <Typography variant="h6">Món trong Order</Typography>
+              <Grid container spacing={2}>
+                {order.items.map((item) => (
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }} key={item.id}>
+                    <Card>
+                      <CardContent>
+                        <Typography variant="subtitle2">
+                          {item.menuItemName}
+                        </Typography>
+                        <Typography variant="caption">
+                          SL: {item.quantity}
+                        </Typography>
+                        <Box mt={1}>
+                          <Chip label={item.status} size="small" />
+                        </Box>
+                        <FormControl fullWidth sx={{ mt: 1 }}>
+                          <InputLabel>Trạng thái</InputLabel>
+                          <Select
+                            label="Trạng thái"
+                            value={item.status}
+                            onChange={(e) =>
+                              handleUpdateItemStatus(
+                                item.id,
+                                String(e.target.value)
+                              )
+                            }
+                          >
+                            {statusOptions.map((s) => (
+                              <MenuItem key={s} value={s}>
+                                {s}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+          )}
+        </Box>
+      )}
+
+      {tab === 2 && (
+        <Box>
+          <Typography variant="h6">Yêu cầu thêm</Typography>
+          <Box mt={1} display="flex" gap={1}>
+            <FormControl size="small" sx={{ minWidth: 160 }}>
+              <InputLabel>Loại</InputLabel>
+              <Select
+                label="Loại"
+                value={requestType}
+                onChange={(e) => setRequestType(String(e.target.value))}
+              >
+                {requestTypes.map((t) => (
+                  <MenuItem key={t.value} value={t.value}>
+                    {t.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <TextField
+              label="Mô tả"
+              value={requestDesc}
+              onChange={(e) => setRequestDesc(e.target.value)}
+              size="small"
+              fullWidth
+            />
+            <Button variant="contained" onClick={handleCreateRequest}>
+              Gửi
+            </Button>
+          </Box>
+          <List>
+            {requests.map((r) => (
+              <ListItem
+                key={r.id}
+                secondaryAction={
+                  <Stack direction="row" spacing={1}>
                     <Button
                       size="small"
-                      variant="outlined"
                       onClick={() => updateRequestStatus(r.id, "InProgress")}
                     >
                       Bắt đầu
@@ -346,24 +387,30 @@ export default function SessionDetailsPage() {
                     </Button>
                     <Button
                       size="small"
-                      color="error"
+                      color="warning"
                       onClick={() => updateRequestStatus(r.id, "Cancelled")}
                     >
-                      Hủy
+                      Huỷ
                     </Button>
-                  </>
-                )}
-              </Stack>
-            </ListItem>
-          ))}
-        </List>
-      </Box>
-
-      <Snackbar
-        open={!!snackbar?.open}
-        onClose={() => setSnackbar(null)}
-        message={snackbar?.message}
-      />
+                  </Stack>
+                }
+              >
+                <ListItemText
+                  primary={`${r.requestType} • ${r.description}`}
+                  secondary={`${new Date(r.createdAt).toLocaleString()} • ${
+                    r.status
+                  }`}
+                />
+              </ListItem>
+            ))}
+            {requests.length === 0 && (
+              <Typography variant="body2" color="text.secondary">
+                Không có yêu cầu
+              </Typography>
+            )}
+          </List>
+        </Box>
+      )}
 
       <Dialog
         open={attachOpen}

@@ -23,6 +23,8 @@ export interface CreateServiceRequestRequest {
 export interface UpdateServiceRequestRequest {
   status?: string;
   assignedToUserId?: string;
+  requestType?: string;
+  description?: string;
 }
 
 export interface ItemResponse<T> {
@@ -75,6 +77,10 @@ const serviceRequestsApi = {
   },
   async complete(id: string): Promise<ItemResponse<boolean>> {
     const res = await axios.post(`/service-requests/${id}/complete`);
+    return res.data;
+  },
+  async delete(id: string): Promise<ItemResponse<boolean>> {
+    const res = await axios.delete(`/service-requests/${id}`);
     return res.data;
   },
 };
