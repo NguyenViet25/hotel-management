@@ -5,18 +5,13 @@ import {
   Dashboard as DashboardIcon,
   LocalDining as DiningIcon,
   Discount,
-  Gamepad,
   History,
   Hotel as HotelIcon,
-  Image,
   InsertEmoticon,
-  Payments as PaymentsIcon,
   Person as PersonIcon,
   Receipt as ReceiptIcon,
   Restaurant as RestaurantIcon,
-  Room as RoomIcon,
   SensorsOutlined,
-  Settings as SettingsIcon,
   ShoppingCart,
   TableBar,
 } from "@mui/icons-material";
@@ -38,6 +33,11 @@ export const menuItems = {
   ],
   facilityManager: [
     { title: "Tổng quan", path: "/manager/dashboard", icon: <DashboardIcon /> },
+    {
+      title: "Quản lý người dùng",
+      path: "/manager/user-management",
+      icon: <PersonIcon />,
+    },
     { title: "Loại phòng", path: "/manager/room-types", icon: <Category /> },
     { title: "Phòng", path: "/manager/rooms", icon: <Bed /> },
     {

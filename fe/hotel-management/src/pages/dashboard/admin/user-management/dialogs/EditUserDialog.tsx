@@ -27,6 +27,7 @@ interface EditUserDialogProps {
   ) => void;
   handleSubmit: () => void;
   isSubmitting: boolean;
+  enableHotelSelect?: boolean;
 }
 
 const EditUserDialog: React.FC<EditUserDialogProps> = ({
@@ -38,6 +39,7 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
   handleInputChange,
   handleSubmit,
   isSubmitting,
+  enableHotelSelect,s
 }) => {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -113,11 +115,13 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
             value={formData?.roles?.[0] || ""}
             onChange={(e) => handleInputChange(e)}
           />
-          <HotelSelect
-            name="propertyRoles"
-            value={formData?.propertyRoles?.[0]?.hotelId || ""}
-            onChange={(e) => handleInputChange(e)}
-          />
+          {enableHotelSelect && (
+            <HotelSelect
+              name="propertyRoles"
+              value={formData?.propertyRoles?.[0]?.hotelId || ""}
+              onChange={(e) => handleInputChange(e)}
+            />
+          )}
 
           <Stack direction={"row"} justifyContent={"right"} gap={1}>
             <Button onClick={onClose}>Hủy</Button>

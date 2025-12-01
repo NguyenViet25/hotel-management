@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import type {
   CreateUserRequest,
   PropertyRole,
-  UpdateUserRequest,
   User,
 } from "../../../../api/userService";
 import userService from "../../../../api/userService";
@@ -12,12 +11,12 @@ import DataTable from "../../../../components/common/DataTable";
 import PageTitle from "../../../../components/common/PageTitle";
 import { isLocked } from "../../../../utils/is-locked";
 import { getRoleInfo } from "../../../../utils/role-mapper";
-import CreateUserDialog from "./dialogs/CreateUserDialog";
-import EditUserDialog from "./dialogs/EditUserDialog";
-import LockUserDialog from "./dialogs/LockUserDialog";
-import ResetPasswordDialog from "./dialogs/ResetPasswordDialog";
+import CreateUserDialog from "../../admin/user-management/dialogs/CreateUserDialog";
+import EditUserDialog from "../../admin/user-management/dialogs/EditUserDialog";
+import LockUserDialog from "../../admin/user-management/dialogs/LockUserDialog";
+import ResetPasswordDialog from "../../admin/user-management/dialogs/ResetPasswordDialog";
 
-const UserManagement: React.FC = () => {
+const ManagerUserManagement: React.FC = () => {
   // State for user list
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -221,7 +220,7 @@ const UserManagement: React.FC = () => {
       } else {
         showSnackbar(response.message || "Không thể tạo người dùng", "error");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating user:", error.response.data.message);
       showSnackbar(error.response.data.message, "error");
     } finally {
@@ -420,7 +419,7 @@ const UserManagement: React.FC = () => {
         handleInputChange={handleInputChange}
         handleSubmit={handleCreateUser}
         isSubmitting={isSubmitting}
-        enableHotelSelect={true}
+        enableHotelSelect={false}
       />
 
       {/* Edit User Dialog */}
@@ -428,12 +427,12 @@ const UserManagement: React.FC = () => {
         open={editDialogOpen}
         onClose={() => setEditDialogOpen(false)}
         selectedUser={selectedUser}
-        formData={formData as UpdateUserRequest}
+        formData={formData as any}
         formErrors={formErrors}
         handleInputChange={handleInputChange}
-        enableHotelSelect={true}
         handleSubmit={handleUpdateUser}
         isSubmitting={isSubmitting}
+        enableHotelSelect={false}
       />
 
       {/* Lock User Dialog */}
@@ -473,4 +472,4 @@ const UserManagement: React.FC = () => {
   );
 };
 
-export default UserManagement;
+export default ManagerUserManagement;

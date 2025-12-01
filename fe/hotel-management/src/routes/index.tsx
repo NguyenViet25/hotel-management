@@ -226,6 +226,14 @@ const router = createBrowserRouter([
         element: <ManagerDashboard />,
       },
       {
+        path: "user-management",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <UserManagementPage />
+          </Suspense>
+        ),
+      },
+      {
         path: "room-types",
         element: (
           <Suspense fallback={<div>Loading...</div>}>
