@@ -192,3 +192,4 @@
 2025-12-01 - 2 - 02:05:09 UTC :: test: UC-28 Room charge F&B: ghi hoa don ban an vao folio. — bo sung metrics/telemetry co ban (can theo doi them)
 2025-12-01 - 3 - 02:05:10 UTC :: ci: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — bo sung case canh bien & no-show (khong doi hanh vi)
 2025-12-01 - 4 - 02:05:13 UTC :: perf: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — toi uu truy van va bo nho (dat tieu chi toi thieu)
+2025-12-01 - 5 - 02:05:15 UTC :: refactor: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — bo sung unit test muc co ban (chuan bi cho tinh nang tiep theo)
