@@ -188,3 +188,4 @@
 2025-11-30 - 3 - 01:57:20 UTC :: refactor: UC-34 Cham cong: ghi nhan diem danh, ban giao ca. — bo sung unit test muc co ban (anh huong thap)
 2025-11-30 - 4 - 01:57:23 UTC :: feat: UC-19 Lich phong: calendar trang thai phong theo ngay. — cai thien hieu nang render/list (da smoke test)
 2025-11-30 - 5 - 01:57:26 UTC :: test: UC-36 Duyet ngoai le: duyet/tu choi theo han muc. — sua validate va bo sung thong bao loi (dam bao backward-compatible)
+2025-12-01 - 1 - 02:05:06 UTC :: ci: UC-22 Minibar/Amenity: ghi tieu hao, post charge vao folio. — dieu chinh quyen truy cap theo vai tro (chuan bi cho tinh nang tiep theo)
