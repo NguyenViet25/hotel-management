@@ -1,4 +1,4 @@
-import { Alert, Box, Button, Chip, Snackbar, Stack } from "@mui/material";
+import { Box, Button, Chip, Stack } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useStore, type StoreState } from "../../../../../hooks/useStore";
 import tablesApi, {
@@ -7,6 +7,7 @@ import tablesApi, {
 } from "../../../../../api/tablesApi";
 import diningSessionsApi from "../../../../../api/diningSessionsApi";
 import TablesTable from "../../../manager/tables/components/TablesTable";
+import { toast } from "react-toastify";
 
 type Props = {
   sessionId: string;
@@ -23,11 +24,7 @@ const AssignMultipleTableDialog: React.FC<Props> = ({
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string | number>("");
   const [selected, setSelected] = useState<string[]>([]);
-  const [snackbar, setSnackbar] = useState<{
-    open: boolean;
-    message: string;
-    severity: "success" | "error" | "info" | "warning";
-  }>({ open: false, message: "", severity: "success" });
+  const [initialSelected, setInitialSelected] = useState<string[]>([]);
 
   const fetchTables = async () => {
     if (!hotelId) return;
@@ -45,11 +42,7 @@ const AssignMultipleTableDialog: React.FC<Props> = ({
       });
       if (res.isSuccess) setItems(res.data);
     } catch {
-      setSnackbar({
-        open: true,
-        message: "Không tải được danh sách bàn",
-        severity: "error",
-      });
+      toast.error("Không tải được danh sách bàn");
     } finally {
       setLoading(false);
     }
@@ -70,6 +63,20 @@ const AssignMultipleTableDialog: React.FC<Props> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter]);
 
+  useEffect(() => {
+    if (!sessionId) return;
+    (async () => {
+      try {
+        const res = await diningSessionsApi.getSession(sessionId);
+        if (res.isSuccess) {
+          const ids = (res.data.tables || []).map((t) => t.tableId);
+          setInitialSelected(ids);
+          setSelected(ids);
+        }
+      } catch {}
+    })();
+  }, [sessionId]);
+
   const toggleSelect = (id: string, status: TableStatus) => {
     if (status !== TableStatus.Available) return;
     setSelected((prev) =>
@@ -80,26 +87,28 @@ const AssignMultipleTableDialog: React.FC<Props> = ({
   const handleAssign = async () => {
     if (!sessionId || selected.length === 0) return;
     try {
+      const attachIds = selected.filter((id) => !initialSelected.includes(id));
+      const detachIds = initialSelected.filter((id) => !selected.includes(id));
+      if (attachIds.length === 0 && detachIds.length === 0) {
+        toast.info("Không có thay đổi");
+        return;
+      }
       const res = await diningSessionsApi.updateTables(sessionId, {
-        attachTableIds: selected,
+        attachTableIds: attachIds,
+        detachTableIds: detachIds,
       });
       if (res.isSuccess) {
-        setSnackbar({
-          open: true,
-          message: "Đã gắn các bàn đã chọn",
-          severity: "success",
-        });
+        toast.success(
+          `Đã cập nhật gán bàn (gắn: ${attachIds.length}, gỡ: ${detachIds.length})`
+        );
         setSelected([]);
+        setInitialSelected([]);
         await onAssigned?.();
       } else {
-        setSnackbar({
-          open: true,
-          message: res.message || "Gắn bàn thất bại",
-          severity: "error",
-        });
+        toast.error(res.message || "Cập nhật gán bàn thất bại");
       }
     } catch {
-      setSnackbar({ open: true, message: "Đã xảy ra lỗi", severity: "error" });
+      toast.error("Đã xảy ra lỗi");
     }
   };
 
@@ -135,16 +144,6 @@ const AssignMultipleTableDialog: React.FC<Props> = ({
         selectedIds={selected}
         onSelectToggle={toggleSelect}
       />
-
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={3000}
-        onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
-      >
-        <Alert severity={snackbar.severity} sx={{ width: "100%" }}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
     </Box>
   );
 };

@@ -371,7 +371,7 @@ const TablesTable: React.FC<TablesTableProps> = ({
                               fullWidth
                               size="small"
                               variant={isSelected ? "contained" : "outlined"}
-                              disabled={!available}
+                              disabled={!available && !isSelected}
                               onClick={() =>
                                 onSelectToggle?.(row.id, row.status)
                               }
