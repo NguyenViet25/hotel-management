@@ -188,3 +188,4 @@
 2025-11-30 - 3 - 01:57:26 UTC :: test: UC-42 Phan quyen: thiet lap quyen theo co so. — bo sung case canh bien & no-show (dam bao backward-compatible)
 2025-11-30 - 4 - 01:57:28 UTC :: ci: UC-36 Duyet ngoai le: duyet/tu choi theo han muc. — them log chi tiet phuc vu audit (da kiem tra lint)
 2025-11-30 - 5 - 01:57:29 UTC :: refactor: UC-37 Night Audit: kiem tra folio chua chot, khoa giao dich. — chinh sua tai lieu & mo ta API (dam bao backward-compatible)
+2025-12-01 - 1 - 02:05:08 UTC :: perf: UC-34 Cham cong: ghi nhan diem danh, ban giao ca. — chuan hoa ten ham/bien theo convention (da smoke test)
