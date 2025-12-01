@@ -32,13 +32,14 @@ import {
   TableBar,
   Edit,
   Delete,
+  RemoveCircle,
+  ReceiptLong,
 } from "@mui/icons-material";
 import { LocalizationProvider, DateTimePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import useSWR from "swr";
 import diningSessionsApi from "../../../../api/diningSessionsApi";
-import ordersApi, { type OrderDetailsDto } from "../../../../api/ordersApi";
-import orderItemsApi from "../../../../api/orderItemsApi";
+import { type OrderSummaryDto } from "../../../../api/ordersApi";
 import serviceRequestsApi, {
   type ServiceRequestDto,
 } from "../../../../api/serviceRequestsApi";
@@ -47,6 +48,7 @@ import { useStore, type StoreState } from "../../../../hooks/useStore";
 import { toast } from "react-toastify";
 import PageTitle from "../../../../components/common/PageTitle";
 import AssignMultipleTableDialog from "./components/AssignMultipleTableDialog";
+import AssignOrderDialog from "./components/AssignOrderDialog";
 import dayjs, { Dayjs } from "dayjs";
 import tableImg from "../../../../assets/table.png";
 
@@ -54,7 +56,10 @@ export default function SessionDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { hotelId } = useStore<StoreState>((s) => s);
-  const [orderId, setOrderId] = useState<string>("");
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [assignedOrder, setAssignedOrder] = useState<OrderSummaryDto | null>(
+    null
+  );
   const [requestType, setRequestType] = useState("water");
   const [requestDesc, setRequestDesc] = useState("");
   const [tab, setTab] = useState<number>(0);
@@ -80,20 +85,15 @@ export default function SessionDetailsPage() {
     id ? ["session", id] : null,
     async () => diningSessionsApi.getSession(id!)
   );
-  const { data: orderRes, mutate: mutateOrder } = useSWR(
-    orderId ? ["order", orderId] : null,
-    async () => ordersApi.getById(orderId)
-  );
   const { data: reqRes, mutate: mutateReq } = useSWR(
     id ? ["requests", id] : null,
     async () => serviceRequestsApi.listBySession(id!, 1, 20)
   );
 
   const session = sessionRes?.data;
-  const order = orderRes?.data as OrderDetailsDto | undefined;
   const requests = (reqRes?.data?.requests || []) as ServiceRequestDto[];
 
-  const statusOptions = ["Pending", "Cooking", "Ready", "Served", "Voided"];
+  const statusOptions: string[] = [];
 
   const capacityGroups = useMemo(() => {
     const caps = Array.from(
@@ -102,10 +102,7 @@ export default function SessionDetailsPage() {
     return caps;
   }, [session]);
 
-  const handleUpdateItemStatus = async (itemId: string, status: string) => {
-    await orderItemsApi.updateStatus(itemId, { status });
-    await mutateOrder();
-  };
+  const handleUpdateItemStatus = async (_itemId: string, _status: string) => {};
 
   const handleCreateRequest = async () => {
     if (!hotelId || !id) return;
@@ -266,6 +263,16 @@ export default function SessionDetailsPage() {
                 )}
               </Typography>
             </Stack>
+            {assignedOrder && (
+              <Stack direction="row" spacing={1} alignItems="center">
+                <ReceiptLong fontSize="small" color="disabled" />
+                <Typography variant="caption" color="text.secondary">
+                  Order: {assignedOrder.customerName || "Walk-in"} •{" "}
+                  {assignedOrder.itemsCount} món •{" "}
+                  {Number(assignedOrder.itemsTotal).toLocaleString()} đ
+                </Typography>
+              </Stack>
+            )}
             {!!session.notes && (
               <Stack direction="row" spacing={1} alignItems="center">
                 <CleanHands fontSize="small" color="disabled" />
@@ -292,6 +299,15 @@ export default function SessionDetailsPage() {
             <Button
               size="small"
               variant="contained"
+              color="info"
+              startIcon={<ReceiptLong />}
+              onClick={() => setAssignOpen(true)}
+            >
+              Gán order
+            </Button>
+            <Button
+              size="small"
+              variant="contained"
               color="success"
               startIcon={<Edit />}
               onClick={openEdit}
@@ -313,7 +329,6 @@ export default function SessionDetailsPage() {
 
       <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }}>
         <Tab label="Bàn" />
-        <Tab label="Order" />
         <Tab label="Yêu cầu" />
       </Tabs>
 
@@ -455,7 +470,7 @@ export default function SessionDetailsPage() {
                               variant="caption"
                               color="text.secondary"
                             >
-                              6 người/bàn
+                              {t.capacity} người/bàn
                             </Typography>
                           </Stack>
                           <Stack
@@ -482,6 +497,7 @@ export default function SessionDetailsPage() {
                             color="warning"
                             variant="contained"
                             fullWidth
+                            startIcon={<RemoveCircle />}
                             onClick={() => detachTable(t.tableId)}
                           >
                             Tách
@@ -498,65 +514,6 @@ export default function SessionDetailsPage() {
       )}
 
       {tab === 1 && (
-        <Box>
-          <Box>
-            <TextField
-              label="Order Id"
-              value={orderId}
-              onChange={(e) => setOrderId(e.target.value)}
-              size="small"
-            />
-            <Button sx={{ ml: 1 }} variant="contained" disabled={!orderId}>
-              Xem Order
-            </Button>
-          </Box>
-          {order && (
-            <Box mt={2}>
-              <Typography variant="h6">Món trong Order</Typography>
-              <Grid container spacing={2}>
-                {order.items.map((item) => (
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }} key={item.id}>
-                    <Card>
-                      <CardContent>
-                        <Typography variant="subtitle2">
-                          {item.menuItemName}
-                        </Typography>
-                        <Typography variant="caption">
-                          SL: {item.quantity}
-                        </Typography>
-                        <Box mt={1}>
-                          <Chip label={item.status} size="small" />
-                        </Box>
-                        <FormControl fullWidth sx={{ mt: 1 }}>
-                          <InputLabel>Trạng thái</InputLabel>
-                          <Select
-                            label="Trạng thái"
-                            value={item.status}
-                            onChange={(e) =>
-                              handleUpdateItemStatus(
-                                item.id,
-                                String(e.target.value)
-                              )
-                            }
-                          >
-                            {statusOptions.map((s) => (
-                              <MenuItem key={s} value={s}>
-                                {s}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                ))}
-              </Grid>
-            </Box>
-          )}
-        </Box>
-      )}
-
-      {tab === 2 && (
         <Box>
           <Typography variant="h6">Yêu cầu thêm</Typography>
           <Box mt={1} display="flex" gap={1}>
@@ -696,6 +653,18 @@ export default function SessionDetailsPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {id && (
+        <AssignOrderDialog
+          open={assignOpen}
+          sessionId={id}
+          onClose={() => setAssignOpen(false)}
+          onAssigned={() => {
+            toast.success("Đã gắn order");
+          }}
+          onAssignedWithDetails={(o) => setAssignedOrder(o)}
+        />
+      )}
 
       <Dialog open={!!deleteTargetId} onClose={() => setDeleteTargetId(null)}>
         <DialogTitle>Xóa phiên</DialogTitle>

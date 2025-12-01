@@ -9,9 +9,10 @@ interface Props {
   sessionId: string;
   onClose: () => void;
   onAssigned: () => void;
+  onAssignedWithDetails?: (order: OrderSummaryDto) => void;
 }
 
-export default function AssignOrderDialog({ open, sessionId, onClose, onAssigned }: Props) {
+export default function AssignOrderDialog({ open, sessionId, onClose, onAssigned, onAssignedWithDetails }: Props) {
   const { hotelId } = useStore<StoreState>((s) => s);
   const [search, setSearch] = useState("");
   const [results, setResults] = useState<OrderSummaryDto[]>([]);
@@ -33,6 +34,8 @@ export default function AssignOrderDialog({ open, sessionId, onClose, onAssigned
 
   const handleAssign = async (orderId: string) => {
     await diningSessionsApi.assignOrder(sessionId, orderId);
+    const found = results.find((o) => o.id === orderId);
+    if (found && onAssignedWithDetails) onAssignedWithDetails(found);
     onAssigned();
     onClose();
   };
