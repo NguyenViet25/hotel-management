@@ -22,6 +22,8 @@ import {
 import TableChartIcon from "@mui/icons-material/TableChart";
 import GridViewIcon from "@mui/icons-material/GridView";
 import SearchIcon from "@mui/icons-material/Search";
+import GroupIcon from "@mui/icons-material/Group";
+import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
 import React, { useEffect, useState } from "react";
 import roomTypesApi, {
   type CreateRoomTypeRequest,
@@ -303,21 +305,39 @@ const RoomTypePage: React.FC = () => {
                       {rt.name}
                     </Typography>
                     <Stack spacing={1}>
-                      <Typography
-                        variant="body2"
-                        sx={{ bgcolor: "rgba(255,255,255,0.2)" }}
+                      <Stack
+                        direction="row"
+                        spacing={0.75}
+                        alignItems="center"
+                        sx={{
+                          borderRadius: 1,
+                          px: 0.75,
+                          py: 0.25,
+                        }}
                       >
-                        Sức chứa: {rt.roomCount || 0}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{ bgcolor: "rgba(255,255,255,0.2)" }}
+                        <GroupIcon fontSize="small" color="primary" />
+                        <Typography variant="body2">
+                          Sức chứa: {rt.roomCount || 0}
+                        </Typography>
+                      </Stack>
+                      <Stack
+                        direction="row"
+                        spacing={0.75}
+                        alignItems="center"
+                        sx={{
+                          borderRadius: 1,
+                          px: 0.75,
+                          py: 0.25,
+                        }}
                       >
-                        Giá:{" "}
-                        {`${(rt.priceFrom ?? 0).toLocaleString()}đ - ${(
-                          rt.priceTo ?? 0
-                        ).toLocaleString()}đ`}
-                      </Typography>
+                        <MonetizationOnIcon fontSize="small" color="primary" />
+                        <Typography variant="body2">
+                          Giá:{" "}
+                          {`${(rt.priceFrom ?? 0).toLocaleString()}đ - ${(
+                            rt.priceTo ?? 0
+                          ).toLocaleString()}đ`}
+                        </Typography>
+                      </Stack>
 
                       <Typography
                         variant="body2"
