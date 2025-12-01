@@ -189,3 +189,4 @@
 2025-11-30 - 4 - 01:57:21 UTC :: refactor: UC-38 Audit Log: xem/loc thao tac, hanh dong, thoi gian. — cap nhat cau hinh va kiem tra bien (khong doi hanh vi)
 2025-11-30 - 5 - 01:57:24 UTC :: chore: UC-01 RBAC: tao, sua, khoa tai khoan; gan vai tro. — toi uu truy van va bo nho (dong bo voi BE/FE)
 2025-12-01 - 1 - 02:05:06 UTC :: perf: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — bo sung index & toi uu DB (dam bao backward-compatible)
+2025-12-01 - 2 - 02:05:07 UTC :: build: UC-33 Phan ca: gan ca, duyet doi ca/ngi phep. — kiem tra tuong thich mui gio/tien te (da kiem tra lint)
