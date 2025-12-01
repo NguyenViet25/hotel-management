@@ -249,93 +249,100 @@ const MenuManagementPage: React.FC = () => {
 
   return (
     <Box>
-      <PageTitle title="Quản lý thực đơn" subtitle="Xem, thêm, sửa, xóa món" />
-
       <Stack
         direction={{ xs: "column", lg: "row" }}
         justifyContent={"space-between"}
         sx={{ mb: 2 }}
         spacing={2}
       >
-        <Stack direction={{ xs: "column", lg: "row" }} spacing={2}>
-          <ToggleButtonGroup
-            size="small"
-            value={viewMode}
-            exclusive
-            onChange={(_, v) => setViewMode(v ?? viewMode)}
+        <PageTitle
+          title="Quản lý thực đơn"
+          subtitle="Xem, thêm, sửa, xóa món"
+        />
+        <Box>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<AddIcon />}
+            onClick={openCreate}
           >
-            <ToggleButton value="table">
-              <TableChart sx={{ mr: 1 }} fontSize="small" />
-              Bảng
-            </ToggleButton>
-            <ToggleButton value="card">
-              <CardMembership sx={{ mr: 1 }} fontSize="small" />
-              Thẻ
-            </ToggleButton>
-          </ToggleButtonGroup>
-          <TextField
-            select
-            label="Xem theo"
-            size="small"
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value as any)}
-            sx={{ minWidth: 180 }}
-          >
-            <MenuItem value="food">Theo món</MenuItem>
-            <MenuItem value="set">Theo set</MenuItem>
-          </TextField>
-          {typeFilter === "food" && (
-            <TextField
-              select
-              label="Nhóm món"
-              size="small"
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              sx={{ minWidth: 200 }}
-            >
-              <MenuItem value=" ">Tất cả</MenuItem>
-              <MenuItem value="Món khai vị">Món khai vị</MenuItem>
-              <MenuItem value="Món chính">Món chính</MenuItem>
-              <MenuItem value="Món lẩu">Món lẩu</MenuItem>
-              <MenuItem value="Món nướng">Món nướng</MenuItem>
-              <MenuItem value="Món tráng miệng">Món tráng miệng</MenuItem>
-              <MenuItem value="Thức uống">Thức uống</MenuItem>
-            </TextField>
-          )}
-          <TextField
-            select
-            label="Trạng thái"
-            size="small"
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            sx={{ minWidth: 180 }}
-          >
-            <MenuItem value="0">Đang bán</MenuItem>
-            <MenuItem value="1">Ngừng bán</MenuItem>
-          </TextField>
-          <TextField
-            label="Tìm kiếm"
-            size="small"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            sx={{ minWidth: 240 }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
-          />
-        </Stack>
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<AddIcon />}
-          onClick={openCreate}
+            {typeFilter === "set" ? "Thêm set" : "Thêm món"}
+          </Button>
+        </Box>
+      </Stack>
+
+      <Stack direction={{ xs: "column", lg: "row" }} mb={2} spacing={2}>
+        <ToggleButtonGroup
+          size="small"
+          value={viewMode}
+          exclusive
+          onChange={(_, v) => setViewMode(v ?? viewMode)}
         >
-          {typeFilter === "set" ? "Thêm set" : "Thêm món"}
-        </Button>
+          <ToggleButton value="table">
+            <TableChart sx={{ mr: 1 }} fontSize="small" />
+            Bảng
+          </ToggleButton>
+          <ToggleButton value="card">
+            <CardMembership sx={{ mr: 1 }} fontSize="small" />
+            Thẻ
+          </ToggleButton>
+        </ToggleButtonGroup>
+
+        <TextField
+          select
+          label="Xem theo"
+          size="small"
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value as any)}
+          sx={{ minWidth: 180 }}
+        >
+          <MenuItem value="food">Theo món</MenuItem>
+          <MenuItem value="set">Theo set</MenuItem>
+        </TextField>
+        {typeFilter === "food" && (
+          <TextField
+            select
+            label="Nhóm món"
+            size="small"
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            sx={{ minWidth: 200 }}
+          >
+            <MenuItem value=" ">Tất cả</MenuItem>
+            <MenuItem value="Món khai vị">Món khai vị</MenuItem>
+            <MenuItem value="Món chính">Món chính</MenuItem>
+            <MenuItem value="Món lẩu">Món lẩu</MenuItem>
+            <MenuItem value="Món nướng">Món nướng</MenuItem>
+            <MenuItem value="Món tráng miệng">Món tráng miệng</MenuItem>
+            <MenuItem value="Thức uống">Thức uống</MenuItem>
+          </TextField>
+        )}
+        <TextField
+          select
+          label="Trạng thái"
+          size="small"
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+          sx={{ minWidth: 180 }}
+        >
+          <MenuItem value="0">Đang bán</MenuItem>
+          <MenuItem value="1">Ngừng bán</MenuItem>
+        </TextField>
+        <TextField
+          label="Tìm kiếm"
+          size="small"
+          value={searchTerm}
+          placeholder="Tìm kiếm món"
+          onChange={(e) => setSearchTerm(e.target.value)}
+          fullWidth
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
+        />
       </Stack>
 
       {viewMode === "table" ? (

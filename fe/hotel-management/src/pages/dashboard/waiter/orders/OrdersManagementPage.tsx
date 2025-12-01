@@ -367,7 +367,7 @@ const OrdersManagementPage: React.FC = () => {
                 />
               );
             }
-            return listData.map((o) => {
+            return listData.map((o, number) => {
               const items = orderItemsMap[o.id] || [];
               const foods = items.filter((it) => {
                 const mi = menuItems.find((m) => m.id === it.menuItemId);
@@ -389,7 +389,8 @@ const OrdersManagementPage: React.FC = () => {
                         <Stack direction="row" spacing={1} alignItems="center">
                           <ReceiptIcon color="primary" />
                           <Typography fontWeight={700}>
-                            #{String(o.id).slice(0, 8).toUpperCase()}
+                            {/* Yêu cầu: #{String(o.id).slice(0, 8).toUpperCase()} */}
+                            Yêu cầu: #{String(number + 1).toUpperCase()}
                           </Typography>
                           <Chip
                             label={o.isWalkIn ? "Vãng lai" : "Đặt phòng"}

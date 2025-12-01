@@ -17,6 +17,7 @@ import MinibarManagementPage from "../pages/dashboard/manager/minibars/MinibarMa
 import MyTask from "../pages/dashboard/housekeeper/MyTask";
 import RoomNeedCleaningPage from "../pages/dashboard/housekeeper/RoomNeedCleaningPage";
 import InvoiceManagementPage from "../pages/dashboard/frontdesk/invoices/InvoiceManagementPage";
+import FrontDeskTableManagementPage from "../pages/dashboard/frontdesk/tables/FrontDeskTableManagementPage";
 
 // Role-aware layout wrapper for standalone pages like /profile
 const RoleAwareLayout = () => {
@@ -313,6 +314,22 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<div>Loading...</div>}>
             <InvoiceManagementPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "sessions",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <SessionBoardPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "table-map",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <FrontDeskTableManagementPage />
           </Suspense>
         ),
       },

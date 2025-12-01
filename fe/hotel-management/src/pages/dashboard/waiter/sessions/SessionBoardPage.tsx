@@ -1,9 +1,14 @@
-import { AddCircle, AddTask } from "@mui/icons-material";
+import {
+  AccessTime,
+  AddCircle,
+  Groups,
+  Search,
+  TableRestaurant as TableRestaurantIcon,
+} from "@mui/icons-material";
 import {
   Box,
   Button,
   Card,
-  CardContent,
   Chip,
   Dialog,
   DialogActions,
@@ -11,14 +16,13 @@ import {
   DialogTitle,
   FormControl,
   Grid,
+  InputAdornment,
   InputLabel,
-  List,
-  ListItem,
-  ListItemText,
   MenuItem,
   Select,
   Snackbar,
   Stack,
+  TextField,
   Typography,
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
@@ -32,10 +36,12 @@ import tablesApi, {
   type TableDto,
   type TablesQueryParams,
 } from "../../../../api/tablesApi";
+import { type Option } from "../../../../components/common/CustomSelect";
 import PageTitle from "../../../../components/common/PageTitle";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
 import AssignOrderDialog from "./components/AssignOrderDialog";
 import CreateSessionDialog from "./components/CreateSessionDialog";
+import AssignMultipleTableDialog from "./components/AssignMultipleTableDialog";
 
 export default function SessionBoardPage() {
   const { hotelId } = useStore<StoreState>((s) => s);
@@ -52,6 +58,7 @@ export default function SessionBoardPage() {
   >([]);
   const [selectedAttachTableId, setSelectedAttachTableId] =
     useState<string>("");
+  const [attachSearch, setAttachSearch] = useState("");
   const [activeSession, setActiveSession] = useState<DiningSessionDto | null>(
     null
   );
@@ -62,6 +69,8 @@ export default function SessionBoardPage() {
     severity: "success" | "error";
   } | null>(null);
   const [statusFilter, setStatusFilter] = useState<number | "all">("all");
+  const [searchText, setSearchText] = useState("");
+  const [dayFilter, setDayFilter] = useState<number>(-1);
 
   const { data: tablesRes, mutate: mutateTables } = useSWR(
     ["tables", hotelId, statusFilter],
@@ -94,6 +103,29 @@ export default function SessionBoardPage() {
     () => sessionsRes?.data?.sessions || [],
     [sessionsRes]
   );
+
+  const filteredTables = useMemo(() => {
+    const bySearch = (t: TableDto) =>
+      !searchText || t.name.toLowerCase().includes(searchText.toLowerCase());
+    return (tables || []).filter(bySearch);
+  }, [tables, searchText]);
+
+  const dayOptions: Option[] = useMemo(() => {
+    const caps = Array.from(
+      new Set((filteredTables || []).map((t) => t.capacity))
+    ).sort((a, b) => a - b);
+    return [{ value: -1, label: "Tất cả dãy" }].concat(
+      caps.map((c) => ({ value: c, label: `Dãy ${c}` }))
+    );
+  }, [filteredTables]);
+
+  const groupsToRender = useMemo(() => {
+    return dayOptions
+      .filter((o) => o.value !== -1)
+      .filter((o) =>
+        dayFilter === -1 ? true : String(o.value) === String(dayFilter)
+      );
+  }, [dayOptions, dayFilter]);
 
   const tableStatusChip = (status: number) => {
     const color =
@@ -247,29 +279,29 @@ export default function SessionBoardPage() {
     <Box>
       <PageTitle title="Phiên phục vụ" subtitle="Quản lý phiên phục vụ " />
       <Stack
-        direction={{ xs: "column", sm: "row" }}
-        spacing={2}
-        alignItems="center"
+        direction={{ xs: "column", md: "row" }}
+        spacing={1}
+        sx={{ mb: 2 }}
         justifyContent={"space-between"}
-        mt={1}
-        mb={2}
       >
-        <Stack direction="row" spacing={2} alignItems="center">
-          <Select
+        <Stack
+          direction={{ xs: "column", md: "row" }}
+          spacing={1}
+          alignItems="center"
+        >
+          <TextField
+            placeholder="Tìm kiếm phiên..."
             size="small"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as any)}
-          >
-            <MenuItem value="all">Tất cả</MenuItem>
-            <MenuItem value={TableStatus.Available}>Trống</MenuItem>
-            <MenuItem value={TableStatus.InUse}>Đang dùng</MenuItem>
-            <MenuItem value={TableStatus.Reserved}>Đặt trước</MenuItem>
-            <MenuItem value={TableStatus.OutOfService}>Ngưng phục vụ</MenuItem>
-          </Select>
-          <Chip
-            label={`Đang mở: ${sessions.length}`}
-            color="primary"
-            size="small"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            sx={{ width: 320 }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search fontSize="small" />
+                </InputAdornment>
+              ),
+            }}
           />
         </Stack>
         <Button
@@ -281,13 +313,72 @@ export default function SessionBoardPage() {
         </Button>
       </Stack>
       <Box mt={2}>
-        <Typography variant="h6">Danh sách phiên</Typography>
-        <List>
+        <Stack
+          direction={{ xs: "column", md: "row" }}
+          spacing={1}
+          alignItems="center"
+          justifyContent="space-between"
+        >
+          <Typography variant="h6">Danh sách phiên</Typography>
+          <Chip
+            label={`Đang mở: ${sessions.length}`}
+            color="primary"
+            size="small"
+          />
+        </Stack>
+        <Grid container spacing={2} mt={1}>
           {sessions.map((s) => (
-            <ListItem
-              key={s.id}
-              secondaryAction={
-                <Stack direction="row" spacing={1}>
+            <Grid key={s.id} size={{ xs: 12, sm: 6, md: 4 }}>
+              <Card
+                variant="outlined"
+                sx={{
+                  borderRadius: 2,
+                  position: "relative",
+                  transition: "all .2s ease",
+                  "&:hover": { boxShadow: 2, borderColor: "grey.300" },
+                }}
+              >
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                    px: 2,
+                    py: 1,
+                    borderRadius: 2,
+                    bgcolor: "primary.light",
+                    border: "2px dashed",
+                    borderColor: "primary.main",
+                  }}
+                >
+                  <AccessTime color="primary" />
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ fontWeight: 800, flexGrow: 1 }}
+                  >
+                    {new Date(s.startedAt).toLocaleString()}
+                  </Typography>
+                  <Chip label="Đang mở" color="primary" size="small" />
+                </Box>
+                <Stack spacing={0.5} sx={{ px: 2, py: 1.5 }}>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Groups fontSize="small" color="disabled" />
+                    <Typography variant="caption" color="text.secondary">
+                      {s.totalGuests} khách
+                    </Typography>
+                  </Stack>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <TableRestaurantIcon fontSize="small" color="disabled" />
+                    <Typography variant="caption" color="text.secondary">
+                      Bàn đã gắn: {(s.tables || []).length}
+                    </Typography>
+                  </Stack>
+                </Stack>
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  sx={{ position: "absolute", bottom: 8, right: 8 }}
+                >
                   <Button
                     size="small"
                     variant="contained"
@@ -310,137 +401,11 @@ export default function SessionBoardPage() {
                     Kết thúc
                   </Button>
                 </Stack>
-              }
-            >
-              <ListItemText
-                primary={`${new Date(s.startedAt).toLocaleString()} • ${
-                  s.totalGuests
-                } khách`}
-                secondary={`Bàn đã gắn: ${(s.tables || []).length}`}
-              />
-            </ListItem>
+              </Card>
+            </Grid>
           ))}
-        </List>
+        </Grid>
       </Box>
-
-      <Typography variant="h6" sx={{ mt: 3 }}>
-        Danh sách bàn
-      </Typography>
-      <Grid container spacing={2} mt={1}>
-        {tables.map((t) => (
-          <Grid key={t.id} size={{ xs: 12, sm: 6, md: 3 }}>
-            <Card
-              onClick={() => handleTableClick(t)}
-              sx={{
-                cursor: "pointer",
-                borderRadius: 2,
-              }}
-              variant="outlined"
-            >
-              <CardContent>
-                <Typography variant="subtitle1">{t.name}</Typography>
-                <Typography variant="caption">{t.capacity} chỗ</Typography>
-                <Box mt={1}>{tableStatusChip(t.status)}</Box>
-                {sessionForTable(t.id) && (
-                  <Box mt={1}>
-                    <Chip label="Phiên đang mở" color="primary" size="small" />
-                    <Stack direction="row" spacing={1} mt={1}>
-                      <Button
-                        size="small"
-                        variant="contained"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(
-                            `/waiter/sessions/${sessionForTable(t.id)!.id}`
-                          );
-                        }}
-                      >
-                        Chi tiết
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActiveSession(sessionForTable(t.id)!);
-                          setAssignOpen(true);
-                        }}
-                      >
-                        Gắn Order
-                      </Button>
-                      <Button
-                        size="small"
-                        color="warning"
-                        onClick={async (e) => {
-                          e.stopPropagation();
-                          const s = sessionForTable(t.id)!;
-                          try {
-                            const res = await diningSessionsApi.detachTable(
-                              s.id,
-                              t.id
-                            );
-                            if (res.isSuccess) {
-                              setSnackbar({
-                                open: true,
-                                message: "Đã tách bàn khỏi phiên",
-                                severity: "success",
-                              });
-                              await mutateSessions();
-                              await mutateTables();
-                            } else {
-                              setSnackbar({
-                                open: true,
-                                message: res.message || "Tách bàn thất bại",
-                                severity: "error",
-                              });
-                            }
-                          } catch {
-                            setSnackbar({
-                              open: true,
-                              message: "Đã xảy ra lỗi",
-                              severity: "error",
-                            });
-                          }
-                        }}
-                      >
-                        Tách bàn
-                      </Button>
-                      <Button
-                        size="small"
-                        color="error"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          endSession(sessionForTable(t.id)!.id);
-                        }}
-                      >
-                        Kết thúc
-                      </Button>
-                    </Stack>
-                  </Box>
-                )}
-                {!sessionForTable(t.id) &&
-                  t.status === TableStatus.Available && (
-                    <Box mt={1}>
-                      <Button
-                        size="small"
-                        variant="contained"
-                        color="inherit"
-                        startIcon={<AddTask />}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedTable(t);
-                          setAttachOpen(true);
-                        }}
-                      >
-                        Gắn vào phiên
-                      </Button>
-                    </Box>
-                  )}
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
 
       <CreateSessionDialog
         open={createOpen}
@@ -469,24 +434,13 @@ export default function SessionBoardPage() {
         open={attachFromSessionOpen}
         onClose={() => setAttachFromSessionOpen(false)}
         fullWidth
-        maxWidth="sm"
+        maxWidth="lg"
       >
         <DialogTitle>Gắn bàn vào phiên</DialogTitle>
         <DialogContent>
-          <FormControl fullWidth size="small" sx={{ mt: 2 }}>
-            <InputLabel>Bàn</InputLabel>
-            <Select
-              label="Bàn"
-              value={selectedAttachTableId}
-              onChange={(e) => setSelectedAttachTableId(String(e.target.value))}
-            >
-              {availableAttachTables.map((t) => (
-                <MenuItem key={t.id} value={t.id}>
-                  {t.name} • {t.capacity} chỗ
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Box pt={1}>
+            <AssignMultipleTableDialog />
+          </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setAttachFromSessionOpen(false)}>Đóng</Button>

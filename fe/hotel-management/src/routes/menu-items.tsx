@@ -15,6 +15,7 @@ import {
   Receipt as ReceiptIcon,
   Restaurant as RestaurantIcon,
   Room as RoomIcon,
+  SensorsOutlined,
   Settings as SettingsIcon,
   ShoppingCart,
   TableBar,
@@ -58,6 +59,16 @@ export const menuItems = {
     { title: "Đặt phòng", path: "/frontdesk/bookings", icon: <HotelIcon /> },
     { title: "Đặt món", path: "/frontdesk/orders", icon: <RestaurantIcon /> },
     { title: "Hóa đơn", path: "/frontdesk/invoices", icon: <ReceiptIcon /> },
+    {
+      title: "Phiên phục vụ",
+      path: "/frontdesk/sessions",
+      icon: <SensorsOutlined />,
+    },
+    {
+      title: "Sơ đồ bàn",
+      path: "/frontdesk/table-map",
+      icon: <TableBar />,
+    },
   ],
   kitchen: [
     { title: "Tổng quan", path: "/kitchen/dashboard", icon: <DashboardIcon /> },
