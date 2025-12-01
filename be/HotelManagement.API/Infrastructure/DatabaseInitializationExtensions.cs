@@ -58,42 +58,41 @@ public static class DatabaseInitializationExtensions
     {
         var hotelId = DEFAULT_HOTEL_ID;
 
-        // Get all room types for the hotel
+        bool roomsExist = await dbContext.Set<HotelRoom>()
+            .AnyAsync(r => r.HotelId == hotelId);
+        if (roomsExist) return;
+
         var roomTypes = await dbContext.Set<RoomType>()
             .Where(rt => rt.HotelId == hotelId)
+            .OrderBy(rt => rt.Name)
             .ToListAsync();
+        if (!roomTypes.Any()) return;
 
-        if (!roomTypes.Any()) return; // No room types to seed
-        var index = 1;
+        var rooms = new List<HotelRoom>();
+        var counts = new[] { 12, 11, 10, 12, 11, 10, 12, 11, 10, 12 };
+        int tIndex = 0;
 
-        foreach (var roomType in roomTypes)
+        for (int floor = 1; floor <= 10; floor++)
         {
-            // Check if rooms already exist for this room type
-            bool exists = await dbContext.Set<HotelRoom>()
-                .AnyAsync(r => r.RoomTypeId == roomType.Id);
-            if (exists) continue;
-
-            var rooms = new List<HotelRoom>();
-            var floor = 1;
-            for (int i = index; i <= 5; i++)
+            int roomCount = counts[floor - 1];
+            for (int i = 1; i <= roomCount; i++)
             {
-                floor = (i - 1) / 2 + 1;
+                var rt = roomTypes[tIndex % roomTypes.Count];
+                tIndex++;
+                var number = floor == 10 ? $"10{i:D2}" : $"{floor}{i:D2}";
                 rooms.Add(new HotelRoom
                 {
                     Id = Guid.NewGuid(),
                     HotelId = hotelId,
-                    RoomTypeId = roomType.Id,
-                    Number = $"P-{floor}{(i + index):D2}", // e.g., STD-001
-                    Floor = floor, // simple floor calculation
+                    RoomTypeId = rt.Id,
+                    Number = number,
+                    Floor = floor,
                     Status = RoomStatus.Available
                 });
-
             }
-            index += 5;
-
-            dbContext.Set<HotelRoom>().AddRange(rooms);
         }
 
+        dbContext.Set<HotelRoom>().AddRange(rooms);
         await dbContext.SaveChangesAsync();
     }
 

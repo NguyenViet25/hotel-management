@@ -1,5 +1,4 @@
-import { Info } from "@mui/icons-material";
-import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import { Add, Info } from "@mui/icons-material";
 import BlockIcon from "@mui/icons-material/Block";
 import ChangeCircleIcon from "@mui/icons-material/ChangeCircle";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -10,7 +9,6 @@ import DoneAllIcon from "@mui/icons-material/DoneAll";
 import EditIcon from "@mui/icons-material/Edit";
 import GroupsIcon from "@mui/icons-material/Groups";
 import HotelIcon from "@mui/icons-material/Hotel";
-import LocalBarIcon from "@mui/icons-material/LocalBar";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import {
   Alert,
@@ -52,10 +50,10 @@ import roomsApi, {
   type UpdateRoomRequest,
 } from "../../../../../api/roomsApi";
 import roomTypesApi, { type RoomType } from "../../../../../api/roomTypesApi";
+import { useStore, type StoreState } from "../../../../../hooks/useStore";
 import ChangeRoomStatusModal from "../components/ChangeRoomStatusModal";
 import RoomFormModal from "../components/RoomFormModal";
 import { ROOM_STATUS_OPTIONS } from "../components/roomsConstants";
-import { useStore, type StoreState } from "../../../../../hooks/useStore";
 
 interface IProps {
   allowAddNew?: boolean;
@@ -183,6 +181,14 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
       }));
   }, [rooms]);
 
+  const roomTypeImgMap = useMemo(() => {
+    const map: Record<string, string | undefined> = {};
+    for (const rt of roomTypes) {
+      map[rt.id] = rt.imageUrl;
+    }
+    return map;
+  }, [roomTypes]);
+
   const statusChip = (status: RoomStatus) => {
     const s = getRoomStatusString(status);
     const map: Record<string, { bg: string; text: string; label: string }> = {
@@ -202,7 +208,7 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
     const icon =
       s === "Sẵn sàng" ? (
         <CheckCircleIcon />
-      ) : s === "Occupied" ? (
+      ) : s === "Đang sử dụng" ? (
         <HotelIcon />
       ) : s === "Đang dọn dẹp" ? (
         <CleaningServicesIcon />
@@ -484,26 +490,14 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
   return (
     <Box>
       {allowAddNew && (
-        <Card
+        <Button
+          sx={{ mb: 2 }}
+          variant="contained"
+          startIcon={<Add />}
           onClick={openCreate}
-          sx={{
-            mb: 2,
-            borderRadius: 3,
-            border: "2px dashed",
-            borderColor: "primary.main",
-            boxShadow: 0,
-            cursor: "pointer",
-            transition: "all 150ms ease",
-            "&:hover": { boxShadow: 3 },
-          }}
         >
-          <Stack p={2} direction="row" spacing={1.5} alignItems="center">
-            <AddCircleOutlineIcon color="primary" />
-            <Typography variant="h6" fontWeight={600}>
-              Thêm Phòng Mới
-            </Typography>
-          </Stack>
-        </Card>
+          Thêm Mới
+        </Button>
       )}
 
       {floors.length === 0 && (
@@ -517,182 +511,229 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
           <Card
             key={floor.floor}
             sx={{
-              borderRadius: 3,
-              overflow: "hidden",
-              bgcolor: "background.paper",
-              boxShadow: "0px 4px 14px rgba(0,0,0,0.08)",
-              transition: "0.25s ease",
+              p: 2,
               position: "relative",
-              borderLeft: "6px solid",
-              borderColor: "primary.main",
-              "&:hover": {
-                boxShadow: "0px 6px 20px rgba(0,0,0,0.15)",
-                transform: "translateY(-2px)",
+              border: "2px dashed",
+              borderColor: "info.main",
+              borderRadius: "14px",
+              background: "linear-gradient(135deg, #E3F2FD 0%, #F5FAFF 100%)",
+              "&:before": {
+                content: '""',
+                position: "absolute",
+                top: "50%",
+                left: -8,
+                transform: "translateY(-50%)",
+                width: 16,
+                height: 16,
+                borderRadius: "50%",
+                backgroundColor: "background.paper",
+                border: "2px solid",
+                borderColor: "info.main",
+              },
+              "&:after": {
+                content: '""',
+                position: "absolute",
+                top: "50%",
+                right: -8,
+                transform: "translateY(-50%)",
+                width: 16,
+                height: 16,
+                borderRadius: "50%",
+                backgroundColor: "background.paper",
+                border: "2px solid",
+                borderColor: "info.main",
               },
             }}
           >
             {/* FLOOR HEADER */}
             <Box
               sx={{
-                px: 2.5,
-                pt: 1.8,
-                bgcolor: "linear-gradient(90deg, #1976d2, #42a5f5)",
-                color: "white",
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "space-between",
+                gap: 1,
+                px: 2,
+                py: 1,
+                mb: 2,
+                borderRadius: 2,
+                bgcolor: "info.light",
+                border: "2px dashed",
+                borderColor: "info.main",
               }}
             >
-              <Typography color="black" variant="h6" fontWeight="700">
-                Tầng {floor.floor}
+              <HotelIcon color="info" sx={{ color: "white" }} />
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  fontWeight: 600,
+                  letterSpacing: 0.5,
+                  flexGrow: 1,
+                  color: "white",
+                }}
+              >
+                {`Tầng ${floor.floor}`}
               </Typography>
-
               <Chip
                 label={`${floor.rooms.length} phòng`}
-                size="small"
-                sx={{
-                  bgcolor: "rgba(255,255,255,0.25)",
-                  color: "black",
-                  backdropFilter: "blur(6px)",
-                  fontWeight: 500,
-                }}
+                sx={{ color: "white" }}
+                variant="outlined"
               />
             </Box>
 
-            <CardContent>
-              <Grid container spacing={2}>
-                {floor.rooms.map((r) => (
-                  <Grid size={{ xs: 12, md: 3 }} key={r.id}>
-                    {/* ROOM CARD */}
-                    <Card
-                      onClick={() => openEdit(r)}
-                      sx={{
-                        cursor: "pointer",
-                        borderRadius: 3,
-                        background: "rgba(255,255,255,0.75)",
-                        backdropFilter: "blur(6px)",
-                        boxShadow: "0 3px 12px rgba(0,0,0,0.1)",
-                        position: "relative",
-                        border: "1px solid rgba(0,0,0,0.08)",
-                        borderLeft: "6px solid",
-                        borderLeftColor:
-                          (r.status as number) === 4
-                            ? "error.main"
-                            : "transparent",
-                        transition: "all 0.2s ease",
-                        "&:hover": {
-                          boxShadow: "0px 6px 20px rgba(0,0,0,0.18)",
-                          transform: "translateY(-3px)",
-                        },
-                        "&:hover .room-actions": {
-                          opacity: 1,
-                          pointerEvents: "auto",
-                        },
-                      }}
-                    >
-                      <CardContent sx={{ p: 2, pt: 2 }}>
-                        <Stack spacing={1.3}>
-                          <Stack spacing={0.5}>
-                            <Typography
-                              variant="h6"
-                              fontWeight={700}
-                              sx={{
-                                fontSize: "1.25rem",
-                                color: "primary.main",
-                              }}
-                            >
-                              #{r.number}
-                            </Typography>
-
-                            <Chip
-                              label={r.roomTypeName}
-                              size="small"
-                              sx={{
-                                bgcolor: "primary.light",
-                                color: "white",
-                                fontWeight: 600,
-                                borderRadius: 1,
-                              }}
-                            />
-                          </Stack>
-
-                          {statusChip(r.status as RoomStatus)}
-                          <Stack
-                            direction="row"
-                            spacing={1}
-                            alignItems="center"
-                            justifyContent="space-between"
-                          >
-                            <Chip
-                              size="small"
-                              icon={<GroupsIcon />}
-                              label={
-                                occupancyLoading[r.id]
-                                  ? "Đang tải…"
-                                  : `${
-                                      occupancyCounts[r.id] ??
-                                      (r.status === 1 ? 0 : 0)
-                                    } người`
-                              }
-                              sx={{ bgcolor: "grey.200" }}
-                            />
-                            <Button
-                              size="small"
-                              startIcon={<Info />}
-                              variant="outlined"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openOccupancyDialog(r);
-                              }}
-                            >
-                              Chi tiết
-                            </Button>
-                          </Stack>
-                        </Stack>
-                      </CardContent>
-
-                      {/* ROOM CARD ACTIONS */}
-                      {allowAddNew && (
-                        <Box
-                          className="room-actions"
-                          sx={{
-                            position: "absolute",
-                            top: 8,
-                            right: 8,
-                            display: "flex",
-                            gap: 0.7,
-                            opacity: 0,
-                            transition: "opacity 150ms ease",
-                            pointerEvents: "none",
+            <Grid container spacing={2}>
+              {floor.rooms.map((r) => (
+                <Grid size={{ xs: 12, md: 3 }} key={r.id}>
+                  {/* ROOM CARD */}
+                  <Card
+                    onClick={() => openEdit(r)}
+                    sx={{
+                      cursor: "pointer",
+                      borderRadius: 3,
+                      background: "rgba(255,255,255,0.75)",
+                      backdropFilter: "blur(6px)",
+                      boxShadow: "0 3px 12px rgba(0,0,0,0.1)",
+                      position: "relative",
+                      border: "1px solid rgba(0,0,0,0.08)",
+                      borderLeft: "6px solid",
+                      borderLeftColor:
+                        (r.status as number) === 4
+                          ? "error.main"
+                          : "transparent",
+                      transition: "all 0.2s ease",
+                      "&:hover": {
+                        boxShadow: "0px 6px 20px rgba(0,0,0,0.18)",
+                        transform: "translateY(-3px)",
+                      },
+                      "&:hover .room-actions": {
+                        opacity: 1,
+                        pointerEvents: "auto",
+                      },
+                    }}
+                  >
+                    <Box sx={{ position: "relative", pt: 4 }}>
+                      <Box
+                        sx={{
+                          height: 110,
+                          overflow: "hidden",
+                        }}
+                      >
+                        <img
+                          src={
+                            roomTypeImgMap[r.roomTypeId] ||
+                            "https://via.placeholder.com/640x360?text=Room"
+                          }
+                          alt={r.roomTypeName}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "contain",
+                            display: "block",
                           }}
+                        />
+                      </Box>
+                      <Box sx={{ position: "absolute", top: 8, left: 8 }}>
+                        {statusChip(r.status as RoomStatus)}
+                      </Box>
+                    </Box>
+                    <CardContent sx={{ p: 2, pt: 1.5 }}>
+                      <Stack spacing={1.3}>
+                        <Stack spacing={0.5}>
+                          <Typography
+                            variant="h6"
+                            fontWeight={700}
+                            sx={{
+                              fontSize: "1.25rem",
+                              color: "primary.main",
+                            }}
+                          >
+                            #{r.number}
+                          </Typography>
+                          <Chip
+                            label={r.roomTypeName}
+                            size="small"
+                            sx={{
+                              bgcolor: "primary.light",
+                              color: "white",
+                              fontWeight: 600,
+                              borderRadius: 1,
+                            }}
+                          />
+                        </Stack>
+                        <Stack
+                          direction="row"
+                          spacing={1}
+                          alignItems="center"
+                          justifyContent="space-between"
                         >
-                          <Tooltip title="Chỉnh sửa">
-                            <IconButton
-                              size="small"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openEdit(r);
-                              }}
-                              sx={{ bgcolor: "white" }}
-                            >
-                              <EditIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
+                          <Chip
+                            size="small"
+                            icon={<GroupsIcon />}
+                            label={
+                              occupancyLoading[r.id]
+                                ? "Đang tải…"
+                                : `${
+                                    occupancyCounts[r.id] ??
+                                    (r.status === 1 ? 0 : 0)
+                                  } người`
+                            }
+                            sx={{ bgcolor: "grey.200" }}
+                          />
+                          <Button
+                            size="small"
+                            startIcon={<Info />}
+                            variant="outlined"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openOccupancyDialog(r);
+                            }}
+                          >
+                            Chi tiết
+                          </Button>
+                        </Stack>
+                      </Stack>
+                    </CardContent>
 
-                          <Tooltip title="Đổi trạng thái">
-                            <IconButton
-                              size="small"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openStatus(r);
-                              }}
-                              sx={{ bgcolor: "white" }}
-                            >
-                              <ChangeCircleIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
+                    {/* ROOM CARD ACTIONS */}
+                    {allowAddNew && (
+                      <Box
+                        className="room-actions"
+                        sx={{
+                          position: "absolute",
+                          top: 8,
+                          right: 8,
+                          display: "flex",
+                          gap: 0.7,
+                          opacity: 0,
+                          transition: "opacity 150ms ease",
+                          pointerEvents: "none",
+                        }}
+                      >
+                        <Tooltip title="Chỉnh sửa">
+                          <IconButton
+                            size="small"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openEdit(r);
+                            }}
+                            sx={{ bgcolor: "white" }}
+                          >
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
 
-                          {/* <Tooltip title="Minibar">
+                        <Tooltip title="Đổi trạng thái">
+                          <IconButton
+                            size="small"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openStatus(r);
+                            }}
+                            sx={{ bgcolor: "white" }}
+                          >
+                            <ChangeCircleIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+
+                        {/* <Tooltip title="Minibar">
                           <IconButton
                             size="small"
                             onClick={(e) => {
@@ -705,26 +746,25 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                           </IconButton>
                         </Tooltip> */}
 
-                          <Tooltip title="Xoá Phòng">
-                            <IconButton
-                              size="small"
-                              color="error"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                askDelete(r);
-                              }}
-                              sx={{ bgcolor: "white" }}
-                            >
-                              <DeleteOutlineIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        </Box>
-                      )}
-                    </Card>
-                  </Grid>
-                ))}
-              </Grid>
-            </CardContent>
+                        <Tooltip title="Xoá Phòng">
+                          <IconButton
+                            size="small"
+                            color="error"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              askDelete(r);
+                            }}
+                            sx={{ bgcolor: "white" }}
+                          >
+                            <DeleteOutlineIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+                    )}
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
           </Card>
         ))}
       </Stack>

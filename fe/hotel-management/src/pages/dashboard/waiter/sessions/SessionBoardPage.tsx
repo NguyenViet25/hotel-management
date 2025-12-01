@@ -9,6 +9,7 @@ import {
   TableBar,
   TableRestaurant as TableRestaurantIcon,
   CleanHands,
+  FoodBank,
 } from "@mui/icons-material";
 import {
   Box,
@@ -61,6 +62,7 @@ import AssignOrderDialog from "./components/AssignOrderDialog";
 import CreateSessionDialog from "./components/CreateSessionDialog";
 import AssignMultipleTableDialog from "./components/AssignMultipleTableDialog";
 import { toast } from "react-toastify";
+import EmptyState from "../../../../components/common/EmptyState";
 
 export default function SessionBoardPage() {
   const { hotelId } = useStore<StoreState>((s) => s);
@@ -294,6 +296,26 @@ export default function SessionBoardPage() {
     [sessionsRes]
   );
 
+  const filteredSessions = useMemo(() => {
+    return (sessions || []).filter((s) => {
+      const bySearch =
+        !searchText ||
+        (s.waiterName || "")
+          .toLowerCase()
+          .includes(searchText.toLowerCase()) ||
+        (s.notes || "")
+          .toLowerCase()
+          .includes(searchText.toLowerCase());
+      const d = dayjs(s.startedAt);
+      const byFrom =
+        !fromDate || d.isSame(fromDate, "day") || d.isAfter(fromDate);
+      const byTo = !toDate || d.isSame(toDate, "day") || d.isBefore(toDate);
+      return bySearch && byFrom && byTo;
+    });
+  }, [sessions, searchText, fromDate, toDate]);
+
+  const sessionsLoading = !sessionsRes;
+
   const filteredTables = useMemo(() => {
     const bySearch = (t: TableDto) =>
       !searchText || t.name.toLowerCase().includes(searchText.toLowerCase());
@@ -504,34 +526,17 @@ export default function SessionBoardPage() {
           />
         </Stack>
         <Grid container spacing={2} mt={1}>
-          {(sessions || [])
-            .filter((s) => {
-              const bySearch =
-                !searchText ||
-                (s.waiterName || "")
-                  .toLowerCase()
-                  .includes(searchText.toLowerCase()) ||
-                (s.notes || "")
-                  .toLowerCase()
-                  .includes(searchText.toLowerCase());
-              const d = dayjs(s.startedAt);
-              const byFrom =
-                !fromDate || d.isSame(fromDate, "day") || d.isAfter(fromDate);
-              const byTo =
-                !toDate || d.isSame(toDate, "day") || d.isBefore(toDate);
-              return bySearch && byFrom && byTo;
-            })
-            .map((s) => (
-              <Grid key={s.id} size={{ xs: 12, sm: 6, lg: 4 }}>
-                <Card
-                  variant="outlined"
-                  sx={{
-                    borderRadius: 2,
-                    position: "relative",
-                    transition: "all .2s ease",
-                    "&:hover": { boxShadow: 2, borderColor: "grey.300" },
-                  }}
-                >
+          {filteredSessions.map((s) => (
+            <Grid key={s.id} size={{ xs: 12, sm: 6, lg: 4 }}>
+              <Card
+                variant="outlined"
+                sx={{
+                  borderRadius: 2,
+                  position: "relative",
+                  transition: "all .2s ease",
+                  "&:hover": { boxShadow: 2, borderColor: "grey.300" },
+                }}
+              >
                   <Box
                     sx={{
                       display: "flex",
@@ -608,10 +613,18 @@ export default function SessionBoardPage() {
                       Chi tiết
                     </Button>
                   </Stack>
-                </Card>
-              </Grid>
+              </Card>
+            </Grid>
             ))}
         </Grid>
+        {filteredSessions.length === 0 && !sessionsLoading && (
+          <EmptyState
+            title="Không có phiên phục vụ"
+            description="Không tìm thấy kết quả phù hợp. Thử thay đổi bộ lọc hoặc từ khóa."
+            icon={<FoodBank color="disabled" sx={{ fontSize: 40 }} />}
+            height={200}
+          />
+        )}
       </Box>
 
       <CreateSessionDialog
