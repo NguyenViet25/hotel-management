@@ -334,6 +334,14 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: "sessions/:id",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <SessionDetailsPage />
+          </Suspense>
+        ),
+      },
+      {
         path: "table-map",
         element: (
           <Suspense fallback={<div>Loading...</div>}>

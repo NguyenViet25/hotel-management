@@ -1,56 +1,54 @@
-import { useParams, useNavigate } from "react-router-dom";
+import {
+  AccessTime,
+  CleanHands,
+  Delete,
+  Edit,
+  Groups,
+  ReceiptLong,
+  RemoveCircle,
+  TableBar,
+  TableRestaurant as TableRestaurantIcon,
+} from "@mui/icons-material";
 import {
   Box,
-  Typography,
-  Grid,
+  Button,
   Card,
-  CardContent,
   Chip,
-  Select,
-  MenuItem,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   FormControl,
   InputLabel,
-  Button,
-  TextField,
   List,
   ListItem,
   ListItemText,
-  Stack,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Tabs,
-  Tab,
+  MenuItem,
   Paper,
+  Select,
+  Stack,
+  Tab,
+  Tabs,
+  TextField,
+  Typography,
 } from "@mui/material";
-import {
-  AccessTime,
-  Groups,
-  TableRestaurant as TableRestaurantIcon,
-  CleanHands,
-  TableBar,
-  Edit,
-  Delete,
-  RemoveCircle,
-  ReceiptLong,
-} from "@mui/icons-material";
-import { LocalizationProvider, DateTimePicker } from "@mui/x-date-pickers";
+import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs, { Dayjs } from "dayjs";
+import { useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "react-toastify";
 import useSWR from "swr";
 import diningSessionsApi from "../../../../api/diningSessionsApi";
 import { type OrderSummaryDto } from "../../../../api/ordersApi";
 import serviceRequestsApi, {
   type ServiceRequestDto,
 } from "../../../../api/serviceRequestsApi";
-import { useEffect, useMemo, useState } from "react";
-import { useStore, type StoreState } from "../../../../hooks/useStore";
-import { toast } from "react-toastify";
+import tableImg from "../../../../assets/table.png";
 import PageTitle from "../../../../components/common/PageTitle";
+import { useStore, type StoreState } from "../../../../hooks/useStore";
 import AssignMultipleTableDialog from "./components/AssignMultipleTableDialog";
 import AssignOrderDialog from "./components/AssignOrderDialog";
-import dayjs, { Dayjs } from "dayjs";
-import tableImg from "../../../../assets/table.png";
 
 export default function SessionDetailsPage() {
   const { id } = useParams();

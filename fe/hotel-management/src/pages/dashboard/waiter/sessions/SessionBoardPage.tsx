@@ -603,7 +603,7 @@ export default function SessionBoardPage() {
                       fullWidth
                       variant="contained"
                       startIcon={<Info />}
-                      onClick={() => navigate(`/waiter/sessions/${s.id}`)}
+                      onClick={() => navigate(`${s.id}`)}
                     >
                       Chi tiết
                     </Button>

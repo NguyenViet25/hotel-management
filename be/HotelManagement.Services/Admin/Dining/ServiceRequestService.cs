@@ -48,7 +48,7 @@ public class ServiceRequestService : IServiceRequestService
         };
 
         await _serviceRequestRepository.AddAsync(serviceRequest);
-        await _unitOfWork.SaveChangesAsync();
+        await _serviceRequestRepository.SaveChangesAsync();
 
         return ApiResponse<ServiceRequestDto>.Success(await MapToDto(serviceRequest));
     }
@@ -90,7 +90,7 @@ public class ServiceRequestService : IServiceRequestService
         }
 
         await _serviceRequestRepository.UpdateAsync(serviceRequest);
-        await _unitOfWork.SaveChangesAsync();
+        await _serviceRequestRepository.SaveChangesAsync();
 
         return ApiResponse<ServiceRequestDto>.Success(await MapToDto(serviceRequest));
     }
@@ -143,7 +143,7 @@ public class ServiceRequestService : IServiceRequestService
         serviceRequest.CompletedAt = DateTime.UtcNow;
 
         await _serviceRequestRepository.UpdateAsync(serviceRequest);
-        await _unitOfWork.SaveChangesAsync();
+        await _serviceRequestRepository.SaveChangesAsync();
 
         return ApiResponse<bool>.Success(true);
     }
@@ -156,7 +156,7 @@ public class ServiceRequestService : IServiceRequestService
             return ApiResponse<bool>.Fail("Service request not found");
         }
         await _serviceRequestRepository.RemoveAsync(serviceRequest);
-        await _unitOfWork.SaveChangesAsync();
+        await _serviceRequestRepository.SaveChangesAsync();
         return ApiResponse<bool>.Success(true);
     }
 
