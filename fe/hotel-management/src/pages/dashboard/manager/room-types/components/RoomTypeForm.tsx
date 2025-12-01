@@ -1,5 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup";
 import DescriptionIcon from "@mui/icons-material/Description";
+import ImageIcon from "@mui/icons-material/Image";
 import HomeWorkIcon from "@mui/icons-material/HomeWork";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import SaveIcon from "@mui/icons-material/Save";
@@ -45,6 +46,7 @@ const schema = yup.object({
   hotelId: yup.string().optional(),
   name: yup.string().required("Vui lòng nhập tên loại phòng"),
   description: yup.string().optional(),
+  imageUrl: yup.string().optional(),
   capacity: yup
     .number()
     .transform((val) => (isNaN(val as any) ? 0 : Number(val)))
@@ -103,6 +105,7 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
       hotelId: user?.hotelId || "",
       name: initialData?.name ?? "",
       description: initialData?.description ?? "",
+      imageUrl: initialData?.imageUrl ?? "",
       capacity: initialData?.roomCount ?? 2,
       basePriceFrom: initialData?.priceFrom ?? 0,
       basePriceTo: initialData?.priceTo ?? 0,
@@ -116,6 +119,7 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
         hotelId: user?.hotelId || "",
         name: initialData?.name ?? "",
         description: initialData?.description ?? "",
+        imageUrl: initialData?.imageUrl ?? "",
         capacity: initialData?.roomCount ?? 2,
         basePriceFrom: initialData?.priceFrom ?? 0,
         basePriceTo: initialData?.priceTo ?? 0,
@@ -139,6 +143,7 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
           priceFrom: values.basePriceFrom,
           priceTo: values.basePriceTo,
           priceByDates: values.prices || [],
+          imageUrl: values.imageUrl || undefined,
         };
         onSubmit(payload);
         return;
@@ -152,6 +157,7 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
         priceFrom: values.basePriceFrom,
         priceTo: values.basePriceTo,
         priceByDates: values.prices || [],
+        imageUrl: values.imageUrl || undefined,
       };
 
       onSubmit(createPayload);
@@ -253,6 +259,24 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
             </Tooltip>
           )}
         />
+        <Tooltip title="Nhập URL ảnh đại diện của loại phòng">
+          <TextField
+            label="Image URL"
+            fullWidth
+            margin="normal"
+            {...register("imageUrl")}
+            placeholder="https://..."
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <ImageIcon fontSize="small" />
+                </InputAdornment>
+              ),
+            }}
+            error={!!errors.imageUrl}
+            helperText={errors.imageUrl?.message}
+          />
+        </Tooltip>
         {/* Tabs for pricing sections */}
         <Paper
           variant="outlined"

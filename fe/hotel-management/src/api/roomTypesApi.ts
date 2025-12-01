@@ -11,7 +11,7 @@ export interface RoomType {
   hotelName: string;
   name: string;
   description: string;
-  images: string[]; // List of image URLs
+  imageUrl?: string;
   roomCount: number;
   canDelete: boolean;
   priceFrom: number;
@@ -34,6 +34,7 @@ export interface CreateRoomTypeRequest {
   priceFrom: number;
   priceTo: number;
   priceByDates?: PriceByDate[]; // optional, defaults to empty array if nee
+  imageUrl?: string;
 }
 
 // PriceByDate equivalent
