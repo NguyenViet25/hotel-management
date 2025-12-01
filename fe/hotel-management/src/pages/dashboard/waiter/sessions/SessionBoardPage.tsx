@@ -1,8 +1,12 @@
 import {
   AccessTime,
   AddCircle,
+  Delete,
+  Edit,
   Groups,
+  Info,
   Search,
+  TableBar,
   TableRestaurant as TableRestaurantIcon,
 } from "@mui/icons-material";
 import {
@@ -25,6 +29,9 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs, { Dayjs } from "dayjs";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
@@ -71,6 +78,15 @@ export default function SessionBoardPage() {
   const [statusFilter, setStatusFilter] = useState<number | "all">("all");
   const [searchText, setSearchText] = useState("");
   const [dayFilter, setDayFilter] = useState<number>(-1);
+  const [sessionStatusFilter, setSessionStatusFilter] = useState<
+    "All" | "Open" | "Ended"
+  >("All");
+  const [fromDate, setFromDate] = useState<Dayjs | null>(null);
+  const [toDate, setToDate] = useState<Dayjs | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editSession, setEditSession] = useState<DiningSessionDto | null>(null);
+  const [editNotes, setEditNotes] = useState("");
+  const [editGuests, setEditGuests] = useState<number>(0);
 
   const { data: tablesRes, mutate: mutateTables } = useSWR(
     ["tables", hotelId, statusFilter],
@@ -91,7 +107,7 @@ export default function SessionBoardPage() {
       if (!hotelId) return undefined;
       return diningSessionsApi.getSessions({
         hotelId,
-        status: "Open",
+        status: sessionStatusFilter === "All" ? undefined : sessionStatusFilter,
         page: 1,
         pageSize: 50,
       });
@@ -202,7 +218,7 @@ export default function SessionBoardPage() {
       if (res.isSuccess) {
         setSnackbar({
           open: true,
-          message: "Đã kết thúc phiên",
+          message: "Đã xóa phiên",
           severity: "success",
         });
         await mutateSessions();
@@ -210,7 +226,42 @@ export default function SessionBoardPage() {
       } else {
         setSnackbar({
           open: true,
-          message: res.message || "Kết thúc phiên thất bại",
+          message: res.message || "Xóa phiên thất bại",
+          severity: "error",
+        });
+      }
+    } catch {
+      setSnackbar({ open: true, message: "Đã xảy ra lỗi", severity: "error" });
+    }
+  };
+
+  const openEdit = (s: DiningSessionDto) => {
+    setEditSession(s);
+    setEditNotes(s.notes || "");
+    setEditGuests(Number(s.totalGuests || 0));
+    setEditOpen(true);
+  };
+
+  const submitEdit = async () => {
+    if (!editSession) return;
+    try {
+      const res = await diningSessionsApi.updateSession(editSession.id, {
+        notes: editNotes,
+        totalGuests: editGuests,
+      });
+      if (res.isSuccess) {
+        setSnackbar({
+          open: true,
+          message: "Đã cập nhật phiên",
+          severity: "success",
+        });
+        setEditOpen(false);
+        setEditSession(null);
+        await mutateSessions();
+      } else {
+        setSnackbar({
+          open: true,
+          message: res.message || "Cập nhật thất bại",
           severity: "error",
         });
       }
@@ -279,30 +330,46 @@ export default function SessionBoardPage() {
     <Box>
       <PageTitle title="Phiên phục vụ" subtitle="Quản lý phiên phục vụ " />
       <Stack
-        direction={{ xs: "column", md: "row" }}
+        direction={{ xs: "column", lg: "row" }}
         spacing={1}
         sx={{ mb: 2 }}
         justifyContent={"space-between"}
       >
-        <Stack
-          direction={{ xs: "column", md: "row" }}
-          spacing={1}
-          alignItems="center"
-        >
-          <TextField
-            placeholder="Tìm kiếm phiên..."
-            size="small"
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            sx={{ width: 320 }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search fontSize="small" />
-                </InputAdornment>
-              ),
-            }}
-          />
+        <Stack direction={{ xs: "column", lg: "row" }} spacing={1}>
+          <FormControl size="small" sx={{ minWidth: 160 }}>
+            <InputLabel>Trạng thái</InputLabel>
+            <Select
+              label="Trạng thái"
+              value={sessionStatusFilter}
+              onChange={(e) => setSessionStatusFilter(e.target.value as any)}
+            >
+              <MenuItem value="All">Tất cả</MenuItem>
+              <MenuItem value="Open">Đang mở</MenuItem>
+              <MenuItem value="Ended">Đã kết thúc</MenuItem>
+            </Select>
+          </FormControl>
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DatePicker
+              label="Từ ngày"
+              value={fromDate}
+              onChange={(v) => setFromDate(v)}
+              slotProps={{
+                textField: {
+                  size: "small",
+                },
+              }}
+            />
+            <DatePicker
+              label="Đến ngày"
+              value={toDate}
+              onChange={(v) => setToDate(v)}
+              slotProps={{
+                textField: {
+                  size: "small",
+                },
+              }}
+            />
+          </LocalizationProvider>
         </Stack>
         <Button
           startIcon={<AddCircle />}
@@ -327,83 +394,118 @@ export default function SessionBoardPage() {
           />
         </Stack>
         <Grid container spacing={2} mt={1}>
-          {sessions.map((s) => (
-            <Grid key={s.id} size={{ xs: 12, sm: 6, md: 4 }}>
-              <Card
-                variant="outlined"
-                sx={{
-                  borderRadius: 2,
-                  position: "relative",
-                  transition: "all .2s ease",
-                  "&:hover": { boxShadow: 2, borderColor: "grey.300" },
-                }}
-              >
-                <Box
+          {(sessions || [])
+            .filter((s) => {
+              const bySearch =
+                !searchText ||
+                (s.waiterName || "")
+                  .toLowerCase()
+                  .includes(searchText.toLowerCase()) ||
+                (s.notes || "")
+                  .toLowerCase()
+                  .includes(searchText.toLowerCase());
+              const d = dayjs(s.startedAt);
+              const byFrom =
+                !fromDate || d.isSame(fromDate, "day") || d.isAfter(fromDate);
+              const byTo =
+                !toDate || d.isSame(toDate, "day") || d.isBefore(toDate);
+              return bySearch && byFrom && byTo;
+            })
+            .map((s) => (
+              <Grid key={s.id} size={{ xs: 12, sm: 6 }}>
+                <Card
+                  variant="outlined"
                   sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1,
-                    px: 2,
-                    py: 1,
                     borderRadius: 2,
-                    bgcolor: "primary.light",
-                    border: "2px dashed",
-                    borderColor: "primary.main",
+                    position: "relative",
+                    transition: "all .2s ease",
+                    "&:hover": { boxShadow: 2, borderColor: "grey.300" },
                   }}
                 >
-                  <AccessTime color="primary" />
-                  <Typography
-                    variant="subtitle2"
-                    sx={{ fontWeight: 800, flexGrow: 1 }}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      px: 2,
+                      py: 1,
+                      borderRadius: 2,
+                      bgcolor: "primary.light",
+                      border: "2px dashed",
+                      borderColor: "primary.main",
+                    }}
                   >
-                    {new Date(s.startedAt).toLocaleString()}
-                  </Typography>
-                  <Chip label="Đang mở" color="primary" size="small" />
-                </Box>
-                <Stack spacing={0.5} sx={{ px: 2, py: 1.5 }}>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Groups fontSize="small" color="disabled" />
-                    <Typography variant="caption" color="text.secondary">
-                      {s.totalGuests} khách
+                    <AccessTime color="primary" />
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ fontWeight: 800, flexGrow: 1 }}
+                    >
+                      {new Date(s.startedAt).toLocaleString()}
                     </Typography>
+                    <Chip label="Đang mở" color="primary" size="small" />
+                  </Box>
+                  <Stack spacing={0.5} sx={{ px: 2, py: 1.5 }}>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Groups fontSize="small" color="disabled" />
+                      <Typography variant="caption" color="text.secondary">
+                        {s.totalGuests} khách
+                      </Typography>
+                    </Stack>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <TableRestaurantIcon fontSize="small" color="disabled" />
+                      <Typography variant="caption" color="text.secondary">
+                        Bàn đã gắn: {(s.tables || []).length}
+                      </Typography>
+                    </Stack>
                   </Stack>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <TableRestaurantIcon fontSize="small" color="disabled" />
-                    <Typography variant="caption" color="text.secondary">
-                      Bàn đã gắn: {(s.tables || []).length}
-                    </Typography>
+                  <Stack
+                    direction={{ xs: "column", lg: "row" }}
+                    spacing={1}
+                    sx={{ px: 2, pb: 2 }}
+                  >
+                    <Button
+                      size="small"
+                      fullWidth
+                      variant="contained"
+                      startIcon={<Info />}
+                      onClick={() => navigate(`/waiter/sessions/${s.id}`)}
+                    >
+                      Chi tiết
+                    </Button>
+                    <Button
+                      fullWidth
+                      size="small"
+                      variant="contained"
+                      color="inherit"
+                      startIcon={<TableBar />}
+                      onClick={() => openAttachForSession(s.id)}
+                    >
+                      Gắn bàn
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="contained"
+                      color="success"
+                      fullWidth
+                      startIcon={<Edit />}
+                      onClick={() => openEdit(s)}
+                    >
+                      Sửa
+                    </Button>
+                    <Button
+                      size="small"
+                      color="error"
+                      fullWidth
+                      startIcon={<Delete />}
+                      variant="contained"
+                      onClick={() => endSession(s.id)}
+                    >
+                      Xóa
+                    </Button>
                   </Stack>
-                </Stack>
-                <Stack
-                  direction="row"
-                  spacing={1}
-                  sx={{ position: "absolute", bottom: 8, right: 8 }}
-                >
-                  <Button
-                    size="small"
-                    variant="contained"
-                    onClick={() => navigate(`/waiter/sessions/${s.id}`)}
-                  >
-                    Chi tiết
-                  </Button>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    onClick={() => openAttachForSession(s.id)}
-                  >
-                    Gắn bàn
-                  </Button>
-                  <Button
-                    size="small"
-                    color="error"
-                    onClick={() => endSession(s.id)}
-                  >
-                    Kết thúc
-                  </Button>
-                </Stack>
-              </Card>
-            </Grid>
-          ))}
+                </Card>
+              </Grid>
+            ))}
         </Grid>
       </Box>
 
@@ -486,6 +588,39 @@ export default function SessionBoardPage() {
             onClick={attachSelectedTable}
           >
             Gắn
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>Sửa phiên</DialogTitle>
+        <DialogContent>
+          <Stack spacing={1.5} sx={{ mt: 1 }}>
+            <TextField
+              label="Ghi chú"
+              value={editNotes}
+              onChange={(e) => setEditNotes(e.target.value)}
+              multiline
+              minRows={2}
+            />
+            <TextField
+              label="Số khách"
+              type="number"
+              value={editGuests}
+              onChange={(e) => setEditGuests(Number(e.target.value || 0))}
+              inputProps={{ min: 0 }}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditOpen(false)}>Đóng</Button>
+          <Button variant="contained" onClick={submitEdit}>
+            Lưu
           </Button>
         </DialogActions>
       </Dialog>
