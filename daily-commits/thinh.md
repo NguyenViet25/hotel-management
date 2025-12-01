@@ -191,3 +191,4 @@
 2025-12-01 - 1 - 02:05:06 UTC :: perf: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — bo sung index & toi uu DB (dam bao backward-compatible)
 2025-12-01 - 2 - 02:05:07 UTC :: build: UC-33 Phan ca: gan ca, duyet doi ca/ngi phep. — kiem tra tuong thich mui gio/tien te (da kiem tra lint)
 2025-12-01 - 3 - 02:05:10 UTC :: test: UC-33 Phan ca: gan ca, duyet doi ca/ngi phep. — chuan hoa ten ham/bien theo convention (anh huong thap)
+2025-12-01 - 4 - 02:05:12 UTC :: ci: UC-28 Room charge F&B: ghi hoa don ban an vao folio. — bo sung index & toi uu DB (dat tieu chi toi thieu)
