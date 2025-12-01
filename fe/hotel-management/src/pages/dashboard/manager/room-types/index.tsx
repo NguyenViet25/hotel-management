@@ -32,7 +32,7 @@ import PageTitle from "../../../../components/common/PageTitle";
 import RoomTypeForm from "./components/RoomTypeForm";
 import RoomTypeTable from "./components/RoomTypeTable";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
-import { Add } from "@mui/icons-material";
+import { Add, Delete, Edit } from "@mui/icons-material";
 
 const RoomTypePage: React.FC = () => {
   const [items, setItems] = useState<RoomType[]>([]);
@@ -41,7 +41,7 @@ const RoomTypePage: React.FC = () => {
   const [pageSize] = useState<number>(10);
   const [total, setTotal] = useState<number>(0);
   const [search, setSearch] = useState<string>();
-  const [view, setView] = useState<"table" | "card">("table");
+  const [view, setView] = useState<"table" | "card">("card");
   const { hotelId } = useStore<StoreState>((state) => state);
   const [createOpen, setCreateOpen] = useState<boolean>(false);
   const [editOpen, setEditOpen] = useState<boolean>(false);
@@ -269,14 +269,21 @@ const RoomTypePage: React.FC = () => {
       ) : (
         <Grid container spacing={2}>
           {items.map((rt) => (
-            <Grid size={{ xs: 12, md: 6, lg: 3 }} key={rt.id}>
+            <Grid size={{ xs: 12, md: 6, lg: 4 }} key={rt.id}>
               <Card
                 variant="outlined"
                 sx={{
-                  borderRadius: 2,
-                  overflow: "hidden",
-                  boxShadow: 0,
-                  "&:hover": { boxShadow: 3 },
+                  position: "relative",
+                  p: 1.5,
+
+                  border: "2px dashed",
+                  borderColor: "primary.main",
+                  borderRadius: "14px",
+                  background:
+                    "linear-gradient(135deg, #E3F2FD 0%, #F5FAFF 100%)",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+                  transition: "transform 120ms ease",
+                  "&:hover": { transform: "translateY(-2px)" },
                 }}
               >
                 <Box sx={{ position: "relative" }}>
@@ -290,79 +297,68 @@ const RoomTypePage: React.FC = () => {
                     alt={rt.name}
                     sx={{ objectFit: "contain" }}
                   />
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      inset: 0,
-                      background:
-                        "linear-gradient(180deg, rgba(0,0,0,0.0) 40%, rgba(0,0,0,0.55) 100%)",
-                    }}
-                  />
-                  <Stack
-                    sx={{ position: "absolute", bottom: 8, left: 8, right: 8 }}
-                    spacing={0.5}
-                  >
-                    <Typography
-                      variant="subtitle1"
-                      sx={{ color: "common.white", fontWeight: 700 }}
-                    >
+
+                  <Stack spacing={0.5}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
                       {rt.name}
                     </Typography>
-                    <Stack direction="row" spacing={1}>
-                      <Chip
-                        size="small"
-                        label={`Sức chứa: ${rt.roomCount || 0}`}
-                        sx={{ bgcolor: "rgba(255,255,255,0.2)", color: "#fff" }}
-                      />
-                      <Chip
-                        size="small"
-                        label={`Giá: ${(
-                          rt.priceFrom ?? 0
-                        ).toLocaleString()}đ - ${(
+                    <Stack spacing={1}>
+                      <Typography
+                        variant="body2"
+                        sx={{ bgcolor: "rgba(255,255,255,0.2)" }}
+                      >
+                        Sức chứa: {rt.roomCount || 0}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{ bgcolor: "rgba(255,255,255,0.2)" }}
+                      >
+                        Giá:{" "}
+                        {`${(rt.priceFrom ?? 0).toLocaleString()}đ - ${(
                           rt.priceTo ?? 0
                         ).toLocaleString()}đ`}
-                        sx={{ bgcolor: "rgba(255,255,255,0.2)", color: "#fff" }}
-                      />
+                      </Typography>
+
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: "text.secondary",
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                          minHeight: 40,
+                        }}
+                      >
+                        {rt.description || "Chưa có mô tả"}
+                      </Typography>
+                      <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
+                        <Button
+                          size="small"
+                          variant="contained"
+                          startIcon={<Edit />}
+                          onClick={() => handleEdit(rt)}
+                        >
+                          Sửa
+                        </Button>
+                        <Button
+                          size="small"
+                          color="error"
+                          variant="contained"
+                          startIcon={<Delete />}
+                          onClick={() => handleDelete(rt)}
+                        >
+                          Xóa
+                        </Button>
+                      </Stack>
                     </Stack>
                   </Stack>
                 </Box>
-                <CardContent sx={{ p: 1.5 }}>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: "text.secondary",
-                      display: "-webkit-box",
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: "vertical",
-                      overflow: "hidden",
-                      minHeight: 40,
-                    }}
-                  >
-                    {rt.description || "Chưa có mô tả"}
-                  </Typography>
-                  <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      onClick={() => handleEdit(rt)}
-                    >
-                      Sửa
-                    </Button>
-                    <Button
-                      size="small"
-                      color="error"
-                      variant="outlined"
-                      onClick={() => handleDelete(rt)}
-                    >
-                      Xóa
-                    </Button>
-                  </Stack>
-                </CardContent>
               </Card>
             </Grid>
           ))}
           {items.length === 0 && !loading && (
-            <Grid item xs={12}>
+            <Grid>
               <Box sx={{ p: 2, textAlign: "center", color: "text.secondary" }}>
                 Không có dữ liệu
               </Box>
