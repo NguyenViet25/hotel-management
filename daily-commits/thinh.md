@@ -192,3 +192,4 @@
 2025-12-01 - 2 - 02:05:07 UTC :: build: UC-33 Phan ca: gan ca, duyet doi ca/ngi phep. — kiem tra tuong thich mui gio/tien te (da kiem tra lint)
 2025-12-01 - 3 - 02:05:10 UTC :: test: UC-33 Phan ca: gan ca, duyet doi ca/ngi phep. — chuan hoa ten ham/bien theo convention (anh huong thap)
 2025-12-01 - 4 - 02:05:12 UTC :: ci: UC-28 Room charge F&B: ghi hoa don ban an vao folio. — bo sung index & toi uu DB (dat tieu chi toi thieu)
+2025-12-01 - 5 - 02:05:15 UTC :: build: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — fix race-condition nho trong thao tac (da review so bo)
