@@ -191,3 +191,4 @@
 2025-12-01 - 1 - 02:05:06 UTC :: ci: UC-22 Minibar/Amenity: ghi tieu hao, post charge vao folio. — dieu chinh quyen truy cap theo vai tro (chuan bi cho tinh nang tiep theo)
 2025-12-01 - 2 - 02:05:08 UTC :: fix: UC-07 Loai phong: dinh nghia tien nghi va gia co ban. — bo sung case canh bien & no-show (da review so bo)
 2025-12-01 - 3 - 02:05:09 UTC :: feat: UC-31 Bao cao: len lich gui email/PDF hang ngay/tuan. — bo sung case canh bien & no-show (dong bo voi BE/FE)
+2025-12-01 - 4 - 02:05:10 UTC :: fix: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — dieu chinh quyen truy cap theo vai tro (chuan bi cho tinh nang tiep theo)
