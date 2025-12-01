@@ -522,7 +522,7 @@ export default function SessionBoardPage() {
               return bySearch && byFrom && byTo;
             })
             .map((s) => (
-              <Grid key={s.id} size={{ xs: 12, sm: 6 }}>
+              <Grid key={s.id} size={{ xs: 12, sm: 6, lg: 4 }}>
                 <Card
                   variant="outlined"
                   sx={{
@@ -606,37 +606,6 @@ export default function SessionBoardPage() {
                       onClick={() => navigate(`/waiter/sessions/${s.id}`)}
                     >
                       Chi tiết
-                    </Button>
-                    <Button
-                      fullWidth
-                      size="small"
-                      variant="contained"
-                      color="inherit"
-                      startIcon={<TableBar />}
-                      onClick={() => openAttachForSession(s.id)}
-                    >
-                      Gắn bàn
-                    </Button>
-
-                    <Button
-                      size="small"
-                      variant="contained"
-                      color="success"
-                      fullWidth
-                      startIcon={<Edit />}
-                      onClick={() => openEdit(s)}
-                    >
-                      Sửa
-                    </Button>
-                    <Button
-                      size="small"
-                      color="error"
-                      fullWidth
-                      startIcon={<Delete />}
-                      variant="contained"
-                      onClick={() => setDeleteTargetId(s.id)}
-                    >
-                      Xóa
                     </Button>
                   </Stack>
                 </Card>

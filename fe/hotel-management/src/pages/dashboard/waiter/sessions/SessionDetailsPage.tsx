@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -28,13 +28,14 @@ import {
   Groups,
   TableRestaurant as TableRestaurantIcon,
   CleanHands,
+  TableBar,
+  Edit,
+  Delete,
 } from "@mui/icons-material";
+import { LocalizationProvider, DateTimePicker } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import useSWR from "swr";
 import diningSessionsApi from "../../../../api/diningSessionsApi";
-import tablesApi, {
-  type TableDto,
-  TableStatus,
-} from "../../../../api/tablesApi";
 import ordersApi, { type OrderDetailsDto } from "../../../../api/ordersApi";
 import orderItemsApi from "../../../../api/orderItemsApi";
 import serviceRequestsApi, {
@@ -44,17 +45,23 @@ import { useEffect, useMemo, useState } from "react";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
 import { toast } from "react-toastify";
 import PageTitle from "../../../../components/common/PageTitle";
+import AssignMultipleTableDialog from "./components/AssignMultipleTableDialog";
+import dayjs, { Dayjs } from "dayjs";
 
 export default function SessionDetailsPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { hotelId } = useStore<StoreState>((s) => s);
   const [orderId, setOrderId] = useState<string>("");
   const [requestType, setRequestType] = useState("water");
   const [requestDesc, setRequestDesc] = useState("");
   const [tab, setTab] = useState<number>(0);
-  const [attachOpen, setAttachOpen] = useState(false);
-  const [availableTables, setAvailableTables] = useState<TableDto[]>([]);
-  const [selectedTableId, setSelectedTableId] = useState<string>("");
+  const [attachFromSessionOpen, setAttachFromSessionOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editNotes, setEditNotes] = useState("");
+  const [editGuests, setEditGuests] = useState<number>(0);
+  const [editStartedAt, setEditStartedAt] = useState<Dayjs | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const requestTypes = useMemo(
     () => [
       { value: "water", label: "Nước" },
@@ -67,8 +74,9 @@ export default function SessionDetailsPage() {
     []
   );
 
-  const { data: sessionRes } = useSWR(id ? ["session", id] : null, async () =>
-    diningSessionsApi.getSession(id!)
+  const { data: sessionRes, mutate: mutateSession } = useSWR(
+    id ? ["session", id] : null,
+    async () => diningSessionsApi.getSession(id!)
   );
   const { data: orderRes, mutate: mutateOrder } = useSWR(
     orderId ? ["order", orderId] : null,
@@ -125,36 +133,8 @@ export default function SessionDetailsPage() {
     }
   };
 
-  useEffect(() => {
-    const loadAvailableTables = async () => {
-      if (!hotelId) return;
-      const res = await tablesApi.listTables({
-        hotelId,
-        status: TableStatus.Available,
-        page: 1,
-        pageSize: 100,
-      });
-      setAvailableTables(res.data || []);
-    };
-    if (attachOpen) {
-      setSelectedTableId("");
-      loadAvailableTables();
-    }
-  }, [attachOpen, hotelId]);
-
-  const attachTable = async () => {
-    if (!id || !selectedTableId) return;
-    try {
-      const res = await diningSessionsApi.attachTable(id, selectedTableId);
-      if (res.isSuccess) {
-        toast.success("Đã gắn bàn");
-        setAttachOpen(false);
-      } else {
-        toast.error(res.message || "Gắn bàn thất bại");
-      }
-    } catch {
-      toast.error("Đã xảy ra lỗi");
-    }
+  const openAttachForSession = () => {
+    setAttachFromSessionOpen(true);
   };
 
   const detachTable = async (tableId: string) => {
@@ -163,8 +143,53 @@ export default function SessionDetailsPage() {
       const res = await diningSessionsApi.detachTable(id, tableId);
       if (res.isSuccess) {
         toast.success("Đã tách bàn");
+        await mutateSession();
       } else {
         toast.error(res.message || "Tách bàn thất bại");
+      }
+    } catch {
+      toast.error("Đã xảy ra lỗi");
+    }
+  };
+
+  const openEdit = () => {
+    if (!session) return;
+    setEditNotes(session.notes || "");
+    setEditGuests(Number(session.totalGuests || 0));
+    setEditStartedAt(dayjs(session.startedAt));
+    setEditOpen(true);
+  };
+
+  const submitEdit = async () => {
+    if (!id) return;
+    try {
+      const res = await diningSessionsApi.updateSession(id, {
+        notes: editNotes,
+        totalGuests: editGuests,
+        startedAt: editStartedAt ? editStartedAt.toISOString() : undefined,
+      });
+      if (res.isSuccess) {
+        toast.success("Đã cập nhật phiên");
+        setEditOpen(false);
+        setEditStartedAt(null);
+        await mutateSession();
+      } else {
+        toast.error(res.message || "Cập nhật thất bại");
+      }
+    } catch {
+      toast.error("Đã xảy ra lỗi");
+    }
+  };
+
+  const deleteSessionAction = async () => {
+    if (!id) return;
+    try {
+      const res = await diningSessionsApi.deleteSession(id);
+      if (res.isSuccess) {
+        toast.success("Đã xóa phiên");
+        navigate("/waiter/sessions");
+      } else {
+        toast.error(res.message || "Xóa phiên thất bại");
       }
     } catch {
       toast.error("Đã xảy ra lỗi");
@@ -201,7 +226,7 @@ export default function SessionDetailsPage() {
               {new Date(session.startedAt).toLocaleString()}
             </Typography>
             <Chip
-              label={session.status}
+              label={session.status === "Open" ? "Đang mở" : "Đóng"}
               color={session.status === "Open" ? "primary" : "default"}
               size="small"
             />
@@ -241,6 +266,39 @@ export default function SessionDetailsPage() {
               </Stack>
             )}
           </Stack>
+          <Stack
+            direction={{ xs: "column", lg: "row" }}
+            spacing={1}
+            sx={{ px: 2, pb: 2 }}
+          >
+            <Button
+              size="small"
+              variant="contained"
+              color="inherit"
+              startIcon={<TableBar />}
+              onClick={openAttachForSession}
+            >
+              Gắn bàn
+            </Button>
+            <Button
+              size="small"
+              variant="contained"
+              color="success"
+              startIcon={<Edit />}
+              onClick={openEdit}
+            >
+              Sửa
+            </Button>
+            <Button
+              size="small"
+              color="error"
+              variant="contained"
+              startIcon={<Delete />}
+              onClick={() => setDeleteTargetId(id || null)}
+            >
+              Xóa
+            </Button>
+          </Stack>
         </Card>
       )}
 
@@ -253,28 +311,64 @@ export default function SessionDetailsPage() {
       {tab === 0 && session && (
         <Box>
           <Typography variant="subtitle2">Bàn đang phục vụ</Typography>
-          <List>
+          <Grid container spacing={2} mt={1}>
             {(session.tables || []).map((t) => (
-              <ListItem key={t.tableId}>
-                <ListItemText
-                  primary={`${t.tableName} • ${t.capacity} chỗ`}
-                  secondary={`Gắn lúc ${new Date(
-                    t.attachedAt
-                  ).toLocaleString()}`}
-                />
-                <Button
-                  size="small"
-                  color="warning"
-                  onClick={() => detachTable(t.tableId)}
+              <Grid key={t.tableId} size={{ xs: 12, sm: 6, md: 4 }}>
+                <Card
+                  variant="outlined"
+                  sx={{
+                    borderRadius: 2,
+                    position: "relative",
+                    transition: "all .2s ease",
+                    "&:hover": { boxShadow: 2, borderColor: "grey.300" },
+                  }}
                 >
-                  Tách
-                </Button>
-              </ListItem>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      px: 2,
+                      py: 1,
+                      borderRadius: 2,
+                    }}
+                  >
+                    <TableRestaurantIcon color="primary" />
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ fontWeight: 800, flexGrow: 1 }}
+                    >
+                      {t.tableName}
+                    </Typography>
+                    <Chip label={`${t.capacity} chỗ`} size="small" />
+                  </Box>
+                  <Stack spacing={0.5} sx={{ px: 2, py: 1.5 }}>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <AccessTime fontSize="small" color="disabled" />
+                      <Typography variant="caption" color="text.secondary">
+                        Gắn lúc {new Date(t.attachedAt).toLocaleString()}
+                      </Typography>
+                    </Stack>
+                  </Stack>
+                  <Stack
+                    direction={{ xs: "column", lg: "row" }}
+                    spacing={1}
+                    sx={{ px: 2, pb: 2 }}
+                  >
+                    <Button
+                      size="small"
+                      color="warning"
+                      variant="contained"
+                      fullWidth
+                      onClick={() => detachTable(t.tableId)}
+                    >
+                      Tách
+                    </Button>
+                  </Stack>
+                </Card>
+              </Grid>
             ))}
-          </List>
-          <Button variant="outlined" onClick={() => setAttachOpen(true)}>
-            Gắn thêm bàn
-          </Button>
+          </Grid>
         </Box>
       )}
 
@@ -413,36 +507,87 @@ export default function SessionDetailsPage() {
       )}
 
       <Dialog
-        open={attachOpen}
-        onClose={() => setAttachOpen(false)}
+        open={attachFromSessionOpen}
+        onClose={() => setAttachFromSessionOpen(false)}
         fullWidth
-        maxWidth="sm"
+        maxWidth="lg"
       >
         <DialogTitle>Gắn bàn vào phiên</DialogTitle>
         <DialogContent>
-          <FormControl fullWidth size="small" sx={{ mt: 2 }}>
-            <InputLabel>Bàn</InputLabel>
-            <Select
-              label="Bàn"
-              value={selectedTableId}
-              onChange={(e) => setSelectedTableId(String(e.target.value))}
-            >
-              {availableTables.map((t) => (
-                <MenuItem key={t.id} value={t.id}>
-                  {t.name} • {t.capacity} chỗ
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Box pt={1}>
+            {id && (
+              <AssignMultipleTableDialog
+                sessionId={id}
+                onAssigned={async () => {
+                  setAttachFromSessionOpen(false);
+                  await mutateSession();
+                }}
+              />
+            )}
+          </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setAttachOpen(false)}>Đóng</Button>
+          <Button onClick={() => setAttachFromSessionOpen(false)}>Đóng</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>Sửa phiên</DialogTitle>
+        <DialogContent>
+          <Stack spacing={1.5} sx={{ mt: 1 }}>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DateTimePicker
+                label="Thời gian bắt đầu"
+                value={editStartedAt}
+                onChange={(v) => setEditStartedAt(v)}
+                slotProps={{ textField: { size: "small" } }}
+              />
+            </LocalizationProvider>
+            <TextField
+              label="Ghi chú"
+              value={editNotes}
+              onChange={(e) => setEditNotes(e.target.value)}
+              multiline
+              minRows={2}
+            />
+            <TextField
+              label="Số khách"
+              type="number"
+              value={editGuests}
+              onChange={(e) => setEditGuests(Number(e.target.value || 0))}
+              inputProps={{ min: 0 }}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditOpen(false)}>Đóng</Button>
+          <Button variant="contained" onClick={submitEdit}>
+            Lưu
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={!!deleteTargetId} onClose={() => setDeleteTargetId(null)}>
+        <DialogTitle>Xóa phiên</DialogTitle>
+        <DialogContent>
+          <Typography>Bạn có chắc chắn muốn xóa phiên này?</Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            Hành động này sẽ gỡ tất cả bàn đã gắn khỏi phiên.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteTargetId(null)}>Hủy</Button>
           <Button
             variant="contained"
-            disabled={!selectedTableId}
-            onClick={attachTable}
+            color="error"
+            onClick={deleteSessionAction}
           >
-            Gắn
+            Xóa
           </Button>
         </DialogActions>
       </Dialog>
