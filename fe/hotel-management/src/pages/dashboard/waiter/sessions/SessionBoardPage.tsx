@@ -545,10 +545,10 @@ export default function SessionBoardPage() {
                       borderColor: "primary.main",
                     }}
                   >
-                    <AccessTime color="primary" />
+                    <AccessTime color="primary" sx={{ color: "white" }} />
                     <Typography
                       variant="subtitle2"
-                      sx={{ fontWeight: 800, flexGrow: 1 }}
+                      sx={{ fontWeight: 800, color: "white", flexGrow: 1 }}
                     >
                       {new Date(s.startedAt).toLocaleString()}
                     </Typography>
@@ -586,7 +586,7 @@ export default function SessionBoardPage() {
 
                     {!!s.notes && (
                       <Stack direction="row" spacing={1} alignItems="center">
-                        <Info fontSize="small" color="disabled" />
+                        <CleanHands fontSize="small" color="disabled" />
                         <Typography variant="caption" color="text.secondary">
                           Ghi chú: {s.notes}
                         </Typography>

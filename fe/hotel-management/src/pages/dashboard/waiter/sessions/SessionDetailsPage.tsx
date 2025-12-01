@@ -22,6 +22,7 @@ import {
   DialogActions,
   Tabs,
   Tab,
+  Paper,
 } from "@mui/material";
 import {
   AccessTime,
@@ -47,6 +48,7 @@ import { toast } from "react-toastify";
 import PageTitle from "../../../../components/common/PageTitle";
 import AssignMultipleTableDialog from "./components/AssignMultipleTableDialog";
 import dayjs, { Dayjs } from "dayjs";
+import tableImg from "../../../../assets/table.png";
 
 export default function SessionDetailsPage() {
   const { id } = useParams();
@@ -92,6 +94,13 @@ export default function SessionDetailsPage() {
   const requests = (reqRes?.data?.requests || []) as ServiceRequestDto[];
 
   const statusOptions = ["Pending", "Cooking", "Ready", "Served", "Voided"];
+
+  const capacityGroups = useMemo(() => {
+    const caps = Array.from(
+      new Set((session?.tables || []).map((t) => t.capacity))
+    ).sort((a, b) => a - b);
+    return caps;
+  }, [session]);
 
   const handleUpdateItemStatus = async (itemId: string, status: string) => {
     await orderItemsApi.updateStatus(itemId, { status });
@@ -218,10 +227,10 @@ export default function SessionDetailsPage() {
               borderColor: "primary.main",
             }}
           >
-            <AccessTime color="primary" />
+            <AccessTime color="primary" sx={{ color: "white" }} />
             <Typography
               variant="subtitle2"
-              sx={{ fontWeight: 800, flexGrow: 1 }}
+              sx={{ fontWeight: 800, color: "white", flexGrow: 1 }}
             >
               {new Date(session.startedAt).toLocaleString()}
             </Typography>
@@ -311,16 +320,49 @@ export default function SessionDetailsPage() {
       {tab === 0 && session && (
         <Box>
           <Typography variant="subtitle2">Bàn đang phục vụ</Typography>
-          <Grid container spacing={2} mt={1}>
-            {(session.tables || []).map((t) => (
-              <Grid key={t.tableId} size={{ xs: 12, sm: 6, md: 4 }}>
-                <Card
+          <Stack spacing={2} mt={1}>
+            {capacityGroups.map((cap) => {
+              const rows = (session.tables || []).filter(
+                (t) => Number(t.capacity) === Number(cap)
+              );
+              return (
+                <Paper
+                  key={cap}
                   variant="outlined"
                   sx={{
-                    borderRadius: 2,
+                    p: 2,
                     position: "relative",
-                    transition: "all .2s ease",
-                    "&:hover": { boxShadow: 2, borderColor: "grey.300" },
+                    border: "2px dashed",
+                    borderColor: "warning.main",
+                    borderRadius: "14px",
+                    background:
+                      "linear-gradient(135deg, #FFF8E1 0%, #FFFDF5 100%)",
+                    "&:before": {
+                      content: '""',
+                      position: "absolute",
+                      top: "50%",
+                      left: -8,
+                      transform: "translateY(-50%)",
+                      width: 16,
+                      height: 16,
+                      borderRadius: "50%",
+                      backgroundColor: "background.paper",
+                      border: "2px solid",
+                      borderColor: "warning.main",
+                    },
+                    "&:after": {
+                      content: '""',
+                      position: "absolute",
+                      top: "50%",
+                      right: -8,
+                      transform: "translateY(-50%)",
+                      width: 16,
+                      height: 16,
+                      borderRadius: "50%",
+                      backgroundColor: "background.paper",
+                      border: "2px solid",
+                      borderColor: "warning.main",
+                    },
                   }}
                 >
                   <Box
@@ -330,45 +372,128 @@ export default function SessionDetailsPage() {
                       gap: 1,
                       px: 2,
                       py: 1,
+                      mb: 2,
                       borderRadius: 2,
+                      bgcolor: "warning.light",
+                      border: "2px dashed",
+                      borderColor: "warning.main",
                     }}
                   >
-                    <TableRestaurantIcon color="primary" />
+                    <TableRestaurantIcon color="warning" />
                     <Typography
-                      variant="subtitle2"
-                      sx={{ fontWeight: 800, flexGrow: 1 }}
+                      variant="subtitle1"
+                      sx={{
+                        fontWeight: 800,
+                        textTransform: "uppercase",
+                        letterSpacing: 0.5,
+                        flexGrow: 1,
+                      }}
                     >
-                      {t.tableName}
+                      {`Dãy ${cap}`}
                     </Typography>
-                    <Chip label={`${t.capacity} chỗ`} size="small" />
+                    <Chip label={`${rows.length} bàn`} variant="outlined" />
                   </Box>
-                  <Stack spacing={0.5} sx={{ px: 2, py: 1.5 }}>
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <AccessTime fontSize="small" color="disabled" />
-                      <Typography variant="caption" color="text.secondary">
-                        Gắn lúc {new Date(t.attachedAt).toLocaleString()}
-                      </Typography>
-                    </Stack>
-                  </Stack>
-                  <Stack
-                    direction={{ xs: "column", lg: "row" }}
-                    spacing={1}
-                    sx={{ px: 2, pb: 2 }}
+
+                  <Box
+                    sx={{
+                      display: "grid",
+                      gridTemplateColumns: {
+                        xs: "repeat(1, minmax(0, 1fr))",
+                        md: "repeat(2, minmax(0, 1fr))",
+                        lg: "repeat(4, minmax(0, 1fr))",
+                      },
+                      gap: 1.5,
+                    }}
                   >
-                    <Button
-                      size="small"
-                      color="warning"
-                      variant="contained"
-                      fullWidth
-                      onClick={() => detachTable(t.tableId)}
-                    >
-                      Tách
-                    </Button>
-                  </Stack>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
+                    {rows.map((t) => (
+                      <Card
+                        key={t.tableId}
+                        variant="outlined"
+                        sx={{
+                          width: "100%",
+                          borderRadius: 2,
+                          position: "relative",
+                          transition: "all .2s ease",
+                          "&:hover": { boxShadow: 2, borderColor: "grey.300" },
+                        }}
+                      >
+                        <Box sx={{ position: "relative", pt: 4 }}>
+                          <Box sx={{ height: 110, overflow: "hidden" }}>
+                            <img
+                              src={tableImg}
+                              alt={t.tableName}
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "contain",
+                                display: "block",
+                              }}
+                            />
+                          </Box>
+                          <Box sx={{ position: "absolute", top: 8, left: 8 }}>
+                            <Chip
+                              label="Đang sử dụng"
+                              color="primary"
+                              size="small"
+                            />
+                          </Box>
+                        </Box>
+                        <Stack spacing={0.5} sx={{ px: 1.5, pb: 1.5 }}>
+                          <Typography
+                            variant="subtitle2"
+                            sx={{ fontWeight: 700 }}
+                          >
+                            {t.tableName}
+                          </Typography>
+                          <Stack
+                            direction="row"
+                            spacing={0.5}
+                            alignItems="center"
+                          >
+                            <Groups fontSize="small" color="disabled" />
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
+                              6 người/bàn
+                            </Typography>
+                          </Stack>
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            alignItems="center"
+                          >
+                            <AccessTime fontSize="small" color="disabled" />
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
+                              Gắn lúc {new Date(t.attachedAt).toLocaleString()}
+                            </Typography>
+                          </Stack>
+                        </Stack>
+                        <Stack
+                          direction={{ xs: "column", lg: "row" }}
+                          spacing={1}
+                          sx={{ px: 2, pb: 2 }}
+                        >
+                          <Button
+                            size="small"
+                            color="warning"
+                            variant="contained"
+                            fullWidth
+                            onClick={() => detachTable(t.tableId)}
+                          >
+                            Tách
+                          </Button>
+                        </Stack>
+                      </Card>
+                    ))}
+                  </Box>
+                </Paper>
+              );
+            })}
+          </Stack>
         </Box>
       )}
 
