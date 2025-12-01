@@ -349,7 +349,8 @@ namespace HotelManagement.Domain.Migrations
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     BasePriceFrom = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     BasePriceTo = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    Prices = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Prices = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {

@@ -61,7 +61,8 @@ public class RoomTypeService : IRoomTypeService
                 BasePriceFrom = dto.PriceFrom,
                 BasePriceTo = dto.PriceTo,
                 Capacity = dto.Capacity,
-                Prices = JsonSerializer.Serialize(dto.PriceByDates)
+                Prices = JsonSerializer.Serialize(dto.PriceByDates),
+                ImageUrl = dto.ImageUrl ?? string.Empty
             };
 
             await _roomTypeRepository.AddAsync(roomType);
@@ -110,6 +111,7 @@ public class RoomTypeService : IRoomTypeService
             roomType.BasePriceFrom = dto.PriceFrom;
             roomType.BasePriceTo = dto.PriceTo;
             roomType.Prices = JsonSerializer.Serialize(dto.PriceByDates);
+            roomType.ImageUrl = dto.ImageUrl ?? roomType.ImageUrl;
 
             await _roomTypeRepository.UpdateAsync(roomType);
             await _roomTypeRepository.SaveChangesAsync();
@@ -316,7 +318,7 @@ public class RoomTypeService : IRoomTypeService
             HotelName = roomType.Hotel?.Name ?? "",
             Name = roomType.Name,
             Description = roomType.Description,
-            Images = new List<string>(),
+            ImageUrl = roomType.ImageUrl,
             RoomCount = roomType.Capacity,
             CanDelete = canDelete,
             PriceFrom = roomType.BasePriceFrom,
@@ -348,7 +350,7 @@ public class RoomTypeService : IRoomTypeService
             HotelName = baseDto.HotelName,
             Name = baseDto.Name,
             Description = baseDto.Description,
-            Images = baseDto.Images,
+            ImageUrl = baseDto.ImageUrl,
             RoomCount = baseDto.RoomCount,
             CanDelete = baseDto.CanDelete,
             PriceFrom = baseDto.PriceFrom,

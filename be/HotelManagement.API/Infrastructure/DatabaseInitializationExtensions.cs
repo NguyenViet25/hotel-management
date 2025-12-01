@@ -117,6 +117,7 @@ public static class DatabaseInitializationExtensions
                 BasePriceFrom = 500000,
                 BasePriceTo = 700000,
                 Prices = "", // JSON string or empty for now
+                ImageUrl = "https://png.pngtree.com/png-vector/20230329/ourmid/pngtree-room-model-cute-cartoon-pattern-png-image_6671847.png"
             },
             new RoomType
             {
@@ -128,6 +129,7 @@ public static class DatabaseInitializationExtensions
                 BasePriceFrom = 800000,
                 BasePriceTo = 1200000,
                 Prices = "",
+                ImageUrl = "https://png.pngtree.com/png-clipart/20241024/original/pngtree-3d-enchanted-dream-room-design-on-transparent-background-png-image_16482407.png"
             },
             new RoomType
             {
@@ -139,6 +141,7 @@ public static class DatabaseInitializationExtensions
                 BasePriceFrom = 1500000,
                 BasePriceTo = 2000000,
                 Prices = "",
+                ImageUrl = "https://png.pngtree.com/png-vector/20250416/ourmid/pngtree-isometric-room-with-wardrobe-curtains-and-soft-lights-png-image_16020902.png",
             }
         };
 
