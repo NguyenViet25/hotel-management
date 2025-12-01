@@ -72,10 +72,21 @@ public class DiningSessionController : ControllerBase
         return Ok(response);
     }
 
-    [HttpPost("{sessionId}/tables/{tableId}")]
-    public async Task<IActionResult> AttachTable(Guid sessionId, Guid tableId)
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteSession(Guid id)
     {
-        var response = await _diningSessionService.AttachTableAsync(sessionId, tableId);
+        var response = await _diningSessionService.DeleteSessionAsync(id);
+        if (!response.IsSuccess)
+        {
+            return NotFound(response);
+        }
+        return Ok(response);
+    }
+
+    [HttpPost("{id}/tables/{tableId}")]
+    public async Task<IActionResult> AttachTable(Guid id, Guid tableId)
+    {
+        var response = await _diningSessionService.AttachTableAsync(id, tableId);
         if (!response.IsSuccess)
         {
             return BadRequest(response);
@@ -83,14 +94,26 @@ public class DiningSessionController : ControllerBase
         return Ok(response);
     }
 
-    [HttpDelete("{sessionId}/tables/{tableId}")]
-    public async Task<IActionResult> DetachTable(Guid sessionId, Guid tableId)
+    [HttpDelete("{id}/tables/{tableId}")]
+    public async Task<IActionResult> DetachTable(Guid id, Guid tableId)
     {
-        var response = await _diningSessionService.DetachTableAsync(sessionId, tableId);
+        var response = await _diningSessionService.DetachTableAsync(id, tableId);
         if (!response.IsSuccess)
         {
             return NotFound(response);
         }
         return Ok(response);
     }
+
+    [HttpPut("{id}/tables")]
+    public async Task<IActionResult> UpdateSessionTables(Guid id, [FromBody] UpdateSessionTablesRequest request)
+    {
+        var response = await _diningSessionService.UpdateSessionTablesAsync(id, request);
+        if (!response.IsSuccess)
+        {
+            return BadRequest(response);
+        }
+        return Ok(response);
+    }
+
 }

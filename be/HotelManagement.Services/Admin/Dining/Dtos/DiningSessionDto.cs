@@ -44,3 +44,9 @@ public class DiningSessionListResponse
     public List<DiningSessionDto> Sessions { get; set; } = new List<DiningSessionDto>();
     public int TotalCount { get; set; }
 }
+
+public class UpdateSessionTablesRequest
+{
+    public List<Guid> AttachTableIds { get; set; } = new List<Guid>();
+    public List<Guid> DetachTableIds { get; set; } = new List<Guid>();
+}

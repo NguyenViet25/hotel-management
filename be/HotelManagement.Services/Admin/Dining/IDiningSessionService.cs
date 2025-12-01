@@ -12,4 +12,6 @@ public interface IDiningSessionService
     Task<ApiResponse<bool>> EndSessionAsync(Guid id);
     Task<ApiResponse<bool>> AttachTableAsync(Guid sessionId, Guid tableId);
     Task<ApiResponse<bool>> DetachTableAsync(Guid sessionId, Guid tableId);
+    Task<ApiResponse<bool>> DeleteSessionAsync(Guid id);
+    Task<ApiResponse<bool>> UpdateSessionTablesAsync(Guid sessionId, UpdateSessionTablesRequest request);
 }

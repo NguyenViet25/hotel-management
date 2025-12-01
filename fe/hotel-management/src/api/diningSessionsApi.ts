@@ -115,6 +115,17 @@ const diningSessionsApi = {
     );
     return res.data;
   },
+  async deleteSession(id: string): Promise<ItemResponse<boolean>> {
+    const res = await axios.delete(`/dining-sessions/${id}`);
+    return res.data;
+  },
+  async updateTables(
+    id: string,
+    payload: { attachTableIds?: string[]; detachTableIds?: string[] }
+  ): Promise<ItemResponse<boolean>> {
+    const res = await axios.put(`/dining-sessions/${id}/tables`, payload);
+    return res.data;
+  },
 };
 
 export default diningSessionsApi;

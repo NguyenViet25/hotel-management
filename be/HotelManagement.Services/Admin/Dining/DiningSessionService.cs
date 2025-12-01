@@ -225,6 +225,100 @@ public class DiningSessionService : IDiningSessionService
         return ApiResponse<bool>.Success(true);
     }
 
+    public async Task<ApiResponse<bool>> DeleteSessionAsync(Guid id)
+    {
+        var session = await _diningSessionRepository.FindAsync(id);
+        if (session == null)
+        {
+            return ApiResponse<bool>.Fail("Dining session not found");
+        }
+
+        var links = await _diningSessionTableRepository.Query()
+            .Where(x => x.DiningSessionId == id)
+            .ToListAsync();
+        foreach (var link in links)
+        {
+            var table = await _tableRepository.FindAsync(link.TableId);
+            if (table != null)
+            {
+                table.TableStatus = 0;
+                await _tableRepository.UpdateAsync(table);
+            }
+            await _diningSessionTableRepository.RemoveAsync(link);
+        }
+
+        await _diningSessionRepository.RemoveAsync(session);
+        await _unitOfWork.SaveChangesAsync();
+        return ApiResponse<bool>.Success(true);
+    }
+
+    public async Task<ApiResponse<bool>> UpdateSessionTablesAsync(Guid sessionId, UpdateSessionTablesRequest request)
+    {
+        var session = await _diningSessionRepository.FindAsync(sessionId);
+        if (session == null || session.Status != DiningSessionStatus.Open)
+        {
+            return ApiResponse<bool>.Fail("Session not found or not open");
+        }
+
+        var attachIds = (request.AttachTableIds ?? new List<Guid>()).Distinct().ToList();
+        var detachIds = (request.DetachTableIds ?? new List<Guid>()).Distinct().ToList();
+
+        int changes = 0;
+
+        foreach (var tableId in detachIds)
+        {
+            var link = await _diningSessionTableRepository.Query()
+                .Where(x => x.DiningSessionId == sessionId && x.TableId == tableId)
+                .FirstOrDefaultAsync();
+            if (link != null)
+            {
+                await _diningSessionTableRepository.RemoveAsync(link);
+                var table = await _tableRepository.FindAsync(tableId);
+                if (table != null)
+                {
+                    table.TableStatus = 0;
+                    await _tableRepository.UpdateAsync(table);
+                }
+                changes++;
+            }
+        }
+
+        foreach (var tableId in attachIds)
+        {
+            var table = await _tableRepository.FindAsync(tableId);
+            if (table == null || table.TableStatus == 1)
+            {
+                continue;
+            }
+            var existingLink = await _diningSessionTableRepository.Query()
+                .Where(x => x.TableId == tableId)
+                .FirstOrDefaultAsync();
+            if (existingLink != null)
+            {
+                continue;
+            }
+            var link = new DiningSessionTable
+            {
+                Id = Guid.NewGuid(),
+                HotelId = session.HotelId,
+                DiningSessionId = sessionId,
+                TableId = tableId,
+                AttachedAt = DateTime.UtcNow,
+            };
+            await _diningSessionTableRepository.AddAsync(link);
+            table.TableStatus = 1;
+            await _tableRepository.UpdateAsync(table);
+            changes++;
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+        if (changes == 0)
+        {
+            return ApiResponse<bool>.Fail("No changes applied");
+        }
+        return ApiResponse<bool>.Success(true);
+    }
+
     private async Task<DiningSessionDto> MapToDto(DiningSession session)
     {
         string? waiterName = null;

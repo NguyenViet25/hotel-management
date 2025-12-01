@@ -60,12 +60,6 @@ export default function SessionBoardPage() {
   const [attachFromSessionOpen, setAttachFromSessionOpen] = useState(false);
   const [attachSessionTargetId, setAttachSessionTargetId] =
     useState<string>("");
-  const [availableAttachTables, setAvailableAttachTables] = useState<
-    TableDto[]
-  >([]);
-  const [selectedAttachTableId, setSelectedAttachTableId] =
-    useState<string>("");
-  const [attachSearch, setAttachSearch] = useState("");
   const [activeSession, setActiveSession] = useState<DiningSessionDto | null>(
     null
   );
@@ -212,9 +206,9 @@ export default function SessionBoardPage() {
     }
   };
 
-  const endSession = async (sessionId: string) => {
+  const deleteSessionAction = async (sessionId: string) => {
     try {
-      const res = await diningSessionsApi.endSession(sessionId);
+      const res = await diningSessionsApi.deleteSession(sessionId);
       if (res.isSuccess) {
         setSnackbar({
           open: true,
@@ -276,54 +270,12 @@ export default function SessionBoardPage() {
   };
 
   useEffect(() => {
-    const loadAvailable = async () => {
-      if (!hotelId) return;
-      const res = await tablesApi.listTables({
-        hotelId,
-        status: TableStatus.Available,
-        page: 1,
-        pageSize: 100,
-      });
-      setAvailableAttachTables(res.data || []);
-    };
-    if (attachFromSessionOpen) {
-      setSelectedAttachTableId("");
-      loadAvailable();
-    }
-  }, [attachFromSessionOpen, hotelId]);
+    if (!attachFromSessionOpen) return;
+  }, [attachFromSessionOpen]);
 
   const openAttachForSession = (sessionId: string) => {
     setAttachSessionTargetId(sessionId);
     setAttachFromSessionOpen(true);
-  };
-
-  const confirmAttachForSession = async () => {
-    if (!attachSessionTargetId || !selectedAttachTableId) return;
-    try {
-      const res = await diningSessionsApi.attachTable(
-        attachSessionTargetId,
-        selectedAttachTableId
-      );
-      if (res.isSuccess) {
-        setSnackbar({
-          open: true,
-          message: "Đã gắn bàn vào phiên",
-          severity: "success",
-        });
-        setAttachFromSessionOpen(false);
-        setAttachSessionTargetId("");
-        setSelectedAttachTableId("");
-        await refreshAll();
-      } else {
-        setSnackbar({
-          open: true,
-          message: res.message || "Gắn bàn thất bại",
-          severity: "error",
-        });
-      }
-    } catch {
-      setSnackbar({ open: true, message: "Đã xảy ra lỗi", severity: "error" });
-    }
   };
 
   return (
@@ -498,7 +450,7 @@ export default function SessionBoardPage() {
                       fullWidth
                       startIcon={<Delete />}
                       variant="contained"
-                      onClick={() => endSession(s.id)}
+                      onClick={() => deleteSessionAction(s.id)}
                     >
                       Xóa
                     </Button>
@@ -541,18 +493,18 @@ export default function SessionBoardPage() {
         <DialogTitle>Gắn bàn vào phiên</DialogTitle>
         <DialogContent>
           <Box pt={1}>
-            <AssignMultipleTableDialog />
+            <AssignMultipleTableDialog
+              sessionId={attachSessionTargetId}
+              onAssigned={async () => {
+                setAttachFromSessionOpen(false);
+                setAttachSessionTargetId("");
+                await refreshAll();
+              }}
+            />
           </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setAttachFromSessionOpen(false)}>Đóng</Button>
-          <Button
-            variant="contained"
-            disabled={!selectedAttachTableId}
-            onClick={confirmAttachForSession}
-          >
-            Gắn
-          </Button>
         </DialogActions>
       </Dialog>
 

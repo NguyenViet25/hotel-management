@@ -6,6 +6,7 @@ Debug/
 Release/
 TestResults/
 
+out/
 ## IDE settings
 .idea/
 .vscode/
