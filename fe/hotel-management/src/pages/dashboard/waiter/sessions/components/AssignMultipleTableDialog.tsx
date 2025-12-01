@@ -1,24 +1,12 @@
-import {
-  Alert,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Chip,
-  Grid,
-  InputAdornment,
-  Snackbar,
-  Stack,
-  TextField,
-  Typography,
-} from "@mui/material";
-import React, { useEffect, useMemo, useState } from "react";
+import { Alert, Box, Button, Chip, Snackbar, Stack } from "@mui/material";
+import React, { useEffect, useState } from "react";
 import { useStore, type StoreState } from "../../../../../hooks/useStore";
 import tablesApi, {
   type TableDto,
   TableStatus,
 } from "../../../../../api/tablesApi";
 import diningSessionsApi from "../../../../../api/diningSessionsApi";
+import TablesTable from "../../../manager/tables/components/TablesTable";
 
 type Props = {
   sessionId: string;
@@ -33,6 +21,7 @@ const AssignMultipleTableDialog: React.FC<Props> = ({
   const [items, setItems] = useState<TableDto[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string | number>("");
   const [selected, setSelected] = useState<string[]>([]);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -46,8 +35,11 @@ const AssignMultipleTableDialog: React.FC<Props> = ({
     try {
       const res = await tablesApi.listTables({
         hotelId,
-        status: TableStatus.Available,
         search: searchTerm,
+        status:
+          statusFilter === "" || statusFilter === -1
+            ? undefined
+            : (statusFilter as string | number),
         page: 1,
         pageSize: 100,
       });
@@ -69,10 +61,14 @@ const AssignMultipleTableDialog: React.FC<Props> = ({
   }, [hotelId]);
 
   useEffect(() => {
-    const t = setTimeout(() => fetchTables(), 300);
-    return () => clearTimeout(t);
+    fetchTables();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm]);
+
+  useEffect(() => {
+    fetchTables();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusFilter]);
 
   const toggleSelect = (id: string, status: TableStatus) => {
     if (status !== TableStatus.Available) return;
@@ -107,12 +103,6 @@ const AssignMultipleTableDialog: React.FC<Props> = ({
     }
   };
 
-  const filtered = useMemo(() => {
-    const bySearch = (t: TableDto) =>
-      !searchTerm || t.name.toLowerCase().includes(searchTerm.toLowerCase());
-    return (items || []).filter(bySearch);
-  }, [items, searchTerm]);
-
   return (
     <Box>
       <Stack
@@ -122,18 +112,6 @@ const AssignMultipleTableDialog: React.FC<Props> = ({
         justifyContent="space-between"
         sx={{ mb: 1 }}
       >
-        <TextField
-          placeholder="Tìm bàn..."
-          size="small"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          sx={{ width: 320 }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">🔎</InputAdornment>
-            ),
-          }}
-        />
         <Chip
           label={`Đã chọn: ${selected.length}`}
           color={selected.length ? "primary" : "default"}
@@ -148,42 +126,15 @@ const AssignMultipleTableDialog: React.FC<Props> = ({
         </Button>
       </Stack>
 
-      <Grid container spacing={1.5}>
-        {filtered.map((row) => {
-          const isSelected = selected.includes(row.id);
-          const available = row.status === TableStatus.Available;
-          return (
-            <Grid key={row.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-              <Card variant="outlined" sx={{ borderRadius: 2 }}>
-                <CardContent>
-                  <Stack spacing={0.5}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                      {row.name}
-                    </Typography>
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <Chip label={`Dãy ${row.capacity}`} size="small" />
-                      <Chip
-                        label={available ? "Trống" : "Không khả dụng"}
-                        color={available ? "success" : "default"}
-                        size="small"
-                      />
-                    </Stack>
-                    <Button
-                      fullWidth
-                      size="small"
-                      variant={isSelected ? "contained" : "outlined"}
-                      disabled={!available}
-                      onClick={() => toggleSelect(row.id, row.status)}
-                    >
-                      {isSelected ? "Đã chọn" : "Chọn"}
-                    </Button>
-                  </Stack>
-                </CardContent>
-              </Card>
-            </Grid>
-          );
-        })}
-      </Grid>
+      <TablesTable
+        data={items}
+        loading={loading}
+        onSearch={(e) => setSearchTerm(e)}
+        onStatusFilterChange={(v) => setStatusFilter(v)}
+        selectionMode
+        selectedIds={selected}
+        onSelectToggle={toggleSelect}
+      />
 
       <Snackbar
         open={snackbar.open}

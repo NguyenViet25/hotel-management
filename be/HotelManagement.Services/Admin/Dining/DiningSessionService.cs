@@ -154,12 +154,14 @@ public class DiningSessionService : IDiningSessionService
             {
                 table.TableStatus = 0;
                 await _tableRepository.UpdateAsync(table);
+                await _tableRepository.SaveChangesAsync();
             }
             await _diningSessionTableRepository.RemoveAsync(link);
+            await _diningSessionTableRepository.SaveChangesAsync();
         }
 
         await _diningSessionRepository.UpdateAsync(session);
-        await _unitOfWork.SaveChangesAsync();
+        await _diningSessionRepository.SaveChangesAsync();
 
         return ApiResponse<bool>.Success(true);
     }
@@ -194,9 +196,11 @@ public class DiningSessionService : IDiningSessionService
             AttachedAt = DateTime.UtcNow,
         };
         await _diningSessionTableRepository.AddAsync(link);
+        await _diningSessionTableRepository.SaveChangesAsync();
+
         table.TableStatus = 1;
         await _tableRepository.UpdateAsync(table);
-        await _unitOfWork.SaveChangesAsync();
+        await _tableRepository.SaveChangesAsync();
         return ApiResponse<bool>.Success(true);
     }
 
@@ -215,13 +219,15 @@ public class DiningSessionService : IDiningSessionService
             return ApiResponse<bool>.Fail("Link not found");
         }
         await _diningSessionTableRepository.RemoveAsync(link);
+        await _diningSessionTableRepository.SaveChangesAsync();
         var table = await _tableRepository.FindAsync(tableId);
         if (table != null)
         {
             table.TableStatus = 0;
             await _tableRepository.UpdateAsync(table);
+            await _tableRepository.SaveChangesAsync();
         }
-        await _unitOfWork.SaveChangesAsync();
+        await _diningSessionTableRepository.SaveChangesAsync();
         return ApiResponse<bool>.Success(true);
     }
 
@@ -243,12 +249,14 @@ public class DiningSessionService : IDiningSessionService
             {
                 table.TableStatus = 0;
                 await _tableRepository.UpdateAsync(table);
+                await _tableRepository.SaveChangesAsync();
             }
             await _diningSessionTableRepository.RemoveAsync(link);
+            await _diningSessionTableRepository.SaveChangesAsync();
         }
 
         await _diningSessionRepository.RemoveAsync(session);
-        await _unitOfWork.SaveChangesAsync();
+        await _diningSessionRepository.SaveChangesAsync();
         return ApiResponse<bool>.Success(true);
     }
 
@@ -273,11 +281,14 @@ public class DiningSessionService : IDiningSessionService
             if (link != null)
             {
                 await _diningSessionTableRepository.RemoveAsync(link);
+                await _diningSessionTableRepository.SaveChangesAsync();
+
                 var table = await _tableRepository.FindAsync(tableId);
                 if (table != null)
                 {
                     table.TableStatus = 0;
                     await _tableRepository.UpdateAsync(table);
+                    await _tableRepository.SaveChangesAsync();
                 }
                 changes++;
             }
@@ -306,12 +317,14 @@ public class DiningSessionService : IDiningSessionService
                 AttachedAt = DateTime.UtcNow,
             };
             await _diningSessionTableRepository.AddAsync(link);
+            await _diningSessionTableRepository.SaveChangesAsync();
+           
             table.TableStatus = 1;
             await _tableRepository.UpdateAsync(table);
+            await _tableRepository.SaveChangesAsync();
             changes++;
         }
 
-        await _unitOfWork.SaveChangesAsync();
         if (changes == 0)
         {
             return ApiResponse<bool>.Fail("No changes applied");

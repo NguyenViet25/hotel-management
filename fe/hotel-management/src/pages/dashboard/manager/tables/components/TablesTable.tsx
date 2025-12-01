@@ -43,6 +43,9 @@ interface TablesTableProps {
   onDelete?: (record: TableDto) => void;
   onSearch?: (search: string) => void;
   onStatusFilterChange?: (status: string | number) => void;
+  selectionMode?: boolean;
+  selectedIds?: string[];
+  onSelectToggle?: (id: string, status: TableStatus) => void;
 }
 
 const statusChip = (status: TableStatus) => {
@@ -64,6 +67,9 @@ const TablesTable: React.FC<TablesTableProps> = ({
   onDelete,
   onSearch,
   onStatusFilterChange,
+  selectionMode = false,
+  selectedIds = [],
+  onSelectToggle,
 }) => {
   const [searchText, setSearchText] = useState("");
   const [dayFilter, setDayFilter] = useState<number>(-1);
@@ -257,6 +263,8 @@ const TablesTable: React.FC<TablesTableProps> = ({
                 >
                   {rows.map((row) => {
                     const seats = 6;
+                    const isSelected = selectedIds.includes(row.id);
+                    const available = Number(row.status) === Number(0);
                     return (
                       <Card
                         key={row.id}
@@ -270,6 +278,9 @@ const TablesTable: React.FC<TablesTableProps> = ({
                             boxShadow: 2,
                             borderColor: "grey.300",
                           },
+                          ...(selectionMode && isSelected
+                            ? { borderColor: "primary.main", boxShadow: 3 }
+                            : {}),
                         }}
                       >
                         <Box sx={{ position: "relative", pt: 4 }}>
@@ -320,36 +331,53 @@ const TablesTable: React.FC<TablesTableProps> = ({
                           direction="column"
                           spacing={0.5}
                         >
-                          <Tooltip title="Xem">
-                            <IconButton
-                              size="small"
-                              color="primary"
-                              onClick={() => setViewItem(row)}
-                            >
-                              <Visibility fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                          {onEdit && (
-                            <Tooltip title="Sửa">
-                              <IconButton
-                                size="small"
-                                color="info"
-                                onClick={() => onEdit(row)}
-                              >
-                                <Edit fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
+                          {!selectionMode && (
+                            <>
+                              <Tooltip title="Xem">
+                                <IconButton
+                                  size="small"
+                                  color="primary"
+                                  onClick={() => setViewItem(row)}
+                                >
+                                  <Visibility fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                              {onEdit && (
+                                <Tooltip title="Sửa">
+                                  <IconButton
+                                    size="small"
+                                    color="info"
+                                    onClick={() => onEdit(row)}
+                                  >
+                                    <Edit fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                              )}
+                              {onDelete && (
+                                <Tooltip title="Xóa">
+                                  <IconButton
+                                    size="small"
+                                    color="error"
+                                    onClick={() => onDelete(row)}
+                                  >
+                                    <Delete fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                              )}
+                            </>
                           )}
-                          {onDelete && (
-                            <Tooltip title="Xóa">
-                              <IconButton
-                                size="small"
-                                color="error"
-                                onClick={() => onDelete(row)}
-                              >
-                                <Delete fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
+                          {selectionMode && (
+                            <Button
+                              fullWidth
+                              size="small"
+                              variant={isSelected ? "contained" : "outlined"}
+                              disabled={!available}
+                              onClick={() =>
+                                onSelectToggle?.(row.id, row.status)
+                              }
+                            >
+                              {isSelected ? "Đã chọn" : "Chọn"}
+                            </Button>
                           )}
                         </Stack>
                       </Card>
