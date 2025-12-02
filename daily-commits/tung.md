@@ -199,3 +199,4 @@
 2025-12-01 - 4 - 02:05:12 UTC :: build: UC-33 Phan ca: gan ca, duyet doi ca/ngi phep. — bo sung metrics/telemetry co ban (da review so bo)
 2025-12-01 - 5 - 02:05:13 UTC :: perf: UC-36 Duyet ngoai le: duyet/tu choi theo han muc. — dieu chinh UI & copy cho ro (da review so bo)
 2025-12-02 - 1 - 01:49:10 UTC :: build: UC-31 Bao cao: len lich gui email/PDF hang ngay/tuan. — refactor luong xu ly cho ro rang (da kiem tra lint)
+2025-12-02 - 2 - 01:49:13 UTC :: perf: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — tach chuc nang de de bao tri (da smoke test)
