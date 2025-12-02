@@ -1,7 +1,11 @@
 import {
   Alert,
   Box,
+  Button,
+  Card,
+  CardContent,
   Chip,
+  Divider,
   IconButton,
   Snackbar,
   Stack,
@@ -24,11 +28,16 @@ import DataTable, {
 } from "../../../../components/common/DataTable";
 import PageTitle from "../../../../components/common/PageTitle";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
+import CustomSelect from "../../../../components/common/CustomSelect";
+import EmptyState from "../../../../components/common/EmptyState";
 import BookingFormModal from "./components/BookingFormModal";
 import CallLogModal from "./components/CallLogModal";
 import CancelBookingModal from "./components/CancelBookingModal";
 
 import { Edit, RemoveRedEye } from "@mui/icons-material";
+import PersonIcon from "@mui/icons-material/Person";
+import PhoneIphoneIcon from "@mui/icons-material/PhoneIphone";
+import ReceiptIcon from "@mui/icons-material/Receipt";
 import FiltersBar, {
   type StatusOption as FiltersStatusOption,
 } from "./components/FiltersBar";
@@ -41,8 +50,6 @@ const STATUS_OPTIONS: StatusOption[] = [
   { value: "", label: "Tất cả" },
   { value: 0 as BookingStatus, label: "Chờ duyệt" },
   { value: 1 as BookingStatus, label: "Đã xác nhận" },
-  { value: 2 as BookingStatus, label: "Đã nhận phòng" },
-  { value: 3 as BookingStatus, label: "Hoàn tất" },
   { value: 4 as BookingStatus, label: "Đã hủy" },
 ];
 
@@ -54,6 +61,7 @@ const BookingManagementPage: React.FC = () => {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
+  const [viewMode, setViewMode] = useState<"table" | "card">("card");
 
   // Filters
   const { user } = useStore<StoreState>((state) => state);
@@ -327,26 +335,201 @@ const BookingManagementPage: React.FC = () => {
         roomNumber={roomNumber}
         onGuestNameChange={setGuestName}
         onRoomNumberChange={setRoomNumber}
-        roomTypeId={roomTypeId}
-        onRoomTypeIdChange={setRoomTypeId}
-        roomTypes={roomTypes}
         statusOptions={STATUS_OPTIONS as FiltersStatusOption[]}
       />
 
-      {/* Table */}
-      <DataTable
-        title="Danh sách booking"
-        columns={columns}
-        data={tableData}
-        loading={loading}
-        pagination={{
-          page,
-          pageSize,
-          total,
-          onPageChange: (p) => fetchList(p),
-        }}
-        getRowId={(r: any) => r.id}
-      />
+      {viewMode === "table" ? (
+        <DataTable
+          title="Danh sách booking"
+          columns={columns}
+          data={tableData}
+          loading={loading}
+          pagination={{
+            page,
+            pageSize,
+            total,
+            onPageChange: (p) => fetchList(p),
+          }}
+          getRowId={(r: any) => r.id}
+        />
+      ) : (
+        <Stack spacing={2} sx={{ mt: 2 }}>
+          {(() => {
+            const listData = rows;
+            if (!loading && listData.length === 0) {
+              return (
+                <EmptyState
+                  title="Không có booking"
+                  description="Chưa có yêu cầu đặt phòng. Hãy thêm yêu cầu mới."
+                  actions={
+                    <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
+                      <Button
+                        variant="contained"
+                        onClick={() => {
+                          setOpenCreate(true);
+                        }}
+                      >
+                        Thêm booking
+                      </Button>
+                    </Stack>
+                  }
+                />
+              );
+            }
+            return listData.map((b, idx) => {
+              const totalRooms = (b.bookingRoomTypes || []).reduce(
+                (sum, rt) =>
+                  sum + (rt.totalRoom || rt.bookingRooms?.length || 0),
+                0
+              );
+              const statusColor =
+                b.status === 2
+                  ? "success"
+                  : b.status === 4
+                  ? "error"
+                  : b.status === 1
+                  ? "primary"
+                  : "default";
+              const statusLabel =
+                b.status === 0
+                  ? "Chờ duyệt"
+                  : b.status === 1
+                  ? "Đã xác nhận"
+                  : b.status === 2
+                  ? "Đã nhận phòng"
+                  : b.status === 3
+                  ? "Hoàn tất"
+                  : b.status === 4
+                  ? "Đã hủy"
+                  : String(b.status);
+              return (
+                <Card key={b.id} sx={{ borderRadius: 2, boxShadow: 2 }}>
+                  <CardContent>
+                    <Stack spacing={1.5}>
+                      <Stack
+                        direction={{ xs: "column", sm: "row" }}
+                        justifyContent="space-between"
+                        alignItems={{ xs: "flex-start", sm: "center" }}
+                      >
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <ReceiptIcon color="primary" />
+                          <Typography fontWeight={700}>{`Booking: #${String(
+                            idx + 1
+                          ).toUpperCase()}`}</Typography>
+                          <Chip label={`SL: ${totalRooms}`} size="small" />
+                          <Chip
+                            label={`${(b.totalAmount || 0).toLocaleString()} đ`}
+                            size="small"
+                            color="primary"
+                          />
+                        </Stack>
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <Typography color="text.secondary">
+                            {new Date(b.createdAt).toLocaleString()}
+                          </Typography>
+                          <Chip
+                            color={statusColor as any}
+                            label={statusLabel}
+                          />
+                        </Stack>
+                      </Stack>
+
+                      <Divider />
+
+                      <Stack
+                        direction={{ xs: "column", lg: "row" }}
+                        justifyContent="space-between"
+                        spacing={1}
+                        sx={{ width: "100%" }}
+                      >
+                        <Stack
+                          direction={{ xs: "column", lg: "row" }}
+                          spacing={2}
+                        >
+                          <Stack
+                            direction={{ xs: "row" }}
+                            spacing={1}
+                            alignItems="center"
+                          >
+                            <PersonIcon color="action" />
+                            <Typography>{b.primaryGuestName || "—"}</Typography>
+                          </Stack>
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            alignItems="center"
+                          >
+                            <PhoneIphoneIcon color="action" />
+                            <Typography>{b.phoneNumber || "—"}</Typography>
+                          </Stack>
+                        </Stack>
+                        <Stack
+                          direction={{ xs: "column", lg: "row" }}
+                          spacing={1}
+                        >
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            startIcon={<Edit />}
+                            onClick={() => openEditModal(b as any)}
+                          >
+                            Sửa
+                          </Button>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            startIcon={<RemoveRedEye />}
+                            onClick={() =>
+                              navigate(`/frontdesk/bookings/${b.id}`)
+                            }
+                          >
+                            Xem
+                          </Button>
+                        </Stack>
+                      </Stack>
+
+                      <Stack spacing={1}>
+                        <Typography variant="subtitle2" fontWeight={700}>
+                          Các loại phòng
+                        </Typography>
+                        {b.bookingRoomTypes?.length ? (
+                          b.bookingRoomTypes.map((rt) => (
+                            <Stack
+                              key={rt.bookingRoomTypeId}
+                              direction="row"
+                              spacing={1}
+                              alignItems="center"
+                            >
+                              <Chip
+                                label={`${rt.totalRoom} ${
+                                  rt.roomTypeName || "—"
+                                }`}
+                              />
+                              <Typography color="text.secondary">
+                                {new Date(rt.startDate).toLocaleDateString()} -{" "}
+                                {new Date(rt.endDate).toLocaleDateString()}
+                              </Typography>
+                              <Chip
+                                label={`${(
+                                  rt.price || 0
+                                ).toLocaleString()} đ/đêm`}
+                              />
+                            </Stack>
+                          ))
+                        ) : (
+                          <Typography color="text.secondary">
+                            Không có loại phòng
+                          </Typography>
+                        )}
+                      </Stack>
+                    </Stack>
+                  </CardContent>
+                </Card>
+              );
+            });
+          })()}
+        </Stack>
+      )}
 
       {/* Create */}
       <BookingFormModal
