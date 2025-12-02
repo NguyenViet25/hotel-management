@@ -197,3 +197,4 @@
 2025-12-02 - 2 - 01:48:54 UTC :: chore: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — chinh sua tai lieu & mo ta API (dong bo voi BE/FE)
 2025-12-02 - 3 - 01:48:57 UTC :: docs: UC-09 So do: hien thi layout, loc trang thai phong. — chuan hoa ten ham/bien theo convention (anh huong thap)
 2025-12-02 - 4 - 01:48:59 UTC :: docs: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — bo sung metrics/telemetry co ban (chuan bi cho tinh nang tiep theo)
+2025-12-02 - 5 - 01:49:02 UTC :: test: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — refactor luong xu ly cho ro rang (dat tieu chi toi thieu)
