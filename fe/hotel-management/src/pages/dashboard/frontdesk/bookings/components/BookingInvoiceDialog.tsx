@@ -70,13 +70,15 @@ const BookingInvoiceDialog: React.FC<Props> = ({
   const [earlyCheckIn, setEarlyCheckIn] = useState(false);
   const [lateCheckOut, setLateCheckOut] = useState(false);
 
-  const [additionalNotes, setAdditionalNotes] = useState(booking?.additionalNotes);
-  const [additionalAmount, setAdditionalAmount] = useState<number>(booking?.additionalAmount ?? 0);
+  const [additionalNotes, setAdditionalNotes] = useState(
+    booking?.additionalNotes
+  );
+  const [additionalAmount, setAdditionalAmount] = useState<number>(
+    booking?.additionalAmount ?? 0
+  );
 
   const [promoOpen, setPromoOpen] = useState(false);
-  const [additional, setAdditional] = useState<AdditionalChargesDto | null>(
-   
-  );
+  const [additional, setAdditional] = useState<AdditionalChargesDto | null>();
 
   // TODO: set additional
   const [invoiceDetails, setInvoiceDetails] = useState<InvoiceDto | null>(null);
@@ -167,12 +169,14 @@ const BookingInvoiceDialog: React.FC<Props> = ({
       return [] as {
         label: string;
         quantity: number;
+        nights?: number;
         unit: number;
         total: number;
       }[];
     const rows: {
       label: string;
       quantity: number;
+      nights?: number;
       unit: number;
       total: number;
     }[] = [];
@@ -186,6 +190,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
       rows.push({
         label: `Phòng ${rt.roomTypeName}`,
         quantity: rooms,
+        nights,
         unit,
         total: unit * rooms,
       });
@@ -194,6 +199,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
       rows.push({
         label: "Đồ ăn/uống (đặt món)",
         quantity: 1,
+        nights: undefined,
         unit: ordersTotal,
         total: ordersTotal,
       });
@@ -202,21 +208,25 @@ const BookingInvoiceDialog: React.FC<Props> = ({
       rows.push({
         label: l.description,
         quantity: 1,
+        nights: undefined,
         unit: l.amount,
         total: l.amount,
       });
     }
-
     if (additionalAmount > 0) {
       rows.push({
-        label: `Phụ thu thêm (${additionalNotes})`,
+        label:
+          additionalNotes && additionalNotes.trim().length
+            ? `Phụ thu thêm: ${additionalNotes.trim()}`
+            : "Phụ thu thêm",
         quantity: 1,
+        nights: undefined,
         unit: additionalAmount,
         total: additionalAmount,
       });
     }
     return rows;
-  }, [booking, additional, ordersTotal, additionalAmount]);
+  }, [booking, additional, ordersTotal, additionalAmount, additionalNotes]);
 
   const totals = useMemo(() => {
     const subtotal = tableRows
@@ -342,11 +352,14 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                     <TableCell align="center" sx={{ width: "8%" }}>
                       <b>TT</b>
                     </TableCell>
-                    <TableCell sx={{ width: "52%" }}>
+                    <TableCell sx={{ width: "40%" }}>
                       <b>Nội dung</b>
                     </TableCell>
                     <TableCell align="right" sx={{ width: "10%" }}>
                       <b>SL</b>
+                    </TableCell>
+                    <TableCell align="right" sx={{ width: "10%" }}>
+                      <b>Đêm</b>
                     </TableCell>
                     <TableCell align="right" sx={{ width: "15%" }}>
                       <b>Đơn giá</b>
@@ -362,6 +375,9 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                       <TableCell align="center">{idx + 1}</TableCell>
                       <TableCell>{it.label}</TableCell>
                       <TableCell align="right">{it.quantity}</TableCell>
+                      <TableCell align="right">
+                        {typeof it.nights === "number" ? it.nights : "—"}
+                      </TableCell>
                       <TableCell align="right">{currency(it.unit)}</TableCell>
                       <TableCell align="right">{currency(it.total)}</TableCell>
                     </TableRow>
@@ -373,6 +389,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                         Khấu trừ tiền cọc
                       </TableCell>
                       <TableCell align="right">1</TableCell>
+                      <TableCell align="right"></TableCell>
                       <TableCell align="right">
                         {currency(booking.depositAmount)}
                       </TableCell>
@@ -388,6 +405,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                         Giảm giá ({promotionValue}%)
                       </TableCell>
                       <TableCell align="right">1</TableCell>
+                      <TableCell align="right"></TableCell>
                       <TableCell align="right">
                         {currency(totals.discountAmt)}
                       </TableCell>
@@ -399,6 +417,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                   <TableRow>
                     <TableCell align="center"></TableCell>
                     <TableCell sx={{ fontWeight: 700 }}>Tổng cộng</TableCell>
+                    <TableCell align="right"></TableCell>
                     <TableCell align="right"></TableCell>
                     <TableCell align="right"></TableCell>
                     <TableCell align="right" sx={{ fontWeight: 800 }}>
