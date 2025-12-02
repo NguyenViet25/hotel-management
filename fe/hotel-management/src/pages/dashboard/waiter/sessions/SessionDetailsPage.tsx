@@ -1,11 +1,15 @@
 import {
   AccessTime,
+  Cancel,
+  CheckCircle,
   CleanHands,
   Delete,
   Edit,
   Groups,
+  PlayCircle,
   ReceiptLong,
   RemoveCircle,
+  Send,
   TableBar,
   TableRestaurant as TableRestaurantIcon,
 } from "@mui/icons-material";
@@ -13,13 +17,18 @@ import {
   Box,
   Button,
   Card,
+  CardHeader,
+  CardContent,
+  CardActions,
   Chip,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  Divider,
   FormControl,
   InputLabel,
+  Grid,
   List,
   ListItem,
   ListItemText,
@@ -90,6 +99,23 @@ export default function SessionDetailsPage() {
 
   const session = sessionRes?.data;
   const requests = (reqRes?.data?.requests || []) as ServiceRequestDto[];
+
+  const statusLabel = (s?: string) => {
+    if (s === "InProgress") return "Đang xử lý";
+    if (s === "Completed") return "Hoàn tất";
+    if (s === "Cancelled") return "Đã huỷ";
+    return "Chờ xử lý";
+  };
+  const statusColor = (s?: string) => {
+    if (s === "InProgress") return "warning";
+    if (s === "Completed") return "success";
+    if (s === "Cancelled") return "error";
+    return "default";
+  };
+  const typeLabel = (t?: string) => {
+    const found = requestTypes.find((x) => x.value === t);
+    return found?.label || t || "Khác";
+  };
 
   const capacityGroups = useMemo(() => {
     const caps = Array.from(
@@ -532,53 +558,91 @@ export default function SessionDetailsPage() {
               size="small"
               fullWidth
             />
-            <Button variant="contained" onClick={handleCreateRequest}>
+            <Button
+              startIcon={<Send />}
+              variant="contained"
+              sx={{ minWidth: 120 }}
+              onClick={handleCreateRequest}
+            >
               Gửi
             </Button>
           </Box>
-          <List>
+          <Grid container spacing={2} sx={{ mt: 2 }}>
             {requests.map((r) => (
-              <ListItem
-                key={r.id}
-                secondaryAction={
-                  <Stack direction="row" spacing={1}>
-                    <Button
-                      size="small"
-                      onClick={() => updateRequestStatus(r.id, "InProgress")}
+              <Grid key={r.id} size={{ xs: 12, md: 6, lg: 4 }}>
+                <Card variant="outlined" sx={{ borderRadius: 3 }}>
+                  <CardHeader
+                    title={`${typeLabel(r.requestType)} • ${r.description}`}
+                    subheader={`${new Date(r.createdAt).toLocaleString()}${
+                      r.assignedToName ? " • " + r.assignedToName : ""
+                    }`}
+                    action={
+                      <Chip
+                        label={statusLabel(r.status)}
+                        color={statusColor(r.status) as any}
+                        size="small"
+                      />
+                    }
+                  />
+                  <CardContent>
+                    <Stack
+                      direction="row"
+                      spacing={1}
+                      alignItems="center"
+                      flexWrap="wrap"
                     >
-                      Bắt đầu
-                    </Button>
-                    <Button
-                      size="small"
-                      variant="contained"
-                      onClick={() => updateRequestStatus(r.id, "Completed")}
-                    >
-                      Hoàn tất
-                    </Button>
-                    <Button
-                      size="small"
-                      color="warning"
-                      onClick={() => updateRequestStatus(r.id, "Cancelled")}
-                    >
-                      Huỷ
-                    </Button>
-                  </Stack>
-                }
-              >
-                <ListItemText
-                  primary={`${r.requestType} • ${r.description}`}
-                  secondary={`${new Date(r.createdAt).toLocaleString()} • ${
-                    r.status
-                  }`}
-                />
-              </ListItem>
+                      {r.assignedToName && (
+                        <Chip
+                          label={`Phục vụ: ${r.assignedToName}`}
+                          size="small"
+                        />
+                      )}
+                    </Stack>
+                    <Divider sx={{ my: 1 }} />
+                    <Stack direction={{ xs: "column", lg: "row" }} spacing={1}>
+                      <Button
+                        size="small"
+                        startIcon={<PlayCircle />}
+                        color="primary"
+                        variant="contained"
+                        fullWidth
+                        onClick={() => updateRequestStatus(r.id, "InProgress")}
+                      >
+                        Bắt đầu
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        startIcon={<CheckCircle />}
+                        color="success"
+                        fullWidth
+                        onClick={() => updateRequestStatus(r.id, "Completed")}
+                      >
+                        Hoàn tất
+                      </Button>
+                      <Button
+                        size="small"
+                        color="warning"
+                        variant="contained"
+                        fullWidth
+                        startIcon={<Cancel />}
+                        onClick={() => updateRequestStatus(r.id, "Cancelled")}
+                      >
+                        Huỷ
+                      </Button>
+                    </Stack>
+                  </CardContent>
+                </Card>
+              </Grid>
             ))}
             {requests.length === 0 && (
-              <Typography variant="body2" color="text.secondary">
-                Không có yêu cầu
-              </Typography>
+              <Grid xs={12}>
+                <Typography variant="body2" color="text.secondary">
+                  Không có yêu cầu
+                </Typography>
+              </Grid>
             )}
-          </List>
+          </Grid>
         </Box>
       )}
 
