@@ -438,6 +438,8 @@ public class BookingsService(
                     Capacity = rt.Capacity,
                     Price = rt.Price,
                     TotalRoom = rt.TotalRoom,
+                    StartDate = rt.StartDate,
+                    EndDate = rt.EndDate,
                     BookingRooms = rt.BookingRooms.Select(r => new BookingRoomDto
                     {
                         BookingRoomId = r.BookingRoomId,

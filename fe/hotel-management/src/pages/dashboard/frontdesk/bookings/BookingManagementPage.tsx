@@ -35,6 +35,7 @@ import FiltersBar, {
 } from "./components/FiltersBar";
 import RoomMapDialog from "./components/RoomMapDialog";
 import TopBarControls from "./components/TopBarControls";
+import BookingInvoiceDialog from "./components/BookingInvoiceDialog";
 
 type StatusOption = { value: BookingStatus | ""; label: string };
 
@@ -79,6 +80,9 @@ const BookingManagementPage: React.FC = () => {
   const [openCallLog, setOpenCallLog] = useState(false);
   const [openRoomMap, setOpenRoomMap] = useState(false);
   const [selectedBooking, setSelectedBooking] =
+    useState<BookingDetailsDto | null>(null);
+  const [openBookingInvoice, setOpenBookingInvoice] = useState(false);
+  const [invoiceBooking, setInvoiceBooking] =
     useState<BookingDetailsDto | null>(null);
 
   // Notifications
@@ -345,6 +349,17 @@ const BookingManagementPage: React.FC = () => {
                         >
                           Xem
                         </Button>
+                        <Button
+                          size="small"
+                          variant="contained"
+                          startIcon={<ReceiptIcon />}
+                          onClick={() => {
+                            setInvoiceBooking(b as any);
+                            setOpenBookingInvoice(true);
+                          }}
+                        >
+                          In hóa đơn
+                        </Button>
                       </Stack>
                     </Stack>
 
@@ -580,6 +595,13 @@ const BookingManagementPage: React.FC = () => {
 
       {/* Room map timeline dialog */}
       <RoomMapDialog open={openRoomMap} onClose={() => setOpenRoomMap(false)} />
+
+      <BookingInvoiceDialog
+        open={openBookingInvoice}
+        onClose={() => setOpenBookingInvoice(false)}
+        booking={invoiceBooking as any}
+        onRefreshBooking={() => fetchList(page)}
+      />
 
       {/* Snackbar */}
       <Snackbar
