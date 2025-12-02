@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Box,
   Button,
+  Chip,
   capitalize,
   Dialog,
   DialogActions,
@@ -30,6 +31,9 @@ import {
 } from "../../../../../utils/money-to-words";
 import { useStore, type StoreState } from "../../../../../hooks/useStore";
 import { Close, Print } from "@mui/icons-material";
+import PercentIcon from "@mui/icons-material/Percent";
+import DiscountIcon from "@mui/icons-material/Discount";
+import PromotionDialog from "../../../frontdesk/invoices/components/PromotionDialog";
 
 type Props = {
   open: boolean;
@@ -52,6 +56,9 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
   const [disableForPrint, setDisableForPrint] = useState(false);
   const invoiceRef = useRef<HTMLDivElement>(null);
   const { user, hotelId } = useStore<StoreState>((state) => state);
+  const [promoOpen, setPromoOpen] = useState(false);
+  const [discountCode, setDiscountCode] = useState("");
+  const [discountPercent, setDiscountPercent] = useState<number>(0);
 
   const handlePrint = useReactToPrint({
     contentRef: invoiceRef,
@@ -102,13 +109,17 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
       (acc, it) => acc + it.quantity * it.unitPrice,
       0
     );
-    return { subtotal, total: subtotal };
-  }, [details]);
+    const discountAmt = Math.round((subtotal * (discountPercent || 0)) / 100);
+    return { subtotal, discountAmt, total: subtotal - discountAmt };
+  }, [details, discountPercent]);
 
   const onCreateInvoice = async () => {
     if (!order?.id) return;
     try {
-      const res = await invoicesApi.createWalkIn({ orderId: order.id });
+      const res = await invoicesApi.createWalkIn({
+        orderId: order.id,
+        discountCode: discountCode || undefined,
+      });
       if (res.isSuccess) {
         setInvoice(res.data);
         onInvoiceCreated?.(res.data);
@@ -243,6 +254,21 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
                         </TableCell>
                       </TableRow>
                     ))}
+                    {discountPercent > 0 && (
+                      <TableRow>
+                        <TableCell align="center"></TableCell>
+                        <TableCell sx={{ color: "#2e7d32" }}>
+                          Giảm giá
+                        </TableCell>
+                        <TableCell align="right">1</TableCell>
+                        <TableCell align="right">
+                          {currency(totals.discountAmt)}
+                        </TableCell>
+                        <TableCell align="right" sx={{ color: "#2e7d32" }}>
+                          -{currency(totals.discountAmt)}
+                        </TableCell>
+                      </TableRow>
+                    )}
                     <TableRow>
                       <TableCell align="center"></TableCell>
                       <TableCell sx={{ fontWeight: 700 }}>Tổng cộng</TableCell>
@@ -254,6 +280,30 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
                     </TableRow>
                   </TableBody>
                 </Table>
+
+                {!invoice && (
+                  <Stack spacing={1} sx={{ mt: 1 }}>
+                    {discountPercent > 0 && (
+                      <Stack direction="row" spacing={1.5} alignItems="center">
+                        <PercentIcon color="primary" />
+                        <Typography fontWeight={700}>Mã giảm giá</Typography>
+                        <Chip
+                          sx={{ fontSize: "0.9rem" }}
+                          color="primary"
+                          label={`${discountCode} - ${discountPercent}%`}
+                        />
+                      </Stack>
+                    )}
+                    <Button
+                      variant="outlined"
+                      startIcon={<DiscountIcon />}
+                      onClick={() => setPromoOpen(true)}
+                      sx={{ width: "fit-content" }}
+                    >
+                      Chọn mã khuyến mãi
+                    </Button>
+                  </Stack>
+                )}
 
                 <Stack spacing={0.8} sx={{ mt: 1 }}>
                   <Stack
@@ -332,6 +382,17 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
           )}
         </DialogActions>
       )}
+
+      <PromotionDialog
+        open={promoOpen}
+        onClose={() => setPromoOpen(false)}
+        allowedScope={"food"}
+        onApply={(code) => {
+          setDiscountCode(code.code);
+          setDiscountPercent(code.value);
+          setPromoOpen(false);
+        }}
+      />
     </Dialog>
   );
 };

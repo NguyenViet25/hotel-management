@@ -35,11 +35,6 @@ import ReceiptIcon from "@mui/icons-material/Receipt";
 import CustomSelect from "../../../../components/common/CustomSelect";
 import EmptyState from "../../../../components/common/EmptyState";
 
-// Orders Management Page (UC-28, UC-29, UC-30)
-// - Lists orders with filters (status/search)
-// - Create walk-in orders and booking orders
-// - Edit order (status/notes/discount)
-// - Cancel order (set status to Cancelled)
 const OrdersManagementPage: React.FC = () => {
   // Filters
   const [status, _] = useState<OrderStatus | undefined>("0");
@@ -81,8 +76,8 @@ const OrdersManagementPage: React.FC = () => {
 
   const statusOptions = [
     { value: "0", label: "Tất cả" },
-    { value: "1", label: "Đang chờ" },
-    { value: "2", label: "Đã thanh toán" },
+    { value: "1", label: "Đang xử lý" },
+    { value: "2", label: "Đã hoàn thành" },
     { value: "3", label: "Đã hủy" },
   ];
   const [invoiceOpen, setInvoiceOpen] = useState(false);
@@ -396,7 +391,6 @@ const OrdersManagementPage: React.FC = () => {
                             label={o.isWalkIn ? "Vãng lai" : "Đặt phòng"}
                             size="small"
                           />
-                          <Chip label={`SL: ${o.itemsCount}`} size="small" />
                           <Chip
                             label={`${o.itemsTotal.toLocaleString()} đ`}
                             size="small"
@@ -459,14 +453,6 @@ const OrdersManagementPage: React.FC = () => {
                           direction={{ xs: "column", lg: "row" }}
                           spacing={1}
                         >
-                          {orderInvoiceMap[o.id] && (
-                            <Chip
-                              label={`HĐ: ${
-                                orderInvoiceMap[o.id].invoiceNumber || "đã tạo"
-                              }`}
-                              color="default"
-                            />
-                          )}
                           <Button
                             size="small"
                             variant="outlined"
@@ -475,19 +461,7 @@ const OrdersManagementPage: React.FC = () => {
                           >
                             Sửa
                           </Button>
-                          <Button
-                            size="small"
-                            variant="outlined"
-                            color="secondary"
-                            startIcon={<LocalOffer />}
-                            disabled={o.status === "2" || o.status === "3"}
-                            onClick={() => {
-                              setSelectedForPromo(o);
-                              setPromoOpen(true);
-                            }}
-                          >
-                            Áp dụng khuyến mãi
-                          </Button>
+
                           {o.isWalkIn && (
                             <Button
                               size="small"
