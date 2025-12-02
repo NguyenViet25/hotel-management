@@ -401,6 +401,8 @@ public class BookingsService(
                 LeftAmount = b.LeftAmount,
                 CreatedAt = b.CreatedAt,
                 Notes = b.Notes,
+                AdditionalAmount = b.AdditionalAmount,
+                AdditionalNotes = b.AdditionalNotes,
                 BookingRoomTypes = b.BookingRoomTypes.Select(rt => new BookingRoomTypeDto
                 {
                     BookingRoomTypeId = rt.BookingRoomTypeId,
@@ -1424,6 +1426,9 @@ public class BookingsService(
             await _bookingRoomRepo.SaveChangesAsync();
 
             booking.Status = BookingStatus.Completed;
+            booking.AdditionalNotes = dto.Notes;
+            booking.AdditionalAmount = dto.AdditionalAmount ?? 0;
+
             await _bookingRepo.UpdateAsync(booking);
             await _bookingRepo.SaveChangesAsync();
 

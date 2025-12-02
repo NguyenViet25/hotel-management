@@ -12,6 +12,8 @@ public class Booking
     public decimal DiscountAmount { get; set; }
     public decimal TotalAmount { get; set; }
     public decimal LeftAmount { get; set; }
+    public decimal AdditionalAmount { get; set; }
+    public string? AdditionalNotes { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public Hotel? Hotel { get; set; }
     public Guest? PrimaryGuest { get; set; }

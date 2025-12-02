@@ -432,6 +432,32 @@ public static class DatabaseInitializationExtensions
     {
         new Promotion
         {
+            Id = Guid.Parse("aaaaaaaa-bbbb-aaaa-aaaa-aaaaaaaaaaaa"),
+            HotelId = hotelId,
+            Code = "FOOD10",
+            Description = "Giảm 10% cho khách mới",
+            Value = 10,
+            IsActive = true,
+            StartDate = new DateTime(2025, 1, 1),
+            EndDate = new DateTime(2025, 12, 31),
+            CreatedAt = DateTime.UtcNow,
+            Scope = "food"
+        },
+         new Promotion
+        {
+            Id = Guid.Parse("bbbbbbbb-cccc-bbbb-bbbb-bbbbbbbbbbbb"),
+            HotelId = hotelId,
+            Code = "SUMMER5",
+            Description = "Khuyến mãi mùa hè giảm 5%",
+            Value = 20,
+            IsActive = true,
+            StartDate = new DateTime(2025, 6, 1),
+            EndDate = new DateTime(2025, 8, 31),
+            CreatedAt = DateTime.UtcNow
+        },
+
+        new Promotion
+        {
             Id = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
             HotelId = hotelId,
             Code = "WELCOME10",
