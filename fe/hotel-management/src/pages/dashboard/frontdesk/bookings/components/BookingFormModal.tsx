@@ -90,9 +90,7 @@ const schema = z.object({
     .optional()
     .or(z.literal("")),
   roomTypes: z.array(roomItemSchema).min(1, "Thêm ít nhất 1 phòng"),
-  discountAmount: z.coerce
-    .number("Giảm giá phải là số")
-    .min(0, "Giảm giá không âm"),
+
   depositAmount: z.coerce
     .number("Tiền cọc phải là số")
     .min(0, "Tiền cọc không âm"),
@@ -128,7 +126,7 @@ const BookingFormModal: React.FC<Props> = ({
     watch,
     formState: { errors },
   } = useForm<FormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as any,
     defaultValues: {
       guestName: "",
       guestPhone: "",
@@ -143,7 +141,6 @@ const BookingFormModal: React.FC<Props> = ({
           rooms: [],
         },
       ],
-      discountAmount: 0,
       depositAmount: 0,
       notes: "",
       totalAmount: 0,
@@ -157,7 +154,7 @@ const BookingFormModal: React.FC<Props> = ({
 
   const roomsWatch = watch("roomTypes") || [];
   const depositAmount = watch("depositAmount") || 0;
-  const discountAmount = watch("discountAmount") || 0;
+  const discountAmount = 0;
   const totalAmount = watch("totalAmount") || 0;
   const afterDiscount = totalAmount - discountAmount - depositAmount;
 
@@ -238,7 +235,6 @@ const BookingFormModal: React.FC<Props> = ({
         };
       });
       if (mapped.length > 0) setValue("roomTypes", mapped as any);
-      setValue("discountAmount", (bookingData as any).discountAmount || 0);
       setValue("depositAmount", (bookingData as any).depositAmount || 0);
       setValue("notes", (bookingData as any).notes || "");
       setValue("totalAmount", (bookingData as any).totalAmount || 0);
@@ -275,12 +271,9 @@ const BookingFormModal: React.FC<Props> = ({
             email: values.guestEmail || undefined,
           },
           deposit: values.depositAmount || 0,
-          discount: values.discountAmount || 0,
+          discount: 0,
           total: values.totalAmount || 0,
-          left:
-            (values.totalAmount || 0) -
-            (values.depositAmount || 0) -
-            (values.discountAmount || 0),
+          left: (values.totalAmount || 0) - (values.depositAmount || 0) - 0,
           notes: values.notes || undefined,
           roomTypes: values.roomTypes.map((rt) => ({
             roomTypeId: rt.roomId,
@@ -295,7 +288,7 @@ const BookingFormModal: React.FC<Props> = ({
               endDate: rt.endDate,
               guests: [],
             })),
-          })),
+          })) as any,
         };
         onUpdate?.(payload);
         onClose();
@@ -311,12 +304,9 @@ const BookingFormModal: React.FC<Props> = ({
           email: values.guestEmail || undefined,
         },
         deposit: values.depositAmount || 0,
-        discount: values.discountAmount || 0,
+        discount: 0,
         total: values.totalAmount || 0,
-        left:
-          (values.totalAmount || 0) -
-          (values.depositAmount || 0) -
-          (values.discountAmount || 0),
+        left: (values.totalAmount || 0) - (values.depositAmount || 0) - 0,
         notes: values.notes || undefined,
         roomTypes: values.roomTypes.map((rt) => ({
           roomTypeId: rt.roomId,
@@ -331,7 +321,7 @@ const BookingFormModal: React.FC<Props> = ({
             endDate: rt.endDate,
             guests: [],
           })),
-        })),
+        })) as any,
       };
       const results = await bookingsApi.create(payload);
 
@@ -524,26 +514,6 @@ const BookingFormModal: React.FC<Props> = ({
               />
 
               <Controller
-                name="discountAmount"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    label="Giảm giá (VND)"
-                    type="number"
-                    fullWidth
-                    error={!!errors.discountAmount}
-                    helperText={errors.discountAmount?.message}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="start">VND</InputAdornment>
-                      ),
-                    }}
-                    {...field}
-                  />
-                )}
-              />
-
-              <Controller
                 name="depositAmount"
                 control={control}
                 render={({ field }) => (
@@ -619,7 +589,7 @@ const BookingFormModal: React.FC<Props> = ({
           </Button>
           <Button
             variant="contained"
-            onClick={handleSubmit(submit)}
+            onClick={handleSubmit(submit as any)}
             startIcon={<SaveIcon />}
           >
             {mode === "update" ? "Cập nhật" : "Lưu yêu cầu"}

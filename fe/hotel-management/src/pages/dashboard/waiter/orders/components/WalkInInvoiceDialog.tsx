@@ -30,10 +30,11 @@ import {
   formatDateVN,
 } from "../../../../../utils/money-to-words";
 import { useStore, type StoreState } from "../../../../../hooks/useStore";
-import { Close, Print } from "@mui/icons-material";
+import { Close, Download, Print } from "@mui/icons-material";
 import PercentIcon from "@mui/icons-material/Percent";
 import DiscountIcon from "@mui/icons-material/Discount";
 import PromotionDialog from "../../../frontdesk/invoices/components/PromotionDialog";
+import discountCodesApi from "../../../../../api/discountCodesApi";
 
 type Props = {
   open: boolean;
@@ -72,21 +73,12 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
       if (!open || !order?.id) return;
       try {
         const res = await ordersApi.getById(order.id);
-        if (res.isSuccess) setDetails(res.data);
-      } catch {}
-
-      try {
-        const list = await invoicesApi.list({
-          orderId: order.id,
-          page: 1,
-          pageSize: 1,
-        });
-        const item = list?.data?.items?.[0];
-        if (item) {
-          const det = await invoicesApi.getById(item.id);
-          if (det.isSuccess) setInvoice(det.data);
-        } else {
-          setInvoice(null);
+        if (res.isSuccess) {
+          setDetails(res.data);
+          if (res.data.promotionCode) {
+            setPromotionCode(res.data.promotionCode);
+            setPromotionValue(res.data.promotionValue || 0);
+          }
         }
       } catch {}
     };
@@ -122,6 +114,7 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
         promotionValue: promotionValue || undefined,
       });
       if (res.isSuccess) {
+        setDisableForPrint(true);
         setInvoice(res.data);
         onInvoiceCreated?.(res.data);
         handlePrint?.();
@@ -243,7 +236,9 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
                     ))}
                     {promotionValue > 0 && (
                       <TableRow>
-                        <TableCell align="center"></TableCell>
+                        <TableCell align="center">
+                          {details.items.length + 1}
+                        </TableCell>
                         <TableCell sx={{ color: "#2e7d32" }}>
                           Giảm giá ({promotionValue}%)
                         </TableCell>
@@ -354,19 +349,13 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
           >
             Đóng
           </Button>
-          {invoice ? (
-            <Button
-              startIcon={<Print />}
-              variant="contained"
-              onClick={() => handlePrint?.()}
-            >
-              In hóa đơn
-            </Button>
-          ) : (
-            <Button variant="contained" onClick={onCreateInvoice}>
-              Xuất hóa đơn
-            </Button>
-          )}
+          <Button
+            startIcon={<Download />}
+            variant="contained"
+            onClick={onCreateInvoice}
+          >
+            Xuất hóa đơn
+          </Button>
         </DialogActions>
       )}
 

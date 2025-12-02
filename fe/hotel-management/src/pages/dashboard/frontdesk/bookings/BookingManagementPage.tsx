@@ -27,56 +27,30 @@ import CallLogModal from "./components/CallLogModal";
 import CancelBookingModal from "./components/CancelBookingModal";
 
 import {
-  Add,
   AddCircle,
-  BedroomBaby,
-  BedroomParent,
   Edit,
   Hotel,
   Phone,
   ReceiptLong,
   RemoveRedEye,
-  Room,
 } from "@mui/icons-material";
 import PersonIcon from "@mui/icons-material/Person";
-import PhoneIphoneIcon from "@mui/icons-material/PhoneIphone";
-import ReceiptIcon from "@mui/icons-material/Receipt";
+import BookingInvoiceDialog from "./components/BookingInvoiceDialog";
 import FiltersBar, {
   type StatusOption as FiltersStatusOption,
 } from "./components/FiltersBar";
 import RoomMapDialog from "./components/RoomMapDialog";
 import TopBarControls from "./components/TopBarControls";
-import BookingInvoiceDialog from "./components/BookingInvoiceDialog";
 
 type StatusOption = { value: BookingStatus | ""; label: string };
 
 const STATUS_OPTIONS: StatusOption[] = [
-  { value: " ", label: "Tất cả" },
+  { value: " " as any, label: "Tất cả" },
   { value: 0 as BookingStatus, label: "Chờ duyệt" },
   { value: 1 as BookingStatus, label: "Đã xác nhận" },
   { value: 3 as BookingStatus, label: "Đã hoàn thành" },
   { value: 4 as BookingStatus, label: "Đã hủy" },
 ];
-
-const statusChip = (status: number) => {
-  const s = status as number | undefined;
-  const mapping: Record<
-    number,
-    {
-      label: string;
-      color: "default" | "primary" | "success" | "warning" | "error";
-    }
-  > = {
-    0: { label: "Chờ duyệt", color: "default" },
-    1: { label: "Đã xác nhận", color: "primary" },
-    2: { label: "Đã hoàn thành", color: "success" },
-    3: { label: "Đã hoàn thành", color: "success" },
-    4: { label: "Đã hủy", color: "error" },
-  };
-  if (s === undefined) return null;
-  const m = mapping[s] || { label: String(s), color: "default" };
-  return <Chip label={m.label} color={m.color} size="small" />;
-};
 
 const BookingManagementPage: React.FC = () => {
   const navigate = useNavigate();
@@ -239,8 +213,8 @@ const BookingManagementPage: React.FC = () => {
 
       {/* Filters */}
       <FiltersBar
-        status={status}
-        onStatusChange={setStatus}
+        status={status as any}
+        onStatusChange={setStatus as any}
         fromDate={fromDate}
         toDate={toDate}
         onFromDateChange={setFromDate}
@@ -515,14 +489,7 @@ const BookingManagementPage: React.FC = () => {
                             {(b.totalAmount || 0).toLocaleString()} đ
                           </Typography>
                         </Stack>
-                        <Stack alignItems="flex-end">
-                          <Typography color="text.secondary">
-                            Giảm giá
-                          </Typography>
-                          <Typography fontWeight={700}>
-                            {(b.discountAmount || 0).toLocaleString()} đ
-                          </Typography>
-                        </Stack>
+
                         <Stack alignItems="flex-end">
                           <Typography color="text.secondary">Cọc</Typography>
                           <Typography fontWeight={700}>

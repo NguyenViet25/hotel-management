@@ -124,25 +124,6 @@ const BookingInvoiceDialog: React.FC<Props> = ({
         setAdditionalAmount(booking.additionalAmount || 0);
         setPromotionCode(booking.promotionCode || "");
         setPromotionValue(booking.promotionValue || 0);
-
-        // If no promotion present in booking, pick the best active booking promo
-        try {
-          const resCodes = await discountCodesApi.list();
-          const today = new Date();
-          const best = (resCodes.data || [])
-            .filter(
-              (c) =>
-                c.scope === "booking" &&
-                c.isActive &&
-                new Date(c.startDate) <= today &&
-                new Date(c.endDate) >= today
-            )
-            .sort((a, b) => (b.value || 0) - (a.value || 0))[0];
-          if (best && !booking.promotionCode) {
-            setPromotionCode(best.code);
-            setPromotionValue(best.value);
-          }
-        } catch {}
       } catch {}
     };
 
@@ -391,12 +372,14 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                   ))}
                   {booking && (booking.depositAmount || 0) > 0 && (
                     <TableRow>
-                      <TableCell align="center"></TableCell>
+                      <TableCell align="center">
+                        {tableRows.length + 1}
+                      </TableCell>
                       <TableCell sx={{ color: "#c62828" }}>
                         Khấu trừ tiền cọc
                       </TableCell>
-                      <TableCell align="right">1</TableCell>
-                      <TableCell align="right"></TableCell>
+                      <TableCell align="center">1</TableCell>
+                      <TableCell align="center">__</TableCell>
                       <TableCell align="right">
                         {currency(booking.depositAmount)}
                       </TableCell>
@@ -408,7 +391,9 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                   {promotionValue > 0 && (
                     <TableRow>
                       <TableCell align="center">
-                        {tableRows.length + 1}
+                        {booking && booking.depositAmount > 0
+                          ? tableRows.length + 2
+                          : tableRows.length + 1}
                       </TableCell>
                       <TableCell sx={{ color: "#2e7d32" }}>
                         Giảm giá ({promotionValue}%)

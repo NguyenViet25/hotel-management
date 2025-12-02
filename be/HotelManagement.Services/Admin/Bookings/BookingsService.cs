@@ -248,6 +248,8 @@ public class BookingsService(
                 TotalAmount = b.TotalAmount,
                 LeftAmount = b.LeftAmount,
                 CreatedAt = b.CreatedAt,
+                PromotionCode = b.PromotionCode,
+                PromotionValue = b.PromotionValue,
                 CallLogs = b.CallLogs?.OrderByDescending(c => c.CallTime).Select(c => new CallLogDto
                 {
                     Id = c.Id,

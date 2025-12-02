@@ -74,6 +74,8 @@ export interface OrderSummaryDto {
   createdAt: string; // ISO
   itemsCount: number;
   itemsTotal: number;
+  promotionCode?: string;
+  promotionValue?: number;
 }
 
 export interface OrderDetailsDto extends OrderSummaryDto {
