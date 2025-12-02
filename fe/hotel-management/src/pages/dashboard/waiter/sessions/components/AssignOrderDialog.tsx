@@ -15,6 +15,7 @@ import {
   Chip,
   Grid,
   Divider,
+  InputAdornment,
 } from "@mui/material";
 import ordersApi, {
   type OrderSummaryDto,
@@ -23,7 +24,15 @@ import ordersApi, {
 } from "../../../../../api/ordersApi";
 import diningSessionsApi from "../../../../../api/diningSessionsApi";
 import { useStore, type StoreState } from "../../../../../hooks/useStore";
-import { Person, Phone } from "@mui/icons-material";
+import {
+  Add,
+  AddCircle,
+  Assignment,
+  Close,
+  Person,
+  Phone,
+  Search,
+} from "@mui/icons-material";
 
 interface Props {
   open: boolean;
@@ -52,13 +61,14 @@ export default function AssignOrderDialog({
     if (!open) return;
     setResults([]);
     setSearch("");
+    handleSearch("");
   }, [open]);
 
-  const handleSearch = async () => {
+  const handleSearch = async (value: string) => {
     setLoading(true);
     const params: OrdersQueryParams = {
       hotelId: hotelId || undefined,
-      search,
+      search: value,
       page: 1,
       pageSize: 10,
     };
@@ -70,6 +80,9 @@ export default function AssignOrderDialog({
   const handleAssign = async (orderId: string) => {
     await diningSessionsApi.assignOrder(sessionId, orderId);
     const found = results.find((o) => o.id === orderId);
+
+    console.log("found", found);
+    console.log("onAssignedWithDetails", onAssignedWithDetails);
     if (found && onAssignedWithDetails) onAssignedWithDetails(found);
     onAssigned();
     onClose();
@@ -122,23 +135,32 @@ export default function AssignOrderDialog({
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
       <DialogTitle>Gắn yêu cầu đặt món vào phiên phục vụ</DialogTitle>{" "}
-      <DialogContent>
+      <DialogContent sx={{ minHeight: 500, maxHeight: 500, overflow: "auto" }}>
         <Stack
           direction={{ xs: "column", sm: "row" }}
           spacing={1}
-          alignItems={{ xs: "stretch", sm: "center" }}
-          sx={{ mb: 2 }}
+          sx={{ mb: 2, pt: 1 }}
         >
           <TextField
-            label="Tìm kiếm tên/số điện thoại"
+            label="Tìm kiếm"
+            placeholder="Nhập tên hoặc số điện thoại"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              handleSearch(e.target.value);
+            }}
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment sx={{ mr: 1 }}>
+                    <Search />
+                  </InputAdornment>
+                ),
+              },
+            }}
             fullWidth
             margin="dense"
           />
-          <Button onClick={handleSearch} disabled={loading} variant="contained">
-            {loading ? "Đang tìm…" : "Tìm"}
-          </Button>
         </Stack>
 
         <Grid container spacing={2}>
@@ -231,6 +253,7 @@ export default function AssignOrderDialog({
                   <CardActions>
                     <Button
                       fullWidth
+                      startIcon={<Assignment />}
                       variant="contained"
                       onClick={() => handleAssign(o.id)}
                     >
@@ -242,14 +265,16 @@ export default function AssignOrderDialog({
             );
           })}
           {!loading && results.length === 0 && (
-            <Grid xs={12}>
+            <Grid>
               <Typography color="text.secondary">Không có kết quả</Typography>
             </Grid>
           )}
         </Grid>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Đóng</Button>
+        <Button variant="contained" startIcon={<Close />} onClick={onClose}>
+          Đóng
+        </Button>
       </DialogActions>
     </Dialog>
   );

@@ -41,6 +41,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
     public DbSet<Minibar> Minibars => Set<Minibar>();
     public DbSet<MinibarBooking> MinibarBookings => Set<MinibarBooking>();
     public DbSet<Media> Media => Set<Media>();
+    public DbSet<ServiceRequest> ServiceRequests => Set<ServiceRequest>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

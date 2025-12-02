@@ -127,6 +127,25 @@ namespace HotelManagement.Domain.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ServiceRequests",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    HotelId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    DiningSessionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    RequestType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    AssignedToUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CompletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ServiceRequests", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ShoppingOrders",
                 columns: table => new
                 {
@@ -1365,6 +1384,9 @@ namespace HotelManagement.Domain.Migrations
 
             migrationBuilder.DropTable(
                 name: "RoomStatusLogs");
+
+            migrationBuilder.DropTable(
+                name: "ServiceRequests");
 
             migrationBuilder.DropTable(
                 name: "ShoppingItems");
