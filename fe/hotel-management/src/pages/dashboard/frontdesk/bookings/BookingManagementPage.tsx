@@ -18,6 +18,7 @@ import bookingsApi, {
   type BookingsQueryDto,
   type BookingStatus,
 } from "../../../../api/bookingsApi";
+import roomTypesApi, { type RoomType } from "../../../../api/roomTypesApi";
 import EmptyState from "../../../../components/common/EmptyState";
 import PageTitle from "../../../../components/common/PageTitle";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
@@ -25,7 +26,7 @@ import BookingFormModal from "./components/BookingFormModal";
 import CallLogModal from "./components/CallLogModal";
 import CancelBookingModal from "./components/CancelBookingModal";
 
-import { Edit, RemoveRedEye } from "@mui/icons-material";
+import { Add, AddCircle, Edit, Phone, RemoveRedEye } from "@mui/icons-material";
 import PersonIcon from "@mui/icons-material/Person";
 import PhoneIphoneIcon from "@mui/icons-material/PhoneIphone";
 import ReceiptIcon from "@mui/icons-material/Receipt";
@@ -38,7 +39,7 @@ import TopBarControls from "./components/TopBarControls";
 type StatusOption = { value: BookingStatus | ""; label: string };
 
 const STATUS_OPTIONS: StatusOption[] = [
-  { value: "", label: "Tất cả" },
+  { value: " ", label: "Tất cả" },
   { value: 0 as BookingStatus, label: "Chờ duyệt" },
   { value: 1 as BookingStatus, label: "Đã xác nhận" },
   { value: 4 as BookingStatus, label: "Đã hủy" },
@@ -56,13 +57,20 @@ const BookingManagementPage: React.FC = () => {
   // Filters
   const { user } = useStore<StoreState>((state) => state);
   const hotelId = user?.hotelId || "";
-  const [status, setStatus] = useState<BookingStatus | "">("");
+  const [status, setStatus] = useState<BookingStatus | " ">(0);
   const [fromDate, setFromDate] = useState<Dayjs | null>(
     dayjs().startOf("month")
   );
   const [toDate, setToDate] = useState<Dayjs | null>(dayjs().endOf("month"));
   const [guestName, setGuestName] = useState<string>("");
   const [roomNumber, setRoomNumber] = useState<string>("");
+
+  const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
+  const roomTypeImgMap = React.useMemo(() => {
+    const map: Record<string, string | undefined> = {};
+    for (const rt of roomTypes) map[rt.id] = rt.imageUrl;
+    return map;
+  }, [roomTypes]);
 
   // Modals
   const [openCreate, setOpenCreate] = useState(false);
@@ -142,6 +150,20 @@ const BookingManagementPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, fromDate, toDate, guestName, roomNumber, hotelId]);
 
+  useEffect(() => {
+    const loadRoomTypes = async () => {
+      try {
+        const res = await roomTypesApi.getRoomTypes({
+          hotelId: hotelId || undefined,
+          page: 1,
+          pageSize: 100,
+        });
+        setRoomTypes((res as any).data || (res as any).items || []);
+      } catch {}
+    };
+    loadRoomTypes();
+  }, [hotelId]);
+
   const openEditModal = async (summary: BookingDetailsDto) => {
     try {
       const res = await bookingsApi.getById(summary.id);
@@ -199,7 +221,7 @@ const BookingManagementPage: React.FC = () => {
           if (!loading && listData.length === 0) {
             return (
               <EmptyState
-                title="Không có booking"
+                title="Không có yêu cầu đặt phòng"
                 description="Chưa có yêu cầu đặt phòng. Hãy thêm yêu cầu mới."
                 actions={
                   <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
@@ -208,8 +230,9 @@ const BookingManagementPage: React.FC = () => {
                       onClick={() => {
                         setOpenCreate(true);
                       }}
+                      startIcon={<AddCircle />}
                     >
-                      Thêm booking
+                      Thêm yêu cầu
                     </Button>
                   </Stack>
                 }
@@ -262,7 +285,7 @@ const BookingManagementPage: React.FC = () => {
                           size="small"
                         />
                         <Chip
-                          label={`${(b.totalAmount || 0).toLocaleString()} đ`}
+                          label={`${(b.leftAmount || 0).toLocaleString()} đ`}
                           size="small"
                           color="primary"
                         />
@@ -296,7 +319,7 @@ const BookingManagementPage: React.FC = () => {
                           <Typography>{b.primaryGuestName || "—"}</Typography>
                         </Stack>
                         <Stack direction="row" spacing={1} alignItems="center">
-                          <PhoneIphoneIcon color="action" />
+                          <Phone color="action" />
                           <Typography>{b.phoneNumber || "—"}</Typography>
                         </Stack>
                       </Stack>
@@ -325,7 +348,7 @@ const BookingManagementPage: React.FC = () => {
                       </Stack>
                     </Stack>
 
-                    <Stack spacing={1}>
+                    <Stack spacing={1.5}>
                       <Typography variant="subtitle2" fontWeight={700}>
                         Danh sách phòng
                       </Typography>
@@ -333,24 +356,95 @@ const BookingManagementPage: React.FC = () => {
                         b.bookingRoomTypes.map((rt) => (
                           <Stack
                             key={rt.bookingRoomTypeId}
-                            direction="row"
                             spacing={1}
-                            alignItems="center"
+                            sx={{
+                              p: 1,
+                              borderRadius: 1,
+                              border: "1px solid #eee",
+                            }}
                           >
-                            <Chip
-                              label={`${rt.totalRoom} ${
-                                rt.roomTypeName || "—"
-                              }`}
-                            />
-                            <Typography color="text.secondary">
-                              {new Date(rt.startDate).toLocaleDateString()} -{" "}
-                              {new Date(rt.endDate).toLocaleDateString()}
-                            </Typography>
-                            <Chip
-                              label={`${(
-                                rt.price || 0
-                              ).toLocaleString()} đ/đêm`}
-                            />
+                            {(() => {
+                              const nights = Math.max(
+                                1,
+                                dayjs(rt.endDate).diff(
+                                  dayjs(rt.startDate),
+                                  "day"
+                                )
+                              );
+                              const rooms =
+                                rt.totalRoom || rt.bookingRooms?.length || 0;
+                              const perNight = rt.price || 0;
+                              const subtotal = perNight * nights * rooms;
+                              return (
+                                <Stack
+                                  direction={{ xs: "column", sm: "row" }}
+                                  justifyContent="space-between"
+                                  alignItems={{
+                                    xs: "flex-start",
+                                    sm: "center",
+                                  }}
+                                  spacing={1}
+                                >
+                                  <Stack
+                                    direction="row"
+                                    spacing={1}
+                                    alignItems="center"
+                                    sx={{ minWidth: 260 }}
+                                  >
+                                    <img
+                                      src={
+                                        roomTypeImgMap[rt.roomTypeId] ||
+                                        "/assets/logo.png"
+                                      }
+                                      alt={rt.roomTypeName || "Loại phòng"}
+                                      style={{
+                                        width: 56,
+                                        height: 56,
+                                        borderRadius: 8,
+                                        objectFit: "cover",
+                                        border: "1px solid #eee",
+                                      }}
+                                    />
+                                    <Stack>
+                                      <Typography fontWeight={700}>
+                                        {rt.roomTypeName || "—"}
+                                      </Typography>
+                                      <Typography color="text.secondary">
+                                        {new Date(
+                                          rt.startDate
+                                        ).toLocaleDateString()}{" "}
+                                        -{" "}
+                                        {new Date(
+                                          rt.endDate
+                                        ).toLocaleDateString()}{" "}
+                                        ({nights} đêm)
+                                      </Typography>
+                                      <Typography>Số phòng: {rooms}</Typography>
+                                    </Stack>
+                                  </Stack>
+                                  <Stack
+                                    sx={{
+                                      ml: "auto",
+                                      minWidth: 220,
+                                      textAlign: "right",
+                                    }}
+                                  >
+                                    <Typography color="text.secondary">
+                                      Giá/đêm
+                                    </Typography>
+                                    <Typography fontWeight={700}>
+                                      {perNight.toLocaleString()} đ
+                                    </Typography>
+                                    <Typography color="text.secondary">
+                                      Thành tiền
+                                    </Typography>
+                                    <Typography fontWeight={700}>
+                                      {subtotal.toLocaleString()} đ
+                                    </Typography>
+                                  </Stack>
+                                </Stack>
+                              );
+                            })()}
                           </Stack>
                         ))
                       ) : (
@@ -358,6 +452,44 @@ const BookingManagementPage: React.FC = () => {
                           Không có loại phòng
                         </Typography>
                       )}
+                    </Stack>
+                    <Stack alignItems="flex-end">
+                      <Stack
+                        direction={{ xs: "column", sm: "row" }}
+                        spacing={2}
+                        alignItems={{ xs: "flex-end", sm: "flex-end" }}
+                      >
+                        <Stack alignItems="flex-end">
+                          <Typography color="text.secondary">
+                            Tổng cộng
+                          </Typography>
+                          <Typography fontWeight={700}>
+                            {(b.totalAmount || 0).toLocaleString()} đ
+                          </Typography>
+                        </Stack>
+                        <Stack alignItems="flex-end">
+                          <Typography color="text.secondary">
+                            Giảm giá
+                          </Typography>
+                          <Typography fontWeight={700}>
+                            {(b.discountAmount || 0).toLocaleString()} đ
+                          </Typography>
+                        </Stack>
+                        <Stack alignItems="flex-end">
+                          <Typography color="text.secondary">Cọc</Typography>
+                          <Typography fontWeight={700}>
+                            {(b.depositAmount || 0).toLocaleString()} đ
+                          </Typography>
+                        </Stack>
+                        <Stack alignItems="flex-end">
+                          <Typography color="text.secondary">
+                            Còn lại
+                          </Typography>
+                          <Typography fontWeight={700}>
+                            {(b.leftAmount || 0).toLocaleString()} đ
+                          </Typography>
+                        </Stack>
+                      </Stack>
                     </Stack>
                   </Stack>
                 </CardContent>

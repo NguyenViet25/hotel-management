@@ -118,6 +118,7 @@ const BookingFormModal: React.FC<Props> = ({
 }) => {
   const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
   const { user } = useStore<StoreState>((state) => state);
+  const [reloadCount, setReloadCount] = useState<number>(0);
   const hotelId = user?.hotelId || "";
   const {
     control,
@@ -158,6 +159,7 @@ const BookingFormModal: React.FC<Props> = ({
   const depositAmount = watch("depositAmount") || 0;
   const discountAmount = watch("discountAmount") || 0;
   const totalAmount = watch("totalAmount") || 0;
+  const afterDiscount = totalAmount - discountAmount - depositAmount;
 
   useEffect(() => {
     if (roomTypes.length > 0 && mode === "create") {
@@ -187,7 +189,7 @@ const BookingFormModal: React.FC<Props> = ({
     }, 0);
 
     setValue("totalAmount", total);
-  }, [roomsWatch, roomTypes]);
+  }, [roomsWatch, roomTypes, reloadCount]);
 
   useEffect(() => {
     const loadRoomTypes = async () => {
@@ -249,6 +251,15 @@ const BookingFormModal: React.FC<Props> = ({
         setSnackbar({
           open: true,
           message: "Vui lòng chọn loại phòng",
+          severity: "error",
+        });
+        return;
+      }
+
+      if (afterDiscount < 0) {
+        setSnackbar({
+          open: true,
+          message: "Số tiền còn lại không hợp lệ",
           severity: "error",
         });
         return;
@@ -480,6 +491,7 @@ const BookingFormModal: React.FC<Props> = ({
                       errors={errors}
                       roomTypes={roomTypes}
                       onRemove={() => remove(idx)}
+                      setReloadCount={setReloadCount}
                     />
                   </CardContent>
                 </Card>
@@ -553,9 +565,7 @@ const BookingFormModal: React.FC<Props> = ({
 
               <TextField
                 label="Còn lại"
-                value={formatCurrency(
-                  totalAmount - discountAmount - depositAmount
-                )}
+                value={formatCurrency(afterDiscount)}
                 fullWidth
                 InputProps={{
                   endAdornment: (

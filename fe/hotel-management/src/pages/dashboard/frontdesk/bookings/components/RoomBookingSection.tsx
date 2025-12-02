@@ -23,6 +23,7 @@ type Props = {
   errors?: any;
   roomTypes: RoomType[];
   onRemove?: () => void;
+  setReloadCount: (func: (prev: number) => number) => void;
 };
 
 const RoomBookingSection: React.FC<Props> = ({
@@ -31,6 +32,7 @@ const RoomBookingSection: React.FC<Props> = ({
   errors,
   roomTypes,
   onRemove,
+  setReloadCount,
 }) => {
   return (
     <Stack spacing={2}>
@@ -70,6 +72,10 @@ const RoomBookingSection: React.FC<Props> = ({
               ),
             }}
             {...field}
+            onChange={(e) => {
+              field.onChange(e);
+              setReloadCount((prev) => prev + 1);
+            }}
           >
             {roomTypes.map((r) => (
               <MenuItem key={r.id} value={r.id}>
@@ -110,6 +116,10 @@ const RoomBookingSection: React.FC<Props> = ({
                 sx: { height: "100%" },
               }}
               {...field}
+              onChange={(e) => {
+                field.onChange(e);
+                setReloadCount((prev) => prev + 1);
+              }}
             />
           )}
         />
@@ -134,6 +144,10 @@ const RoomBookingSection: React.FC<Props> = ({
                 sx: { height: "100%" },
               }}
               {...field}
+              onChange={(e) => {
+                field.onChange(e);
+                setReloadCount((prev) => prev + 1);
+              }}
             />
           )}
         />
@@ -148,7 +162,10 @@ const RoomBookingSection: React.FC<Props> = ({
               <DatePicker
                 label="Từ ngày"
                 value={field.value}
-                onChange={field.onChange}
+                onChange={(date) => {
+                  field.onChange(date);
+                  setReloadCount((prev) => prev + 1);
+                }}
                 slotProps={{
                   textField: {
                     fullWidth: true,
@@ -176,7 +193,10 @@ const RoomBookingSection: React.FC<Props> = ({
               <DatePicker
                 label="Đến ngày"
                 value={field.value}
-                onChange={field.onChange}
+                onChange={(date) => {
+                  field.onChange(date);
+                  setReloadCount((prev) => prev + 1);
+                }}
                 slotProps={{
                   textField: {
                     fullWidth: true,
