@@ -195,3 +195,4 @@
 2025-12-01 - 5 - 02:05:15 UTC :: refactor: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — bo sung unit test muc co ban (chuan bi cho tinh nang tiep theo)
 2025-12-02 - 1 - 01:48:51 UTC :: feat: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — them kiem soat loi & retry nhe (dam bao backward-compatible)
 2025-12-02 - 2 - 01:48:54 UTC :: chore: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — refactor luong xu ly cho ro rang (khong doi hanh vi)
+2025-12-02 - 3 - 01:48:55 UTC :: docs: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — cap nhat mock data & seed test (anh huong thap)
