@@ -503,6 +503,12 @@ namespace HotelManagement.Domain.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime?>("DefaultCheckInTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DefaultCheckOutTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");

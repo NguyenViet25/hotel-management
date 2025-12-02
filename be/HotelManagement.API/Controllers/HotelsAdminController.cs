@@ -100,6 +100,25 @@ public class HotelsAdminController : ControllerBase
         }
     }
 
-    // TODO: add api to update default check in and check out time 
-    // TODO: add api to get default check in and check out time
+    [HttpGet("{id:guid}/default-times")]
+    public async Task<ActionResult<ApiResponse<HotelDefaultTimesDto>>> GetDefaultTimes(Guid id)
+    {
+        var uid = CurrentUserId();
+        if (uid == null) return Forbid();
+        var isAdmin = User.IsInRole("Admin");
+        var dto = await _svc.GetDefaultTimesAsync(id, uid.Value, isAdmin);
+        if (dto == null) return NotFound(ApiResponse<HotelDefaultTimesDto>.Fail("Hotel not found"));
+        return Ok(ApiResponse<HotelDefaultTimesDto>.Ok(dto));
+    }
+
+    [HttpPut("{id:guid}/default-times")]
+    [Authorize(Roles = "Manager,Admin")]
+    public async Task<ActionResult<ApiResponse<HotelDefaultTimesDto>>> UpdateDefaultTimes(Guid id, [FromBody] UpdateHotelDefaultTimesDto request)
+    {
+        var uid = CurrentUserId();
+        if (uid == null) return Forbid();
+        var updated = await _svc.UpdateDefaultTimesAsync(id, request, uid.Value);
+        if (updated == null) return NotFound(ApiResponse<HotelDefaultTimesDto>.Fail("Hotel not found"));
+        return Ok(ApiResponse<HotelDefaultTimesDto>.Ok(updated));
+    }
 }

@@ -18,6 +18,7 @@ import MyTask from "../pages/dashboard/housekeeper/MyTask";
 import RoomNeedCleaningPage from "../pages/dashboard/housekeeper/RoomNeedCleaningPage";
 import InvoiceManagementPage from "../pages/dashboard/frontdesk/invoices/InvoiceManagementPage";
 import FrontDeskTableManagementPage from "../pages/dashboard/frontdesk/tables/FrontDeskTableManagementPage";
+import HotelSettingsPage from "../pages/dashboard/manager/hotels/HotelSettingsPage";
 
 // Role-aware layout wrapper for standalone pages like /profile
 const RoleAwareLayout = () => {
@@ -288,6 +289,10 @@ const router = createBrowserRouter([
             <ManagerMediaPage />
           </Suspense>
         ),
+      },
+      {
+        path: "hotel-settings",
+        element: <HotelSettingsPage />,
       },
       // Add other manager routes here
     ],

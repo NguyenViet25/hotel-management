@@ -12,6 +12,7 @@ import {
   Receipt as ReceiptIcon,
   Restaurant as RestaurantIcon,
   SensorsOutlined,
+  Settings,
   ShoppingCart,
   TableBar,
 } from "@mui/icons-material";
@@ -48,6 +49,11 @@ export const menuItems = {
     { title: "Thực đơn", path: "/manager/menus", icon: <DiningIcon /> },
     { title: "Bàn ăn", path: "/manager/tables", icon: <TableBar /> },
     { title: "Minibar", path: "/manager/minibars", icon: <InsertEmoticon /> },
+    {
+      title: "Cài đặt khách sạn",
+      path: "/manager/hotel-settings",
+      icon: <Settings />,
+    },
     // { title: "Media", path: "/manager/media", icon: <Image /> },
   ],
   frontDesk: [

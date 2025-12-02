@@ -60,6 +60,17 @@ export interface ChangeHotelStatusRequest {
   until?: string;
 }
 
+export interface HotelDefaultTimesDto {
+  defaultCheckInTime?: string | null;
+  defaultCheckOutTime?: string | null;
+}
+
+export interface ItemResponse<T> {
+  isSuccess: boolean;
+  message: string | null;
+  data: T;
+}
+
 const hotelService = {
   getHotels: async (
     params: HotelsQueryParams = {}
@@ -103,6 +114,19 @@ const hotelService = {
   ): Promise<HotelResponse> => {
     const response = await axios.post(`/hotels/${id}/status`, statusRequest);
     return response.data;
+  },
+
+  getDefaultTimes: async (id: string): Promise<ItemResponse<HotelDefaultTimesDto>> => {
+    const res = await axios.get(`/hotels/${id}/default-times`);
+    return res.data;
+  },
+
+  updateDefaultTimes: async (
+    id: string,
+    payload: HotelDefaultTimesDto
+  ): Promise<ItemResponse<HotelDefaultTimesDto>> => {
+    const res = await axios.put(`/hotels/${id}/default-times`, payload);
+    return res.data;
   },
 };
 

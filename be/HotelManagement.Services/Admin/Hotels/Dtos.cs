@@ -148,3 +148,15 @@ public class UpdateHotelDto
 }
 
 public record ChangeHotelStatusDto(string Action, string Reason, DateTimeOffset? Until = null);
+
+public class HotelDefaultTimesDto
+{
+    public DateTime? DefaultCheckInTime { get; set; }
+    public DateTime? DefaultCheckOutTime { get; set; }
+}
+
+public class UpdateHotelDefaultTimesDto
+{
+    public DateTime? DefaultCheckInTime { get; set; }
+    public DateTime? DefaultCheckOutTime { get; set; }
+}

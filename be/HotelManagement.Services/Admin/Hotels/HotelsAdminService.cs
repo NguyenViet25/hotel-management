@@ -152,6 +152,41 @@ public class HotelsAdminService : IHotelsAdminService
         return new HotelDetailsDto(h.Id, h.Code, h.Name, h.Address, h.IsActive, h.CreatedAt);
     }
 
+    public async Task<HotelDefaultTimesDto?> GetDefaultTimesAsync(Guid id, Guid actorUserId, bool isAdmin)
+    {
+        var allowed = await GetAllowedHotelIdsAsync(actorUserId, isAdmin);
+        var query = _db.Hotels.AsQueryable();
+        if (allowed != null)
+        {
+            query = query.Where(x => allowed.Contains(x.Id));
+        }
+        var h = await query.FirstOrDefaultAsync(x => x.Id == id);
+        if (h == null) return null;
+        return new HotelDefaultTimesDto
+        {
+            DefaultCheckInTime = h.DefaultCheckInTime,
+            DefaultCheckOutTime = h.DefaultCheckOutTime
+        };
+    }
+
+    public async Task<HotelDefaultTimesDto?> UpdateDefaultTimesAsync(Guid id, UpdateHotelDefaultTimesDto dto, Guid actorUserId)
+    {
+        var h = await _db.Hotels.FirstOrDefaultAsync(x => x.Id == id);
+        if (h == null) return null;
+
+        var before = new { h.DefaultCheckInTime, h.DefaultCheckOutTime };
+        if (dto.DefaultCheckInTime.HasValue) h.DefaultCheckInTime = dto.DefaultCheckInTime.Value;
+        if (dto.DefaultCheckOutTime.HasValue) h.DefaultCheckOutTime = dto.DefaultCheckOutTime.Value;
+        await _db.SaveChangesAsync();
+        var after = new { h.DefaultCheckInTime, h.DefaultCheckOutTime };
+        await AddAuditAsync(actorUserId, h.Id, "hotel.default-times.update", new { before, after });
+        return new HotelDefaultTimesDto
+        {
+            DefaultCheckInTime = h.DefaultCheckInTime,
+            DefaultCheckOutTime = h.DefaultCheckOutTime
+        };
+    }
+
     private async Task AddAuditAsync(Guid actorUserId, Guid hotelId, string action, object metadata)
     {
         _db.AuditLogs.Add(new AuditLog

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelManagement.Domain.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251202211400_Init")]
+    [Migration("20251202214559_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -504,6 +504,12 @@ namespace HotelManagement.Domain.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DefaultCheckInTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DefaultCheckOutTime")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
