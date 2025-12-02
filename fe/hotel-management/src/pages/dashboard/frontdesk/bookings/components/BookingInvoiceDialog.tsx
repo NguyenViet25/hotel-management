@@ -64,19 +64,21 @@ const BookingInvoiceDialog: React.FC<Props> = ({
   onRefreshBooking,
 }) => {
   const { user, hotelId } = useStore<StoreState>((state) => state);
-  const [discountCode, setDiscountCode] = useState("");
-  const [discountPercent, setDiscountPercent] = useState<number>(0);
+  const [promotionCode, setPromotionCode] = useState("");
+  const [promotionValue, setPromotionValue] = useState<number>(0);
   const [paymentAmount, setPaymentAmount] = useState<number>(0);
   const [earlyCheckIn, setEarlyCheckIn] = useState(false);
   const [lateCheckOut, setLateCheckOut] = useState(false);
 
-  const [notes, setNotes] = useState("");
-  const [additionalAmount, setAdditionalAmount] = useState<number>(0);
+  const [additionalNotes, setAdditionalNotes] = useState(booking?.additionalNotes);
+  const [additionalAmount, setAdditionalAmount] = useState<number>(booking?.additionalAmount ?? 0);
 
   const [promoOpen, setPromoOpen] = useState(false);
   const [additional, setAdditional] = useState<AdditionalChargesDto | null>(
-    null
+   
   );
+
+  // TODO: set additional
   const [invoiceDetails, setInvoiceDetails] = useState<InvoiceDto | null>(null);
   const [disableForPrint, setDisableForPrint] = useState(false);
   const [ordersTotal, setOrdersTotal] = useState<number>(0);
@@ -124,7 +126,9 @@ const BookingInvoiceDialog: React.FC<Props> = ({
           const det = await invoicesApi.getById(item.id);
           if (det.isSuccess) {
             setInvoiceDetails(det.data);
-            setNotes(det.data.notes || "");
+            setAdditionalNotes(
+              det.data.additionalNotes || det.data.notes || ""
+            );
             setAdditionalAmount(det.data.additionalAmount || 0);
           }
         } else {
@@ -202,9 +206,10 @@ const BookingInvoiceDialog: React.FC<Props> = ({
         total: l.amount,
       });
     }
+
     if (additionalAmount > 0) {
       rows.push({
-        label: "Phụ thu thêm",
+        label: `Phụ thu thêm (${additionalNotes})`,
         quantity: 1,
         unit: additionalAmount,
         total: additionalAmount,
@@ -217,11 +222,11 @@ const BookingInvoiceDialog: React.FC<Props> = ({
     const subtotal = tableRows
       .filter((r) => r.total > 0)
       .reduce((a, c) => a + c.total, 0);
-    const discountAmt = Math.round((subtotal * (discountPercent || 0)) / 100);
+    const discountAmt = Math.round((subtotal * (promotionValue || 0)) / 100);
     const deposit = booking?.depositAmount || 0;
     const final = subtotal - discountAmt - deposit;
     return { subtotal, discountAmt, deposit, final };
-  }, [tableRows, discountPercent, booking?.depositAmount]);
+  }, [tableRows, promotionValue, booking?.depositAmount]);
 
   // Confirm invoice
   const onConfirmInvoice = async () => {
@@ -230,12 +235,13 @@ const BookingInvoiceDialog: React.FC<Props> = ({
     try {
       const res = await invoicesApi.createBooking({
         bookingId: booking.id,
-        discountCode: discountCode || undefined,
+        promotionCode: promotionCode || undefined,
+        promotionValue: promotionValue || undefined,
         finalPayment:
           paymentAmount > 0 ? { amount: paymentAmount, type: 0 } : undefined,
         earlyCheckIn,
         lateCheckOut,
-        notes,
+        additionalNotes,
         additionalAmount,
       });
 
@@ -375,11 +381,11 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                       </TableCell>
                     </TableRow>
                   )}
-                  {discountPercent > 0 && (
+                  {promotionValue > 0 && (
                     <TableRow>
                       <TableCell align="center"></TableCell>
                       <TableCell sx={{ color: "#2e7d32" }}>
-                        Giảm giá ({discountPercent}%)
+                        Giảm giá ({promotionValue}%)
                       </TableCell>
                       <TableCell align="right">1</TableCell>
                       <TableCell align="right">
@@ -421,26 +427,17 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                   </Typography>
                 </Stack>
               </Stack>
-              {notes && notes.trim().length > 0 && (
-                <Stack spacing={0.5} sx={{ mt: 1 }}>
-                  <Typography sx={{ color: "#c62828" }}>Ghi chú:</Typography>
-                  <Typography
-                    sx={{ fontStyle: "italic", color: "text.primary" }}
-                  >
-                    {notes}
-                  </Typography>
-                </Stack>
-              )}
+
               {!disableForPrint && (
                 <Stack spacing={2} mt={1}>
-                  {discountPercent > 0 && (
+                  {promotionValue > 0 && (
                     <Stack direction="row" spacing={1.5} alignItems="center">
                       <PercentIcon color="primary" />
                       <Typography fontWeight={700}>Mã giảm giá</Typography>
                       <Chip
                         sx={{ fontSize: "0.9rem" }}
                         color="primary"
-                        label={`${discountCode} - ${discountPercent}%`}
+                        label={`${promotionCode} - ${promotionValue}%`}
                       />
                     </Stack>
                   )}
@@ -470,9 +467,9 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                     fullWidth
                   />
                   <TextField
-                    value={notes}
+                    value={additionalNotes}
                     label="Ghi chú"
-                    onChange={(e) => setNotes(e.target.value)}
+                    onChange={(e) => setAdditionalNotes(e.target.value)}
                     placeholder="Nhập ghi chú"
                     fullWidth
                     multiline
@@ -539,8 +536,8 @@ const BookingInvoiceDialog: React.FC<Props> = ({
         onClose={() => setPromoOpen(false)}
         allowedScope={"booking"}
         onApply={(code) => {
-          setDiscountCode(code.code);
-          setDiscountPercent(code.value);
+          setPromotionCode(code.code);
+          setPromotionValue(code.value);
           setPromoOpen(false);
         }}
       />

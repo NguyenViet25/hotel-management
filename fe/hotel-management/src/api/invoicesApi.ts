@@ -31,6 +31,9 @@ export interface InvoiceDto {
   paidAt?: string;
   lines: InvoiceLineDto[];
   additionalAmount?: number;
+  additionalNotes?: string;
+  promotionCode?: string;
+  promotionValue?: number;
 }
 
 export interface PagedResult<T> {
@@ -68,16 +71,23 @@ export interface InvoiceFilterParams {
 export interface CreateWalkInInvoiceRequest {
   orderId: string;
   discountCode?: string;
+  promotionCode?: string;
+  promotionValue?: number;
+  additionalAmount?: number;
+  additionalNotes?: string;
 }
 
 export interface CreateBookingInvoiceRequest {
   bookingId: string;
   discountCode?: string;
+  promotionCode?: string;
+  promotionValue?: number;
   finalPayment?: { amount: number; type: number };
   earlyCheckIn?: boolean;
   lateCheckOut?: boolean;
   checkoutTime?: string;
   notes?: string;
+  additionalNotes?: string;
   additionalAmount?: number;
 }
 

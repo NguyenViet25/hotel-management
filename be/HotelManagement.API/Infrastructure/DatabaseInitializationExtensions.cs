@@ -449,11 +449,13 @@ public static class DatabaseInitializationExtensions
             HotelId = hotelId,
             Code = "SUMMER5",
             Description = "Khuyến mãi mùa hè giảm 5%",
-            Value = 20,
+            Value = 5,
             IsActive = true,
             StartDate = new DateTime(2025, 6, 1),
             EndDate = new DateTime(2025, 8, 31),
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            Scope = "food"
+
         },
 
         new Promotion
