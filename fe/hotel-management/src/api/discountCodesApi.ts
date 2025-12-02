@@ -26,6 +26,11 @@ const discountCodesApi = {
     return res.data;
   },
 
+  async listActive(): Promise<ApiResponse<DiscountCode[]>> {
+    const res = await axiosInstance.get("/discount-codes/active");
+    return res.data;
+  },
+
   async get(id: string): Promise<ApiResponse<DiscountCode>> {
     const res = await axiosInstance.get(
       `/discount-codes/${encodeURIComponent(id)}`

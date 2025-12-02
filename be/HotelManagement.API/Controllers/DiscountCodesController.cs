@@ -33,6 +33,20 @@ public class DiscountCodesController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("active")]
+    public async Task<ActionResult<ApiResponse<List<PromotionDto>>>> ListActive()
+    {
+        var hotelIdClaim = User.FindFirst("hotelId")?.Value;
+
+        if (hotelIdClaim == null)
+            return BadRequest("HotelId not found in user claims");
+
+        Guid hotelId = Guid.Parse(hotelIdClaim);
+
+        var result = await _service.ListActiveAsync(hotelId);
+        return Ok(result);
+    }
+
     [HttpGet("{id}")]
     public async Task<ActionResult<ApiResponse<PromotionDto>>> Get(Guid id)
     {

@@ -119,7 +119,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
 
       try {
         setInvoiceDetails(null);
-        setAdditionalNotes(booking.additionalNotes);
+        setAdditionalNotes(booking.additionalNotes ?? "");
         setAdditionalAmount(booking.additionalAmount || 0);
         setPromotionCode(booking.promotionCode || "");
         setPromotionValue(booking.promotionValue || 0);

@@ -255,6 +255,13 @@ const BookingManagementPage: React.FC = () => {
               (sum, rt) => sum + (rt.totalRoom || rt.bookingRooms?.length || 0),
               0
             );
+
+            const total = b.totalAmount + (b.additionalAmount ?? 0);
+            const discountAmount = ((b.promotionValue || 0) / 100) * total;
+
+            const leftAmount =
+              b.leftAmount - discountAmount + (b.additionalAmount ?? 0);
+
             const statusColor =
               b.status === 3
                 ? "success"
@@ -294,11 +301,6 @@ const BookingManagementPage: React.FC = () => {
                         <Chip
                           label={`Tổng số phòng: ${totalRooms}`}
                           size="small"
-                        />
-                        <Chip
-                          label={`${(b.leftAmount || 0).toLocaleString()} đ`}
-                          size="small"
-                          color="primary"
                         />
                       </Stack>
                       <Stack direction="row" spacing={1} alignItems="center">
@@ -489,7 +491,14 @@ const BookingManagementPage: React.FC = () => {
                             {(b.totalAmount || 0).toLocaleString()} đ
                           </Typography>
                         </Stack>
-
+                        <Stack alignItems="flex-end">
+                          <Typography color="text.secondary">
+                            Phụ thu
+                          </Typography>
+                          <Typography fontWeight={700}>
+                            {(b.additionalAmount || 0).toLocaleString()} đ
+                          </Typography>
+                        </Stack>
                         <Stack alignItems="flex-end">
                           <Typography color="text.secondary">Cọc</Typography>
                           <Typography fontWeight={700}>
@@ -498,10 +507,18 @@ const BookingManagementPage: React.FC = () => {
                         </Stack>
                         <Stack alignItems="flex-end">
                           <Typography color="text.secondary">
-                            Còn lại
+                            Giảm giá
                           </Typography>
                           <Typography fontWeight={700}>
-                            {(b.leftAmount || 0).toLocaleString()} đ
+                            {(discountAmount || 0).toLocaleString()} đ
+                          </Typography>
+                        </Stack>
+                        <Stack alignItems="flex-end">
+                          <Typography color="red" fontWeight={"bold"}>
+                            Còn lại
+                          </Typography>
+                          <Typography color="red" fontWeight={"bold"}>
+                            {(leftAmount || 0).toLocaleString()} đ
                           </Typography>
                         </Stack>
                       </Stack>

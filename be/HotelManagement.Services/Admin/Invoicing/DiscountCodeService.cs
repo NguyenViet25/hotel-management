@@ -26,6 +26,27 @@ public class DiscountCodeService : IDiscountCodeService
         {
             var items = await _promotionRepository.Query()
                 .Where(x => x.HotelId == hotelId)
+               
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync();
+
+            var dtos = items.Select(MapToDto).ToList();
+            return ApiResponse<List<PromotionDto>>.Ok(dtos);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<List<PromotionDto>>.Fail($"Failed to list discount codes: {ex.Message}");
+        }
+    }
+
+    public async Task<ApiResponse<List<PromotionDto>>> ListActiveAsync(Guid? hotelId)
+    {
+        try
+        {
+            var items = await _promotionRepository.Query()
+                .Where(x => x.HotelId == hotelId)
+                 .Where(x => x.IsActive)
+                .Where(x => x.EndDate >= DateTime.Now)
                 .OrderByDescending(p => p.CreatedAt)
                 .ToListAsync();
 
@@ -151,17 +172,17 @@ public class DiscountCodeService : IDiscountCodeService
 
     private PromotionDto MapToDto(Promotion e)
     {
-            return new PromotionDto
-            {
-                Id = e.Id,
-                Code = e.Code,
-                Description = e.Description,
-                Scope = e.Scope,
-                Value = e.Value,
-                IsActive = e.IsActive,
-                StartDate = e.StartDate,
-                EndDate = e.EndDate
-            };
+        return new PromotionDto
+        {
+            Id = e.Id,
+            Code = e.Code,
+            Description = e.Description,
+            Scope = e.Scope,
+            Value = e.Value,
+            IsActive = e.IsActive,
+            StartDate = e.StartDate,
+            EndDate = e.EndDate
+        };
     }
 
     private IDictionary<string, string[]>? Validate(PromotionDto dto, bool isUpdate)
@@ -206,5 +227,5 @@ public class DiscountCodeService : IDiscountCodeService
         list.Add(message);
     }
 
-    
+
 }

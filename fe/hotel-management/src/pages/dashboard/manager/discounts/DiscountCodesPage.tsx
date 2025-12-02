@@ -59,7 +59,7 @@ const DiscountCodesPage = () => {
   );
   const [statusFilter, setStatusFilter] = useState<
     "all" | "active" | "inactive" | "expired"
-  >("all");
+  >("active");
   const [searchTxt, setSearchTxt] = useState<string>("");
   const [viewMode, setViewMode] = useState<"table" | "cards">("cards");
 

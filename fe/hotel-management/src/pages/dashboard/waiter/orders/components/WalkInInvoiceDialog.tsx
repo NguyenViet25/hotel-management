@@ -112,6 +112,7 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
         orderId: order.id,
         promotionCode: promotionCode || undefined,
         promotionValue: promotionValue || undefined,
+        discountCode: promotionCode,
       });
       if (res.isSuccess) {
         setDisableForPrint(true);
@@ -240,7 +241,8 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
                           {details.items.length + 1}
                         </TableCell>
                         <TableCell sx={{ color: "#2e7d32" }}>
-                          Giảm giá ({promotionCode ? `${promotionCode} - ` : ""}${promotionValue}%)
+                          Giảm giá ({promotionCode ? `${promotionCode} - ` : ""}
+                          ${promotionValue}%)
                         </TableCell>
                         <TableCell align="right">1</TableCell>
                         <TableCell align="right">
@@ -273,10 +275,14 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
                           sx={{ fontSize: "0.9rem" }}
                           color="primary"
                           label={`${promotionCode} - ${promotionValue}%`}
-                          onDelete={invoice ? undefined : () => {
-                            setPromotionCode("");
-                            setPromotionValue(0);
-                          }}
+                          onDelete={
+                            invoice
+                              ? undefined
+                              : () => {
+                                  setPromotionCode("");
+                                  setPromotionValue(0);
+                                }
+                          }
                         />
                       </Stack>
                     )}

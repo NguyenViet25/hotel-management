@@ -1374,6 +1374,7 @@ public class BookingsService(
 
                 booking.PromotionCode = promo.Code;
                 booking.PromotionValue = promo.Value;
+                booking.DiscountAmount = discountAmt;
             } else
             {
                 booking.PromotionCode = null;

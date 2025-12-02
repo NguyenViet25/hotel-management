@@ -25,13 +25,18 @@ type Props = {
   allowedScope?: "booking" | "food";
 };
 
-const PromotionDialog: React.FC<Props> = ({ open, onClose, onApply, allowedScope }) => {
+const PromotionDialog: React.FC<Props> = ({
+  open,
+  onClose,
+  onApply,
+  allowedScope,
+}) => {
   const [codes, setCodes] = useState<DiscountCode[]>([]);
   const [search, setSearch] = useState("");
 
   const fetch = async () => {
     try {
-      const res = await discountCodesApi.list();
+      const res = await discountCodesApi.listActive();
       if (res.isSuccess && res.data) setCodes(res.data);
     } catch {}
   };
@@ -42,7 +47,9 @@ const PromotionDialog: React.FC<Props> = ({ open, onClose, onApply, allowedScope
 
   const filtered = codes.filter((c) => {
     const s = search.toLowerCase();
-    const matchesText = c.code.toLowerCase().includes(s) || (c.description || "").toLowerCase().includes(s);
+    const matchesText =
+      c.code.toLowerCase().includes(s) ||
+      (c.description || "").toLowerCase().includes(s);
     const matchesScope = allowedScope ? c.scope === allowedScope : true;
     return matchesText && matchesScope;
   });
