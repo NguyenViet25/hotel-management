@@ -193,3 +193,4 @@
 2025-12-01 - 3 - 02:05:09 UTC :: feat: UC-31 Bao cao: len lich gui email/PDF hang ngay/tuan. — bo sung case canh bien & no-show (dong bo voi BE/FE)
 2025-12-01 - 4 - 02:05:10 UTC :: fix: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — dieu chinh quyen truy cap theo vai tro (chuan bi cho tinh nang tiep theo)
 2025-12-01 - 5 - 02:05:14 UTC :: test: UC-22 Minibar/Amenity: ghi tieu hao, post charge vao folio. — them kiem soat loi & retry nhe (da smoke test)
+2025-12-02 - 1 - 01:48:51 UTC :: perf: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — cap nhat cau hinh va kiem tra bien (dong bo voi BE/FE)
