@@ -58,7 +58,6 @@ export const menuItems = {
     },
     { title: "Đặt phòng", path: "/frontdesk/bookings", icon: <HotelIcon /> },
     { title: "Đặt món", path: "/frontdesk/orders", icon: <RestaurantIcon /> },
-    { title: "Hóa đơn", path: "/frontdesk/invoices", icon: <ReceiptIcon /> },
     {
       title: "Phiên phục vụ",
       path: "/frontdesk/sessions",

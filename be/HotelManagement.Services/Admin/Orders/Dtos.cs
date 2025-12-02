@@ -58,6 +58,13 @@ public class UpdateWalkInOrderDto : CreateWalkInOrderDto
     public OrderStatus? Status { get; set; }
 }
 
+public class UpdateWalkInPromotionDto
+{
+    public Guid Id { get; set; }
+    public decimal? PromotionValue { get; set; }
+    public string? PromotionCode { get; set; }
+}
+
 public class AddOrderItemDto
 {
     [Required]

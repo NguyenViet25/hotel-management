@@ -112,6 +112,13 @@ public class InvoicesController : ControllerBase
                         SourceId = promo.Id
                     });
                 }
+
+                await _ordersService.UpdateWalkPromotionAsync(request.OrderId, new Services.Admin.Orders.Dtos.UpdateWalkInPromotionDto()
+                {
+                    Id = request.OrderId,
+                    PromotionValue = promo.Value,
+                    PromotionCode = promo.Code
+                });
             }
         }
 

@@ -893,6 +893,12 @@ namespace HotelManagement.Domain.Migrations
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("PromotionCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal?>("PromotionValue")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<DateTime?>("ServingDate")
                         .HasColumnType("datetime2");
 

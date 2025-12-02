@@ -13,6 +13,8 @@ public class Order
     public string? Notes { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? ServingDate { get; set; }
+    public decimal? PromotionValue { get; set; }
+    public string? PromotionCode { get; set; }
     public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
 }
 

@@ -9,6 +9,7 @@ namespace HotelManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/hotels")]
+[Authorize]
 public class HotelsAdminController : ControllerBase
 {
     private readonly IHotelsAdminService _svc;
@@ -25,7 +26,6 @@ public class HotelsAdminController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Manager")]
     public async Task<ActionResult<ApiResponse<IEnumerable<HotelSummaryDto>>>> List([FromQuery] HotelsQueryDto query)
     {
         var uid = CurrentUserId();
@@ -37,7 +37,6 @@ public class HotelsAdminController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
-    [Authorize(Roles = "Admin,Manager")]
     public async Task<ActionResult<ApiResponse<HotelDetailsDto>>> Get(Guid id)
     {
         var uid = CurrentUserId();

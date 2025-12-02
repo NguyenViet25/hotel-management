@@ -557,4 +557,24 @@ public class OrdersService : IOrdersService
             return ApiResponse<OrderDetailsDto>.Fail($"Error updating order: {ex.Message}");
         }
     }
+
+    public async Task<bool> UpdateWalkPromotionAsync(Guid id, UpdateWalkInPromotionDto dto)
+    {
+        try
+        {
+            var order = await _orderRepository.FindAsync(id);
+            if (order == null) return false;
+
+            order.PromotionCode = dto.PromotionCode;
+            order.PromotionValue = dto.PromotionValue;
+
+            await _orderRepository.UpdateAsync(order);
+            await _orderRepository.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            return false;
+        }
+    }
 }

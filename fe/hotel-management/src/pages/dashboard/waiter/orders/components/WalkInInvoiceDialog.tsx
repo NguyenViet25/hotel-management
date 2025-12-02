@@ -137,8 +137,8 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
             pb: 1,
           }}
         >
-          <Stack spacing={1.5}>
-            <Stack>
+          <Stack spacing={1}>
+            <Stack spacing={1}>
               <Typography
                 sx={{
                   fontSize: "1.5rem",
@@ -149,35 +149,21 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
               >
                 HÓA ĐƠN THANH TOÁN
               </Typography>
-              <Stack
-                direction={{ sm: "row" }}
-                alignItems="center"
-                justifyContent="center"
-              >
-                {invoice && (
-                  <Typography sx={{ fontSize: "0.8rem" }}>
-                    Số hóa đơn: <b>{invoice.invoiceNumber}</b>
-                  </Typography>
-                )}
-              </Stack>
-            </Stack>
-            <Stack spacing={1}>
               {hotel && (
                 <Stack spacing={0.2} sx={{ color: "#c62828" }}>
-                  <Typography fontWeight={800}>{hotel.name}</Typography>
-                  <Typography>ĐC: {hotel.address || "—"}</Typography>
-                  <Stack direction="row" spacing={1}>
-                    <Typography>ĐT: {hotel.phone || "—"}</Typography>
-                    <Typography>Email: {hotel.email || "—"}</Typography>
-                  </Stack>
+                  <Typography textAlign={"center"} fontWeight={600}>
+                    {hotel.name}
+                  </Typography>
+                  <Typography textAlign={"center"}>
+                    Địa chỉ: {hotel.address || "—"}
+                  </Typography>
+                  <Typography textAlign={"center"}>
+                    SĐT: {hotel.phone || "—"}
+                  </Typography>
                 </Stack>
               )}
 
-              <Stack
-                direction={{ sx: "column", lg: "row" }}
-                spacing={1}
-                justifyContent={"space-between"}
-              >
+              <Stack justifyContent={"space-between"}>
                 <Stack
                   direction="row"
                   alignItems="center"
