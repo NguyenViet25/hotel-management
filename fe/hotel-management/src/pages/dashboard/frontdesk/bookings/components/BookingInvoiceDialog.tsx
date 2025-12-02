@@ -421,6 +421,16 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                   </Typography>
                 </Stack>
               </Stack>
+              {notes && notes.trim().length > 0 && (
+                <Stack spacing={0.5} sx={{ mt: 1 }}>
+                  <Typography sx={{ color: "#c62828" }}>Ghi chú:</Typography>
+                  <Typography
+                    sx={{ fontStyle: "italic", color: "text.primary" }}
+                  >
+                    {notes}
+                  </Typography>
+                </Stack>
+              )}
               {!disableForPrint && (
                 <Stack spacing={2} mt={1}>
                   {discountPercent > 0 && (
@@ -443,10 +453,11 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                     Chọn mã khuyến mãi
                   </Button>
                   <TextField
-                    defaultValue={0}
+                    type="number"
+                    value={additionalAmount}
                     label="Phụ thu"
                     onChange={(e) =>
-                      setAdditionalAmount(Number(e.target.value))
+                      setAdditionalAmount(Number(e.target.value) || 0)
                     }
                     slotProps={{
                       input: {
@@ -459,7 +470,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                     fullWidth
                   />
                   <TextField
-                    defaultValue={""}
+                    value={notes}
                     label="Ghi chú"
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="Nhập ghi chú"
