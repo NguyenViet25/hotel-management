@@ -72,7 +72,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
   const [lateCheckOut, setLateCheckOut] = useState(false);
 
   const [additionalNotes, setAdditionalNotes] = useState(
-    booking?.additionalNotes
+    booking?.additionalNotes ?? " "
   );
   const [additionalAmount, setAdditionalAmount] = useState<number>(
     booking?.additionalAmount ?? 0
@@ -119,8 +119,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
 
       try {
         setInvoiceDetails(null);
-        // Prefill defaults from booking
-        setAdditionalNotes(booking.additionalNotes || booking.notes || "");
+        setAdditionalNotes(booking.additionalNotes);
         setAdditionalAmount(booking.additionalAmount || 0);
         setPromotionCode(booking.promotionCode || "");
         setPromotionValue(booking.promotionValue || 0);
@@ -140,17 +139,6 @@ const BookingInvoiceDialog: React.FC<Props> = ({
     };
     loadHotel();
   }, [open, hotelId]);
-
-  // Date range
-  const dateRange = useMemo(() => {
-    if (!booking) return { start: "—", end: "—", nights: 0 };
-
-    const start = booking.bookingRoomTypes?.[0]?.startDate || "—";
-    const end = booking.bookingRoomTypes?.[0]?.endDate || "—";
-
-    const nights = Math.max(1, dayjs(end).diff(dayjs(start), "day"));
-    return { start, end, nights };
-  }, [booking]);
 
   const tableRows = useMemo(() => {
     if (!booking)
@@ -234,6 +222,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
       const res = await invoicesApi.createBooking({
         bookingId: booking.id,
         promotionCode: promotionCode || undefined,
+        discountCode: promotionCode || undefined,
         promotionValue: promotionValue || undefined,
         finalPayment:
           paymentAmount > 0 ? { amount: paymentAmount, type: 0 } : undefined,
@@ -396,7 +385,8 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                           : tableRows.length + 1}
                       </TableCell>
                       <TableCell sx={{ color: "#2e7d32" }}>
-                        Giảm giá ({promotionValue}%)
+                        Giảm giá ({promotionCode ? `${promotionCode} - ` : ""}$
+                        {promotionValue}%)
                       </TableCell>
                       <TableCell align="center">1</TableCell>
                       <TableCell align="center">—</TableCell>
@@ -451,6 +441,10 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                         sx={{ fontSize: "0.9rem" }}
                         color="primary"
                         label={`${promotionCode} - ${promotionValue}%`}
+                        onDelete={() => {
+                          setPromotionCode("");
+                          setPromotionValue(0);
+                        }}
                       />
                     </Stack>
                   )}
@@ -528,19 +522,9 @@ const BookingInvoiceDialog: React.FC<Props> = ({
           >
             Đóng
           </Button>
-          {invoiceDetails ? (
-            <Button
-              startIcon={<Print />}
-              variant="contained"
-              onClick={() => handlePrint?.()}
-            >
-              In hóa đơn
-            </Button>
-          ) : (
-            <Button variant="contained" onClick={onConfirmInvoice}>
-              Xuất hóa đơn
-            </Button>
-          )}
+          <Button variant="contained" onClick={onConfirmInvoice}>
+            Xuất hóa đơn
+          </Button>
         </DialogActions>
       )}
 

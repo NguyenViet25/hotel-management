@@ -148,6 +148,7 @@ public class InvoicesController : ControllerBase
             FinalPayment = request.FinalPayment,
             CheckoutTime = request.CheckoutTime,
             AdditionalAmount = request.AdditionalAmount,
+            AdditionalNotes = request.AdditionalNotes,
             Notes = request.Notes
         };
 
@@ -184,6 +185,7 @@ public class CreateBookingInvoiceRequest
     public Guid BookingId { get; set; }
     public string? DiscountCode { get; set; }
     public string? Notes { get; set; }
+    public string? AdditionalNotes { get; set; }
     public decimal? AdditionalAmount { get; set; }
     public PaymentDto? FinalPayment { get; set; }
     public DateTime? CheckoutTime { get; set; }

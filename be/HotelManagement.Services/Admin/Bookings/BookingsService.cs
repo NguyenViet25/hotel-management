@@ -1372,8 +1372,12 @@ public class BookingsService(
                     });
                 }
 
-                booking.PromotionCode = dto.DiscountCode;
+                booking.PromotionCode = promo.Code;
                 booking.PromotionValue = promo.Value;
+            } else
+            {
+                booking.PromotionCode = null;
+                booking.PromotionValue = 0;
             }
 
             if (dto.AdditionalAmount > 0)
@@ -1433,7 +1437,7 @@ public class BookingsService(
             await _bookingRoomRepo.SaveChangesAsync();
 
             booking.Status = BookingStatus.Completed;
-            booking.AdditionalNotes = dto.Notes;
+            booking.AdditionalNotes = dto.AdditionalNotes;
             booking.AdditionalAmount = dto.AdditionalAmount ?? 0;
 
             await _bookingRepo.UpdateAsync(booking);

@@ -268,6 +268,7 @@ public class CheckoutRequestDto
 {
     public string? DiscountCode { get; set; }
     public string? Notes { get; set; }
+    public string? AdditionalNotes { get; set; }
     public decimal? AdditionalAmount { get; set; } = 0;
     public PaymentDto? FinalPayment { get; set; }
     public DateTime? CheckoutTime { get; set; }
