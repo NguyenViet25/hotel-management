@@ -31,6 +31,7 @@ import bookingsApi, {
 } from "../../../../../api/bookingsApi";
 import invoicesApi, { type InvoiceDto } from "../../../../../api/invoicesApi";
 import ordersApi from "../../../../../api/ordersApi";
+import discountCodesApi from "../../../../../api/discountCodesApi";
 import hotelService, { type Hotel } from "../../../../../api/hotelService";
 import { useStore, type StoreState } from "../../../../../hooks/useStore";
 import {
@@ -117,25 +118,31 @@ const BookingInvoiceDialog: React.FC<Props> = ({
       } catch {}
 
       try {
-        const list = await invoicesApi.list({
-          bookingId: booking.id,
-          page: 1,
-          pageSize: 1,
-        });
-        const item = list?.data?.items?.[0];
+        setInvoiceDetails(null);
+        // Prefill defaults from booking
+        setAdditionalNotes(booking.additionalNotes || booking.notes || "");
+        setAdditionalAmount(booking.additionalAmount || 0);
+        setPromotionCode(booking.promotionCode || "");
+        setPromotionValue(booking.promotionValue || 0);
 
-        if (item) {
-          const det = await invoicesApi.getById(item.id);
-          if (det.isSuccess) {
-            setInvoiceDetails(det.data);
-            setAdditionalNotes(
-              det.data.additionalNotes || det.data.notes || ""
-            );
-            setAdditionalAmount(det.data.additionalAmount || 0);
+        // If no promotion present in booking, pick the best active booking promo
+        try {
+          const resCodes = await discountCodesApi.list();
+          const today = new Date();
+          const best = (resCodes.data || [])
+            .filter(
+              (c) =>
+                c.scope === "booking" &&
+                c.isActive &&
+                new Date(c.startDate) <= today &&
+                new Date(c.endDate) >= today
+            )
+            .sort((a, b) => (b.value || 0) - (a.value || 0))[0];
+          if (best && !booking.promotionCode) {
+            setPromotionCode(best.code);
+            setPromotionValue(best.value);
           }
-        } else {
-          setInvoiceDetails(null);
-        }
+        } catch {}
       } catch {}
     };
 
@@ -355,16 +362,16 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                     <TableCell sx={{ width: "40%" }}>
                       <b>Nội dung</b>
                     </TableCell>
-                    <TableCell align="right" sx={{ width: "10%" }}>
+                    <TableCell align="center" sx={{ width: "8%" }}>
                       <b>SL</b>
                     </TableCell>
-                    <TableCell align="right" sx={{ width: "10%" }}>
+                    <TableCell align="center" sx={{ width: "8%" }}>
                       <b>Đêm</b>
                     </TableCell>
-                    <TableCell align="right" sx={{ width: "15%" }}>
+                    <TableCell align="right" sx={{ width: "17%" }}>
                       <b>Đơn giá</b>
                     </TableCell>
-                    <TableCell align="right" sx={{ width: "15%" }}>
+                    <TableCell align="right" sx={{ width: "17%" }}>
                       <b>Thành tiền</b>
                     </TableCell>
                   </TableRow>
@@ -374,8 +381,8 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                     <TableRow key={`${it.label}-${idx}`}>
                       <TableCell align="center">{idx + 1}</TableCell>
                       <TableCell>{it.label}</TableCell>
-                      <TableCell align="right">{it.quantity}</TableCell>
-                      <TableCell align="right">
+                      <TableCell align="center">{it.quantity}</TableCell>
+                      <TableCell align="center">
                         {typeof it.nights === "number" ? it.nights : "—"}
                       </TableCell>
                       <TableCell align="right">{currency(it.unit)}</TableCell>
@@ -400,12 +407,14 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                   )}
                   {promotionValue > 0 && (
                     <TableRow>
-                      <TableCell align="center"></TableCell>
+                      <TableCell align="center">
+                        {tableRows.length + 1}
+                      </TableCell>
                       <TableCell sx={{ color: "#2e7d32" }}>
                         Giảm giá ({promotionValue}%)
                       </TableCell>
-                      <TableCell align="right">1</TableCell>
-                      <TableCell align="right"></TableCell>
+                      <TableCell align="center">1</TableCell>
+                      <TableCell align="center">—</TableCell>
                       <TableCell align="right">
                         {currency(totals.discountAmt)}
                       </TableCell>
@@ -420,7 +429,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                     <TableCell align="right"></TableCell>
                     <TableCell align="right"></TableCell>
                     <TableCell align="right"></TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 800 }}>
+                    <TableCell align="right" sx={{ fontWeight: 600 }}>
                       {currency(totals.final)}
                     </TableCell>
                   </TableRow>

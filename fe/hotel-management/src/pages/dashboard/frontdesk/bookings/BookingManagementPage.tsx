@@ -26,7 +26,18 @@ import BookingFormModal from "./components/BookingFormModal";
 import CallLogModal from "./components/CallLogModal";
 import CancelBookingModal from "./components/CancelBookingModal";
 
-import { Add, AddCircle, Edit, Phone, RemoveRedEye } from "@mui/icons-material";
+import {
+  Add,
+  AddCircle,
+  BedroomBaby,
+  BedroomParent,
+  Edit,
+  Hotel,
+  Phone,
+  ReceiptLong,
+  RemoveRedEye,
+  Room,
+} from "@mui/icons-material";
 import PersonIcon from "@mui/icons-material/Person";
 import PhoneIphoneIcon from "@mui/icons-material/PhoneIphone";
 import ReceiptIcon from "@mui/icons-material/Receipt";
@@ -43,9 +54,29 @@ const STATUS_OPTIONS: StatusOption[] = [
   { value: " ", label: "Tất cả" },
   { value: 0 as BookingStatus, label: "Chờ duyệt" },
   { value: 1 as BookingStatus, label: "Đã xác nhận" },
-  { value: 5 as BookingStatus, label: "Đã hoàn thành" },
+  { value: 3 as BookingStatus, label: "Đã hoàn thành" },
   { value: 4 as BookingStatus, label: "Đã hủy" },
 ];
+
+const statusChip = (status: number) => {
+  const s = status as number | undefined;
+  const mapping: Record<
+    number,
+    {
+      label: string;
+      color: "default" | "primary" | "success" | "warning" | "error";
+    }
+  > = {
+    0: { label: "Chờ duyệt", color: "default" },
+    1: { label: "Đã xác nhận", color: "primary" },
+    2: { label: "Đã hoàn thành", color: "success" },
+    3: { label: "Đã hoàn thành", color: "success" },
+    4: { label: "Đã hủy", color: "error" },
+  };
+  if (s === undefined) return null;
+  const m = mapping[s] || { label: String(s), color: "default" };
+  return <Chip label={m.label} color={m.color} size="small" />;
+};
 
 const BookingManagementPage: React.FC = () => {
   const navigate = useNavigate();
@@ -99,7 +130,7 @@ const BookingManagementPage: React.FC = () => {
       try {
         const baseQuery: BookingsQueryDto = {
           hotelId: hotelId || undefined,
-          status: status === "" ? undefined : (status as BookingStatus),
+          status: status === " " ? undefined : (status as BookingStatus),
           startDate: fromDate ? fromDate.toDate().toISOString() : undefined,
           endDate: toDate ? toDate.toDate().toISOString() : undefined,
           guestName: guestName || undefined,
@@ -138,6 +169,7 @@ const BookingManagementPage: React.FC = () => {
           if (pageToLoad) setPage(pageToLoad);
         }
       } catch (err) {
+        console.log("err", err);
         setSnackbar({
           open: true,
           message: "Không thể tải danh sách booking",
@@ -250,7 +282,7 @@ const BookingManagementPage: React.FC = () => {
               0
             );
             const statusColor =
-              b.status === 2
+              b.status === 3
                 ? "success"
                 : b.status === 4
                 ? "error"
@@ -263,9 +295,9 @@ const BookingManagementPage: React.FC = () => {
                 : b.status === 1
                 ? "Đã xác nhận"
                 : b.status === 2
-                ? "Đã nhận phòng"
+                ? "Đã hoàn thành"
                 : b.status === 3
-                ? "Hoàn tất"
+                ? "Đã hoàn thành"
                 : b.status === 4
                 ? "Đã hủy"
                 : String(b.status);
@@ -279,7 +311,7 @@ const BookingManagementPage: React.FC = () => {
                       alignItems={{ xs: "flex-start", sm: "center" }}
                     >
                       <Stack direction="row" spacing={1} alignItems="center">
-                        <ReceiptIcon color="primary" />
+                        <Hotel color="primary" />
                         <Typography
                           fontWeight={700}
                         >{`Yêu cầu đặt phòng: #${String(
@@ -353,7 +385,7 @@ const BookingManagementPage: React.FC = () => {
                         <Button
                           size="small"
                           variant="contained"
-                          startIcon={<ReceiptIcon />}
+                          startIcon={<ReceiptLong />}
                           onClick={() => {
                             setInvoiceBooking(b as any);
                             setOpenBookingInvoice(true);

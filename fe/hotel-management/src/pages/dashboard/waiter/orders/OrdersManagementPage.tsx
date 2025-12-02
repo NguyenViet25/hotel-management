@@ -1,4 +1,13 @@
-import { Add, Check, Close, Edit, LocalOffer } from "@mui/icons-material";
+import {
+  Add,
+  Check,
+  Close,
+  Edit,
+  FoodBank,
+  Kitchen,
+  LocalOffer,
+  Restaurant,
+} from "@mui/icons-material";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import {
   Alert,
@@ -382,7 +391,7 @@ const OrdersManagementPage: React.FC = () => {
                         alignItems={{ xs: "flex-start", sm: "center" }}
                       >
                         <Stack direction="row" spacing={1} alignItems="center">
-                          <ReceiptIcon color="primary" />
+                          <Restaurant color="primary" />
                           <Typography fontWeight={700}>
                             {/* Yêu cầu: #{String(o.id).slice(0, 8).toUpperCase()} */}
                             Yêu cầu: #{String(number + 1).toUpperCase()}
@@ -401,6 +410,7 @@ const OrdersManagementPage: React.FC = () => {
                           <Typography color="text.secondary">
                             {new Date(o.createdAt).toLocaleString()}
                           </Typography>
+
                           <Chip
                             color={
                               o.status === "2"

@@ -81,8 +81,8 @@ const BookingDetailsPage: React.FC = () => {
     > = {
       0: { label: "Chờ duyệt", color: "default" },
       1: { label: "Đã xác nhận", color: "primary" },
-      2: { label: "Đã nhận phòng", color: "success" },
-      3: { label: "Hoàn tất", color: "success" },
+      2: { label: "Đã hoàn thành", color: "success" },
+      3: { label: "Đã hoàn thành", color: "success" },
       4: { label: "Đã hủy", color: "error" },
     };
     if (s === undefined) return null;
