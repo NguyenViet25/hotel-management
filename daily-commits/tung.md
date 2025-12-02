@@ -200,3 +200,4 @@
 2025-12-01 - 5 - 02:05:13 UTC :: perf: UC-36 Duyet ngoai le: duyet/tu choi theo han muc. — dieu chinh UI & copy cho ro (da review so bo)
 2025-12-02 - 1 - 01:49:10 UTC :: build: UC-31 Bao cao: len lich gui email/PDF hang ngay/tuan. — refactor luong xu ly cho ro rang (da kiem tra lint)
 2025-12-02 - 2 - 01:49:13 UTC :: perf: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — tach chuc nang de de bao tri (da smoke test)
+2025-12-02 - 3 - 01:49:14 UTC :: refactor: UC-02 RBAC: thiet lap quyen thao tac theo vai tro/pham vi. — dieu chinh UI & copy cho ro (dong bo voi BE/FE)
