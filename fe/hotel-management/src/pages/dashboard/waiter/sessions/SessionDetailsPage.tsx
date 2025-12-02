@@ -1,25 +1,35 @@
 import {
   AccessTime,
+  AcUnit,
+  Bed,
   Cancel,
   CheckCircle,
   CleanHands,
+  CleaningServices,
   Delete,
+  DryCleaning,
   Edit,
+  EmojiFoodBeverage,
   Groups,
+  HelpOutline,
+  Hotel,
+  LocalCafe,
   PlayCircle,
+  Power,
   ReceiptLong,
   RemoveCircle,
+  RestaurantMenu,
   Send,
   TableBar,
   TableRestaurant as TableRestaurantIcon,
+  WaterDrop,
 } from "@mui/icons-material";
 import {
   Box,
   Button,
   Card,
-  CardHeader,
   CardContent,
-  CardActions,
+  CardHeader,
   Chip,
   Dialog,
   DialogActions,
@@ -27,11 +37,8 @@ import {
   DialogTitle,
   Divider,
   FormControl,
-  InputLabel,
   Grid,
-  List,
-  ListItem,
-  ListItemText,
+  InputLabel,
   MenuItem,
   Paper,
   Select,
@@ -79,10 +86,12 @@ export default function SessionDetailsPage() {
   const requestTypes = useMemo(
     () => [
       { value: "water", label: "Nước" },
+      { value: "tea", label: "Trà" },
       { value: "towel", label: "Khăn" },
       { value: "ice", label: "Đá" },
       { value: "napkin", label: "Khăn giấy" },
       { value: "utensils", label: "Muỗng/Đĩa" },
+      { value: "charger", label: "Củ sạc" },
       { value: "other", label: "Khác" },
     ],
     []
@@ -107,7 +116,7 @@ export default function SessionDetailsPage() {
     return "Chờ xử lý";
   };
   const statusColor = (s?: string) => {
-    if (s === "InProgress") return "warning";
+    if (s === "InProgress") return "primary";
     if (s === "Completed") return "success";
     if (s === "Cancelled") return "error";
     return "default";
@@ -115,6 +124,33 @@ export default function SessionDetailsPage() {
   const typeLabel = (t?: string) => {
     const found = requestTypes.find((x) => x.value === t);
     return found?.label || t || "Khác";
+  };
+
+  const typeIcon = (t?: string) => {
+    switch (t) {
+      case "water":
+        return <WaterDrop color="primary" />;
+      case "tea":
+        return <EmojiFoodBeverage color="secondary" />;
+      case "coffee":
+        return <LocalCafe color="info" />;
+      case "towel":
+        return <DryCleaning color="warning" />;
+      case "ice":
+        return <AcUnit color="info" />;
+      case "napkin":
+        return <CleaningServices color="secondary" />;
+      case "utensils":
+        return <RestaurantMenu color="success" />;
+      case "blanket":
+        return <Bed color="primary" />;
+      case "pillow":
+        return <Hotel color="secondary" />;
+      case "charger":
+        return <Power color="error" />;
+      default:
+        return <HelpOutline color="disabled" />;
+    }
   };
 
   const capacityGroups = useMemo(() => {
@@ -490,7 +526,7 @@ export default function SessionDetailsPage() {
                               variant="caption"
                               color="text.secondary"
                             >
-                              {t.capacity} người/bàn
+                              6 người/bàn
                             </Typography>
                           </Stack>
                           <Stack
@@ -572,6 +608,7 @@ export default function SessionDetailsPage() {
               <Grid key={r.id} size={{ xs: 12, md: 6, lg: 4 }}>
                 <Card variant="outlined" sx={{ borderRadius: 3 }}>
                   <CardHeader
+                    avatar={typeIcon(r.requestType)}
                     title={`${typeLabel(r.requestType)} • ${r.description}`}
                     subheader={`${new Date(r.createdAt).toLocaleString()}${
                       r.assignedToName ? " • " + r.assignedToName : ""

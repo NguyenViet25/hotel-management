@@ -1,15 +1,12 @@
 import {
   AccessTime,
   AddCircle,
-  Delete,
-  Edit,
+  CleanHands,
+  FoodBank,
   Groups,
   Info,
   Search,
-  TableBar,
   TableRestaurant as TableRestaurantIcon,
-  CleanHands,
-  FoodBank,
 } from "@mui/icons-material";
 import {
   Box,
@@ -24,25 +21,25 @@ import {
   Grid,
   InputAdornment,
   InputLabel,
-  MenuItem,
-  Select,
-  Snackbar,
-  Stack,
-  TextField,
-  Typography,
   List,
   ListItem,
   ListItemText,
+  MenuItem,
+  Select,
+  Stack,
+  TextField,
+  Typography,
 } from "@mui/material";
 import {
-  LocalizationProvider,
   DatePicker,
   DateTimePicker,
+  LocalizationProvider,
 } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import useSWR from "swr";
 import diningSessionsApi, {
   type DiningSessionDto,
@@ -56,13 +53,12 @@ import tablesApi, {
   type TablesQueryParams,
 } from "../../../../api/tablesApi";
 import { type Option } from "../../../../components/common/CustomSelect";
+import EmptyState from "../../../../components/common/EmptyState";
 import PageTitle from "../../../../components/common/PageTitle";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
+import AssignMultipleTableDialog from "./components/AssignMultipleTableDialog";
 import AssignOrderDialog from "./components/AssignOrderDialog";
 import CreateSessionDialog from "./components/CreateSessionDialog";
-import AssignMultipleTableDialog from "./components/AssignMultipleTableDialog";
-import { toast } from "react-toastify";
-import EmptyState from "../../../../components/common/EmptyState";
 
 export default function SessionBoardPage() {
   const { hotelId } = useStore<StoreState>((s) => s);
@@ -111,10 +107,12 @@ export default function SessionBoardPage() {
   const requestTypes = useMemo(
     () => [
       { value: "water", label: "Nước" },
+      { value: "tea", label: "Trà" },
       { value: "towel", label: "Khăn" },
       { value: "ice", label: "Đá" },
       { value: "napkin", label: "Khăn giấy" },
       { value: "utensils", label: "Muỗng/Đĩa" },
+      { value: "charger", label: "Củ sạc" },
       { value: "other", label: "Khác" },
     ],
     []
@@ -124,18 +122,6 @@ export default function SessionBoardPage() {
   const [editReqDesc, setEditReqDesc] = useState<string>("");
   const [editReqStatus, setEditReqStatus] = useState<string>("Pending");
   const [deleteReqId, setDeleteReqId] = useState<string | null>(null);
-
-  const openRequestsForSession = async (sessionId: string) => {
-    setRequestsSessionId(sessionId);
-    setRequestsOpen(true);
-    setRequestsLoading(true);
-    try {
-      const res = await serviceRequestsApi.listBySession(sessionId, 1, 100);
-      setRequests(res.data?.requests || []);
-    } finally {
-      setRequestsLoading(false);
-    }
-  };
 
   const filteredRequests = useMemo(() => {
     return (requests || []).filter((r) => {

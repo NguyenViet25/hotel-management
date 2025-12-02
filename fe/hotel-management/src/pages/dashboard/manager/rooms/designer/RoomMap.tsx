@@ -502,7 +502,11 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
 
   const refreshRooms = async () => {
     try {
-      const res = await roomsApi.getRooms({ page: 1, pageSize: 200 });
+      const res = await roomsApi.getRooms({
+        page: 1,
+        pageSize: 200,
+        hotelId: hotelId || "",
+      });
       if (res.isSuccess) setRooms(res.data);
     } catch {}
   };

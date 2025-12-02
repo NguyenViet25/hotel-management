@@ -118,7 +118,7 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
             value={formData?.roles?.[0] || ""}
             onChange={(e) => handleInputChange(e)}
           />
-          {enableHotelSelect && (
+          {enableHotelSelect === true && (
             <HotelSelect
               name="propertyRoles"
               value={formData?.propertyRoles?.[0]?.hotelId || ""}
