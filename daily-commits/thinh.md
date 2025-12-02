@@ -197,3 +197,4 @@
 2025-12-02 - 2 - 01:48:54 UTC :: docs: UC-22 Minibar/Amenity: ghi tieu hao, post charge vao folio. — bo sung case canh bien & no-show (chuan bi cho tinh nang tiep theo)
 2025-12-02 - 3 - 01:48:56 UTC :: fix: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — dieu chinh UI & copy cho ro (da review so bo)
 2025-12-02 - 4 - 01:48:59 UTC :: refactor: UC-47 Dashboard: gioi han xem theo vai tro va co so. — dieu chinh UI & copy cho ro (dam bao backward-compatible)
+2025-12-02 - 5 - 01:49:00 UTC :: docs: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — bo sung metrics/telemetry co ban (can theo doi them)
