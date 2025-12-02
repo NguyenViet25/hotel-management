@@ -258,7 +258,7 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
                       <TableRow>
                         <TableCell align="center"></TableCell>
                         <TableCell sx={{ color: "#2e7d32" }}>
-                          Giảm giá
+                          Giảm giá ({discountPercent}%)
                         </TableCell>
                         <TableCell align="right">1</TableCell>
                         <TableCell align="right">
@@ -281,7 +281,7 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
                   </TableBody>
                 </Table>
 
-                {!invoice && (
+                {!disableForPrint && (
                   <Stack spacing={1} sx={{ mt: 1 }}>
                     {discountPercent > 0 && (
                       <Stack direction="row" spacing={1.5} alignItems="center">

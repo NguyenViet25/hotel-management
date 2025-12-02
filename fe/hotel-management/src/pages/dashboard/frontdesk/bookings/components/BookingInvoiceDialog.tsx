@@ -269,17 +269,6 @@ const BookingInvoiceDialog: React.FC<Props> = ({
               >
                 HÓA ĐƠN THANH TOÁN
               </Typography>
-              <Stack
-                direction={{ sm: "row" }}
-                alignItems="center"
-                justifyContent="center"
-              >
-                {invoiceDetails && (
-                  <Typography sx={{ fontSize: "0.8rem" }}>
-                    Số hóa đơn: <b>{invoiceDetails.invoiceNumber}</b>
-                  </Typography>
-                )}
-              </Stack>
             </Stack>
 
             <Stack spacing={1}>
@@ -317,32 +306,6 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                   <Typography>SĐT:</Typography>
                   <Typography sx={{ ml: 1, color: "text.primary" }}>
                     {booking?.phoneNumber || "—"}
-                  </Typography>
-                </Stack>
-              </Stack>
-              <Stack
-                direction={{ sx: "column", lg: "row" }}
-                spacing={1}
-                justifyContent={"space-between"}
-              >
-                <Stack
-                  direction="row"
-                  alignItems="center"
-                  sx={{ color: "#c62828" }}
-                >
-                  <Typography>Mã booking:</Typography>
-                  <Typography sx={{ ml: 1, color: "text.primary" }}>
-                    #{booking?.id?.substring(0, 8)}
-                  </Typography>
-                </Stack>
-                <Stack
-                  direction="row"
-                  alignItems="center"
-                  sx={{ color: "#c62828" }}
-                >
-                  <Typography>Số đêm:</Typography>
-                  <Typography sx={{ ml: 1, color: "text.primary" }}>
-                    {dateRange.nights}
                   </Typography>
                 </Stack>
               </Stack>
@@ -415,7 +378,9 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                   {discountPercent > 0 && (
                     <TableRow>
                       <TableCell align="center"></TableCell>
-                      <TableCell sx={{ color: "#2e7d32" }}>Giảm giá</TableCell>
+                      <TableCell sx={{ color: "#2e7d32" }}>
+                        Giảm giá ({discountPercent}%)
+                      </TableCell>
                       <TableCell align="right">1</TableCell>
                       <TableCell align="right">
                         {currency(totals.discountAmt)}
@@ -456,6 +421,54 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                   </Typography>
                 </Stack>
               </Stack>
+              {!disableForPrint && (
+                <Stack spacing={2} mt={1}>
+                  {discountPercent > 0 && (
+                    <Stack direction="row" spacing={1.5} alignItems="center">
+                      <PercentIcon color="primary" />
+                      <Typography fontWeight={700}>Mã giảm giá</Typography>
+                      <Chip
+                        sx={{ fontSize: "0.9rem" }}
+                        color="primary"
+                        label={`${discountCode} - ${discountPercent}%`}
+                      />
+                    </Stack>
+                  )}
+                  <Button
+                    variant="outlined"
+                    startIcon={<DiscountIcon />}
+                    onClick={() => setPromoOpen(true)}
+                    sx={{ width: "fit-content" }}
+                  >
+                    Chọn mã khuyến mãi
+                  </Button>
+                  <TextField
+                    defaultValue={0}
+                    label="Phụ thu"
+                    onChange={(e) =>
+                      setAdditionalAmount(Number(e.target.value))
+                    }
+                    slotProps={{
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position="start">VND</InputAdornment>
+                        ),
+                      },
+                    }}
+                    placeholder="Nhập phụ thu"
+                    fullWidth
+                  />
+                  <TextField
+                    defaultValue={""}
+                    label="Ghi chú"
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Nhập ghi chú"
+                    fullWidth
+                    multiline
+                    rows={2}
+                  />
+                </Stack>
+              )}
 
               <Grid container mt={1}>
                 <Grid size={{ xs: 12, sm: 6 }}>
@@ -479,53 +492,6 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                 </Grid>
               </Grid>
             </Box>
-
-            {!invoiceDetails && (
-              <Stack spacing={2}>
-                {discountPercent > 0 && (
-                  <Stack direction="row" spacing={1.5} alignItems="center">
-                    <PercentIcon color="primary" />
-                    <Typography fontWeight={700}>Mã giảm giá</Typography>
-                    <Chip
-                      sx={{ fontSize: "0.9rem" }}
-                      color="primary"
-                      label={`${discountCode} - ${discountPercent}%`}
-                    />
-                  </Stack>
-                )}
-                <Button
-                  variant="outlined"
-                  startIcon={<DiscountIcon />}
-                  onClick={() => setPromoOpen(true)}
-                  sx={{ width: "fit-content" }}
-                >
-                  Chọn mã khuyến mãi
-                </Button>
-                <TextField
-                  defaultValue={0}
-                  label="Phụ thu"
-                  onChange={(e) => setAdditionalAmount(Number(e.target.value))}
-                  slotProps={{
-                    input: {
-                      endAdornment: (
-                        <InputAdornment position="start">VND</InputAdornment>
-                      ),
-                    },
-                  }}
-                  placeholder="Nhập phụ thu"
-                  fullWidth
-                />
-                <TextField
-                  defaultValue={""}
-                  label="Ghi chú"
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Nhập ghi chú"
-                  fullWidth
-                  multiline
-                  rows={3}
-                />
-              </Stack>
-            )}
           </Stack>
         </DialogContent>
       </Box>
