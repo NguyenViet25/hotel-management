@@ -14,6 +14,7 @@ public class DiningSessionService : IDiningSessionService
     private readonly IRepository<Table> _tableRepository;
     private readonly IRepository<DiningSessionTable> _diningSessionTableRepository;
     private readonly IRepository<AppUser> _userRepository;
+    private readonly IRepository<Order> _orderRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public DiningSessionService(
@@ -21,12 +22,14 @@ public class DiningSessionService : IDiningSessionService
         IRepository<Table> tableRepository,
         IRepository<DiningSessionTable> diningSessionTableRepository,
         IRepository<AppUser> userRepository,
+        IRepository<Order> orderRepository,
         IUnitOfWork unitOfWork)
     {
         _diningSessionRepository = diningSessionRepository;
         _tableRepository = tableRepository;
         _diningSessionTableRepository = diningSessionTableRepository;
         _userRepository = userRepository;
+        _orderRepository = orderRepository;
         _unitOfWork = unitOfWork;
     }
 
@@ -333,6 +336,28 @@ public class DiningSessionService : IDiningSessionService
         {
             return ApiResponse<bool>.Fail("No changes applied");
         }
+        return ApiResponse<bool>.Success(true);
+    }
+
+    public async Task<ApiResponse<bool>> AssignOrderAsync(Guid sessionId, Guid orderId)
+    {
+        var session = await _diningSessionRepository.FindAsync(sessionId);
+        if (session == null || session.Status != DiningSessionStatus.Open)
+        {
+            return ApiResponse<bool>.Fail("Session not found or not open");
+        }
+        var order = await _orderRepository.FindAsync(orderId);
+        if (order == null)
+        {
+            return ApiResponse<bool>.Fail("Order not found");
+        }
+        if (order.HotelId != session.HotelId)
+        {
+            return ApiResponse<bool>.Fail("Hotel mismatch");
+        }
+        order.DiningSessionId = sessionId;
+        await _orderRepository.UpdateAsync(order);
+        await _orderRepository.SaveChangesAsync();
         return ApiResponse<bool>.Success(true);
     }
 

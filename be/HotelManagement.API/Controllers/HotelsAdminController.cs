@@ -99,4 +99,7 @@ public class HotelsAdminController : ControllerBase
             return BadRequest(ApiResponse<HotelDetailsDto>.Fail(ex.Message));
         }
     }
+
+    // TODO: add api to update default check in and check out time 
+    // TODO: add api to get default check in and check out time
 }
