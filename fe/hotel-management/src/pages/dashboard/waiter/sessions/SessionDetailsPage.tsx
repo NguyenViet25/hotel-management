@@ -52,7 +52,7 @@ import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
 import { useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import useSWR from "swr";
 import diningSessionsApi from "../../../../api/diningSessionsApi";
@@ -96,6 +96,9 @@ export default function SessionDetailsPage() {
     ],
     []
   );
+
+  const { pathname } = useLocation();
+  const basePath = "/" + pathname.split("/").slice(1, 3).join("/");
 
   const { data: sessionRes, mutate: mutateSession } = useSWR(
     id ? ["session", id] : null,
@@ -249,7 +252,7 @@ export default function SessionDetailsPage() {
       const res = await diningSessionsApi.deleteSession(id);
       if (res.isSuccess) {
         toast.success("Đã xóa phiên");
-        navigate("/waiter/sessions");
+        navigate(basePath);
       } else {
         toast.error(res.message || "Xóa phiên thất bại");
       }
@@ -673,7 +676,7 @@ export default function SessionDetailsPage() {
               </Grid>
             ))}
             {requests.length === 0 && (
-              <Grid xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Typography variant="body2" color="text.secondary">
                   Không có yêu cầu
                 </Typography>

@@ -25,6 +25,7 @@ import {
   useTheme,
 } from "@mui/material";
 import { useEffect, useState } from "react";
+import hotelService, { type Hotel } from "../../api/hotelService";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useStore, type StoreState } from "../../hooks/useStore";
 import theme from "../../theme";
@@ -47,14 +48,26 @@ const MainLayout = ({ menuItems }: MainLayoutProps) => {
   const location = useLocation();
   const muiTheme = useTheme();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down("sm"));
-  const { user, removeUser } = useStore<StoreState>((state) => state);
+  const { user, removeUser, hotelId } = useStore<StoreState>((state) => state);
   const [open, setOpen] = useState(!isMobile);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [hotel, setHotel] = useState<Hotel | null>(null);
 
   // Update drawer state when screen size changes
   useEffect(() => {
     setOpen(!isMobile);
   }, [isMobile]);
+
+  useEffect(() => {
+    const load = async () => {
+      if (!hotelId) return;
+      try {
+        const res = await hotelService.getHotelById(hotelId);
+        if (res.isSuccess) setHotel(res.data);
+      } catch {}
+    };
+    load();
+  }, [hotelId]);
 
   const handleDrawerOpen = () => {
     setOpen(!open);
@@ -208,7 +221,7 @@ const MainLayout = ({ menuItems }: MainLayoutProps) => {
                   noWrap
                   component="div"
                 >
-                  Tân Trường Sơn Legacy
+                  {hotel?.name || ""}
                 </Typography>
               </Stack>
             </Stack>
