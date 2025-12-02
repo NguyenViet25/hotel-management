@@ -202,3 +202,4 @@
 2025-12-02 - 2 - 01:49:13 UTC :: perf: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — tach chuc nang de de bao tri (da smoke test)
 2025-12-02 - 3 - 01:49:14 UTC :: refactor: UC-02 RBAC: thiet lap quyen thao tac theo vai tro/pham vi. — dieu chinh UI & copy cho ro (dong bo voi BE/FE)
 2025-12-02 - 4 - 01:49:15 UTC :: docs: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — chuan hoa ten ham/bien theo convention (da review so bo)
+2025-12-02 - 5 - 01:49:16 UTC :: docs: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — cap nhat cau hinh va kiem tra bien (da review so bo)
