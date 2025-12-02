@@ -234,6 +234,7 @@ public class OrdersService : IOrdersService
                 CreatedAt = DateTime.Now,
                 ServingDate = dto.ServingDate,
                 Notes = dto.Notes,
+                Guests = dto.Guests,
             };
             await _orderRepository.AddAsync(order);
 

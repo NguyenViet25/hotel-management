@@ -91,16 +91,12 @@ export default function SessionDetailsPage() {
   const session = sessionRes?.data;
   const requests = (reqRes?.data?.requests || []) as ServiceRequestDto[];
 
-  const statusOptions: string[] = [];
-
   const capacityGroups = useMemo(() => {
     const caps = Array.from(
       new Set((session?.tables || []).map((t) => t.capacity))
     ).sort((a, b) => a - b);
     return caps;
   }, [session]);
-
-  const handleUpdateItemStatus = async (_itemId: string, _status: string) => {};
 
   const handleCreateRequest = async () => {
     if (!hotelId || !id) return;

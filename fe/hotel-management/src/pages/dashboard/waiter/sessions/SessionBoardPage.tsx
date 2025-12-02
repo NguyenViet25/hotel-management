@@ -89,8 +89,10 @@ export default function SessionBoardPage() {
   const [sessionStatusFilter, setSessionStatusFilter] = useState<
     "All" | "Open" | "Ended"
   >("All");
-  const [fromDate, setFromDate] = useState<Dayjs | null>(null);
-  const [toDate, setToDate] = useState<Dayjs | null>(null);
+  const [fromDate, setFromDate] = useState<Dayjs | null>(
+    dayjs().startOf("month")
+  );
+  const [toDate, setToDate] = useState<Dayjs | null>(dayjs().endOf("month"));
   const [editOpen, setEditOpen] = useState(false);
   const [editSession, setEditSession] = useState<DiningSessionDto | null>(null);
   const [editNotes, setEditNotes] = useState("");
@@ -300,12 +302,8 @@ export default function SessionBoardPage() {
     return (sessions || []).filter((s) => {
       const bySearch =
         !searchText ||
-        (s.waiterName || "")
-          .toLowerCase()
-          .includes(searchText.toLowerCase()) ||
-        (s.notes || "")
-          .toLowerCase()
-          .includes(searchText.toLowerCase());
+        (s.waiterName || "").toLowerCase().includes(searchText.toLowerCase()) ||
+        (s.notes || "").toLowerCase().includes(searchText.toLowerCase());
       const d = dayjs(s.startedAt);
       const byFrom =
         !fromDate || d.isSame(fromDate, "day") || d.isAfter(fromDate);
@@ -537,85 +535,85 @@ export default function SessionBoardPage() {
                   "&:hover": { boxShadow: 2, borderColor: "grey.300" },
                 }}
               >
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1,
-                      px: 2,
-                      py: 1,
-                      borderRadius: 2,
-                      bgcolor: "primary.light",
-                      border: "2px dashed",
-                      borderColor: "primary.main",
-                    }}
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                    px: 2,
+                    py: 1,
+                    borderRadius: 2,
+                    bgcolor: "primary.light",
+                    border: "2px dashed",
+                    borderColor: "primary.main",
+                  }}
+                >
+                  <AccessTime color="primary" sx={{ color: "white" }} />
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ fontWeight: 800, color: "white", flexGrow: 1 }}
                   >
-                    <AccessTime color="primary" sx={{ color: "white" }} />
-                    <Typography
-                      variant="subtitle2"
-                      sx={{ fontWeight: 800, color: "white", flexGrow: 1 }}
-                    >
-                      {new Date(s.startedAt).toLocaleString()}
+                    {new Date(s.startedAt).toLocaleString()}
+                  </Typography>
+                  <Chip label="Đang mở" color="primary" size="small" />
+                </Box>
+                <Stack spacing={0.5} sx={{ px: 2, py: 1.5 }}>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Groups fontSize="small" color="disabled" />
+                    <Typography variant="caption" color="text.secondary">
+                      {s.totalGuests} khách
                     </Typography>
-                    <Chip label="Đang mở" color="primary" size="small" />
-                  </Box>
-                  <Stack spacing={0.5} sx={{ px: 2, py: 1.5 }}>
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <Groups fontSize="small" color="disabled" />
-                      <Typography variant="caption" color="text.secondary">
-                        {s.totalGuests} khách
-                      </Typography>
-                    </Stack>
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <TableRestaurantIcon fontSize="small" color="disabled" />
-                      <Typography variant="caption" color="text.secondary">
-                        {(s.tables || []).length} bàn đã gắn:
-                        {(s.tables || []).length > 0 && (
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            fontWeight={600}
-                          >
-                            {" "}
-                            {(
-                              s.tables.sort((a, b) =>
-                                a.tableName.localeCompare(b.tableName)
-                              ) || []
-                            )
-                              .map((t) => t.tableName)
-                              .join(", ")}
-                          </Typography>
-                        )}
-                      </Typography>
-                    </Stack>
-
-                    {!!s.notes && (
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <CleanHands fontSize="small" color="disabled" />
-                        <Typography variant="caption" color="text.secondary">
-                          Ghi chú: {s.notes}
+                  </Stack>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <TableRestaurantIcon fontSize="small" color="disabled" />
+                    <Typography variant="caption" color="text.secondary">
+                      {(s.tables || []).length} bàn đã gắn:
+                      {(s.tables || []).length > 0 && (
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          fontWeight={600}
+                        >
+                          {" "}
+                          {(
+                            s.tables.sort((a, b) =>
+                              a.tableName.localeCompare(b.tableName)
+                            ) || []
+                          )
+                            .map((t) => t.tableName)
+                            .join(", ")}
                         </Typography>
-                      </Stack>
-                    )}
+                      )}
+                    </Typography>
                   </Stack>
-                  <Stack
-                    direction={{ xs: "column", lg: "row" }}
-                    spacing={1}
-                    sx={{ px: 2, pb: 2 }}
+
+                  {!!s.notes && (
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <CleanHands fontSize="small" color="disabled" />
+                      <Typography variant="caption" color="text.secondary">
+                        Ghi chú: {s.notes}
+                      </Typography>
+                    </Stack>
+                  )}
+                </Stack>
+                <Stack
+                  direction={{ xs: "column", lg: "row" }}
+                  spacing={1}
+                  sx={{ px: 2, pb: 2 }}
+                >
+                  <Button
+                    size="small"
+                    fullWidth
+                    variant="contained"
+                    startIcon={<Info />}
+                    onClick={() => navigate(`${s.id}`)}
                   >
-                    <Button
-                      size="small"
-                      fullWidth
-                      variant="contained"
-                      startIcon={<Info />}
-                      onClick={() => navigate(`${s.id}`)}
-                    >
-                      Chi tiết
-                    </Button>
-                  </Stack>
+                    Chi tiết
+                  </Button>
+                </Stack>
               </Card>
             </Grid>
-            ))}
+          ))}
         </Grid>
         {filteredSessions.length === 0 && !sessionsLoading && (
           <EmptyState
