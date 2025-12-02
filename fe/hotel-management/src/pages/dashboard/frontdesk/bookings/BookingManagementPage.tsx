@@ -43,6 +43,7 @@ const STATUS_OPTIONS: StatusOption[] = [
   { value: " ", label: "Tất cả" },
   { value: 0 as BookingStatus, label: "Chờ duyệt" },
   { value: 1 as BookingStatus, label: "Đã xác nhận" },
+  { value: 5 as BookingStatus, label: "Đã hoàn thành" },
   { value: 4 as BookingStatus, label: "Đã hủy" },
 ];
 

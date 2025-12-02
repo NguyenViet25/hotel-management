@@ -1,18 +1,22 @@
 import {
   Box,
   Button,
-  Card,
-  Checkbox,
   Chip,
   Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle,
-  FormControlLabel,
+  Divider,
+  Grid,
   InputAdornment,
   Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
   TextField,
   Typography,
+  capitalize,
 } from "@mui/material";
 
 import dayjs from "dayjs";
@@ -27,19 +31,20 @@ import bookingsApi, {
 } from "../../../../../api/bookingsApi";
 import invoicesApi, { type InvoiceDto } from "../../../../../api/invoicesApi";
 import ordersApi from "../../../../../api/ordersApi";
+import hotelService, { type Hotel } from "../../../../../api/hotelService";
+import { useStore, type StoreState } from "../../../../../hooks/useStore";
+import {
+  moneyToVietnameseWords,
+  formatDateVN,
+} from "../../../../../utils/money-to-words";
 
 // Promotion dialog
 import PromotionDialog from "../../invoices/components/PromotionDialog";
 
 // Icons
-import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
-import HotelIcon from "@mui/icons-material/Hotel";
-import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
-import ReceiptIcon from "@mui/icons-material/Receipt";
 import PercentIcon from "@mui/icons-material/Percent";
 import DiscountIcon from "@mui/icons-material/Discount";
-import { formatDateTime } from "../../../../../utils/date-helper";
-import { Download } from "@mui/icons-material";
+import { Close, Print } from "@mui/icons-material";
 
 type Props = {
   open: boolean;
@@ -49,6 +54,8 @@ type Props = {
   onRefreshBooking?: () => void | Promise<void>;
 };
 
+const currency = (v: number) => `${v.toLocaleString()} đ`;
+
 const BookingInvoiceDialog: React.FC<Props> = ({
   open,
   onClose,
@@ -56,6 +63,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
   onInvoiceCreated,
   onRefreshBooking,
 }) => {
+  const { user, hotelId } = useStore<StoreState>((state) => state);
   const [discountCode, setDiscountCode] = useState("");
   const [discountPercent, setDiscountPercent] = useState<number>(0);
   const [paymentAmount, setPaymentAmount] = useState<number>(0);
@@ -72,6 +80,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
   const [invoiceDetails, setInvoiceDetails] = useState<InvoiceDto | null>(null);
   const [disableForPrint, setDisableForPrint] = useState(false);
   const [ordersTotal, setOrdersTotal] = useState<number>(0);
+  const [hotel, setHotel] = useState<Hotel | null>(null);
 
   const invoiceRef = useRef<HTMLDivElement>(null);
 
@@ -127,6 +136,17 @@ const BookingInvoiceDialog: React.FC<Props> = ({
     load();
   }, [open, booking?.id]);
 
+  useEffect(() => {
+    const loadHotel = async () => {
+      if (!open || !hotelId) return;
+      try {
+        const res = await hotelService.getHotelById(hotelId);
+        if (res.isSuccess) setHotel(res.data);
+      } catch {}
+    };
+    loadHotel();
+  }, [open, hotelId]);
+
   // Date range
   const dateRange = useMemo(() => {
     if (!booking) return { start: "—", end: "—", nights: 0 };
@@ -138,53 +158,70 @@ const BookingInvoiceDialog: React.FC<Props> = ({
     return { start, end, nights };
   }, [booking]);
 
-  // Charges lines
-  const lines = useMemo(() => {
-    if (!booking) return [];
-
-    const roomLines = (booking.bookingRoomTypes || []).map((rt) => {
+  const tableRows = useMemo(() => {
+    if (!booking)
+      return [] as {
+        label: string;
+        quantity: number;
+        unit: number;
+        total: number;
+      }[];
+    const rows: {
+      label: string;
+      quantity: number;
+      unit: number;
+      total: number;
+    }[] = [];
+    for (const rt of booking.bookingRoomTypes || []) {
       const nights = Math.max(
         1,
         dayjs(rt.endDate).diff(dayjs(rt.startDate), "day")
       );
       const rooms = Math.max(rt.bookingRooms?.length || 0, 1);
+      const unit = rt.price * nights;
+      rows.push({
+        label: `Phòng ${rt.roomTypeName}`,
+        quantity: rooms,
+        unit,
+        total: unit * rooms,
+      });
+    }
+    if (ordersTotal > 0) {
+      rows.push({
+        label: "Đồ ăn/uống (đặt món)",
+        quantity: 1,
+        unit: ordersTotal,
+        total: ordersTotal,
+      });
+    }
+    for (const l of additional?.lines || []) {
+      rows.push({
+        label: l.description,
+        quantity: 1,
+        unit: l.amount,
+        total: l.amount,
+      });
+    }
+    if (additionalAmount > 0) {
+      rows.push({
+        label: "Phụ thu thêm",
+        quantity: 1,
+        unit: additionalAmount,
+        total: additionalAmount,
+      });
+    }
+    return rows;
+  }, [booking, additional, ordersTotal, additionalAmount]);
 
-      return {
-        label: `${rt.roomTypeName} x ${rooms} (${nights} đêm)`,
-        amount: rt.price * nights * rooms,
-      };
-    });
-
-    const fnbLine =
-      ordersTotal > 0
-        ? [{ label: "Đồ ăn/uống (đặt món)", amount: ordersTotal }]
-        : [];
-
-    const surchargeLines = (additional?.lines || []).map((l) => ({
-      label: l.description,
-      amount: l.amount,
-    }));
-
-    const depositLine =
-      (booking.depositAmount || 0) > 0
-        ? [
-            {
-              label: "Khấu trừ tiền cọc",
-              amount: -(booking.depositAmount || 0),
-            },
-          ]
-        : [];
-
-    return [...roomLines, ...fnbLine, ...surchargeLines, ...depositLine];
-  }, [booking, additional, ordersTotal]);
-
-  // Totals
-  const base = lines
-    .filter((x) => x.amount > 0)
-    .reduce((a, c) => a + c.amount, 0);
-
-  const discountAmt = Math.round((base * (discountPercent || 0)) / 100);
-  const after = base - discountAmt;
+  const totals = useMemo(() => {
+    const subtotal = tableRows
+      .filter((r) => r.total > 0)
+      .reduce((a, c) => a + c.total, 0);
+    const discountAmt = Math.round((subtotal * (discountPercent || 0)) / 100);
+    const deposit = booking?.depositAmount || 0;
+    const final = subtotal - discountAmt - deposit;
+    return { subtotal, discountAmt, deposit, final };
+  }, [tableRows, discountPercent, booking?.depositAmount]);
 
   // Confirm invoice
   const onConfirmInvoice = async () => {
@@ -219,225 +256,306 @@ const BookingInvoiceDialog: React.FC<Props> = ({
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
       <Box ref={invoiceRef}>
-        <DialogTitle
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 1.4,
-            fontSize: "1.35rem",
-            fontWeight: 700,
-          }}
-        >
-          <ReceiptLongIcon color="primary" sx={{ fontSize: 30 }} />
-          Xuất hóa đơn
-        </DialogTitle>
-
-        <DialogContent
-          sx={{
-            mt: 1,
-            pb: 1,
-            fontSize: "0.85rem",
-            "& .MuiTypography-root": { fontSize: "0.9rem" },
-            "& .MuiButton-root": { fontSize: "0.85rem", py: 1, px: 1.5 },
-            "& .MuiChip-root": { fontSize: "0.75rem" },
-            "& .MuiTextField-root input": { fontSize: "0.85rem" },
-          }}
-        >
-          <Stack spacing={3}>
-            <div>
-              {/* ============================
-                SECTION 1 — INFORMATION
-            ============================= */}
-              <Card
+        <DialogContent sx={{ pb: 1 }}>
+          <Stack spacing={1.5}>
+            <Stack>
+              <Typography
                 sx={{
-                  p: 3,
-                  borderRadius: 3,
-                  boxShadow: 3,
-                  bgcolor: "#fafcff",
+                  fontSize: "1.5rem",
+                  fontWeight: 600,
+                  textAlign: "center",
+                  color: "#d32f2f",
                 }}
               >
-                <Stack spacing={3}>
-                  {/* Guest info */}
-                  <Stack direction="row" spacing={1.5} alignItems="center">
-                    <HotelIcon color="primary" />
-                    <Typography variant="h6" fontWeight={700}>
-                      Thông tin khách & đặt phòng
-                    </Typography>
-                  </Stack>
+                HÓA ĐƠN THANH TOÁN
+              </Typography>
+              <Stack
+                direction={{ sm: "row" }}
+                alignItems="center"
+                justifyContent="center"
+              >
+                {invoiceDetails && (
+                  <Typography sx={{ fontSize: "0.8rem" }}>
+                    Số hóa đơn: <b>{invoiceDetails.invoiceNumber}</b>
+                  </Typography>
+                )}
+              </Stack>
+            </Stack>
 
-                  <Stack spacing={0.5} pl={4}>
-                    <Typography>
-                      <b>Khách:</b> {booking?.primaryGuestName}
-                    </Typography>
-                    <Typography>
-                      <b>Booking:</b> #{booking?.id?.substring(0, 8)}
-                    </Typography>
+            <Stack spacing={1}>
+              {hotel && (
+                <Stack spacing={0.2} sx={{ color: "#c62828" }}>
+                  <Typography fontWeight={800}>{hotel.name}</Typography>
+                  <Typography>ĐC: {hotel.address || "—"}</Typography>
+                  <Stack direction="row" spacing={1}>
+                    <Typography>ĐT: {hotel.phone || "—"}</Typography>
+                    <Typography>Email: {hotel.email || "—"}</Typography>
                   </Stack>
+                </Stack>
+              )}
 
-                  {/* Stay info */}
-                  <Stack direction="row" spacing={1.5} alignItems="center">
-                    <CalendarMonthIcon color="secondary" />
-                    <Typography variant="h6" fontWeight={700}>
-                      Thời gian lưu trú
-                    </Typography>
-                  </Stack>
-
-                  <Typography pl={4}>
-                    {formatDateTime(dateRange.start)} →{" "}
-                    {formatDateTime(dateRange.end)} (<b>{dateRange.nights}</b>{" "}
-                    đêm)
+              <Stack
+                direction={{ sx: "column", lg: "row" }}
+                spacing={1}
+                justifyContent={"space-between"}
+              >
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  sx={{ color: "#c62828" }}
+                >
+                  <Typography>Tên khách hàng:</Typography>
+                  <Typography sx={{ ml: 1, color: "text.primary" }}>
+                    {booking?.primaryGuestName || "—"}
                   </Typography>
                 </Stack>
-              </Card>
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  sx={{ color: "#c62828" }}
+                >
+                  <Typography>SĐT:</Typography>
+                  <Typography sx={{ ml: 1, color: "text.primary" }}>
+                    {booking?.phoneNumber || "—"}
+                  </Typography>
+                </Stack>
+              </Stack>
+              <Stack
+                direction={{ sx: "column", lg: "row" }}
+                spacing={1}
+                justifyContent={"space-between"}
+              >
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  sx={{ color: "#c62828" }}
+                >
+                  <Typography>Mã booking:</Typography>
+                  <Typography sx={{ ml: 1, color: "text.primary" }}>
+                    #{booking?.id?.substring(0, 8)}
+                  </Typography>
+                </Stack>
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  sx={{ color: "#c62828" }}
+                >
+                  <Typography>Số đêm:</Typography>
+                  <Typography sx={{ ml: 1, color: "text.primary" }}>
+                    {dateRange.nights}
+                  </Typography>
+                </Stack>
+              </Stack>
+            </Stack>
 
-              {/* ============================
-                SECTION 2 — SUMMARY
-            ============================= */}
-              <Card
+            <Box>
+              <Table
+                size="small"
                 sx={{
-                  p: 3,
-                  borderRadius: 3,
-                  boxShadow: 3,
-                  background: "linear-gradient(135deg,#f4f7ff,#e9f1ff)",
-                  mt: 3,
+                  width: "100%",
+                  border: "2px solid #c62828",
+                  borderCollapse: "collapse",
+                  "& .MuiTableCell-root": {
+                    borderBottom: "1px dotted #c62828",
+                    padding: "8px",
+                  },
+                  "& .MuiTableCell-root:not(:last-of-type)": {
+                    borderRight: "2px solid #c62828",
+                  },
+                  "& thead .MuiTableCell-root": {
+                    borderBottom: "2px solid #c62828",
+                    fontWeight: 700,
+                  },
                 }}
               >
-                <Stack spacing={3}>
-                  {/* Charges header */}
-                  <Stack direction="row" spacing={1.5} alignItems="center">
-                    <ReceiptIcon color="info" />
-                    <Typography variant="h6" fontWeight={700}>
-                      Chi tiết chi phí
-                    </Typography>
-                  </Stack>
-
-                  {/* Charges list */}
-                  <Stack pl={2} spacing={1}>
-                    {lines.map((l, idx) => (
-                      <Stack
-                        key={idx}
-                        direction="row"
-                        justifyContent="space-between"
-                        sx={{ pr: 1 }}
-                      >
-                        <Typography>{l.label}</Typography>
-                        <Typography fontWeight={600}>
-                          {l.amount.toLocaleString()} đ
-                        </Typography>
-                      </Stack>
-                    ))}
-                  </Stack>
-
-                  {/* Discount card */}
+                <TableHead>
+                  <TableRow>
+                    <TableCell align="center" sx={{ width: "8%" }}>
+                      <b>TT</b>
+                    </TableCell>
+                    <TableCell sx={{ width: "52%" }}>
+                      <b>Nội dung</b>
+                    </TableCell>
+                    <TableCell align="right" sx={{ width: "10%" }}>
+                      <b>SL</b>
+                    </TableCell>
+                    <TableCell align="right" sx={{ width: "15%" }}>
+                      <b>Đơn giá</b>
+                    </TableCell>
+                    <TableCell align="right" sx={{ width: "15%" }}>
+                      <b>Thành tiền</b>
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {tableRows.map((it, idx) => (
+                    <TableRow key={`${it.label}-${idx}`}>
+                      <TableCell align="center">{idx + 1}</TableCell>
+                      <TableCell>{it.label}</TableCell>
+                      <TableCell align="right">{it.quantity}</TableCell>
+                      <TableCell align="right">{currency(it.unit)}</TableCell>
+                      <TableCell align="right">{currency(it.total)}</TableCell>
+                    </TableRow>
+                  ))}
+                  {booking && (booking.depositAmount || 0) > 0 && (
+                    <TableRow>
+                      <TableCell align="center"></TableCell>
+                      <TableCell sx={{ color: "#c62828" }}>
+                        Khấu trừ tiền cọc
+                      </TableCell>
+                      <TableCell align="right">1</TableCell>
+                      <TableCell align="right">
+                        {currency(booking.depositAmount)}
+                      </TableCell>
+                      <TableCell align="right" sx={{ color: "#c62828" }}>
+                        -{currency(booking.depositAmount)}
+                      </TableCell>
+                    </TableRow>
+                  )}
                   {discountPercent > 0 && (
-                    <Card
-                      sx={{
-                        p: 2,
-                        borderRadius: 3,
-                        border: "1px dashed #42a5f5",
-                        bgcolor: "#e3f2fd",
-                      }}
-                    >
-                      <Stack direction="row" spacing={1.5} alignItems="center">
-                        <PercentIcon color="primary" />
-                        <Typography fontWeight={700}>Mã giảm giá</Typography>
-                      </Stack>
-
-                      <Chip
-                        sx={{ mt: 1, fontSize: "0.9rem", ml: 1 }}
-                        color="primary"
-                        label={`${discountCode} - ${discountPercent}%`}
-                      />
-                    </Card>
+                    <TableRow>
+                      <TableCell align="center"></TableCell>
+                      <TableCell sx={{ color: "#2e7d32" }}>Giảm giá</TableCell>
+                      <TableCell align="right">1</TableCell>
+                      <TableCell align="right">
+                        {currency(totals.discountAmt)}
+                      </TableCell>
+                      <TableCell align="right" sx={{ color: "#2e7d32" }}>
+                        -{currency(totals.discountAmt)}
+                      </TableCell>
+                    </TableRow>
                   )}
+                  <TableRow>
+                    <TableCell align="center"></TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Tổng cộng</TableCell>
+                    <TableCell align="right"></TableCell>
+                    <TableCell align="right"></TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 800 }}>
+                      {currency(totals.final)}
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
 
-                  {/* Promotion button */}
-
-                  {invoiceDetails ? (
-                    <></>
-                  ) : (
-                    <Stack spacing={2}>
-                      <Button
-                        variant="outlined"
-                        startIcon={<DiscountIcon />}
-                        onClick={() => setPromoOpen(true)}
-                        sx={{ width: "fit-content" }}
-                      >
-                        Chọn mã khuyến mãi
-                      </Button>
-                      <TextField
-                        defaultValue={0}
-                        label="Phụ thu"
-                        onChange={(e) =>
-                          setAdditionalAmount(Number(e.target.value))
-                        }
-                        slotProps={{
-                          input: {
-                            endAdornment: (
-                              <InputAdornment position="start">
-                                VND
-                              </InputAdornment>
-                            ),
-                          },
-                        }}
-                        placeholder="Nhập phụ thu"
-                        fullWidth
-                      />
-                      <TextField
-                        defaultValue={""}
-                        label="Ghi chú"
-                        onChange={(e) => setNotes(e.target.value)}
-                        placeholder="Nhập ghi chú"
-                        fullWidth
-                        multiline
-                        rows={3}
-                      />
-                    </Stack>
-                  )}
-                  {/* Total */}
-                  <Stack
-                    direction="row"
-                    justifyContent="space-between"
-                    alignItems="center"
+              <Stack spacing={0.8} sx={{ mt: 1 }}>
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  spacing={1}
+                  sx={{ color: "#c62828" }}
+                >
+                  <Typography>Bằng chữ:</Typography>
+                  <Typography
                     sx={{
-                      p: 2,
-                      borderRadius: 3,
-                      bgcolor: "white",
-                      boxShadow: 1,
+                      fontStyle: "italic",
+                      fontWeight: 600,
+                      color: "text.primary",
                     }}
                   >
-                    <Typography variant="h6" fontWeight={700}>
-                      Tổng cộng
-                    </Typography>
+                    {capitalize(moneyToVietnameseWords(totals.final))}
+                  </Typography>
+                </Stack>
+              </Stack>
 
-                    <Typography variant="h4" fontWeight={800} color="primary">
-                      {after.toLocaleString()} đ
+              <Grid container mt={1}>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Stack justifyContent={"center"} alignItems="center">
+                    <Typography sx={{ color: "#c62828", opacity: 0 }}>
+                      Khách hàng
+                    </Typography>
+                    <Typography sx={{ color: "#c62828" }}>
+                      Khách hàng
                     </Typography>
                   </Stack>
-                </Stack>
-              </Card>
-            </div>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Stack justifyContent={"center"} alignItems="center">
+                    <Typography sx={{ fontStyle: "italic", color: "#c62828" }}>
+                      {formatDateVN(new Date())}
+                    </Typography>
+                    <Typography sx={{ color: "#c62828" }}>Lễ tân</Typography>
+                    <Typography>{user?.fullname || "—"}</Typography>
+                  </Stack>
+                </Grid>
+              </Grid>
+            </Box>
+
+            {!invoiceDetails && (
+              <Stack spacing={2}>
+                {discountPercent > 0 && (
+                  <Stack direction="row" spacing={1.5} alignItems="center">
+                    <PercentIcon color="primary" />
+                    <Typography fontWeight={700}>Mã giảm giá</Typography>
+                    <Chip
+                      sx={{ fontSize: "0.9rem" }}
+                      color="primary"
+                      label={`${discountCode} - ${discountPercent}%`}
+                    />
+                  </Stack>
+                )}
+                <Button
+                  variant="outlined"
+                  startIcon={<DiscountIcon />}
+                  onClick={() => setPromoOpen(true)}
+                  sx={{ width: "fit-content" }}
+                >
+                  Chọn mã khuyến mãi
+                </Button>
+                <TextField
+                  defaultValue={0}
+                  label="Phụ thu"
+                  onChange={(e) => setAdditionalAmount(Number(e.target.value))}
+                  slotProps={{
+                    input: {
+                      endAdornment: (
+                        <InputAdornment position="start">VND</InputAdornment>
+                      ),
+                    },
+                  }}
+                  placeholder="Nhập phụ thu"
+                  fullWidth
+                />
+                <TextField
+                  defaultValue={""}
+                  label="Ghi chú"
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Nhập ghi chú"
+                  fullWidth
+                  multiline
+                  rows={3}
+                />
+              </Stack>
+            )}
           </Stack>
         </DialogContent>
       </Box>
-      <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={onClose}>Hủy</Button>
 
-        {invoiceDetails ? (
-          <Button variant="contained" onClick={() => handlePrint?.()}>
-            In hóa đơn
-          </Button>
-        ) : (
+      <Divider sx={{ mb: 1, mt: 1 }} />
+      {!disableForPrint && (
+        <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button
-            startIcon={<Download />}
-            variant="contained"
-            onClick={onConfirmInvoice}
-            sx={{ px: 3 }}
+            variant="outlined"
+            startIcon={<Close />}
+            color="error"
+            onClick={onClose}
           >
-            Xuất hóa đơn
+            Đóng
           </Button>
-        )}
-      </DialogActions>
+          {invoiceDetails ? (
+            <Button
+              startIcon={<Print />}
+              variant="contained"
+              onClick={() => handlePrint?.()}
+            >
+              In hóa đơn
+            </Button>
+          ) : (
+            <Button variant="contained" onClick={onConfirmInvoice}>
+              Xuất hóa đơn
+            </Button>
+          )}
+        </DialogActions>
+      )}
 
       <PromotionDialog
         open={promoOpen}
