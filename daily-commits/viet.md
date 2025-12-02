@@ -194,3 +194,4 @@
 2025-12-01 - 4 - 02:05:10 UTC :: fix: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — dieu chinh quyen truy cap theo vai tro (chuan bi cho tinh nang tiep theo)
 2025-12-01 - 5 - 02:05:14 UTC :: test: UC-22 Minibar/Amenity: ghi tieu hao, post charge vao folio. — them kiem soat loi & retry nhe (da smoke test)
 2025-12-02 - 1 - 01:48:51 UTC :: perf: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — cap nhat cau hinh va kiem tra bien (dong bo voi BE/FE)
+2025-12-02 - 2 - 01:48:54 UTC :: chore: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — chinh sua tai lieu & mo ta API (dong bo voi BE/FE)
