@@ -114,6 +114,10 @@ export interface BookingDetailsDto {
   notes?: string;
   bookingRoomTypes: BookingRoomTypeDto[];
   callLogs: CallLogDto[];
+  additionalAmount?: number;
+  additionalNotes?: string;
+  promotionValue?: number;
+  promotionCode?: string;
 }
 
 // Minimal BookingDto used by some UI components

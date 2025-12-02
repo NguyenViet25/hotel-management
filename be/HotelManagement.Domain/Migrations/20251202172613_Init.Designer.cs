@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelManagement.Domain.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251202171808_Init")]
+    [Migration("20251202172613_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -94,6 +94,12 @@ namespace HotelManagement.Domain.Migrations
 
                     b.Property<Guid?>("PrimaryGuestId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("PromotionCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("PromotionValue")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");

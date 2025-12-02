@@ -148,6 +148,8 @@ public class BookingDetailsDto
     public decimal LeftAmount { get; set; }
     public decimal AdditionalAmount { get; set; }
     public string? AdditionalNotes { get; set; }
+    public string? PromotionCode { get; set; } 
+    public decimal PromotionValue { get; set; }
     public DateTime CreatedAt { get; set; }
     public string? Notes { get; set; }
     public List<BookingRoomTypeDto> BookingRoomTypes { get; set; } = new();

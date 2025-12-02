@@ -403,6 +403,8 @@ public class BookingsService(
                 Notes = b.Notes,
                 AdditionalAmount = b.AdditionalAmount,
                 AdditionalNotes = b.AdditionalNotes,
+                PromotionValue= b.PromotionValue,
+                PromotionCode = b.PromotionCode,
                 BookingRoomTypes = b.BookingRoomTypes.Select(rt => new BookingRoomTypeDto
                 {
                     BookingRoomTypeId = rt.BookingRoomTypeId,
@@ -1367,6 +1369,9 @@ public class BookingsService(
                         SourceId = promo.Id
                     });
                 }
+
+                booking.PromotionCode = dto.DiscountCode;
+                booking.PromotionValue = promo.Value;
             }
 
             if (dto.AdditionalAmount > 0)
