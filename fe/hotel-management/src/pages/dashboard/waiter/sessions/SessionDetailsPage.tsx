@@ -297,7 +297,7 @@ export default function SessionDetailsPage() {
               startIcon={<ReceiptLong />}
               onClick={() => setAssignOpen(true)}
             >
-              Gán order
+              Gán yêu cầu đặt món
             </Button>
             <Button
               size="small"
