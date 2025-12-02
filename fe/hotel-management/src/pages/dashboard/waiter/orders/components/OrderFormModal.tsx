@@ -1,8 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   AssignmentInd,
+  Group,
+  GroupOff,
   Info,
+  NaturePeople,
   NoteAdd,
+  People,
   Person,
   Phone,
   Visibility,
@@ -50,6 +54,7 @@ const schema = z.object({
   customerPhone: z.string().optional(),
   status: z.string().optional(),
   notes: z.string().optional(),
+  guests: z.number().min(1, "Số khách phải >= 1").optional(),
   items: z
     .array(
       z.object({
@@ -58,7 +63,6 @@ const schema = z.object({
       })
     )
     .min(1, "Chọn ít nhất 1 món"),
-  guestCount: z.number().min(1, "Số khách phải >= 1").optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -95,19 +99,11 @@ const OrderFormModal: React.FC<IProps> = ({
       customerPhone: initialValues?.customerPhone || "",
       items: initialValues?.items || [],
       status: initialValues?.status || "1",
-      guestCount: 1,
+      guests: initialValues?.guests || 1,
     },
   });
 
   const values = watch();
-
-  useEffect(() => {
-    if (initialValues) {
-      setValue("customerName", initialValues.customerName ?? "");
-      setValue("customerPhone", initialValues.customerPhone || "");
-      setValue("items", initialValues.items || []);
-    }
-  }, [initialValues, setValue]);
 
   const [menuItems, setMenuItemss] = useState<MenuItemDto[]>([]);
   const [bookings, setBookings] = useState<BookingDetailsDto[]>([]);
@@ -139,14 +135,6 @@ const OrderFormModal: React.FC<IProps> = ({
       );
       return { name, imageUrl: match?.imageUrl, unitPrice: match?.unitPrice };
     });
-  };
-
-  const openSetViewer = (setId?: string) => {
-    const mi = menuItems.find((m) => m.id === (setId || ""));
-    const items = parseSetItems(mi);
-    setViewerTitle(mi?.name || "Chi tiết set");
-    setViewerItems(items);
-    setViewerOpen(true);
   };
 
   useEffect(() => {
@@ -197,10 +185,8 @@ const OrderFormModal: React.FC<IProps> = ({
         .map((i) => ({ menuItemId: i.menuItemId, quantity: i.quantity })),
       isWalkIn: isWalkIn,
       bookingId: values.bookingId || undefined,
-      notes:
-        (values.notes || "") +
-          (values.guestCount ? ` | Số khách: ${values.guestCount}` : "") ||
-        undefined,
+      notes: values.notes || "",
+      guests: values.guests || 1,
       status: Number(values.status || "1"),
     };
     try {
@@ -218,7 +204,7 @@ const OrderFormModal: React.FC<IProps> = ({
         }
       } else {
         const res = await (isEdit
-          ? ordersApi.updateWalkIn(initialValues!.id, {
+          ? ordersApi.updateForBooking(initialValues!.id, {
               id: initialValues?.id || "",
               ...payload,
             } as any)
@@ -246,7 +232,8 @@ const OrderFormModal: React.FC<IProps> = ({
       setValue("customerName", initialValues.customerName || "");
       setValue("customerPhone", initialValues.customerPhone || "");
       setValue("status", initialValues.status.toString() || "1");
-      console.log("initialValues", initialValues);
+      setValue("guests", initialValues.guests || 1);
+      setValue("items", initialValues.items || []);
     }
   }, [initialValues, setValue]);
 
@@ -429,6 +416,33 @@ const OrderFormModal: React.FC<IProps> = ({
               )}
             />
           </Stack>
+
+          <Controller
+            name="guests"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                label="Số lượng khách"
+                required
+                placeholder={"Nhập số lượng khách"}
+                fullWidth
+                type="number"
+                {...field}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <People color="primary" />
+                    </InputAdornment>
+                  ),
+                }}
+                onChange={(e) => {
+                  field.onChange(Number(e.target.value));
+                }}
+                error={!!errors.guests}
+                helperText={errors.guests?.message}
+              />
+            )}
+          />
 
           {/* Items Section */}
           <Controller

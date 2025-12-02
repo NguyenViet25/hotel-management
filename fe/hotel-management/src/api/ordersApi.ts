@@ -19,6 +19,7 @@ export interface CreateOrderDto {
   items?: OrderItemInputDto[];
   status?: number;
   isWalkIn?: boolean;
+  guests?: number;
 }
 
 export interface OrdersQueryParams {
@@ -76,6 +77,7 @@ export interface OrderSummaryDto {
   itemsTotal: number;
   promotionCode?: string;
   promotionValue?: number;
+  guests?: number;
 }
 
 export interface OrderDetailsDto extends OrderSummaryDto {

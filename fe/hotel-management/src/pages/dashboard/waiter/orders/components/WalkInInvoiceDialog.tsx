@@ -1,13 +1,14 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Close, Download } from "@mui/icons-material";
+import DiscountIcon from "@mui/icons-material/Discount";
+import PercentIcon from "@mui/icons-material/Percent";
 import {
   Box,
   Button,
-  Chip,
   capitalize,
+  Chip,
   Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle,
   Divider,
   Grid,
   Stack,
@@ -18,23 +19,21 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useReactToPrint } from "react-to-print";
+import { toast } from "react-toastify";
+import hotelService, { type Hotel } from "../../../../../api/hotelService";
+import invoicesApi, { type InvoiceDto } from "../../../../../api/invoicesApi";
 import ordersApi, {
   type OrderDetailsDto,
   type OrderSummaryDto,
 } from "../../../../../api/ordersApi";
-import invoicesApi, { type InvoiceDto } from "../../../../../api/invoicesApi";
-import hotelService, { type Hotel } from "../../../../../api/hotelService";
-import {
-  moneyToVietnameseWords,
-  formatDateVN,
-} from "../../../../../utils/money-to-words";
 import { useStore, type StoreState } from "../../../../../hooks/useStore";
-import { Close, Download, Print } from "@mui/icons-material";
-import PercentIcon from "@mui/icons-material/Percent";
-import DiscountIcon from "@mui/icons-material/Discount";
+import {
+  formatDateVN,
+  moneyToVietnameseWords,
+} from "../../../../../utils/money-to-words";
 import PromotionDialog from "../../../frontdesk/invoices/components/PromotionDialog";
-import discountCodesApi from "../../../../../api/discountCodesApi";
 
 type Props = {
   open: boolean;
@@ -44,6 +43,7 @@ type Props = {
 };
 
 const currency = (v: number) => `${v.toLocaleString()} đ`;
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const WalkInInvoiceDialog: React.FC<Props> = ({
   open,
@@ -118,7 +118,10 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
         setDisableForPrint(true);
         setInvoice(res.data);
         onInvoiceCreated?.(res.data);
+
+        await delay(200);
         handlePrint?.();
+        toast.success("Xuất hóa đơn thành công");
       }
     } catch {}
   };
@@ -266,7 +269,7 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
                 </Table>
 
                 {!disableForPrint && (
-                  <Stack spacing={1} sx={{ mt: 1 }}>
+                  <Stack spacing={2} mt={1}>
                     {promotionValue > 0 && (
                       <Stack direction="row" spacing={1.5} alignItems="center">
                         <PercentIcon color="primary" />
@@ -275,14 +278,10 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
                           sx={{ fontSize: "0.9rem" }}
                           color="primary"
                           label={`${promotionCode} - ${promotionValue}%`}
-                          onDelete={
-                            invoice
-                              ? undefined
-                              : () => {
-                                  setPromotionCode("");
-                                  setPromotionValue(0);
-                                }
-                          }
+                          onDelete={() => {
+                            setPromotionCode("");
+                            setPromotionValue(0);
+                          }}
                         />
                       </Stack>
                     )}

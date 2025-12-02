@@ -87,6 +87,7 @@ public class OrdersService : IOrdersService
                     ItemsCount = o.Items.Count,
                     PromotionCode = o.PromotionCode,
                     PromotionValue = o.PromotionValue ?? 0,
+                    Guests = o.Guests,
                     ItemsTotal = o.Items
                         .Where(i => i.Status != OrderItemStatus.Voided)
                         .Sum(i => i.UnitPrice * i.Quantity),
@@ -169,6 +170,7 @@ public class OrdersService : IOrdersService
                 ItemsTotal = o.Items.Where(i => i.Status != OrderItemStatus.Voided).Sum(i => i.UnitPrice * i.Quantity),
                 PromotionCode = o.PromotionCode,
                 PromotionValue = o.PromotionValue ?? 0,
+                Guests = o.Guests,
                 Items = o.Items.Select(i => new OrderItemDto
                 {
                     Id = i.Id,
@@ -288,6 +290,7 @@ public class OrdersService : IOrdersService
                 Status = OrderStatus.InProgress,
                 CreatedAt = DateTime.Now,
                 ServingDate = dto.ServingDate,
+                Guests = dto.Guests,
             };
             await _orderRepository.AddAsync(order);
 
@@ -462,6 +465,7 @@ public class OrdersService : IOrdersService
             order.Notes = dto.Notes;
             order.CustomerPhone = dto.CustomerPhone;
             order.CustomerName = dto.CustomerName;
+            order.Guests = dto.Guests;
             if (dto.Status.HasValue)
             {
                 order.Status = dto.Status.Value;
@@ -511,6 +515,7 @@ public class OrdersService : IOrdersService
 
             order.Notes = dto.Notes;
             order.BookingId = dto.BookingId;
+            order.Guests = dto.Guests;
 
             if (dto.Status.HasValue)
             {

@@ -6,6 +6,8 @@ import {
   FoodBank,
   Kitchen,
   LocalOffer,
+  People,
+  Phone,
   Restaurant,
 } from "@mui/icons-material";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
@@ -50,8 +52,6 @@ const OrdersManagementPage: React.FC = () => {
   const [search, setSearch] = useState<string>("");
   const { hotelId, user } = useStore<StoreState>((state) => state);
   const [searchParams, setSearchParams] = useSearchParams();
-
-  // Set a query param
 
   // Table data
   const [orders, setOrders] = useState<OrderSummaryDto[]>([]);
@@ -312,6 +312,7 @@ const OrdersManagementPage: React.FC = () => {
           color="primary"
           onClick={() => {
             setOpenOrder(true);
+            setSelectedOrder(null);
           }}
         >
           Thêm yêu cầu
@@ -381,6 +382,9 @@ const OrdersManagementPage: React.FC = () => {
                 const mi = menuItems.find((m) => m.id === it.menuItemId);
                 return (mi?.category || "").trim() === "Set";
               });
+
+              const discount = (o.itemsTotal * (o.promotionValue || 0)) / 100;
+              const total = o.itemsTotal - discount;
               return (
                 <Card key={o.id} sx={{ borderRadius: 2, boxShadow: 2 }}>
                   <CardContent>
@@ -399,11 +403,6 @@ const OrdersManagementPage: React.FC = () => {
                           <Chip
                             label={o.isWalkIn ? "Vãng lai" : "Đặt phòng"}
                             size="small"
-                          />
-                          <Chip
-                            label={`${o.itemsTotal.toLocaleString()} đ`}
-                            size="small"
-                            color="primary"
                           />
                         </Stack>
                         <Stack direction="row" spacing={1} alignItems="center">
@@ -448,15 +447,29 @@ const OrdersManagementPage: React.FC = () => {
                             alignItems="center"
                           >
                             <PersonIcon color="action" />
-                            <Typography>{o.customerName || "—"}</Typography>
+                            <Typography>
+                              Họ và tên: {o.customerName || "—"}
+                            </Typography>
                           </Stack>
                           <Stack
                             direction="row"
                             spacing={1}
                             alignItems="center"
                           >
-                            <PhoneIphoneIcon color="action" />
-                            <Typography>{o.customerPhone || "—"}</Typography>
+                            <Phone color="action" />
+                            <Typography>
+                              SĐT: {o.customerPhone || "—"}
+                            </Typography>
+                          </Stack>
+                          <Stack
+                            direction={{ xs: "row" }}
+                            spacing={1}
+                            alignItems="center"
+                          >
+                            <People color="action" />
+                            <Typography>
+                              Số lượng khách: {o.guests || 1}
+                            </Typography>
                           </Stack>
                         </Stack>
                         <Stack
@@ -538,57 +551,88 @@ const OrdersManagementPage: React.FC = () => {
                           })
                         )}
                       </Stack>
-
                       <Divider />
-
-                      <Stack spacing={1}>
-                        <Typography variant="subtitle2" fontWeight={700}>
-                          Set
-                        </Typography>
-                        {sets.length === 0 ? (
-                          <Typography color="text.secondary">
-                            Không có set
-                          </Typography>
-                        ) : (
-                          sets.map((it) => {
+                      {sets.length === 0
+                        ? null
+                        : sets.map((it) => {
                             const mi = menuItems.find(
                               (m) => m.id === it.menuItemId
                             );
                             return (
-                              <Stack
-                                key={it.id}
-                                direction="row"
-                                spacing={1}
-                                alignItems="center"
-                              >
-                                <img
-                                  src={mi?.imageUrl || "/assets/logo.png"}
-                                  alt={mi?.name || it.menuItemName}
-                                  style={{
-                                    width: 36,
-                                    height: 36,
-                                    borderRadius: 6,
-                                    objectFit: "contain",
-                                    border: "1px solid #eee",
-                                  }}
-                                />
-                                <Stack sx={{ flexGrow: 1 }}>
-                                  <Typography>{it.menuItemName}</Typography>
-                                  <Typography color="text.secondary">
-                                    {it.unitPrice.toLocaleString()} đ
+                              <Stack spacing={1}>
+                                <Typography
+                                  variant="subtitle2"
+                                  fontWeight={700}
+                                >
+                                  Set
+                                </Typography>
+                                <Stack
+                                  key={it.id}
+                                  direction="row"
+                                  spacing={1}
+                                  alignItems="center"
+                                >
+                                  <img
+                                    src={mi?.imageUrl || "/assets/logo.png"}
+                                    alt={mi?.name || it.menuItemName}
+                                    style={{
+                                      width: 36,
+                                      height: 36,
+                                      borderRadius: 6,
+                                      objectFit: "contain",
+                                      border: "1px solid #eee",
+                                    }}
+                                  />
+                                  <Stack sx={{ flexGrow: 1 }}>
+                                    <Typography>{it.menuItemName}</Typography>
+                                    <Typography color="text.secondary">
+                                      {it.unitPrice.toLocaleString()} đ
+                                    </Typography>
+                                  </Stack>
+                                  <Chip label={`x${it.quantity}`} />
+                                  <Typography fontWeight={700}>
+                                    {(
+                                      it.quantity * it.unitPrice
+                                    ).toLocaleString()}{" "}
+                                    đ
                                   </Typography>
                                 </Stack>
-                                <Chip label={`x${it.quantity}`} />
-                                <Typography fontWeight={700}>
-                                  {(
-                                    it.quantity * it.unitPrice
-                                  ).toLocaleString()}{" "}
-                                  đ
-                                </Typography>
+                                <Divider />
                               </Stack>
                             );
-                          })
-                        )}
+                          })}
+
+                      <Stack alignItems="flex-end">
+                        <Stack
+                          direction={{ xs: "column", lg: "row" }}
+                          spacing={2}
+                          alignItems={{ xs: "flex-end", sm: "flex-end" }}
+                        >
+                          <Stack alignItems="flex-end">
+                            <Typography color="text.secondary">
+                              Tổng cộng
+                            </Typography>
+                            <Typography fontWeight={700}>
+                              {(o.itemsTotal || 0).toLocaleString()} đ
+                            </Typography>
+                          </Stack>
+
+                          <Stack alignItems="flex-end">
+                            <Typography color="red">Giảm giá</Typography>
+                            <Typography color="red" fontWeight={"bold"}>
+                              - {(discount || 0).toLocaleString()} đ
+                            </Typography>
+                          </Stack>
+                          <Stack alignItems="flex-end">
+                            <Typography color="text.secondary">
+                              Còn lại
+                            </Typography>
+                            <Typography fontWeight={"bold"}>
+                              {" "}
+                              {(total || 0).toLocaleString()} đ
+                            </Typography>
+                          </Stack>
+                        </Stack>
                       </Stack>
                     </Stack>
                   </CardContent>

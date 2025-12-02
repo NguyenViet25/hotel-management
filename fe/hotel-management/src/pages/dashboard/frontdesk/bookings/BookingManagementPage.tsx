@@ -329,11 +329,13 @@ const BookingManagementPage: React.FC = () => {
                           alignItems="center"
                         >
                           <PersonIcon color="action" />
-                          <Typography>{b.primaryGuestName || "—"}</Typography>
+                          <Typography>
+                            Họ và tên: {b.primaryGuestName || "—"}
+                          </Typography>
                         </Stack>
                         <Stack direction="row" spacing={1} alignItems="center">
                           <Phone color="action" />
-                          <Typography>{b.phoneNumber || "—"}</Typography>
+                          <Typography>SĐT: {b.phoneNumber || "—"}</Typography>
                         </Stack>
                       </Stack>
                       <Stack
@@ -479,8 +481,8 @@ const BookingManagementPage: React.FC = () => {
                     </Stack>
                     <Stack alignItems="flex-end">
                       <Stack
-                        direction={{ xs: "column", sm: "row" }}
-                        spacing={2}
+                        direction={{ xs: "column", lg: "row" }}
+                        spacing={3}
                         alignItems={{ xs: "flex-end", sm: "flex-end" }}
                       >
                         <Stack alignItems="flex-end">
@@ -500,24 +502,22 @@ const BookingManagementPage: React.FC = () => {
                           </Typography>
                         </Stack>
                         <Stack alignItems="flex-end">
-                          <Typography color="text.secondary">Cọc</Typography>
-                          <Typography fontWeight={700}>
-                            {(b.depositAmount || 0).toLocaleString()} đ
+                          <Typography color="red">Cọc</Typography>
+                          <Typography color="red" fontWeight={700}>
+                            - {(b.depositAmount || 0).toLocaleString()} đ
+                          </Typography>
+                        </Stack>
+                        <Stack alignItems="flex-end">
+                          <Typography color="red">Giảm giá</Typography>
+                          <Typography color="red" fontWeight={700}>
+                            - {(discountAmount || 0).toLocaleString()} đ
                           </Typography>
                         </Stack>
                         <Stack alignItems="flex-end">
                           <Typography color="text.secondary">
-                            Giảm giá
-                          </Typography>
-                          <Typography fontWeight={700}>
-                            {(discountAmount || 0).toLocaleString()} đ
-                          </Typography>
-                        </Stack>
-                        <Stack alignItems="flex-end">
-                          <Typography color="red" fontWeight={"bold"}>
                             Còn lại
                           </Typography>
-                          <Typography color="red" fontWeight={"bold"}>
+                          <Typography fontWeight={"bold"}>
                             {(leftAmount || 0).toLocaleString()} đ
                           </Typography>
                         </Stack>

@@ -33,6 +33,7 @@ public class CreateWalkInOrderDto
     public string? CustomerPhone { get; set; }
     public string? Notes { get; set; }
     public DateTime? ServingDate { get; set; }
+    public int Guests { get; set; }
     public List<OrderItemInputDto>? Items { get; set; }
 }
 
@@ -44,6 +45,7 @@ public class CreateBookingOrderDto
     public Guid BookingId { get; set; }
     public string? Notes { get; set; }
     public DateTime? ServingDate { get; set; }
+    public int Guests { get; set; }
     public List<OrderItemInputDto>? Items { get; set; }
 }
 
@@ -138,6 +140,7 @@ public class OrderSummaryDto
     public DateTime OrderDate { get; set; }
     public decimal PromotionValue { get; set; }
     public string? PromotionCode { get; set; }
+    public int Guests { get; set; }
     public List<OrderItemDto> Items { get; set; } = new();
 }
 

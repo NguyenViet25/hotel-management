@@ -15,6 +15,7 @@ public class Order
     public DateTime? ServingDate { get; set; }
     public decimal? PromotionValue { get; set; }
     public string? PromotionCode { get; set; }
+    public int Guests { get; set; }
     public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
 }
 

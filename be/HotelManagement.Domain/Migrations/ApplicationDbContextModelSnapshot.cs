@@ -884,6 +884,9 @@ namespace HotelManagement.Domain.Migrations
                     b.Property<Guid?>("DiningSessionId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("Guests")
+                        .HasColumnType("int");
+
                     b.Property<Guid>("HotelId")
                         .HasColumnType("uniqueidentifier");
 
