@@ -199,3 +199,4 @@
 2025-12-02 - 4 - 01:48:59 UTC :: refactor: UC-47 Dashboard: gioi han xem theo vai tro va co so. — dieu chinh UI & copy cho ro (dam bao backward-compatible)
 2025-12-02 - 5 - 01:49:00 UTC :: docs: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — bo sung metrics/telemetry co ban (can theo doi them)
 2025-12-03 - 1 - 01:48:34 UTC :: perf: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — bo sung index & toi uu DB (da kiem tra lint)
+2025-12-03 - 2 - 01:48:37 UTC :: ci: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — fix race-condition nho trong thao tac (anh huong thap)
