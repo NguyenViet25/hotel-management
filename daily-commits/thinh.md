@@ -202,3 +202,4 @@
 2025-12-03 - 2 - 01:48:37 UTC :: ci: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — fix race-condition nho trong thao tac (anh huong thap)
 2025-12-03 - 3 - 01:48:38 UTC :: build: UC-34 Cham cong: ghi nhan diem danh, ban giao ca. — them log chi tiet phuc vu audit (can theo doi them)
 2025-12-03 - 4 - 01:48:41 UTC :: perf: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — bo sung index & toi uu DB (chuan bi cho tinh nang tiep theo)
+2025-12-03 - 5 - 01:48:42 UTC :: fix: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — them log chi tiet phuc vu audit (chuan bi cho tinh nang tiep theo)
