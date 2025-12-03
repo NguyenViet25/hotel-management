@@ -198,3 +198,4 @@
 2025-12-02 - 3 - 01:48:57 UTC :: docs: UC-09 So do: hien thi layout, loc trang thai phong. — chuan hoa ten ham/bien theo convention (anh huong thap)
 2025-12-02 - 4 - 01:48:59 UTC :: docs: UC-27 Kitchen Display: nhan ticket, cap nhat trang thai che bien. — bo sung metrics/telemetry co ban (chuan bi cho tinh nang tiep theo)
 2025-12-02 - 5 - 01:49:02 UTC :: test: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — refactor luong xu ly cho ro rang (dat tieu chi toi thieu)
+2025-12-03 - 1 - 01:48:36 UTC :: test: UC-18 Room Move/Extend: doi phong, gia han dem o. — bo sung metrics/telemetry co ban (dam bao backward-compatible)
