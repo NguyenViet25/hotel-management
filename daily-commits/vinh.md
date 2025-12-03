@@ -198,3 +198,4 @@
 2025-12-02 - 3 - 01:48:55 UTC :: docs: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — cap nhat mock data & seed test (anh huong thap)
 2025-12-02 - 4 - 01:48:58 UTC :: feat: UC-02 RBAC: thiet lap quyen thao tac theo vai tro/pham vi. — toi uu truy van va bo nho (dong bo voi BE/FE)
 2025-12-02 - 5 - 01:49:00 UTC :: feat: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — cap nhat mock data & seed test (khong doi hanh vi)
+2025-12-03 - 1 - 01:48:33 UTC :: docs: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — kiem tra tuong thich mui gio/tien te (anh huong thap)
