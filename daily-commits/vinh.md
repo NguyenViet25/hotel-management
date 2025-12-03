@@ -202,3 +202,4 @@
 2025-12-03 - 2 - 01:48:36 UTC :: fix: UC-26 Order: tao/chinh sua order, ghi chu, void/discount. — them log chi tiet phuc vu audit (da review so bo)
 2025-12-03 - 3 - 01:48:37 UTC :: perf: UC-47 Dashboard: gioi han xem theo vai tro va co so. — chinh sua tai lieu & mo ta API (anh huong thap)
 2025-12-03 - 4 - 01:48:40 UTC :: build: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — fix race-condition nho trong thao tac (dong bo voi BE/FE)
+2025-12-03 - 5 - 01:48:43 UTC :: chore: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — dieu chinh quyen truy cap theo vai tro (da review so bo)
