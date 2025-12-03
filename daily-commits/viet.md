@@ -202,3 +202,4 @@
 2025-12-03 - 2 - 01:48:39 UTC :: perf: UC-35 Ngoai le: gui yeu cau mien/giam phi, vuot tran. — kiem tra tuong thich mui gio/tien te (dat tieu chi toi thieu)
 2025-12-03 - 3 - 01:48:41 UTC :: chore: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — bo sung unit test muc co ban (chuan bi cho tinh nang tiep theo)
 2025-12-03 - 4 - 01:48:44 UTC :: refactor: UC-11 Goi gia: bat/tam ngung goi gia dang ap dung. — dieu chinh quyen truy cap theo vai tro (da review so bo)
+2025-12-03 - 5 - 01:48:46 UTC :: perf: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — dieu chinh quyen truy cap theo vai tro (da smoke test)
