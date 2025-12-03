@@ -200,3 +200,4 @@
 2025-12-02 - 5 - 01:49:00 UTC :: docs: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — bo sung metrics/telemetry co ban (can theo doi them)
 2025-12-03 - 1 - 01:48:34 UTC :: perf: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — bo sung index & toi uu DB (da kiem tra lint)
 2025-12-03 - 2 - 01:48:37 UTC :: ci: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — fix race-condition nho trong thao tac (anh huong thap)
+2025-12-03 - 3 - 01:48:38 UTC :: build: UC-34 Cham cong: ghi nhan diem danh, ban giao ca. — them log chi tiet phuc vu audit (can theo doi them)
