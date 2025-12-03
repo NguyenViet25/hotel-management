@@ -204,3 +204,4 @@
 2025-12-02 - 4 - 01:49:15 UTC :: docs: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — chuan hoa ten ham/bien theo convention (da review so bo)
 2025-12-02 - 5 - 01:49:16 UTC :: docs: UC-30 Bao cao: xem/xuat OCC, ADR, RevPAR, F&B sales. — cap nhat cau hinh va kiem tra bien (da review so bo)
 2025-12-03 - 1 - 01:48:35 UTC :: build: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — chuan hoa ten ham/bien theo convention (da kiem tra lint)
+2025-12-03 - 2 - 01:48:36 UTC :: ci: UC-35 Ngoai le: gui yeu cau mien/giam phi, vuot tran. — bo sung case canh bien & no-show (chuan bi cho tinh nang tiep theo)
