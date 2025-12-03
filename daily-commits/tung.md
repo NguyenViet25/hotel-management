@@ -206,3 +206,4 @@
 2025-12-03 - 1 - 01:48:35 UTC :: build: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — chuan hoa ten ham/bien theo convention (da kiem tra lint)
 2025-12-03 - 2 - 01:48:36 UTC :: ci: UC-35 Ngoai le: gui yeu cau mien/giam phi, vuot tran. — bo sung case canh bien & no-show (chuan bi cho tinh nang tiep theo)
 2025-12-03 - 3 - 01:48:37 UTC :: perf: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — dieu chinh quyen truy cap theo vai tro (da review so bo)
+2025-12-03 - 4 - 01:48:39 UTC :: chore: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — them kiem soat loi & retry nhe (da kiem tra lint)
