@@ -200,3 +200,4 @@
 2025-12-02 - 5 - 01:49:02 UTC :: test: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — refactor luong xu ly cho ro rang (dat tieu chi toi thieu)
 2025-12-03 - 1 - 01:48:36 UTC :: test: UC-18 Room Move/Extend: doi phong, gia han dem o. — bo sung metrics/telemetry co ban (dam bao backward-compatible)
 2025-12-03 - 2 - 01:48:39 UTC :: perf: UC-35 Ngoai le: gui yeu cau mien/giam phi, vuot tran. — kiem tra tuong thich mui gio/tien te (dat tieu chi toi thieu)
+2025-12-03 - 3 - 01:48:41 UTC :: chore: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — bo sung unit test muc co ban (chuan bi cho tinh nang tiep theo)
