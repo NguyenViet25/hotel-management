@@ -103,4 +103,12 @@ public class OrdersController : ControllerBase
         if (!result.IsSuccess) return BadRequest(result);
         return Ok(result);
     }
+
+    [HttpPut("{id}/status")]
+    public async Task<ActionResult<ApiResponse<OrderDetailsDto>>> UpdateStatus(Guid id, [FromBody] UpdateOrderStatusDto dto)
+    {
+        var result = await _ordersService.UpdateStatusAsync(id, dto);
+        if (!result.IsSuccess) return BadRequest(result);
+        return Ok(result);
+    }
 }

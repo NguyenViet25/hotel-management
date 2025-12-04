@@ -204,6 +204,14 @@ const ordersApi = {
     return res.data;
   },
 
+  async updateStatus(
+    id: string,
+    payload: { status: number; notes?: string }
+  ): Promise<ItemResponse<OrderDetailsDto>> {
+    const res = await axios.put(`/orders/${id}/status`, payload);
+    return res.data;
+  },
+
   async applyDiscount(
     orderId: string,
     payload: ApplyDiscountDto

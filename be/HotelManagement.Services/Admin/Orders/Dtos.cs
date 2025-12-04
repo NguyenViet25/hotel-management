@@ -7,6 +7,8 @@ public class OrdersQueryDto
 {
     public Guid? HotelId { get; set; }
     public OrderStatus? Status { get; set; }
+    public DateTime? StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
     public Guid? BookingId { get; set; }
     public bool? IsWalkIn { get; set; }
     public string? Search { get; set; } // name/phone
@@ -58,6 +60,13 @@ public class UpdateWalkInOrderDto : CreateWalkInOrderDto
 {
     public Guid Id { get; set; }
     public OrderStatus? Status { get; set; }
+}
+
+public class UpdateOrderStatusDto
+{
+    [Required]
+    public OrderStatus Status { get; set; }
+    public string? Notes { get; set; }
 }
 
 public class UpdateWalkInPromotionDto

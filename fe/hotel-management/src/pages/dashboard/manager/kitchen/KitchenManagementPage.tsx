@@ -154,31 +154,20 @@ export default function KitchenManagementPage() {
         ordersApi.updateItem(orderId, i.id, { status: "Prepared" })
       )
     );
-    const summary = summaries.find((s) => s.id === orderId);
-    if (summary) {
-      const payload = { id: orderId, status: 3 as any };
-      if (summary.isWalkIn) {
-        await ordersApi.updateWalkIn(orderId, payload);
-      } else {
-        await ordersApi.updateForBooking(orderId, payload);
-      }
-    }
+    await ordersApi.updateStatus(orderId, { status: 3 as any });
     const res = await ordersApi.getById(orderId);
     setDetailsMap((m) => ({ ...m, [orderId]: res.data }));
   };
 
   const saveNotes = async (orderId: string) => {
-    const summary = summaries.find((s) => s.id === orderId);
-    if (!summary) return;
     const text = notesDraft[orderId] || "";
     const tag = needConfirm[orderId] ? "[CẦN KH XÁC NHẬN] " : "";
-    const payload: any = { id: orderId, notes: tag + text };
-    if (needConfirm[orderId]) payload.status = 1 as any;
-    if (summary.isWalkIn) {
-      await ordersApi.updateWalkIn(orderId, payload);
-    } else {
-      await ordersApi.updateForBooking(orderId, payload);
-    }
+    const currentStatus = Number(detailsMap[orderId]?.status);
+    const payload: any = {
+      status: needConfirm[orderId] ? (1 as any) : (currentStatus as any),
+      notes: tag + text,
+    };
+    await ordersApi.updateStatus(orderId, payload);
     const res = await ordersApi.getById(orderId);
     setDetailsMap((m) => ({ ...m, [orderId]: res.data }));
   };
@@ -206,16 +195,8 @@ export default function KitchenManagementPage() {
       quantity: menuTarget.qty,
       reason: notesDraft[menuTarget.orderId] || undefined,
     });
-    const summary = summaries.find((s) => s.id === menuTarget.orderId);
-    if (summary) {
-      const payload = { id: menuTarget.orderId, status: 1 as any };
-      if (summary.isWalkIn) {
-        await ordersApi.updateWalkIn(menuTarget.orderId, payload);
-      } else {
-        await ordersApi.updateForBooking(menuTarget.orderId, payload);
-      }
-      setNeedConfirm((m) => ({ ...m, [menuTarget.orderId]: true }));
-    }
+    await ordersApi.updateStatus(menuTarget.orderId, { status: 1 as any });
+    setNeedConfirm((m) => ({ ...m, [menuTarget.orderId]: true }));
     const res = await ordersApi.getById(menuTarget.orderId);
     setDetailsMap((m) => ({ ...m, [menuTarget.orderId]: res.data }));
     setMenuOpen(false);

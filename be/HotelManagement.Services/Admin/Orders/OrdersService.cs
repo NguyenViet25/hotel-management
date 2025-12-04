@@ -587,4 +587,27 @@ public class OrdersService : IOrdersService
             return false;
         }
     }
+
+    public async Task<ApiResponse<OrderDetailsDto>> UpdateStatusAsync(Guid id, UpdateOrderStatusDto dto)
+    {
+        try
+        {
+            var order = await _orderRepository.FindAsync(id);
+            if (order == null) return ApiResponse<OrderDetailsDto>.Fail("Order not found");
+
+            order.Status = dto.Status;
+            if (!string.IsNullOrWhiteSpace(dto.Notes))
+            {
+                order.Notes = dto.Notes;
+            }
+
+            await _orderRepository.UpdateAsync(order);
+            await _orderRepository.SaveChangesAsync();
+            return await GetByIdAsync(order.Id);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<OrderDetailsDto>.Fail($"Error updating order status: {ex.Message}");
+        }
+    }
 }

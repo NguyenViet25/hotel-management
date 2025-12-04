@@ -16,4 +16,5 @@ public interface IOrdersService
     Task<ApiResponse<OrderDetailsDto>> UpdateItemAsync(Guid orderId, Guid itemId, UpdateOrderItemDto dto);
     Task<ApiResponse<OrderDetailsDto>> RemoveItemAsync(Guid orderId, Guid itemId);
     Task<ApiResponse<OrderDetailsDto>> ReplaceItemAsync(Guid orderId, Guid itemId, ReplaceOrderItemDto dto, Guid? userId);
+    Task<ApiResponse<OrderDetailsDto>> UpdateStatusAsync(Guid id, UpdateOrderStatusDto dto);
 }
