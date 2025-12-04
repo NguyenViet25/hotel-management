@@ -374,7 +374,14 @@ const OrdersManagementPage: React.FC = () => {
               return txt.length ? txt : null;
             })();
             return (
-              <Accordion key={o.id} sx={{ borderRadius: 2, boxShadow: 2 }}>
+              <Accordion
+                key={o.id}
+                sx={{
+                  borderRadius: 2,
+                  boxShadow: 2,
+                  "&:not(.Mui-expanded)::before": { display: "none" },
+                }}
+              >
                 <AccordionSummary expandIcon={<ExpandMore />}>
                   <Stack
                     direction={{ xs: "column", sm: "row" }}

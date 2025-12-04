@@ -6,6 +6,12 @@ import {
   Search,
   Warning,
   ExpandMore,
+  QuestionAnswer,
+  QuestionMark,
+  NextPlan,
+  ArrowRightAlt,
+  ArrowCircleRight,
+  ArrowCircleRightOutlined,
 } from "@mui/icons-material";
 import DoneIcon from "@mui/icons-material/Done";
 import EventIcon from "@mui/icons-material/Event";
@@ -102,6 +108,11 @@ export default function KitchenManagementPage() {
   );
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmTargetId, setConfirmTargetId] = useState<string | null>(null);
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [statusDialogTargetId, setStatusDialogTargetId] = useState<
+    string | null
+  >(null);
+  const [statusDialogNext, setStatusDialogNext] = useState<number | null>(null);
 
   const [startDate, setStartDate] = useState<Dayjs>(dayjs());
   const [endDate, setEndDate] = useState<Dayjs>(dayjs());
@@ -273,6 +284,36 @@ export default function KitchenManagementPage() {
     setDetailsMap((m) => ({ ...m, [orderId]: res.data }));
   };
 
+  const openStatusDialog = (orderId: string) => {
+    const current = Number(detailsMap[orderId]?.status ?? 0);
+    const next = getNextOrderStatus(current);
+    if (next === null) return;
+    setStatusDialogTargetId(orderId);
+    setStatusDialogNext(next);
+    setStatusDialogOpen(true);
+  };
+
+  const confirmStatusChange = async () => {
+    if (!statusDialogTargetId || statusDialogNext === null) return;
+    const current = Number(detailsMap[statusDialogTargetId]?.status ?? 0);
+    if (
+      current === EOrderStatus.Confirmed &&
+      statusDialogNext === EOrderStatus.InProgress
+    ) {
+      await startCookingOrder(statusDialogTargetId);
+    } else {
+      await ordersApi.updateStatus(statusDialogTargetId, {
+        status: statusDialogNext as any,
+      });
+    }
+    const res = await ordersApi.getById(statusDialogTargetId);
+    setDetailsMap((m) => ({ ...m, [statusDialogTargetId]: res.data }));
+    setStatusDialogOpen(false);
+    setStatusDialogTargetId(null);
+    setStatusDialogNext(null);
+    toast.success("Cập nhật trạng thái thành công");
+  };
+
   const openConfirmDialog = (orderId: string) => {
     setConfirmTargetId(orderId);
     setConfirmOpen(true);
@@ -351,7 +392,14 @@ export default function KitchenManagementPage() {
             .flatMap((brt) => brt.bookingRooms || [])
             .reduce((sum, br) => sum + (br.guests?.length || 0), 0);
           return (
-            <Accordion key={order.id} sx={{ borderRadius: 2 }} disableGutters>
+            <Accordion
+              key={order.id}
+              sx={{
+                borderRadius: 2,
+                "&:not(.Mui-expanded)::before": { display: "none" },
+              }}
+              disableGutters
+            >
               <AccordionSummary expandIcon={<ExpandMore />}>
                 <Stack
                   direction="row"
@@ -411,7 +459,7 @@ export default function KitchenManagementPage() {
                         >
                           <EventIcon fontSize="small" />
                           <Typography variant="body2">
-                            {dayjs(order.createdAt).format("D/M/YYYY")}
+                            {dayjs(order.servingDate).format("D/M/YYYY HH:mm")}
                           </Typography>
                         </Stack>
                         <Stack
@@ -458,13 +506,14 @@ export default function KitchenManagementPage() {
                       alignItems={"center"}
                     >
                       <Typography fontWeight={600}>Ghi chú</Typography>
-                      {Number(order.status) !== EOrderStatus.Completed && (
+                      {Number(order.status) === EOrderStatus.NeedConfirmed && (
                         <Button
                           startIcon={<Warning />}
                           color="error"
                           size="small"
                           variant="contained"
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.preventDefault();
                             setNotesDraft((m) => ({
                               ...m,
                               [order.id]: IngredientNote,
@@ -493,6 +542,7 @@ export default function KitchenManagementPage() {
                             [order.id]: e.target.value,
                           }))
                         }
+                        placeholder="Nhập ghi chú"
                         multiline
                         minRows={3}
                       />
@@ -618,7 +668,7 @@ export default function KitchenManagementPage() {
                             <Button
                               variant="contained"
                               startIcon={icon}
-                              onClick={() => advanceOrderStatus(order.id)}
+                              onClick={() => openStatusDialog(order.id)}
                             >
                               {label}
                             </Button>
@@ -837,6 +887,76 @@ export default function KitchenManagementPage() {
           </Button>
           <Button
             onClick={confirmOrder}
+            variant="contained"
+            startIcon={<Check />}
+          >
+            Xác nhận
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={statusDialogOpen}
+        onClose={() => setStatusDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 600 }}>
+          Xác nhận thay đổi trạng thái
+        </DialogTitle>
+        <DialogContent dividers>
+          <Stack spacing={1.25}>
+            {statusDialogTargetId && (
+              <>
+                <Stack
+                  direction={"row"}
+                  alignItems="center"
+                  spacing={1}
+                  sx={{
+                    border: "1px dashed",
+                    p: 1,
+                    backgroundColor: "yellow",
+                    borderRadius: 3,
+                  }}
+                >
+                  <ArrowCircleRight color="action" />
+                  <Typography variant="body2">
+                    Trạng thái tiếp theo:{" "}
+                    {getNextStatusLabel(
+                      Number(detailsMap[statusDialogTargetId]?.status ?? 0)
+                    )}
+                  </Typography>
+                </Stack>
+                {detailsMap[statusDialogTargetId]?.notes && (
+                  <Box
+                    sx={{
+                      p: 1,
+                      border: "1px dashed",
+                      borderColor: "divider",
+                      borderRadius: 2,
+                      bgcolor: "grey.50",
+                    }}
+                  >
+                    <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
+                      {detailsMap[statusDialogTargetId]?.notes}
+                    </Typography>
+                  </Box>
+                )}
+              </>
+            )}
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setStatusDialogOpen(false)}
+            color="inherit"
+            variant="outlined"
+            startIcon={<Close />}
+          >
+            Đóng
+          </Button>
+          <Button
+            onClick={confirmStatusChange}
             variant="contained"
             startIcon={<Check />}
           >
