@@ -871,7 +871,10 @@ export default function SessionDetailsPage() {
           onAssigned={() => {
             toast.success("Đã gắn order");
           }}
-          onAssignedWithDetails={(o) => setAssignedOrder(o)}
+          onAssignedWithDetails={(o) => {
+            // TODO: update assign order to api
+            setAssignedOrder(o);
+          }}
         />
       )}
 

@@ -1,8 +1,12 @@
+import {
+  AssignmentInd,
+  CheckCircle,
+  CleaningServices,
+  Hotel,
+} from "@mui/icons-material";
 import { Box, Card, CardContent, Grid, Stack, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
-import dashboardApi, {
-  type HousekeeperDashboardSummary,
-} from "../../../api/dashboardApi";
+import { type HousekeeperDashboardSummary } from "../../../api/dashboardApi";
 import housekeepingApi from "../../../api/housekeepingApi";
 import housekeepingTasksApi, {
   type HousekeepingTaskDto,
@@ -69,60 +73,129 @@ export default function HousekeepingPage() {
     <Box>
       <PageTitle
         title={"Buồng phòng"}
-        subtitle={"Xem danh sách nhiệm vụ, cập nhật trạng thái dọn phòng"}
+        subtitle={"Xem tổng quan nhiệm vụ, trạng thái dọn phòng"}
       />
 
-      <Grid container spacing={2} sx={{ mb: 2 }}>
+      <Grid container spacing={3} sx={{ mb: 2 }}>
         <Grid size={{ xs: 12, md: 3 }}>
-          <Card>
+          <Card variant="outlined" sx={{ borderRadius: 2, bgcolor: "#FFEBEE" }}>
             <CardContent>
-              <Stack spacing={0.5}>
-                <Typography variant="subtitle2">Phòng bẩn</Typography>
-                <Typography variant="h5" color="error.main">
-                  {hkLoading
-                    ? "—"
-                    : hkSummary?.dirtyRoomsCount ?? summary?.dirtyRooms ?? 0}
-                </Typography>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Box
+                  sx={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 2,
+                    bgcolor: "#FFCDD2",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Hotel color="error" />
+                </Box>
+                <Stack>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Phòng bẩn
+                  </Typography>
+                  <Typography variant="h5" fontWeight={700}>
+                    {hkLoading
+                      ? "—"
+                      : hkSummary?.dirtyRoomsCount ?? summary?.dirtyRooms ?? 0}
+                  </Typography>
+                </Stack>
               </Stack>
             </CardContent>
           </Card>
         </Grid>
         <Grid size={{ xs: 12, md: 3 }}>
-          <Card>
+          <Card variant="outlined" sx={{ borderRadius: 2, bgcolor: "#E3F2FD" }}>
             <CardContent>
-              <Stack spacing={0.5}>
-                <Typography variant="subtitle2">Đang dọn</Typography>
-                <Typography variant="h5" color="info.main">
-                  {rooms.filter((r) => r.status === RoomStatus.Cleaning).length}
-                </Typography>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Box
+                  sx={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 2,
+                    bgcolor: "#BBDEFB",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <CleaningServices color="info" />
+                </Box>
+                <Stack>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Đang dọn
+                  </Typography>
+                  <Typography variant="h5" fontWeight={700}>
+                    {loading
+                      ? "—"
+                      : rooms.filter((r) => r.status === RoomStatus.Cleaning)
+                          .length}
+                  </Typography>
+                </Stack>
               </Stack>
             </CardContent>
           </Card>
         </Grid>
         <Grid size={{ xs: 12, md: 3 }}>
-          <Card>
+          <Card variant="outlined" sx={{ borderRadius: 2, bgcolor: "#E8F5E9" }}>
             <CardContent>
-              <Stack spacing={0.5}>
-                <Typography variant="subtitle2">Đã sạch</Typography>
-                <Typography variant="h5" color="success.main">
-                  {summary?.cleanRooms ?? 0}
-                </Typography>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Box
+                  sx={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 2,
+                    bgcolor: "#C8E6C9",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <CheckCircle color="success" />
+                </Box>
+                <Stack>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Đã sạch
+                  </Typography>
+                  <Typography variant="h5" fontWeight={700}>
+                    {loading ? "—" : summary?.cleanRooms ?? 0}
+                  </Typography>
+                </Stack>
               </Stack>
             </CardContent>
           </Card>
         </Grid>
         <Grid size={{ xs: 12, md: 3 }}>
-          <Card>
+          <Card variant="outlined" sx={{ borderRadius: 2, bgcolor: "#FFF8E1" }}>
             <CardContent>
-              <Stack spacing={0.5}>
-                <Typography variant="subtitle2">
-                  Nhiệm vụ đang hoạt động
-                </Typography>
-                <Typography variant="h5" color="text.primary">
-                  {hkLoading
-                    ? "—"
-                    : hkSummary?.assignedActiveTasks ?? tasks.length}
-                </Typography>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Box
+                  sx={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 2,
+                    bgcolor: "#FFE082",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <AssignmentInd color="warning" />
+                </Box>
+                <Stack>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Nhiệm vụ đang hoạt động
+                  </Typography>
+                  <Typography variant="h5" fontWeight={700}>
+                    {hkLoading
+                      ? "—"
+                      : hkSummary?.assignedActiveTasks ?? tasks.length}
+                  </Typography>
+                </Stack>
               </Stack>
             </CardContent>
           </Card>
