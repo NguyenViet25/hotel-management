@@ -206,3 +206,4 @@
 2025-12-04 - 1 - 01:49:36 UTC :: feat: UC-20 Keo-tha: gan/doi phong truc quan, tranh trung. — dieu chinh quyen truy cap theo vai tro (da review so bo)
 2025-12-04 - 2 - 01:49:37 UTC :: refactor: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — cai thien hieu nang render/list (anh huong thap)
 2025-12-04 - 3 - 01:49:39 UTC :: docs: UC-33 Phan ca: gan ca, duyet doi ca/ngi phep. — chuan hoa ten ham/bien theo convention (da review so bo)
+2025-12-04 - 4 - 01:49:41 UTC :: feat: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — kiem tra tuong thich mui gio/tien te (da kiem tra lint)
