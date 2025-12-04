@@ -1,10 +1,5 @@
 import axios from "./axios";
 
-// Orders API client aligned with OrdersAPI.md
-
-export type OrderStatus = "0" | "1" | "2" | "3"; // Draft, Serving, Paid, Cancelled
-export type OrderItemStatus = 0 | 1 | 2 | 3 | 4; // Draft, NeedConfirmed, Confirmed, InProgress, Ready, Completed, Cancelled
-
 export enum EOrderStatus {
   Draft = 0,
   NeedConfirmed = 1,
@@ -34,7 +29,7 @@ export interface CreateOrderDto {
 
 export interface OrdersQueryParams {
   hotelId?: string;
-  status?: OrderStatus;
+  status?: number;
   bookingId?: string;
   isWalkIn?: boolean;
   search?: string;
@@ -44,14 +39,13 @@ export interface OrdersQueryParams {
 
 export interface UpdateOrderDto extends CreateOrderDto {
   id: string;
-  status?: OrderStatus;
 }
 
 export interface AddOrderItemDto extends OrderItemInputDto {}
 
 export interface UpdateOrderItemDto {
   quantity?: number;
-  status?: OrderItemStatus;
+  status?: number;
 }
 
 export interface ReplaceOrderItemDto {
@@ -70,7 +64,7 @@ export interface OrderItemDto {
   menuItemName: string;
   quantity: number;
   unitPrice: number;
-  status: OrderItemStatus;
+  status: number;
 }
 
 export interface OrderSummaryDto {
@@ -80,7 +74,7 @@ export interface OrderSummaryDto {
   isWalkIn: boolean;
   customerName?: string;
   customerPhone?: string;
-  status: OrderStatus;
+  status: number;
   notes?: string;
   createdAt: string; // ISO
   itemsCount: number;
@@ -131,7 +125,7 @@ const ordersApi = {
   ): Promise<ListResponse<OrderSummaryDto>> {
     const qp = new URLSearchParams();
     if (params.hotelId) qp.append("hotelId", params.hotelId);
-    if (params.status) qp.append("status", params.status);
+    if (params.status) qp.append("status", params.status.toString());
     if (params.bookingId) qp.append("bookingId", params.bookingId);
     if (params.isWalkIn !== undefined)
       qp.append("isWalkIn", String(params.isWalkIn));

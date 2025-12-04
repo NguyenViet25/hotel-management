@@ -37,6 +37,7 @@ import ordersApi, {
 } from "../../../../api/ordersApi";
 import PageTitle from "../../../../components/common/PageTitle";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
+import { toast } from "react-toastify";
 
 type ColumnKey = "Mới" | "Đang nấu" | "Sẵn sàng" | "Đã phục vụ";
 
@@ -50,31 +51,23 @@ export enum EOrderStatus {
   Cancelled = 6,
 }
 
-export enum EOrderItemStatus {
-  Pending = 0,
-  Cooking = 1,
-  Served = 2,
-  Voided = 3,
-  Ready = 4,
-}
+const getOrderPhase = (status: number): string => {
+  if (status === EOrderStatus.Draft) return "Mới";
+  if (status === EOrderStatus.NeedConfirmed) return "Chờ xác nhận";
+  if (status === EOrderStatus.Confirmed) return "Đã xác nhận";
+  if (status === EOrderStatus.InProgress) return "Đang nấu";
+  if (status === EOrderStatus.Ready) return "Sẵn sàng";
+  if (status === EOrderStatus.Completed) return "Đã phục vụ";
+  return "Mới";
+};
 
-const getOrderPhase = (items: OrderItemDto[]): ColumnKey => {
-  const total = items.length;
-  const served = items.filter(
-    (i) => i?.status === EOrderItemStatus.Served
-  ).length;
-  const ready = items.filter(
-    (i) => i?.status === EOrderItemStatus.Ready
-  ).length;
-  const pending = items.filter(
-    (i) => i?.status === EOrderItemStatus.Pending
-  ).length;
-  const cooking = items.filter(
-    (i) => i?.status === EOrderItemStatus.Cooking
-  ).length;
-  if (served === total && total > 0) return "Đã phục vụ";
-  if (ready === total && total > 0) return "Sẵn sàng";
-  if (cooking > 0 && pending > 0) return "Đang nấu";
+const getOrderPhaseColor = (status: number): string => {
+  if (status === EOrderStatus.Draft) return "gray";
+  if (status === EOrderStatus.NeedConfirmed) return "warning";
+  if (status === EOrderStatus.Confirmed) return "info";
+  if (status === EOrderStatus.InProgress) return "primary";
+  if (status === EOrderStatus.Ready) return "violet";
+  if (status === EOrderStatus.Completed) return "success";
   return "Mới";
 };
 
@@ -107,18 +100,20 @@ export default function KitchenManagementPage() {
   const [endDate, setEndDate] = useState<Dayjs>(dayjs());
 
   const getNextOrderStatus = (s: number): number | null => {
-    if (s === 0 || s === 1) return 2;
-    if (s === 2) return 3;
-    if (s === 3) return 4;
-    if (s === 4) return 5;
+    if (s === EOrderStatus.Draft) return EOrderStatus.NeedConfirmed;
+    if (s === EOrderStatus.NeedConfirmed) return EOrderStatus.Confirmed;
+    if (s === EOrderStatus.Confirmed) return EOrderStatus.InProgress;
+    if (s === EOrderStatus.InProgress) return EOrderStatus.Ready;
+    if (s === EOrderStatus.Ready) return EOrderStatus.Completed;
     return null;
   };
 
   const getNextStatusLabel = (s: number): string => {
-    if (s === 0 || s === 1) return "Xác nhận";
-    if (s === 2) return "Bắt đầu nấu";
-    if (s === 3) return "Sẵn sàng";
-    if (s === 4) return "Hoàn tất";
+    if (s === EOrderStatus.Draft) return "Chờ xác nhận";
+    if (s === EOrderStatus.NeedConfirmed) return "Xác nhận";
+    if (s === EOrderStatus.Confirmed) return "Bắt đầu nấu";
+    if (s === EOrderStatus.InProgress) return "Sẵn sàng";
+    if (s === EOrderStatus.Ready) return "Hoàn tất";
     return "";
   };
 
@@ -173,7 +168,7 @@ export default function KitchenManagementPage() {
       if (!inRange) continue;
       const st = Number(d.status);
       if (st === EOrderStatus.NeedConfirmed) continue;
-      if (st === EOrderStatus.Draft || st === EOrderStatus.Confirmed) {
+      if (st === EOrderStatus.Draft) {
         g["Mới"].push(d);
         continue;
       }
@@ -208,20 +203,37 @@ export default function KitchenManagementPage() {
     return list;
   }, [summaries, detailsMap, startDate, endDate]);
 
+  const confirmedOrders = useMemo(() => {
+    const list: OrderDetailsDto[] = [];
+    for (const s of summaries) {
+      const d = detailsMap[s.id];
+      if (!d) continue;
+      const created = dayjs(d.createdAt);
+      const inRange =
+        created.isAfter(startDate.startOf("day").subtract(1, "millisecond")) &&
+        created.isBefore(endDate.endOf("day").add(1, "millisecond"));
+      if (!inRange) continue;
+      if (Number(d.status) === EOrderStatus.Confirmed) list.push(d);
+    }
+    return list;
+  }, [summaries, detailsMap, startDate, endDate]);
+
   const startCookingOrder = async (orderId: string) => {
     const d = detailsMap[orderId];
     if (!d) return;
     const pending = d.items.filter(
-      (i) => i?.status === EOrderItemStatus.Pending
+      (i) => Number(i?.status) === EOrderStatus.Confirmed
     );
     await Promise.all(
       pending.map((i) =>
         ordersApi.updateItem(orderId, i.id, {
-          status: EOrderItemStatus.Cooking as any,
+          status: EOrderStatus.InProgress as any,
         })
       )
     );
-    await ordersApi.updateStatus(orderId, { status: 3 as any });
+    await ordersApi.updateStatus(orderId, {
+      status: EOrderStatus.InProgress as any,
+    });
     const res = await ordersApi.getById(orderId);
     setDetailsMap((m) => ({ ...m, [orderId]: res.data }));
   };
@@ -241,17 +253,18 @@ export default function KitchenManagementPage() {
 
   const saveNotes = async (orderId: string) => {
     const text = notesDraft[orderId] || "";
-    const tag = needConfirm[orderId] ? "[CẦN KH XÁC NHẬN] " : "";
     const currentStatus = Number(detailsMap[orderId]?.status);
     const payload: any = {
       status: needConfirm[orderId]
         ? (EOrderStatus.NeedConfirmed as any)
         : (currentStatus as any),
-      notes: tag + text,
+      notes: text,
     };
     await ordersApi.updateStatus(orderId, payload);
     const res = await ordersApi.getById(orderId);
     setDetailsMap((m) => ({ ...m, [orderId]: res.data }));
+
+    toast.success("Lưu ghi chú thành công");
   };
 
   const applyReplaceMenu = async (menuItem: MenuItemDto) => {
@@ -332,7 +345,11 @@ export default function KitchenManagementPage() {
                         </Typography>
                       )}
                     </Stack>
-                    <Chip label={getOrderPhase(order.items)} color="default" />
+                    <Chip
+                      label={getOrderPhase(order.status)}
+                      sx={{ backgroundColor: getOrderPhaseColor(order.status) }}
+                      size="small"
+                    />
                   </Stack>
 
                   <Stack spacing={1}>
@@ -345,21 +362,23 @@ export default function KitchenManagementPage() {
                       <Typography fontWeight={600}>
                         Ghi chú gửi khách
                       </Typography>
-                      <Button
-                        startIcon={<Warning />}
-                        color="error"
-                        size="small"
-                        variant="contained"
-                        onClick={() => {
-                          setNotesDraft((m) => ({
-                            ...m,
-                            [order.id]: IngredientNote,
-                          }));
-                          setNeedConfirm((m) => ({ ...m, [order.id]: true }));
-                        }}
-                      >
-                        Không đạt nguyên liệu
-                      </Button>
+                      {Number(order.status) !== EOrderStatus.Completed && (
+                        <Button
+                          startIcon={<Warning />}
+                          color="error"
+                          size="small"
+                          variant="contained"
+                          onClick={() => {
+                            setNotesDraft((m) => ({
+                              ...m,
+                              [order.id]: IngredientNote,
+                            }));
+                            setNeedConfirm((m) => ({ ...m, [order.id]: true }));
+                          }}
+                        >
+                          Không đạt nguyên liệu
+                        </Button>
+                      )}
                     </Stack>
                     <TextField
                       size="small"
@@ -372,19 +391,19 @@ export default function KitchenManagementPage() {
                       }
                       multiline
                       minRows={3}
+                      disabled={Number(order.status) === EOrderStatus.Completed}
                     />
                     <Stack direction="row" spacing={1} flexWrap="wrap">
-                      {needConfirm[order.id] && (
-                        <Chip label="Chờ xác nhận" color="warning" />
+                      {Number(order.status) !== EOrderStatus.Completed && (
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          startIcon={<Save />}
+                          onClick={() => saveNotes(order.id)}
+                        >
+                          Lưu ghi chú
+                        </Button>
                       )}
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        startIcon={<Save />}
-                        onClick={() => saveNotes(order.id)}
-                      >
-                        Lưu ghi chú
-                      </Button>
                     </Stack>
                   </Stack>
 
@@ -400,7 +419,7 @@ export default function KitchenManagementPage() {
                           sx={{
                             flex: 1,
                             textDecoration:
-                              it.status === EOrderItemStatus.Voided
+                              it.status === EOrderStatus.Cancelled
                                 ? "line-through"
                                 : "none",
                           }}
@@ -431,21 +450,32 @@ export default function KitchenManagementPage() {
                       if (next === null) return null;
                       const label = getNextStatusLabel(cs);
                       const icon =
-                        cs === 2 ? (
+                        cs === EOrderStatus.Confirmed ? (
                           <SoupKitchenIcon />
-                        ) : cs === 3 ? (
+                        ) : cs === EOrderStatus.InProgress ? (
                           <LocalDiningIcon />
+                        ) : cs === EOrderStatus.Ready ? (
+                          <DoneIcon />
+                        ) : cs === EOrderStatus.Draft ? (
+                          <Warning />
+                        ) : cs === EOrderStatus.NeedConfirmed ? (
+                          <Check />
                         ) : (
                           <DoneIcon />
                         );
                       return (
-                        <Button
-                          variant="contained"
-                          startIcon={icon}
-                          onClick={() => advanceOrderStatus(order.id)}
-                        >
-                          {label}
-                        </Button>
+                        <>
+                          {cs !== EOrderStatus.NeedConfirmed &&
+                            cs !== EOrderStatus.Draft && (
+                              <Button
+                                variant="contained"
+                                startIcon={icon}
+                                onClick={() => advanceOrderStatus(order.id)}
+                              >
+                                {label}
+                              </Button>
+                            )}
+                        </>
                       );
                     })()}
                   </Stack>
@@ -503,8 +533,9 @@ export default function KitchenManagementPage() {
 
       {!loading && (
         <Grid container spacing={2}>
-          <Column title="Chờ xác nhận" items={needConfirmedOrders} />
           <Column title="Mới đặt" items={grouped["Mới"]} />
+          <Column title="Chờ xác nhận" items={needConfirmedOrders} />
+          <Column title="Đã xác nhận" items={confirmedOrders} />
           <Column title="Đang nấu" items={grouped["Đang nấu"]} />
           <Column title="Sẵn sàng" items={grouped["Sẵn sàng"]} />
           <Column title="Đã phục vụ" items={grouped["Đã phục vụ"]} />
