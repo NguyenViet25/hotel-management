@@ -205,3 +205,4 @@
 2025-12-03 - 5 - 01:48:42 UTC :: fix: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — them log chi tiet phuc vu audit (chuan bi cho tinh nang tiep theo)
 2025-12-04 - 1 - 01:49:34 UTC :: build: UC-20 Keo-tha: gan/doi phong truc quan, tranh trung. — cap nhat cau hinh va kiem tra bien (chuan bi cho tinh nang tiep theo)
 2025-12-04 - 2 - 01:49:35 UTC :: test: UC-06 Co so: gan quan ly phu trach va quyen truy cap. — don dep code va xoa doan thua (khong doi hanh vi)
+2025-12-04 - 3 - 01:49:36 UTC :: build: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — cai thien hieu nang render/list (chuan bi cho tinh nang tiep theo)
