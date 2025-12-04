@@ -42,9 +42,12 @@ public enum BookingStatus
 public enum OrderStatus
 {
     Draft = 0,
-    InProgress = 1,
-    Completed = 2,
-    Cancelled = 3
+    NeedConfirmed = 1,
+    Confirmed = 2,
+    InProgress = 3,
+    Ready = 4,
+    Completed = 5,
+    Cancelled = 6,
 }
 
 public enum OrderItemStatus

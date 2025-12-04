@@ -21,6 +21,10 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs, { Dayjs } from "dayjs";
 import { useEffect, useMemo, useState } from "react";
 import bookingsApi, {
   type BookingDetailsDto,
@@ -73,6 +77,9 @@ export default function KitchenManagementPage() {
   const [menuItems, setMenuItems] = useState<MenuItemDto[]>([]);
   const [menuLoading, setMenuLoading] = useState(false);
 
+  const [startDate, setStartDate] = useState<Dayjs>(dayjs());
+  const [endDate, setEndDate] = useState<Dayjs>(dayjs());
+
   const fetchOrders = async () => {
     if (!hotelId) return;
     setLoading(true);
@@ -117,11 +124,16 @@ export default function KitchenManagementPage() {
     for (const s of summaries) {
       const d = detailsMap[s.id];
       if (!d) continue;
+      const created = dayjs(d.createdAt);
+      const inRange =
+        created.isAfter(startDate.startOf("day").subtract(1, "millisecond")) &&
+        created.isBefore(endDate.endOf("day").add(1, "millisecond"));
+      if (!inRange) continue;
       const key = getOrderPhase(d.items || []);
       g[key].push(d);
     }
     return g;
-  }, [summaries, detailsMap]);
+  }, [summaries, detailsMap, startDate, endDate]);
 
   const updateItemStatus = async (
     orderId: string,
@@ -142,6 +154,15 @@ export default function KitchenManagementPage() {
         ordersApi.updateItem(orderId, i.id, { status: "Prepared" })
       )
     );
+    const summary = summaries.find((s) => s.id === orderId);
+    if (summary) {
+      const payload = { id: orderId, status: 3 as any };
+      if (summary.isWalkIn) {
+        await ordersApi.updateWalkIn(orderId, payload);
+      } else {
+        await ordersApi.updateForBooking(orderId, payload);
+      }
+    }
     const res = await ordersApi.getById(orderId);
     setDetailsMap((m) => ({ ...m, [orderId]: res.data }));
   };
@@ -151,7 +172,8 @@ export default function KitchenManagementPage() {
     if (!summary) return;
     const text = notesDraft[orderId] || "";
     const tag = needConfirm[orderId] ? "[CẦN KH XÁC NHẬN] " : "";
-    const payload = { id: orderId, notes: tag + text };
+    const payload: any = { id: orderId, notes: tag + text };
+    if (needConfirm[orderId]) payload.status = 1 as any;
     if (summary.isWalkIn) {
       await ordersApi.updateWalkIn(orderId, payload);
     } else {
@@ -184,6 +206,16 @@ export default function KitchenManagementPage() {
       quantity: menuTarget.qty,
       reason: notesDraft[menuTarget.orderId] || undefined,
     });
+    const summary = summaries.find((s) => s.id === menuTarget.orderId);
+    if (summary) {
+      const payload = { id: menuTarget.orderId, status: 1 as any };
+      if (summary.isWalkIn) {
+        await ordersApi.updateWalkIn(menuTarget.orderId, payload);
+      } else {
+        await ordersApi.updateForBooking(menuTarget.orderId, payload);
+      }
+      setNeedConfirm((m) => ({ ...m, [menuTarget.orderId]: true }));
+    }
     const res = await ordersApi.getById(menuTarget.orderId);
     setDetailsMap((m) => ({ ...m, [menuTarget.orderId]: res.data }));
     setMenuOpen(false);
@@ -269,12 +301,13 @@ export default function KitchenManagementPage() {
                         color="error"
                         size="small"
                         variant="contained"
-                        onClick={() =>
+                        onClick={() => {
                           setNotesDraft((m) => ({
                             ...m,
                             [order.id]: IngredientNote,
-                          }))
-                        }
+                          }));
+                          setNeedConfirm((m) => ({ ...m, [order.id]: true }));
+                        }}
                       >
                         Không đạt nguyên liệu
                       </Button>
@@ -292,6 +325,9 @@ export default function KitchenManagementPage() {
                       minRows={3}
                     />
                     <Stack direction="row" spacing={1} flexWrap="wrap">
+                      {needConfirm[order.id] && (
+                        <Chip label="Chờ xác nhận" color="warning" />
+                      )}
                       <Button
                         variant="contained"
                         color="primary"
@@ -341,15 +377,7 @@ export default function KitchenManagementPage() {
                             (h) => h.newOrderItemId === it.id
                           ) && <Chip label={`Món mới`} color="success" />}
                         <Chip label={`${it.unitPrice.toLocaleString()} đ`} />
-                        <Chip
-                          label={
-                            it?.status === "Pending"
-                              ? "queued"
-                              : it?.status === "Prepared"
-                              ? "ready"
-                              : "N/A"
-                          }
-                        />
+
                         {it?.status === "Pending" && (
                           <Button
                             size="small"
@@ -373,14 +401,6 @@ export default function KitchenManagementPage() {
                             Phục vụ
                           </Button>
                         )}
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          startIcon={<LocalDiningIcon />}
-                          onClick={() => openReplaceMenu(order.id, it)}
-                        >
-                          Thay
-                        </Button>
                       </Stack>
                     ))}
                   </Stack>
@@ -417,6 +437,38 @@ export default function KitchenManagementPage() {
         title="Danh sách đơn đồ ăn"
         subtitle="Xem và quản lý các đơn hàng đồ ăn"
       />
+
+      <Box sx={{ my: 1 }}>
+        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="vi">
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={1}
+            alignItems={{ xs: "flex-start", sm: "center" }}
+          >
+            <DatePicker
+              label="Từ ngày"
+              value={startDate}
+              slotProps={{
+                textField: {
+                  size: "small",
+                },
+              }}
+              onChange={(v) => setStartDate(v ?? dayjs())}
+            />
+            <DatePicker
+              label="Đến ngày"
+              value={endDate}
+              minDate={startDate}
+              slotProps={{
+                textField: {
+                  size: "small",
+                },
+              }}
+              onChange={(v) => setEndDate(v ?? dayjs())}
+            />
+          </Stack>
+        </LocalizationProvider>
+      </Box>
 
       {loading && <Alert severity="info">Đang tải...</Alert>}
       {error && <Alert severity="error">{error}</Alert>}
