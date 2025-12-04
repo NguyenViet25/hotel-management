@@ -266,6 +266,19 @@ public class DiningSessionService : IDiningSessionService
             await _diningSessionTableRepository.SaveChangesAsync();
         }
 
+        var o = await _orderRepository.Query()
+              .Include(o => o.Items)
+              .Where(x => x.DiningSessionId == session.Id)
+              .FirstOrDefaultAsync();
+        if (o != null)
+        {
+            o.DiningSessionId = null;
+            await _orderRepository.UpdateAsync(o);
+            await _orderRepository.SaveChangesAsync();
+        }
+
+
+
         await _diningSessionRepository.RemoveAsync(session);
         await _diningSessionRepository.SaveChangesAsync();
         return ApiResponse<bool>.Success(true);

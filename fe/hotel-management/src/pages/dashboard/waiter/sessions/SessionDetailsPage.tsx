@@ -511,8 +511,8 @@ export default function SessionDetailsPage() {
 
       <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }}>
         <Tab label="Bàn" />
-        <Tab label="Yêu cầu" />
         <Tab label="Đặt món" />
+        <Tab label="Yêu cầu thêm" />
       </Tabs>
 
       {tab === 0 && session && (
@@ -698,7 +698,7 @@ export default function SessionDetailsPage() {
         </Box>
       )}
 
-      {tab === 1 && (
+      {tab === 2 && (
         <Box>
           <Typography variant="h6">Yêu cầu thêm</Typography>
           <Box mt={1} display="flex" gap={1}>
@@ -850,13 +850,13 @@ export default function SessionDetailsPage() {
         </Box>
       )}
 
-      {tab === 2 && (
+      {tab === 1 && (
         <Box>
           <Typography variant="h6">Yêu cầu đặt món</Typography>
           <Box mt={1}>
             {!orderRes?.data ? (
               <Typography variant="body2" color="text.secondary">
-                Không có order đã gắn
+                Chưa gán yêu cầu đặt món
               </Typography>
             ) : (
               <Stack spacing={1}>
