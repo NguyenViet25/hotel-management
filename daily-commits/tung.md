@@ -208,3 +208,4 @@
 2025-12-03 - 3 - 01:48:37 UTC :: perf: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — dieu chinh quyen truy cap theo vai tro (da review so bo)
 2025-12-03 - 4 - 01:48:39 UTC :: chore: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — them kiem soat loi & retry nhe (da kiem tra lint)
 2025-12-03 - 5 - 01:48:40 UTC :: refactor: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — fix race-condition nho trong thao tac (dat tieu chi toi thieu)
+2025-12-04 - 1 - 01:49:37 UTC :: refactor: UC-29 Thanh toan nha hang: thu tien, in hoa don, dong giao dich. — dieu chinh UI & copy cho ro (dong bo voi BE/FE)
