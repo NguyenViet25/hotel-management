@@ -21,13 +21,15 @@ import {
   Typography,
 } from "@mui/material";
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import dayjs from "dayjs";
+import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { useSearchParams } from "react-router-dom";
 import invoicesApi from "../../../../api/invoicesApi";
 import menusApi, { type MenuItemDto } from "../../../../api/menusApi";
 import ordersApi, {
   EOrderStatus,
   type OrderDetailsDto,
-  type OrderStatus,
   type OrderSummaryDto,
 } from "../../../../api/ordersApi";
 import ConfirmModal from "../../../../components/common/ConfirmModel";
@@ -41,6 +43,7 @@ import WalkInInvoiceDialog from "./components/WalkInInvoiceDialog";
 import PersonIcon from "@mui/icons-material/Person";
 import CustomSelect from "../../../../components/common/CustomSelect";
 import EmptyState from "../../../../components/common/EmptyState";
+import { toast } from "react-toastify";
 
 const getOrderPhase = (status: number): string => {
   if (status === EOrderStatus.Draft) return "Mới";
@@ -65,9 +68,23 @@ const OrdersManagementPage: React.FC = () => {
   const [pageSize] = useState(10);
   const [total, setTotal] = useState(0);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmOrderOpen, setConfirmOrderOpen] = useState(false);
 
-  const walkInOrders = orders.filter((o) => o.isWalkIn);
-  const bookingOrders = orders.filter((o) => o.isWalkIn === false);
+  const [startDate, setStartDate] = useState(dayjs());
+  const [endDate, setEndDate] = useState(dayjs());
+
+  const filteredOrders = React.useMemo(() => {
+    return orders.filter((o) => {
+      const created = dayjs(o.createdAt);
+      return (
+        created.isAfter(startDate.startOf("day").subtract(1, "millisecond")) &&
+        created.isBefore(endDate.endOf("day").add(1, "millisecond"))
+      );
+    });
+  }, [orders, startDate, endDate]);
+
+  const walkInOrders = filteredOrders.filter((o) => o.isWalkIn);
+  const bookingOrders = filteredOrders.filter((o) => o.isWalkIn === false);
 
   // Modals
   const [openOrder, setOpenOrder] = useState(false);
@@ -84,7 +101,7 @@ const OrdersManagementPage: React.FC = () => {
     severity: "success" | "error";
   }>({ open: false, message: "", severity: "success" });
 
-  const [selectedStatus, setSelectedStatus] = useState<OrderStatus | undefined>(
+  const [selectedStatus, setSelectedStatus] = useState<number | undefined>(
     EOrderStatus.NeedConfirmed
   );
 
@@ -199,13 +216,9 @@ const OrdersManagementPage: React.FC = () => {
 
   const cancelOrder = async (summary: OrderSummaryDto) => {
     try {
-      await ordersApi.updateWalkIn(summary.id, {
-        status: 3 as any,
+      await ordersApi.updateStatus(summary.id, {
+        status: EOrderStatus.Cancelled as any,
         notes: `Hủy yêu cầu đặt món bởi ${user?.fullname || "hệ thống."}`,
-        customerName: summary.customerName,
-        customerPhone: summary.customerPhone,
-        hotelId: hotelId,
-        id: summary.id,
       });
       setSnackbar({ open: true, severity: "success", message: "Đã hủy order" });
       fetchOrders(page);
@@ -214,6 +227,23 @@ const OrdersManagementPage: React.FC = () => {
         open: true,
         severity: "error",
         message: "Không thể hủy order",
+      });
+    }
+  };
+
+  const confirmOrder = async (summary: OrderSummaryDto) => {
+    try {
+      await ordersApi.updateStatus(summary.id, {
+        status: EOrderStatus.Confirmed as any,
+      });
+
+      fetchOrders(page);
+      toast.success("Đã xác nhận order");
+    } catch {
+      setSnackbar({
+        open: true,
+        severity: "error",
+        message: "Không thể xác nhận order",
       });
     }
   };
@@ -284,8 +314,8 @@ const OrdersManagementPage: React.FC = () => {
         spacing={1}
         justifyContent={"space-between"}
       >
-        <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-          <Box sx={{ width: { xs: "100%", lg: 200 } }}>
+        <Stack direction={{ xs: "column", lg: "row" }} spacing={1}>
+          <Box sx={{ width: { xs: "100%" } }}>
             <CustomSelect
               name="orderType"
               value={String(value)}
@@ -299,13 +329,38 @@ const OrdersManagementPage: React.FC = () => {
               size="small"
             />
           </Box>
-          <Box sx={{ width: { xs: "100%", lg: 200 } }}>
+          <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="vi">
+            <Stack direction={{ xs: "column", lg: "row" }} spacing={1}>
+              <DatePicker
+                label="Từ ngày"
+                value={startDate}
+                slotProps={{
+                  textField: {
+                    size: "small",
+                  },
+                }}
+                onChange={(v) => setStartDate(v ?? dayjs())}
+              />
+              <DatePicker
+                label="Đến ngày"
+                value={endDate}
+                minDate={startDate}
+                slotProps={{
+                  textField: {
+                    size: "small",
+                  },
+                }}
+                onChange={(v) => setEndDate(v ?? dayjs())}
+              />
+            </Stack>
+          </LocalizationProvider>
+          <Box sx={{ width: { xs: "100%", lg: 200 }, minWidth: 200 }}>
             <CustomSelect
               name="orderStatus"
               value={(selectedStatus as any) ?? "all"}
               onChange={(e) => {
                 const v = e.target.value;
-                setSelectedStatus(v === "all" ? undefined : (v as OrderStatus));
+                setSelectedStatus(v === " " ? undefined : (v as number));
               }}
               label="Lọc trạng thái"
               options={statusOptions}
@@ -338,6 +393,16 @@ const OrdersManagementPage: React.FC = () => {
           onAddOrder={() => setOpenOrder(true)}
           onEdit={(o) => openEditModal(o as any)}
           onCancel={(o) => {
+            const st = Number(o.status);
+            const allowed = [EOrderStatus.Draft, EOrderStatus.NeedConfirmed];
+            if (!allowed.includes(st)) {
+              setSnackbar({
+                open: true,
+                severity: "error",
+                message: "Không thể hủy ở trạng thái này",
+              });
+              return;
+            }
             setSelectedOrder(o as any);
             setConfirmOpen(true);
           }}
@@ -495,18 +560,46 @@ const OrdersManagementPage: React.FC = () => {
                             Sửa
                           </Button>
 
-                          {o.isWalkIn && (
+                          <Button
+                            size="small"
+                            variant="contained"
+                            startIcon={<ReceiptLongIcon />}
+                            onClick={() => {
+                              setSelectedForInvoice(o);
+                              setInvoiceOpen(true);
+                            }}
+                          >
+                            Xuất hóa đơn
+                          </Button>
+                          {Number(o.status) === EOrderStatus.NeedConfirmed && (
                             <Button
                               size="small"
                               variant="contained"
-                              startIcon={<ReceiptLongIcon />}
-                              disabled={o.status !== EOrderStatus.Completed}
+                              color="success"
+                              startIcon={<Check />}
                               onClick={() => {
-                                setSelectedForInvoice(o);
-                                setInvoiceOpen(true);
+                                setSelectedOrder(o as any);
+                                setConfirmOrderOpen(true);
                               }}
                             >
-                              Xuất hóa đơn
+                              Xác nhận đơn
+                            </Button>
+                          )}
+                          {[
+                            EOrderStatus.Draft,
+                            EOrderStatus.NeedConfirmed,
+                          ].includes(Number(o.status)) && (
+                            <Button
+                              size="small"
+                              variant="contained"
+                              color="error"
+                              startIcon={<Close />}
+                              onClick={() => {
+                                setSelectedOrder(o as any);
+                                setConfirmOpen(true);
+                              }}
+                            >
+                              Hủy đơn
                             </Button>
                           )}
                         </Stack>
@@ -673,6 +766,21 @@ const OrdersManagementPage: React.FC = () => {
         message={`Bạn có chắc chắn muốn hủy order được chọn không?`}
         confirmIcon={<Check />}
         cancelIcon={<Close />}
+      />
+      <ConfirmModal
+        open={confirmOrderOpen}
+        onClose={() => setConfirmOrderOpen(false)}
+        onConfirm={() => {
+          if (selectedOrder) {
+            confirmOrder(selectedOrder);
+          }
+          setConfirmOrderOpen(false);
+        }}
+        title="Xác nhận đơn"
+        message={`Bạn có muốn xác nhận đơn đã chọn?`}
+        confirmIcon={<Check />}
+        cancelIcon={<Close />}
+        confirmColor="primary"
       />
       <Snackbar
         open={snackbar.open}
