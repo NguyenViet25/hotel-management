@@ -590,6 +590,13 @@ export default function KitchenManagementPage() {
                         ) : (
                           <DoneIcon />
                         );
+
+                      if (
+                        cs === EOrderStatus.Completed ||
+                        cs === EOrderStatus.NeedConfirmed ||
+                        cs === EOrderStatus.Cancelled
+                      )
+                        return null;
                       return (
                         <>
                           {cs === EOrderStatus.NeedConfirmed ? (

@@ -8,19 +8,21 @@ import {
   People,
   Phone,
   Restaurant,
+  ExpandMore,
 } from "@mui/icons-material";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import {
   Alert,
   Box,
   Button,
-  Card,
-  CardContent,
   Chip,
   Divider,
   Snackbar,
   Stack,
   Typography,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -372,53 +374,56 @@ const OrdersManagementPage: React.FC = () => {
               return txt.length ? txt : null;
             })();
             return (
-              <Card key={o.id} sx={{ borderRadius: 2, boxShadow: 2 }}>
-                <CardContent>
-                  <Stack spacing={1.5}>
-                    <Stack
-                      direction={{ xs: "column", sm: "row" }}
-                      justifyContent="space-between"
-                      alignItems={{ xs: "flex-start", sm: "center" }}
-                    >
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <Restaurant color="primary" />
-                        <Typography fontWeight={700}>
-                          {/* Yêu cầu: #{String(o.id).slice(0, 8).toUpperCase()} */}
-                          Yêu cầu đặt món: #{String(number + 1).toUpperCase()}
-                        </Typography>
-                        <Chip
-                          label={o.isWalkIn ? "Vãng lai" : "Đặt phòng"}
-                          size="small"
-                        />
-                      </Stack>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <Typography color="text.secondary">
-                          {new Date(o.createdAt).toLocaleString()}
-                        </Typography>
-
-                        <Chip
-                          color={
-                            o.status === EOrderStatus.NeedConfirmed
-                              ? "default"
-                              : o.status === EOrderStatus.Confirmed
-                              ? "success"
-                              : o.status === EOrderStatus.InProgress
-                              ? "primary"
-                              : o.status === EOrderStatus.InProgress
-                              ? "primary"
-                              : o.status === EOrderStatus.Completed
-                              ? "success"
-                              : o.status === EOrderStatus.Cancelled
-                              ? "error"
-                              : "default"
-                          }
-                          label={getOrderPhase(o.status)}
-                        />
-                      </Stack>
+              <Accordion
+                key={o.id}
+                sx={{ borderRadius: 2, boxShadow: 2 }}
+                disableGutters
+              >
+                <AccordionSummary expandIcon={<ExpandMore />}>
+                  <Stack
+                    direction={{ xs: "column", sm: "row" }}
+                    justifyContent="space-between"
+                    alignItems={{ xs: "flex-start", sm: "center" }}
+                    sx={{ width: "100%" }}
+                  >
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Restaurant color="primary" />
+                      <Typography fontWeight={700}>
+                        Yêu cầu đặt món: #{String(number + 1).toUpperCase()}
+                      </Typography>
+                      <Chip
+                        label={o.isWalkIn ? "Vãng lai" : "Đặt phòng"}
+                        size="small"
+                      />
                     </Stack>
-
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Typography color="text.secondary">
+                        {new Date(o.createdAt).toLocaleString()}
+                      </Typography>
+                      <Chip
+                        color={
+                          o.status === EOrderStatus.NeedConfirmed
+                            ? "default"
+                            : o.status === EOrderStatus.Confirmed
+                            ? "success"
+                            : o.status === EOrderStatus.InProgress
+                            ? "primary"
+                            : o.status === EOrderStatus.InProgress
+                            ? "primary"
+                            : o.status === EOrderStatus.Completed
+                            ? "success"
+                            : o.status === EOrderStatus.Cancelled
+                            ? "error"
+                            : "default"
+                        }
+                        label={getOrderPhase(o.status)}
+                      />
+                    </Stack>
+                  </Stack>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Stack spacing={1.5}>
                     <Divider />
-
                     <Stack
                       direction={{ xs: "column", lg: "row" }}
                       justifyContent="space-between"
@@ -466,7 +471,6 @@ const OrdersManagementPage: React.FC = () => {
                           </Stack>
                         )}
                       </Stack>
-
                       <Stack
                         direction={{ xs: "column", lg: "row" }}
                         spacing={1}
@@ -479,7 +483,6 @@ const OrdersManagementPage: React.FC = () => {
                         >
                           Sửa
                         </Button>
-
                         {Number(o.status) !== EOrderStatus.Cancelled && (
                           <Button
                             size="small"
@@ -634,7 +637,6 @@ const OrdersManagementPage: React.FC = () => {
                             </Stack>
                           );
                         })}
-
                     <Stack alignItems="flex-end">
                       <Stack
                         direction={{ xs: "column", lg: "row" }}
@@ -649,7 +651,6 @@ const OrdersManagementPage: React.FC = () => {
                             {(o.itemsTotal || 0).toLocaleString()} đ
                           </Typography>
                         </Stack>
-
                         <Stack alignItems="flex-end">
                           <Typography color="red">Giảm giá</Typography>
                           <Typography color="red" fontWeight={"bold"}>
@@ -661,15 +662,14 @@ const OrdersManagementPage: React.FC = () => {
                             Còn lại
                           </Typography>
                           <Typography fontWeight={"bold"}>
-                            {" "}
                             {(total || 0).toLocaleString()} đ
                           </Typography>
                         </Stack>
                       </Stack>
                     </Stack>
                   </Stack>
-                </CardContent>
-              </Card>
+                </AccordionDetails>
+              </Accordion>
             );
           });
         })()}
