@@ -171,9 +171,24 @@ export default function KitchenManagementPage() {
         created.isAfter(startDate.startOf("day").subtract(1, "millisecond")) &&
         created.isBefore(endDate.endOf("day").add(1, "millisecond"));
       if (!inRange) continue;
-      if (Number(d.status) === EOrderStatus.NeedConfirmed) continue;
-      const key = getOrderPhase(d.items || []);
-      g[key].push(d);
+      const st = Number(d.status);
+      if (st === EOrderStatus.NeedConfirmed) continue;
+      if (st === EOrderStatus.Draft || st === EOrderStatus.Confirmed) {
+        g["Mới"].push(d);
+        continue;
+      }
+      if (st === EOrderStatus.InProgress) {
+        g["Đang nấu"].push(d);
+        continue;
+      }
+      if (st === EOrderStatus.Ready) {
+        g["Sẵn sàng"].push(d);
+        continue;
+      }
+      if (st === EOrderStatus.Completed) {
+        g["Đã phục vụ"].push(d);
+        continue;
+      }
     }
     return g;
   }, [summaries, detailsMap, startDate, endDate]);
