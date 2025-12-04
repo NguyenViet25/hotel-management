@@ -131,6 +131,10 @@ export default function SessionDetailsPage() {
     id ? ["session-order", id] : null,
     async () => diningSessionsApi.getOrderBySession(id!)
   );
+  const { data: tablesBySessionRes } = useSWR(
+    id ? ["session-tables", id] : null,
+    async () => diningSessionsApi.getTablesBySession(id!)
+  );
 
   const session = sessionRes?.data;
   const requests = (reqRes?.data?.requests || []) as ServiceRequestDto[];
@@ -180,11 +184,12 @@ export default function SessionDetailsPage() {
   };
 
   const capacityGroups = useMemo(() => {
-    const caps = Array.from(
-      new Set((session?.tables || []).map((t) => t.capacity))
-    ).sort((a, b) => a - b);
+    const source = (tablesBySessionRes?.data || session?.tables || []) as any[];
+    const caps = Array.from(new Set(source.map((t) => t.capacity))).sort(
+      (a, b) => a - b
+    );
     return caps;
-  }, [session]);
+  }, [session, tablesBySessionRes]);
 
   const handleCreateRequest = async () => {
     if (!hotelId || !id) return;
@@ -517,12 +522,14 @@ export default function SessionDetailsPage() {
 
       {tab === 0 && session && (
         <Box>
-          <Typography variant="subtitle2">Bàn đang phục vụ</Typography>
+          <Typography variant="subtitle2">
+            {session.status === "Open" ? "Bàn đang phục vụ" : "Bàn đã gắn"}
+          </Typography>
           <Stack spacing={2} mt={1}>
             {capacityGroups.map((cap) => {
-              const rows = (session.tables || []).filter(
-                (t) => Number(t.capacity) === Number(cap)
-              );
+              const rows = (
+                (tablesBySessionRes?.data || session.tables || []) as any[]
+              ).filter((t) => Number(t.capacity) === Number(cap));
               return (
                 <Paper
                   key={cap}
@@ -683,6 +690,7 @@ export default function SessionDetailsPage() {
                               fullWidth
                               startIcon={<RemoveCircle />}
                               onClick={() => detachTable(t.tableId)}
+                              disabled={isWaiter || session?.status !== "Open"}
                             >
                               Tách
                             </Button>
@@ -708,6 +716,7 @@ export default function SessionDetailsPage() {
                 label="Loại"
                 value={requestType}
                 onChange={(e) => setRequestType(String(e.target.value))}
+                disabled={session?.status !== "Open"}
               >
                 {requestTypes.map((t) => (
                   <MenuItem key={t.value} value={t.value}>
@@ -722,6 +731,7 @@ export default function SessionDetailsPage() {
               onChange={(e) => setRequestDesc(e.target.value)}
               size="small"
               fullWidth
+              disabled={session?.status !== "Open"}
             />
             <TextField
               label="Số lượng"
@@ -733,12 +743,14 @@ export default function SessionDetailsPage() {
               size="small"
               sx={{ width: 120 }}
               inputProps={{ min: 1 }}
+              disabled={session?.status !== "Open"}
             />
             <Button
               startIcon={<Send />}
               variant="contained"
               sx={{ minWidth: 120 }}
               onClick={handleCreateRequest}
+              disabled={isWaiter || session?.status !== "Open"}
             >
               Gửi
             </Button>
@@ -789,7 +801,7 @@ export default function SessionDetailsPage() {
                             onClick={() =>
                               updateRequestStatus(r.id, "InProgress")
                             }
-                            disabled={isWaiter}
+                            disabled={isWaiter || session?.status !== "Open"}
                           >
                             Bắt đầu
                           </Button>
@@ -802,7 +814,7 @@ export default function SessionDetailsPage() {
                             onClick={() =>
                               updateRequestStatus(r.id, "Completed")
                             }
-                            disabled={isWaiter}
+                            disabled={isWaiter || session?.status !== "Open"}
                           >
                             Hoàn tất
                           </Button>
@@ -815,6 +827,7 @@ export default function SessionDetailsPage() {
                             onClick={() =>
                               updateRequestStatus(r.id, "Cancelled")
                             }
+                            disabled={isWaiter || session?.status !== "Open"}
                           >
                             Huỷ
                           </Button>
@@ -828,7 +841,7 @@ export default function SessionDetailsPage() {
                             fullWidth
                             startIcon={<Delete />}
                             onClick={() => setDeleteReqId(r.id)}
-                            disabled={r.status === "Completed"}
+                            disabled={session?.status !== "Open"}
                           >
                             Xóa
                           </Button>
