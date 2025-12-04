@@ -20,7 +20,7 @@ const HotelsListPage: React.FC = () => {
   useEffect(() => {
     fetchHotels({
       page: 1,
-      pageSize: 10,
+      pageSize: 2,
       search: searchText,
     });
   }, [searchText, statusFilter, searchText]);
@@ -68,11 +68,6 @@ const HotelsListPage: React.FC = () => {
   const handleOpenEditModal = (hotel: Hotel) => {
     setSelectedHotel(hotel);
     setIsEditModalVisible(true);
-  };
-
-  const handleOpenStatusModal = (hotel: Hotel) => {
-    setSelectedHotel(hotel);
-    setIsStatusModalVisible(true);
   };
 
   const handlePageChange = (page: number) => {

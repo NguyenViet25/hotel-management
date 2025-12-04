@@ -33,6 +33,7 @@ import kitchenApi, {
   type FoodsByDayItem,
   type GetFoodsByWeekResponse,
   type ShoppingItemDto,
+  ShoppingOrderStatus,
 } from "../../../../api/kitchenApi";
 import PageTitle from "../../../../components/common/PageTitle";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
@@ -74,6 +75,9 @@ const FoodTimeline: React.FC = () => {
   const [reviewOpen, setReviewOpen] = useState<boolean>(false);
   const [reviewLoading, setReviewLoading] = useState<boolean>(false);
   const [reviewItems, setReviewItems] = useState<ShoppingItemDto[]>([]);
+  const [statusMap, setStatusMap] = useState<
+    Record<string, ShoppingOrderStatus>
+  >({});
 
   const { start, end } = useMemo(
     () => getWeekRange(currentDate),
@@ -97,6 +101,24 @@ const FoodTimeline: React.FC = () => {
       });
       if (res.isSuccess) {
         setData(res.data);
+        const ids = (res.data.foodsByDays || [])
+          .map((d) => d.shoppingOrderId)
+          .filter((x): x is string => Boolean(x));
+        if (ids.length > 0) {
+          const results = await Promise.all(
+            ids.map((id) => kitchenApi.getShoppingOrderDetails(id))
+          );
+          const map: Record<string, ShoppingOrderStatus> = {};
+          ids.forEach((id, idx) => {
+            const r = results[idx];
+            if (r?.isSuccess && r.data?.shoppingOrderStatus !== undefined) {
+              map[id] = r.data.shoppingOrderStatus as ShoppingOrderStatus;
+            }
+          });
+          setStatusMap(map);
+        } else {
+          setStatusMap({});
+        }
       } else {
         setError(res.message || "Không thể tải dữ liệu món ăn");
       }
@@ -368,6 +390,16 @@ const FoodTimeline: React.FC = () => {
                         </Stack>
                       )}
                     </Stack>
+                    <Box mt={1}>
+                      {dayEntry?.shoppingOrderId &&
+                        statusMap[dayEntry.shoppingOrderId] ===
+                          ShoppingOrderStatus.Cancelled && (
+                          <Alert severity="warning" sx={{ mt: 1 }}>
+                            Yêu cầu mua nguyên liệu cho ngày này đã bị hủy vui
+                            lòng xem và chỉnh sửa cho phù hợp
+                          </Alert>
+                        )}
+                    </Box>
                   </Stack>
                   <List dense>
                     {foods.length > 0 ? (
