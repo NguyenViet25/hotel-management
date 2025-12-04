@@ -33,7 +33,6 @@ import menusApi, { type MenuItemDto } from "../../../../api/menusApi";
 import ordersApi, {
   type OrderDetailsDto,
   type OrderItemDto,
-  type OrderItemStatus,
   type OrderSummaryDto,
 } from "../../../../api/ordersApi";
 import PageTitle from "../../../../components/common/PageTitle";
@@ -41,14 +40,41 @@ import { useStore, type StoreState } from "../../../../hooks/useStore";
 
 type ColumnKey = "Mới" | "Đang nấu" | "Sẵn sàng" | "Đã phục vụ";
 
+export enum EOrderStatus {
+  Draft = 0,
+  NeedConfirmed = 1,
+  Confirmed = 2,
+  InProgress = 3,
+  Ready = 4,
+  Completed = 5,
+  Cancelled = 6,
+}
+
+export enum EOrderItemStatus {
+  Pending = 0,
+  Cooking = 1,
+  Served = 2,
+  Voided = 3,
+  Ready = 4,
+}
+
 const getOrderPhase = (items: OrderItemDto[]): ColumnKey => {
   const total = items.length;
-  const served = items.filter((i) => i?.status === "Served").length;
-  const prepared = items.filter((i) => i?.status === "Prepared").length;
-  const pending = items.filter((i) => i?.status === "Pending").length;
+  const served = items.filter(
+    (i) => i?.status === EOrderItemStatus.Served
+  ).length;
+  const ready = items.filter(
+    (i) => i?.status === EOrderItemStatus.Ready
+  ).length;
+  const pending = items.filter(
+    (i) => i?.status === EOrderItemStatus.Pending
+  ).length;
+  const cooking = items.filter(
+    (i) => i?.status === EOrderItemStatus.Cooking
+  ).length;
   if (served === total && total > 0) return "Đã phục vụ";
-  if (prepared === total && total > 0) return "Sẵn sàng";
-  if (prepared > 0 && pending > 0) return "Đang nấu";
+  if (ready === total && total > 0) return "Sẵn sàng";
+  if (cooking > 0 && pending > 0) return "Đang nấu";
   return "Mới";
 };
 
@@ -79,6 +105,22 @@ export default function KitchenManagementPage() {
 
   const [startDate, setStartDate] = useState<Dayjs>(dayjs());
   const [endDate, setEndDate] = useState<Dayjs>(dayjs());
+
+  const getNextOrderStatus = (s: number): number | null => {
+    if (s === 0 || s === 1) return 2;
+    if (s === 2) return 3;
+    if (s === 3) return 4;
+    if (s === 4) return 5;
+    return null;
+  };
+
+  const getNextStatusLabel = (s: number): string => {
+    if (s === 0 || s === 1) return "Xác nhận";
+    if (s === 2) return "Bắt đầu nấu";
+    if (s === 3) return "Sẵn sàng";
+    if (s === 4) return "Hoàn tất";
+    return "";
+  };
 
   const fetchOrders = async () => {
     if (!hotelId) return;
@@ -129,32 +171,55 @@ export default function KitchenManagementPage() {
         created.isAfter(startDate.startOf("day").subtract(1, "millisecond")) &&
         created.isBefore(endDate.endOf("day").add(1, "millisecond"));
       if (!inRange) continue;
+      if (Number(d.status) === EOrderStatus.NeedConfirmed) continue;
       const key = getOrderPhase(d.items || []);
       g[key].push(d);
     }
     return g;
   }, [summaries, detailsMap, startDate, endDate]);
 
-  const updateItemStatus = async (
-    orderId: string,
-    itemId: string,
-    status: OrderItemStatus
-  ) => {
-    await ordersApi.updateItem(orderId, itemId, { status });
-    const res = await ordersApi.getById(orderId);
-    setDetailsMap((m) => ({ ...m, [orderId]: res.data }));
-  };
+  const needConfirmedOrders = useMemo(() => {
+    const list: OrderDetailsDto[] = [];
+    for (const s of summaries) {
+      const d = detailsMap[s.id];
+      if (!d) continue;
+      const created = dayjs(d.createdAt);
+      const inRange =
+        created.isAfter(startDate.startOf("day").subtract(1, "millisecond")) &&
+        created.isBefore(endDate.endOf("day").add(1, "millisecond"));
+      if (!inRange) continue;
+      if (Number(d.status) === EOrderStatus.NeedConfirmed) list.push(d);
+    }
+    return list;
+  }, [summaries, detailsMap, startDate, endDate]);
 
   const startCookingOrder = async (orderId: string) => {
     const d = detailsMap[orderId];
     if (!d) return;
-    const pending = d.items.filter((i) => i?.status === "Pending");
+    const pending = d.items.filter(
+      (i) => i?.status === EOrderItemStatus.Pending
+    );
     await Promise.all(
       pending.map((i) =>
-        ordersApi.updateItem(orderId, i.id, { status: "Prepared" })
+        ordersApi.updateItem(orderId, i.id, {
+          status: EOrderItemStatus.Cooking as any,
+        })
       )
     );
     await ordersApi.updateStatus(orderId, { status: 3 as any });
+    const res = await ordersApi.getById(orderId);
+    setDetailsMap((m) => ({ ...m, [orderId]: res.data }));
+  };
+
+  const advanceOrderStatus = async (orderId: string) => {
+    const current = Number(detailsMap[orderId]?.status ?? 0);
+    if (current === 2) {
+      await startCookingOrder(orderId);
+      return;
+    }
+    const next = getNextOrderStatus(current);
+    if (next === null) return;
+    await ordersApi.updateStatus(orderId, { status: next as any });
     const res = await ordersApi.getById(orderId);
     setDetailsMap((m) => ({ ...m, [orderId]: res.data }));
   };
@@ -164,28 +229,14 @@ export default function KitchenManagementPage() {
     const tag = needConfirm[orderId] ? "[CẦN KH XÁC NHẬN] " : "";
     const currentStatus = Number(detailsMap[orderId]?.status);
     const payload: any = {
-      status: needConfirm[orderId] ? (1 as any) : (currentStatus as any),
+      status: needConfirm[orderId]
+        ? (EOrderStatus.NeedConfirmed as any)
+        : (currentStatus as any),
       notes: tag + text,
     };
     await ordersApi.updateStatus(orderId, payload);
     const res = await ordersApi.getById(orderId);
     setDetailsMap((m) => ({ ...m, [orderId]: res.data }));
-  };
-
-  const openReplaceMenu = async (orderId: string, item: OrderItemDto) => {
-    setMenuTarget({ orderId, itemId: item.id, qty: item.quantity });
-    setMenuLoading(true);
-    try {
-      const res = await menusApi.getMenuItems({
-        isActive: true,
-        page: 1,
-        pageSize: 100,
-      });
-      setMenuItems(res.data || []);
-      setMenuOpen(true);
-    } finally {
-      setMenuLoading(false);
-    }
   };
 
   const applyReplaceMenu = async (menuItem: MenuItemDto) => {
@@ -195,7 +246,9 @@ export default function KitchenManagementPage() {
       quantity: menuTarget.qty,
       reason: notesDraft[menuTarget.orderId] || undefined,
     });
-    await ordersApi.updateStatus(menuTarget.orderId, { status: 1 as any });
+    await ordersApi.updateStatus(menuTarget.orderId, {
+      status: EOrderStatus.NeedConfirmed as any,
+    });
     setNeedConfirm((m) => ({ ...m, [menuTarget.orderId]: true }));
     const res = await ordersApi.getById(menuTarget.orderId);
     setDetailsMap((m) => ({ ...m, [menuTarget.orderId]: res.data }));
@@ -332,56 +385,19 @@ export default function KitchenManagementPage() {
                           sx={{
                             flex: 1,
                             textDecoration:
-                              it.status === "Voided" ? "line-through" : "none",
+                              it.status === EOrderItemStatus.Voided
+                                ? "line-through"
+                                : "none",
                           }}
                         >
                           {it.menuItemName} x {it.quantity}
                         </Typography>
-                        {it.status === "Voided" &&
-                          order.itemHistories &&
-                          (() => {
-                            const hist = order.itemHistories.find(
-                              (h) => h.oldOrderItemId === it.id
-                            );
-                            if (!hist) return null;
-                            return (
-                              <Chip
-                                label={`Thay: ${hist.oldMenuItemName} → ${hist.newMenuItemName}`}
-                                icon={<SwapHorizIcon />}
-                                color="warning"
-                              />
-                            );
-                          })()}
-                        {/* New item highlight */}
+
                         {order.itemHistories &&
                           order.itemHistories.some(
                             (h) => h.newOrderItemId === it.id
                           ) && <Chip label={`Món mới`} color="success" />}
                         <Chip label={`${it.unitPrice.toLocaleString()} đ`} />
-
-                        {it?.status === "Pending" && (
-                          <Button
-                            size="small"
-                            variant="contained"
-                            onClick={() =>
-                              updateItemStatus(order.id, it.id, "Prepared")
-                            }
-                          >
-                            Nấu
-                          </Button>
-                        )}
-                        {it?.status === "Prepared" && (
-                          <Button
-                            size="small"
-                            variant="outlined"
-                            startIcon={<DoneIcon />}
-                            onClick={() =>
-                              updateItemStatus(order.id, it.id, "Served")
-                            }
-                          >
-                            Phục vụ
-                          </Button>
-                        )}
                       </Stack>
                     ))}
                   </Stack>
@@ -394,13 +410,29 @@ export default function KitchenManagementPage() {
                     <Chip
                       label={`Tổng: ${order.itemsTotal.toLocaleString()} đ`}
                     />
-                    <Button
-                      variant="contained"
-                      startIcon={<SoupKitchenIcon />}
-                      onClick={() => startCookingOrder(order.id)}
-                    >
-                      Bắt đầu nấu
-                    </Button>
+                    {(() => {
+                      const cs = Number(order.status);
+                      const next = getNextOrderStatus(cs);
+                      if (next === null) return null;
+                      const label = getNextStatusLabel(cs);
+                      const icon =
+                        cs === 2 ? (
+                          <SoupKitchenIcon />
+                        ) : cs === 3 ? (
+                          <LocalDiningIcon />
+                        ) : (
+                          <DoneIcon />
+                        );
+                      return (
+                        <Button
+                          variant="contained"
+                          startIcon={icon}
+                          onClick={() => advanceOrderStatus(order.id)}
+                        >
+                          {label}
+                        </Button>
+                      );
+                    })()}
                   </Stack>
                 </Stack>
               </CardContent>
@@ -456,6 +488,7 @@ export default function KitchenManagementPage() {
 
       {!loading && (
         <Grid container spacing={2}>
+          <Column title="Chờ xác nhận" items={needConfirmedOrders} />
           <Column title="Mới đặt" items={grouped["Mới"]} />
           <Column title="Đang nấu" items={grouped["Đang nấu"]} />
           <Column title="Sẵn sàng" items={grouped["Sẵn sàng"]} />

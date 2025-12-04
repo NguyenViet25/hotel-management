@@ -3,7 +3,17 @@ import axios from "./axios";
 // Orders API client aligned with OrdersAPI.md
 
 export type OrderStatus = "0" | "1" | "2" | "3"; // Draft, Serving, Paid, Cancelled
-export type OrderItemStatus = "Pending" | "Prepared" | "Served" | "Voided";
+export type OrderItemStatus = 0 | 1 | 2 | 3 | 4; // Draft, NeedConfirmed, Confirmed, InProgress, Ready, Completed, Cancelled
+
+export enum EOrderStatus {
+  Draft = 0,
+  NeedConfirmed = 1,
+  Confirmed = 2,
+  InProgress = 3,
+  Ready = 4,
+  Completed = 5,
+  Cancelled = 6,
+}
 
 export interface OrderItemInputDto {
   menuItemId: string;
