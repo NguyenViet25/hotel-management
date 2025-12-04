@@ -14,6 +14,9 @@ import {
   HelpOutline,
   Hotel,
   LocalCafe,
+  MonetizationOn,
+  Person,
+  Phone,
   PlayCircle,
   Power,
   ReceiptLong,
@@ -410,7 +413,7 @@ export default function SessionDetailsPage() {
                   {orderRes?.data?.customerName ||
                     assignedOrder?.customerName ||
                     "Walk-in"}{" "}
-                  •{" "}
+                  • {orderRes?.data?.customerPhone} •{" "}
                   {orderRes?.data?.itemsCount || assignedOrder?.itemsCount || 0}{" "}
                   món •{" "}
                   {Number(
@@ -859,13 +862,21 @@ export default function SessionDetailsPage() {
               <Stack spacing={1}>
                 <Stack direction={{ xs: "column", md: "row" }} spacing={1}>
                   <Chip
+                    icon={<Person fontSize="small" />}
                     label={`Khách: ${orderRes.data.customerName || "Walk-in"}`}
                   />
                   {orderRes.data.customerPhone && (
-                    <Chip label={`SĐT: ${orderRes.data.customerPhone}`} />
+                    <Chip
+                      icon={<Phone fontSize="small" />}
+                      label={`SĐT: ${orderRes.data.customerPhone}`}
+                    />
                   )}
-                  <Chip label={`Món: ${orderRes.data.itemsCount}`} />
                   <Chip
+                    icon={<RestaurantMenu fontSize="small" />}
+                    label={`Món: ${orderRes.data.itemsCount}`}
+                  />
+                  <Chip
+                    icon={<MonetizationOn fontSize="small" />}
                     label={`Tổng: ${Number(
                       orderRes.data.itemsTotal
                     ).toLocaleString()} đ`}
