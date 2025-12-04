@@ -49,7 +49,8 @@ export default function AssignOrderDialog({
   onAssigned,
   onAssignedWithDetails,
 }: Props) {
-  const { hotelId } = useStore<StoreState>((s) => s);
+  const { user, hotelId } = useStore<StoreState>((s) => s);
+  const isWaiter = (user?.roles || []).map((x) => x.toLowerCase()).includes("waiter");
   const [search, setSearch] = useState("");
   const [results, setResults] = useState<OrderSummaryDto[]>([]);
   const [loading, setLoading] = useState(false);
@@ -78,6 +79,7 @@ export default function AssignOrderDialog({
   };
 
   const handleAssign = async (orderId: string) => {
+    if (isWaiter) return;
     await diningSessionsApi.assignOrder(sessionId, orderId);
     const found = results.find((o) => o.id === orderId);
 
@@ -256,6 +258,7 @@ export default function AssignOrderDialog({
                       startIcon={<Assignment />}
                       variant="contained"
                       onClick={() => handleAssign(o.id)}
+                      disabled={isWaiter}
                     >
                       Gắn vào phiên
                     </Button>

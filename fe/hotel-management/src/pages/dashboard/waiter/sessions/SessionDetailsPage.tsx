@@ -69,7 +69,7 @@ import AssignOrderDialog from "./components/AssignOrderDialog";
 export default function SessionDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { hotelId } = useStore<StoreState>((s) => s);
+  const { user, hotelId } = useStore<StoreState>((s) => s);
   const [assignOpen, setAssignOpen] = useState(false);
   const [assignedOrder, setAssignedOrder] = useState<OrderSummaryDto | null>(
     null
@@ -188,6 +188,7 @@ export default function SessionDetailsPage() {
   };
 
   const updateRequestStatus = async (reqId: string, status: string) => {
+    if (isWaiter) return;
     try {
       const res = await serviceRequestsApi.update(reqId, { status });
       if (res.isSuccess) {
@@ -202,6 +203,7 @@ export default function SessionDetailsPage() {
   };
 
   const openAttachForSession = () => {
+    if (isWaiter) return;
     setAttachFromSessionOpen(true);
   };
 
@@ -229,6 +231,7 @@ export default function SessionDetailsPage() {
   };
 
   const submitEdit = async () => {
+    if (isWaiter) return;
     if (!id) return;
     try {
       const res = await diningSessionsApi.updateSession(id, {
@@ -250,6 +253,7 @@ export default function SessionDetailsPage() {
   };
 
   const deleteSessionAction = async () => {
+    if (isWaiter) return;
     if (!id) return;
     try {
       const res = await diningSessionsApi.deleteSession(id);
@@ -355,6 +359,7 @@ export default function SessionDetailsPage() {
               color="inherit"
               startIcon={<TableBar />}
               onClick={openAttachForSession}
+              disabled={isWaiter}
             >
               Gắn bàn
             </Button>
@@ -363,7 +368,11 @@ export default function SessionDetailsPage() {
               variant="contained"
               color="info"
               startIcon={<ReceiptLong />}
-              onClick={() => setAssignOpen(true)}
+              onClick={() => {
+                if (isWaiter) return;
+                setAssignOpen(true);
+              }}
+              disabled={isWaiter}
             >
               Gán yêu cầu đặt món
             </Button>
@@ -373,6 +382,7 @@ export default function SessionDetailsPage() {
               color="success"
               startIcon={<Edit />}
               onClick={openEdit}
+              disabled={isWaiter}
             >
               Sửa
             </Button>
@@ -382,6 +392,7 @@ export default function SessionDetailsPage() {
               variant="contained"
               startIcon={<Delete />}
               onClick={() => setDeleteTargetId(id || null)}
+              disabled={isWaiter}
             >
               Xóa
             </Button>
@@ -660,6 +671,7 @@ export default function SessionDetailsPage() {
                         variant="contained"
                         fullWidth
                         onClick={() => updateRequestStatus(r.id, "InProgress")}
+                        disabled={isWaiter}
                       >
                         Bắt đầu
                       </Button>
@@ -670,6 +682,7 @@ export default function SessionDetailsPage() {
                         color="success"
                         fullWidth
                         onClick={() => updateRequestStatus(r.id, "Completed")}
+                        disabled={isWaiter}
                       >
                         Hoàn tất
                       </Button>
@@ -680,6 +693,7 @@ export default function SessionDetailsPage() {
                         fullWidth
                         startIcon={<Cancel />}
                         onClick={() => updateRequestStatus(r.id, "Cancelled")}
+                        disabled={isWaiter}
                       >
                         Huỷ
                       </Button>
@@ -799,3 +813,4 @@ export default function SessionDetailsPage() {
     </Box>
   );
 }
+  const isWaiter = (user?.roles || []).map((x) => x.toLowerCase()).includes("waiter");

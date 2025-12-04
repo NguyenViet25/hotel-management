@@ -48,7 +48,6 @@ import serviceRequestsApi, {
   type ServiceRequestDto,
 } from "../../../../api/serviceRequestsApi";
 import tablesApi, {
-  TableStatus,
   type TableDto,
   type TablesQueryParams,
 } from "../../../../api/tablesApi";
@@ -61,7 +60,7 @@ import AssignOrderDialog from "./components/AssignOrderDialog";
 import CreateSessionDialog from "./components/CreateSessionDialog";
 
 export default function SessionBoardPage() {
-  const { hotelId } = useStore<StoreState>((s) => s);
+  const { user, hotelId } = useStore<StoreState>((s) => s);
   const [selectedTable, setSelectedTable] = useState<TableDto | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
@@ -74,11 +73,10 @@ export default function SessionBoardPage() {
     null
   );
   const navigate = useNavigate();
-  const [snackbar, setSnackbar] = useState<{
-    open: boolean;
-    message: string;
-    severity: "success" | "error";
-  } | null>(null);
+  const isWaiter = (user?.roles || [])
+    .map((x) => x.toLowerCase())
+    .includes("waiter");
+
   const [statusFilter, setStatusFilter] = useState<number | "all">("all");
   const [searchText, setSearchText] = useState("");
   const [dayFilter, setDayFilter] = useState<number>(-1);
@@ -166,6 +164,7 @@ export default function SessionBoardPage() {
   };
 
   const startRequest = async (id: string) => {
+    if (isWaiter) return;
     try {
       const res = await serviceRequestsApi.update(id, { status: "InProgress" });
       if (res.isSuccess) {
@@ -179,6 +178,7 @@ export default function SessionBoardPage() {
     } catch {}
   };
   const completeRequest = async (id: string) => {
+    if (isWaiter) return;
     try {
       const res = await serviceRequestsApi.update(id, { status: "Completed" });
       if (res.isSuccess) {
@@ -192,6 +192,7 @@ export default function SessionBoardPage() {
     } catch {}
   };
   const cancelRequest = async (id: string) => {
+    if (isWaiter) return;
     try {
       const res = await serviceRequestsApi.update(id, { status: "Cancelled" });
       if (res.isSuccess) {
@@ -205,6 +206,7 @@ export default function SessionBoardPage() {
     } catch {}
   };
   const confirmDeleteRequest = async () => {
+    if (isWaiter) return;
     try {
       if (!deleteReqId) return;
       const res = await serviceRequestsApi.delete(deleteReqId);
@@ -225,12 +227,14 @@ export default function SessionBoardPage() {
     }
   };
   const openEditRequest = (r: ServiceRequestDto) => {
+    if (isWaiter) return;
     setEditReq(r);
     setEditReqType(r.requestType);
     setEditReqDesc(r.description);
     setEditReqStatus(r.status);
   };
   const saveEditRequest = async () => {
+    if (isWaiter) return;
     try {
       if (!editReq) return;
       const res = await serviceRequestsApi.update(editReq.id, {
@@ -326,35 +330,8 @@ export default function SessionBoardPage() {
       );
   }, [dayOptions, dayFilter]);
 
-  const tableStatusChip = (status: number) => {
-    const color =
-      status === TableStatus.InUse
-        ? "error"
-        : status === TableStatus.Available
-        ? "success"
-        : "default";
-    const label =
-      status === TableStatus.InUse
-        ? "Đang dùng"
-        : status === TableStatus.Available
-        ? "Trống"
-        : String(status);
-    return <Chip size="small" color={color as any} label={label} />;
-  };
-
   const sessionForTable = (tableId: string) =>
     sessions.find((s) => s.tables?.some((t) => t.tableId === tableId));
-
-  const handleTableClick = (t: TableDto) => {
-    setSelectedTable(t);
-    const s = sessionForTable(t.id);
-    setActiveSession(s || null);
-    if (s) {
-      navigate(`/waiter/sessions/${s.id}`);
-    } else {
-      setAttachOpen(true);
-    }
-  };
 
   const handleCreated = async () => {
     await mutateSessions();
@@ -364,6 +341,7 @@ export default function SessionBoardPage() {
 
   const attachSelectedTable = async () => {
     if (!selectedTable || !selectedSessionId) return;
+    if (isWaiter) return;
     try {
       const res = await diningSessionsApi.attachTable(
         selectedSessionId,
@@ -490,13 +468,18 @@ export default function SessionBoardPage() {
             />
           </LocalizationProvider>
         </Stack>
-        <Button
-          startIcon={<AddCircle />}
-          variant="contained"
-          onClick={() => setCreateOpen(true)}
-        >
-          Tạo phiên
-        </Button>
+        {!isWaiter && (
+          <Button
+            startIcon={<AddCircle />}
+            variant="contained"
+            onClick={() => {
+              if (isWaiter) return;
+              setCreateOpen(true);
+            }}
+          >
+            Tạo phiên
+          </Button>
+        )}
       </Stack>
       <Box mt={2}>
         <Stack
@@ -771,13 +754,18 @@ export default function SessionBoardPage() {
                     key={r.id}
                     secondaryAction={
                       <Stack direction="row" spacing={1}>
-                        <Button size="small" onClick={() => startRequest(r.id)}>
+                        <Button
+                          size="small"
+                          onClick={() => startRequest(r.id)}
+                          disabled={isWaiter}
+                        >
                           Bắt đầu
                         </Button>
                         <Button
                           size="small"
                           variant="contained"
                           onClick={() => completeRequest(r.id)}
+                          disabled={isWaiter}
                         >
                           Hoàn tất
                         </Button>
@@ -785,6 +773,7 @@ export default function SessionBoardPage() {
                           size="small"
                           color="warning"
                           onClick={() => cancelRequest(r.id)}
+                          disabled={isWaiter}
                         >
                           Huỷ
                         </Button>
@@ -792,6 +781,7 @@ export default function SessionBoardPage() {
                           size="small"
                           color="info"
                           onClick={() => openEditRequest(r)}
+                          disabled={isWaiter}
                         >
                           Sửa
                         </Button>
@@ -799,6 +789,7 @@ export default function SessionBoardPage() {
                           size="small"
                           color="error"
                           onClick={() => setDeleteReqId(r.id)}
+                          disabled={isWaiter}
                         >
                           Xóa
                         </Button>
@@ -870,7 +861,11 @@ export default function SessionBoardPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setEditReq(null)}>Đóng</Button>
-          <Button variant="contained" onClick={saveEditRequest}>
+          <Button
+            variant="contained"
+            onClick={saveEditRequest}
+            disabled={isWaiter}
+          >
             Lưu
           </Button>
         </DialogActions>
@@ -887,6 +882,7 @@ export default function SessionBoardPage() {
             color="error"
             variant="contained"
             onClick={confirmDeleteRequest}
+            disabled={isWaiter}
           >
             Xóa
           </Button>
@@ -920,7 +916,7 @@ export default function SessionBoardPage() {
           <Button onClick={() => setAttachOpen(false)}>Đóng</Button>
           <Button
             variant="contained"
-            disabled={!selectedSessionId}
+            disabled={isWaiter || !selectedSessionId}
             onClick={attachSelectedTable}
           >
             Gắn
@@ -963,7 +959,7 @@ export default function SessionBoardPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setEditOpen(false)}>Đóng</Button>
-          <Button variant="contained" onClick={submitEdit}>
+          <Button variant="contained" onClick={submitEdit} disabled={isWaiter}>
             Lưu
           </Button>
         </DialogActions>
@@ -987,6 +983,7 @@ export default function SessionBoardPage() {
               await deleteSessionAction(deleteTargetId);
               setDeleteTargetId(null);
             }}
+            disabled={isWaiter}
           >
             Xóa
           </Button>

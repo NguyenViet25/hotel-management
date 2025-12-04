@@ -18,7 +18,8 @@ const AssignMultipleTableDialog: React.FC<Props> = ({
   sessionId,
   onAssigned,
 }) => {
-  const { hotelId } = useStore<StoreState>((s) => s);
+  const { user, hotelId } = useStore<StoreState>((s) => s);
+  const isWaiter = (user?.roles || []).map((x) => x.toLowerCase()).includes("waiter");
   const [items, setItems] = useState<TableDto[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -85,6 +86,7 @@ const AssignMultipleTableDialog: React.FC<Props> = ({
   };
 
   const handleAssign = async () => {
+    if (isWaiter) return;
     if (!sessionId || selected.length === 0) return;
     try {
       const attachIds = selected.filter((id) => !initialSelected.includes(id));
@@ -128,7 +130,7 @@ const AssignMultipleTableDialog: React.FC<Props> = ({
         />
         <Button
           variant="contained"
-          disabled={selected.length === 0}
+          disabled={isWaiter || selected.length === 0}
           onClick={handleAssign}
         >
           Gắn các bàn đã chọn

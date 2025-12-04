@@ -28,6 +28,7 @@ export default function CreateSessionDialog({
   onCreated,
 }: Props) {
   const { user, hotelId } = useStore<StoreState>((s) => s);
+  const isWaiter = (user?.roles || []).map((x) => x.toLowerCase()).includes("waiter");
   const [notes, setNotes] = useState("");
   const [totalGuests, setTotalGuests] = useState<number>(1);
   const [startedAt, setStartedAt] = useState<string>(() => {
@@ -43,6 +44,7 @@ export default function CreateSessionDialog({
   useEffect(() => {}, []);
 
   const handleSubmit = async () => {
+    if (isWaiter) return;
     if (!hotelId) {
       setError("Thiếu khách sạn");
       return;
@@ -114,7 +116,7 @@ export default function CreateSessionDialog({
         <Button
           variant="contained"
           onClick={handleSubmit}
-          disabled={submitting}
+          disabled={submitting || isWaiter}
         >
           Tạo
         </Button>

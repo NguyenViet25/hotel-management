@@ -166,7 +166,10 @@ public static class DatabaseInitializationExtensions
                 Email = "kstantruongson@gmail.com",
                 Description = "Tọa lạc tại vị trí đắc địa bậc nhất Sầm Sơn, Khách sạn Tân Trường Sơn 1... [truncated for brevity]",
                 IsActive = true,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                DefaultCheckInTime = DateTime.Today.AddHours(7),   // 7 AM
+                DefaultCheckOutTime = DateTime.Today.AddHours(13), // 1 PM
+                VAT = 8,
             },
             new Hotel
             {
@@ -178,7 +181,10 @@ public static class DatabaseInitializationExtensions
                 Email = "kstantruongson@gmail.com",
                 Description = "Tọa lạc tại trái tim Bãi tắm C sầm uất, Khách sạn Tân Trường Sơn 2... [truncated]",
                 IsActive = true,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                DefaultCheckInTime = DateTime.Today.AddHours(7),   // 7 AM
+                DefaultCheckOutTime = DateTime.Today.AddHours(13), // 1 PM
+                VAT = 8,
             },
             new Hotel
             {
@@ -190,7 +196,10 @@ public static class DatabaseInitializationExtensions
                 Email = "kstantruongson@gmail.com",
                 Description = "Khách sạn Tân Trường Sơn 3 tọa lạc tại khu phố Hồng Thắng...",
                 IsActive = true,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                DefaultCheckInTime = DateTime.Today.AddHours(7),   // 7 AM
+                DefaultCheckOutTime = DateTime.Today.AddHours(13), // 1 PM
+                VAT = 8,
             },
             new Hotel
             {
@@ -202,7 +211,10 @@ public static class DatabaseInitializationExtensions
                 Email = "kstantruongson@gmail.com",
                 Description = "Nằm tách biệt khỏi sự náo nhiệt của trung tâm bãi tắm, Khách sạn Tân Trường Sơn Legacy...",
                 IsActive = true,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                DefaultCheckInTime = DateTime.Today.AddHours(7),   // 7 AM
+                DefaultCheckOutTime = DateTime.Today.AddHours(13), // 1 PM
+                VAT = 8,
             }
         };
 
