@@ -20,6 +20,7 @@ import {
   QualityStatus,
   type ShoppingItemDto,
   type ShoppingListRequestDto,
+  ShoppingOrderStatus,
 } from "../../../../../api/kitchenApi";
 import { getExactVNDate } from "../../../../../utils/date-helper";
 
@@ -95,6 +96,20 @@ const IngredientReviewDialog: React.FC<IngredientReviewDialogProps> = ({
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
       <DialogTitle>Xem và đánh giá nguyên liệu</DialogTitle>
       <DialogContent>
+        <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+          {(() => {
+            const s = (initialValues as any)?.shoppingOrderStatus as
+              | ShoppingOrderStatus
+              | undefined;
+            if (s === ShoppingOrderStatus.Confirmed)
+              return <Chip label="Đã xác nhận" color="success" size="small" />;
+            if (s === ShoppingOrderStatus.Cancelled)
+              return <Chip label="Đã hủy" color="error" size="small" />;
+            if (s === ShoppingOrderStatus.Draft)
+              return <Chip label="Chờ xác nhận" size="small" />;
+            return null;
+          })()}
+        </Stack>
         {loading ? (
           <Box display="flex" justifyContent="center" my={3}>
             <CircularProgress />

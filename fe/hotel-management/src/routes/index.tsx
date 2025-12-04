@@ -268,6 +268,14 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: "timeline",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <FrontDeskTimelinePage />
+          </Suspense>
+        ),
+      },
+      {
         path: "minibars",
         element: (
           <Suspense fallback={<div>Loading...</div>}>

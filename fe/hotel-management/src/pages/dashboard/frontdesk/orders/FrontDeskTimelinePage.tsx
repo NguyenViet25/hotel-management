@@ -395,28 +395,14 @@ const FoodTimeline: React.FC = () => {
               {(initialShopping?.shoppingOrderStatus === undefined ||
                 initialShopping?.shoppingOrderStatus ===
                   ShoppingOrderStatus.Draft) && (
-                <Chip label="Nháp" color="default" size="small" />
+                <Chip label="Chờ xác nhận" color="default" size="small" />
               )}
               <Chip
                 label={dayjs(initialShopping?.orderDate).format("DD/MM/YYYY")}
                 size="small"
               />
             </Stack>
-            {initialShopping?.notes && (
-              <Box
-                sx={{
-                  p: 1,
-                  border: "1px dashed",
-                  borderColor: "divider",
-                  borderRadius: 2,
-                  bgcolor: "grey.50",
-                }}
-              >
-                <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
-                  {initialShopping?.notes}
-                </Typography>
-              </Box>
-            )}
+
             <TableContainer component={Paper}>
               <Table size="small">
                 <TableHead>

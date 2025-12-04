@@ -50,6 +50,11 @@ export const menuItems = {
       icon: <Discount />,
     },
     { title: "Thực đơn", path: "/manager/menus", icon: <DiningIcon /> },
+    {
+      title: "Lịch trình món ăn",
+      path: "/manager/timeline",
+      icon: <AccessTime />,
+    },
     { title: "Bàn ăn", path: "/manager/tables", icon: <TableBar /> },
     { title: "Minibar", path: "/manager/minibars", icon: <InsertEmoticon /> },
     {

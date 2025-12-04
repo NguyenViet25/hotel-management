@@ -172,6 +172,7 @@ public class KitchenService : IKitchenService
                 OrderDate = request.OrderDate,
                 Notes = request.Notes,
                 HotelId = request.HotelId,
+                ShoppingOrderStatus = ShoppingOrderStatus.Draft,
             };
             await _shoppingOrderRepository.AddAsync(newShoppingOrder);
             await _shoppingOrderRepository.SaveChangesAsync();
