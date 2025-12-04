@@ -1,4 +1,7 @@
 import {
+  AccessTime,
+  AccessTimeFilled,
+  AccessTimeFilledOutlined,
   Bed,
   Category,
   CleanHands,
@@ -64,6 +67,11 @@ export const menuItems = {
     },
     { title: "Đặt phòng", path: "/frontdesk/bookings", icon: <HotelIcon /> },
     { title: "Đặt món", path: "/frontdesk/orders", icon: <RestaurantIcon /> },
+    {
+      title: "Lịch trình món ăn",
+      path: "/frontdesk/timeline",
+      icon: <AccessTime />,
+    },
     {
       title: "Phiên phục vụ",
       path: "/frontdesk/sessions",

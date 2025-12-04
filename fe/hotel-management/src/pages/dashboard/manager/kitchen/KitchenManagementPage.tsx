@@ -1,30 +1,26 @@
 import {
+  AccessTime,
+  ArrowCircleRight,
   Check,
   Close,
+  ExpandMore,
   Phone,
   Save,
   Search,
   Warning,
-  ExpandMore,
-  QuestionAnswer,
-  QuestionMark,
-  NextPlan,
-  ArrowRightAlt,
-  ArrowCircleRight,
-  ArrowCircleRightOutlined,
 } from "@mui/icons-material";
 import DoneIcon from "@mui/icons-material/Done";
-import EventIcon from "@mui/icons-material/Event";
 import LocalDiningIcon from "@mui/icons-material/LocalDining";
 import PeopleIcon from "@mui/icons-material/People";
 import PersonIcon from "@mui/icons-material/Person";
 import SoupKitchenIcon from "@mui/icons-material/SoupKitchen";
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Alert,
   Box,
   Button,
-  Card,
-  CardContent,
   Chip,
   Dialog,
   DialogActions,
@@ -35,9 +31,6 @@ import {
   Stack,
   TextField,
   Typography,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
 } from "@mui/material";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -113,6 +106,9 @@ export default function KitchenManagementPage() {
     string | null
   >(null);
   const [statusDialogNext, setStatusDialogNext] = useState<number | null>(null);
+  const [expandedOrders, setExpandedOrders] = useState<Record<string, boolean>>(
+    {}
+  );
 
   const [startDate, setStartDate] = useState<Dayjs>(dayjs());
   const [endDate, setEndDate] = useState<Dayjs>(dayjs());
@@ -399,6 +395,10 @@ export default function KitchenManagementPage() {
                 "&:not(.Mui-expanded)::before": { display: "none" },
               }}
               disableGutters
+              expanded={!!expandedOrders[order.id]}
+              onChange={(_, isExpanded) =>
+                setExpandedOrders((m) => ({ ...m, [order.id]: isExpanded }))
+              }
             >
               <AccordionSummary expandIcon={<ExpandMore />}>
                 <Stack
@@ -457,7 +457,7 @@ export default function KitchenManagementPage() {
                           spacing={0.75}
                           alignItems="center"
                         >
-                          <EventIcon fontSize="small" />
+                          <AccessTime fontSize="small" color="action" />
                           <Typography variant="body2">
                             {dayjs(order.servingDate).format("D/M/YYYY HH:mm")}
                           </Typography>
@@ -467,7 +467,7 @@ export default function KitchenManagementPage() {
                           spacing={0.75}
                           alignItems="center"
                         >
-                          <PersonIcon fontSize="small" />
+                          <PersonIcon fontSize="small" color="action" />
                           <Typography variant="body2">
                             Họ và tên: {order.customerName}
                           </Typography>
@@ -477,7 +477,7 @@ export default function KitchenManagementPage() {
                           spacing={0.75}
                           alignItems="center"
                         >
-                          <Phone fontSize="small" />
+                          <Phone fontSize="small" color="action" />
                           <Typography variant="body2">
                             SĐT: {order.customerName}
                           </Typography>
@@ -488,7 +488,7 @@ export default function KitchenManagementPage() {
                             spacing={0.75}
                             alignItems="center"
                           >
-                            <PeopleIcon fontSize="small" />
+                            <PeopleIcon fontSize="small" color="action" />
                             <Typography variant="body2">
                               Số khách: {guestCount || order.guests}
                             </Typography>

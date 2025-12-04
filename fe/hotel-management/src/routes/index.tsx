@@ -19,6 +19,7 @@ import RoomNeedCleaningPage from "../pages/dashboard/housekeeper/RoomNeedCleanin
 import InvoiceManagementPage from "../pages/dashboard/frontdesk/invoices/InvoiceManagementPage";
 import FrontDeskTableManagementPage from "../pages/dashboard/frontdesk/tables/FrontDeskTableManagementPage";
 import HotelSettingsPage from "../pages/dashboard/manager/hotels/HotelSettingsPage";
+import FrontDeskTimelinePage from "../pages/dashboard/frontdesk/orders/FrontDeskTimelinePage";
 
 // Role-aware layout wrapper for standalone pages like /profile
 const RoleAwareLayout = () => {
@@ -323,10 +324,10 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "invoices",
+        path: "timeline",
         element: (
           <Suspense fallback={<div>Loading...</div>}>
-            <InvoiceManagementPage />
+            <FrontDeskTimelinePage />
           </Suspense>
         ),
       },

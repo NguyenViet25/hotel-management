@@ -1,10 +1,4 @@
-import {
-  Add,
-  ChevronLeft,
-  ChevronRight,
-  Edit,
-  RemoveRedEye,
-} from "@mui/icons-material";
+import { ChevronLeft, ChevronRight, RemoveRedEye } from "@mui/icons-material";
 import {
   Alert,
   Box,
@@ -37,8 +31,7 @@ import kitchenApi, {
 import PageTitle from "../../../../components/common/PageTitle";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
 import { getExactVNDate } from "../../../../utils/date-helper";
-import IngredientReviewDialog from "./components/IngredientReviewDialog";
-import ShoppingFormModal from "./components/ShoppingFormModal";
+import IngredientReviewDialog from "../../manager/kitchen/components/IngredientReviewDialog";
 
 // Compute Monday → Sunday for the given date
 const getWeekRange = (date: Date) => {
@@ -58,11 +51,7 @@ const FoodTimeline: React.FC = () => {
   const [data, setData] = useState<GetFoodsByWeekResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [shoppingOpen, setShoppingOpen] = useState<boolean>(false);
-  const [selectedOrderDate, setSelectedOrderDate] = useState<
-    dayjs.Dayjs | undefined
-  >(undefined);
-  const [modalMode, setModalMode] = useState<"create" | "edit">("create");
+
   const [initialShopping, setInitialShopping] = useState<
     import("../../../../api/kitchenApi").ShoppingDto | undefined
   >(undefined);
@@ -130,45 +119,6 @@ const FoodTimeline: React.FC = () => {
     setCurrentDate(dayjs(currentDate).add(7, "day").toDate());
   const today = dayjs();
 
-  const openCreateShopping = (date: dayjs.Dayjs) => {
-    setSelectedOrderDate(date);
-    setInitialShopping(undefined);
-    setModalMode("create");
-    setShoppingOpen(true);
-  };
-
-  const openEditShopping = async (shoppingId?: string) => {
-    if (!shoppingId) {
-      setSnackbar({
-        open: true,
-        message: "Không tìm thấy yêu cầu để sửa",
-        severity: "error",
-      });
-      return;
-    }
-    try {
-      const res = await kitchenApi.getShoppingOrderDetails(shoppingId);
-      if (res.isSuccess) {
-        setInitialShopping(res.data);
-        setSelectedOrderDate(dayjs(getExactVNDate(res.data.orderDate)));
-        setModalMode("edit");
-        setShoppingOpen(true);
-      } else {
-        setSnackbar({
-          open: true,
-          message: res.message || "Không tải được yêu cầu",
-          severity: "error",
-        });
-      }
-    } catch {
-      setSnackbar({
-        open: true,
-        message: "Đã xảy ra lỗi khi tải yêu cầu",
-        severity: "error",
-      });
-    }
-  };
-
   const openReviewIngredients = async (shoppingId?: string) => {
     if (!shoppingId) {
       setSnackbar({
@@ -209,52 +159,6 @@ const FoodTimeline: React.FC = () => {
       });
     } finally {
       setReviewLoading(false);
-    }
-  };
-
-  const handleShoppingSubmit = async (payload: {
-    orderDate: string;
-    hotelId: string;
-    notes?: string | null;
-    shoppingItems?: { name: string; quantity: string; unit: string }[] | null;
-  }) => {
-    try {
-      let res;
-      if (modalMode === "create") {
-        res = await kitchenApi.generateShoppingList(payload);
-      } else {
-        res = await kitchenApi.updateShoppingList(payload);
-      }
-      if (res.isSuccess) {
-        setSnackbar({
-          open: true,
-          message:
-            modalMode === "create"
-              ? "Tạo yêu cầu mua nguyên liệu thành công"
-              : "Cập nhật yêu cầu mua nguyên liệu thành công",
-          severity: "success",
-        });
-
-        fetchWeekFoods();
-      } else {
-        setSnackbar({
-          open: true,
-          message:
-            modalMode === "create"
-              ? res.message || "Không thể tạo yêu cầu"
-              : res.message || "Không thể cập nhật yêu cầu",
-          severity: "error",
-        });
-      }
-    } catch {
-      setSnackbar({
-        open: true,
-        message:
-          modalMode === "create"
-            ? "Đã xảy ra lỗi khi tạo yêu cầu"
-            : "Đã xảy ra lỗi khi cập nhật yêu cầu",
-        severity: "error",
-      });
     }
   };
 
@@ -305,7 +209,6 @@ const FoodTimeline: React.FC = () => {
             const dayEntry = data?.foodsByDays.find(
               (item) => getExactVNDate(item.date) === key
             );
-            const hasShoppingOrder = !!dayEntry?.shoppingOrderId;
             const isToday = d.isSame(dayjs(), "day");
             return (
               <Grid size={{ xs: 12 }} key={`${index}-foods`}>
@@ -331,42 +234,17 @@ const FoodTimeline: React.FC = () => {
                       {d.format("DD/MM/YYYY")}
                     </Typography>
                     <Stack gap={1}>
-                      {!hasShoppingOrder ? (
-                        <Button
-                          startIcon={<Add />}
-                          size="small"
-                          variant="contained"
-                          color="primary"
-                          onClick={() => openCreateShopping(d)}
-                        >
-                          Tạo yêu cầu mua nguyên liệu
-                        </Button>
-                      ) : (
-                        <Stack gap={1}>
-                          <Button
-                            startIcon={<Edit />}
-                            size="small"
-                            variant="contained"
-                            color="success"
-                            onClick={() =>
-                              openEditShopping(dayEntry?.shoppingOrderId)
-                            }
-                          >
-                            Sửa yêu cầu mua nguyên liệu
-                          </Button>
-                          <Button
-                            startIcon={<RemoveRedEye />}
-                            size="small"
-                            variant="contained"
-                            color="inherit"
-                            onClick={() =>
-                              openReviewIngredients(dayEntry?.shoppingOrderId)
-                            }
-                          >
-                            Xem và đánh giá nguyên liệu
-                          </Button>
-                        </Stack>
-                      )}
+                      <Button
+                        startIcon={<RemoveRedEye />}
+                        size="small"
+                        variant="contained"
+                        color="inherit"
+                        onClick={() =>
+                          openReviewIngredients(dayEntry?.shoppingOrderId)
+                        }
+                      >
+                        Xem và xác nhận yêu cầu mua nguyên liệu
+                      </Button>
                     </Stack>
                   </Stack>
                   <List dense>
@@ -420,43 +298,7 @@ const FoodTimeline: React.FC = () => {
           })}
         </Grid>
       )}
-      <ShoppingFormModal
-        open={shoppingOpen}
-        onClose={() => {
-          setInitialShopping(undefined);
-          setShoppingOpen(false);
-          setSelectedOrderDate(undefined);
-        }}
-        mode={modalMode}
-        initialValues={initialShopping}
-        defaultOrderDate={selectedOrderDate}
-        onSubmit={handleShoppingSubmit}
-        hotelId={hotelId || ""}
-      />
-      <IngredientReviewDialog
-        hotelId={hotelId || ""}
-        initialValues={initialShopping}
-        open={reviewOpen}
-        loading={reviewLoading}
-        ingredients={reviewItems}
-        onClose={() => {
-          setReviewOpen(false);
-          setReviewItems([]);
-          setInitialShopping(undefined);
-        }}
-        onSubmit={async (payload) => {
-          await kitchenApi.updateShoppingList(payload);
-          setReviewOpen(false);
-          setReviewItems([]);
-          setInitialShopping(undefined);
-          setSnackbar({
-            open: true,
-            message: "Đã lưu đánh giá nguyên liệu",
-            severity: "success",
-          });
-          fetchWeekFoods();
-        }}
-      />
+
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}
@@ -470,12 +312,12 @@ const FoodTimeline: React.FC = () => {
   );
 };
 
-export default function KitchenTimelinePage() {
+export default function FrontDeskTimelinePage() {
   return (
     <Box>
       <PageTitle
         title="Lịch trình món ăn"
-        subtitle="Xem và quản lý lịch trình món ăn"
+        subtitle="Xem lịch trình món ăn và xác nhận yêu cầu mua nguyên liệu"
       />
       <FoodTimeline />
     </Box>
