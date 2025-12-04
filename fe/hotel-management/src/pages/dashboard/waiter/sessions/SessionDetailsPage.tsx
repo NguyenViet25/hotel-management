@@ -46,6 +46,11 @@ import {
   Stack,
   Tab,
   Tabs,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
   TextField,
   Typography,
 } from "@mui/material";
@@ -92,6 +97,7 @@ export default function SessionDetailsPage() {
   const [editStartedAt, setEditStartedAt] = useState<Dayjs | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [endConfirmOpen, setEndConfirmOpen] = useState(false);
+  const [openConfirmOpen, setOpenConfirmOpen] = useState(false);
   const [deleteReqId, setDeleteReqId] = useState<string | null>(null);
   const requestTypes = useMemo(
     () => [
@@ -298,6 +304,22 @@ export default function SessionDetailsPage() {
     }
   };
 
+  const reopenSession = async () => {
+    if (isWaiter) return;
+    if (!id) return;
+    try {
+      const res = await diningSessionsApi.updateSession(id, { status: "Open" });
+      if (res.isSuccess) {
+        toast.success("Đã mở phiên");
+        await mutateSession();
+      } else {
+        toast.error(res.message || "Mở phiên thất bại");
+      }
+    } catch {
+      toast.error("Đã xảy ra lỗi");
+    }
+  };
+
   const confirmDeleteRequest = async () => {
     try {
       if (!deleteReqId) return;
@@ -384,7 +406,7 @@ export default function SessionDetailsPage() {
               <Stack direction="row" spacing={1} alignItems="center">
                 <ReceiptLong fontSize="small" color="disabled" />
                 <Typography variant="caption" color="text.secondary">
-                  Order:{" "}
+                  Đặt món:{" "}
                   {orderRes?.data?.customerName ||
                     assignedOrder?.customerName ||
                     "Walk-in"}{" "}
@@ -420,10 +442,22 @@ export default function SessionDetailsPage() {
                 color="inherit"
                 startIcon={<TableBar />}
                 onClick={openAttachForSession}
-                disabled={isWaiter}
+                disabled={isWaiter || session?.status !== "Open"}
               >
                 Gắn bàn
               </Button>
+              {session?.status !== "Open" && (
+                <Button
+                  size="small"
+                  variant="contained"
+                  color="primary"
+                  startIcon={<PlayCircle />}
+                  onClick={() => setOpenConfirmOpen(true)}
+                  disabled={isWaiter || session?.status === "Open"}
+                >
+                  Mở phiên
+                </Button>
+              )}
               <Button
                 size="small"
                 variant="contained"
@@ -433,7 +467,7 @@ export default function SessionDetailsPage() {
                   if (isWaiter) return;
                   setAssignOpen(true);
                 }}
-                disabled={isWaiter}
+                disabled={isWaiter || session?.status !== "Open"}
               >
                 Gán yêu cầu đặt món
               </Button>
@@ -453,7 +487,7 @@ export default function SessionDetailsPage() {
                 color="success"
                 startIcon={<Edit />}
                 onClick={openEdit}
-                disabled={isWaiter}
+                disabled={isWaiter || session?.status !== "Open"}
               >
                 Sửa
               </Button>
@@ -463,7 +497,7 @@ export default function SessionDetailsPage() {
                 variant="contained"
                 startIcon={<Delete />}
                 onClick={() => setDeleteTargetId(id || null)}
-                disabled={isWaiter}
+                disabled={isWaiter || session?.status !== "Open"}
               >
                 Xóa
               </Button>
@@ -475,6 +509,7 @@ export default function SessionDetailsPage() {
       <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }}>
         <Tab label="Bàn" />
         <Tab label="Yêu cầu" />
+        <Tab label="Đặt món" />
       </Tabs>
 
       {tab === 0 && session && (
@@ -812,6 +847,135 @@ export default function SessionDetailsPage() {
         </Box>
       )}
 
+      {tab === 2 && (
+        <Box>
+          <Typography variant="h6">Yêu cầu đặt món</Typography>
+          <Box mt={1}>
+            {!orderRes?.data ? (
+              <Typography variant="body2" color="text.secondary">
+                Không có order đã gắn
+              </Typography>
+            ) : (
+              <Stack spacing={1}>
+                <Stack direction={{ xs: "column", md: "row" }} spacing={1}>
+                  <Chip
+                    label={`Khách: ${orderRes.data.customerName || "Walk-in"}`}
+                  />
+                  {orderRes.data.customerPhone && (
+                    <Chip label={`SĐT: ${orderRes.data.customerPhone}`} />
+                  )}
+                  <Chip label={`Món: ${orderRes.data.itemsCount}`} />
+                  <Chip
+                    label={`Tổng: ${Number(
+                      orderRes.data.itemsTotal
+                    ).toLocaleString()} đ`}
+                  />
+                  {orderRes.data.promotionCode && (
+                    <Chip
+                      label={`Mã KM: ${orderRes.data.promotionCode}`}
+                      color="primary"
+                    />
+                  )}
+                  {orderRes.data.promotionValue ? (
+                    <Chip
+                      label={`Giảm: ${orderRes.data.promotionValue}%`}
+                      color="primary"
+                    />
+                  ) : null}
+                </Stack>
+                <Divider />
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell align="center" sx={{ width: "6%" }}>
+                        #
+                      </TableCell>
+                      <TableCell>Tên món</TableCell>
+                      <TableCell align="right" sx={{ width: "12%" }}>
+                        SL
+                      </TableCell>
+                      <TableCell align="right" sx={{ width: "18%" }}>
+                        Đơn giá
+                      </TableCell>
+                      <TableCell align="right" sx={{ width: "18%" }}>
+                        Thành tiền
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {(orderRes.data.items || []).map((it, idx) => (
+                      <TableRow key={it.id}>
+                        <TableCell align="center">{idx + 1}</TableCell>
+                        <TableCell>{it.menuItemName}</TableCell>
+                        <TableCell align="right">{it.quantity}</TableCell>
+                        <TableCell align="right">
+                          {Number(it.unitPrice).toLocaleString()} đ
+                        </TableCell>
+                        <TableCell align="right">
+                          {Number(it.unitPrice * it.quantity).toLocaleString()}{" "}
+                          đ
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {orderRes.data.promotionValue ? (
+                      <TableRow>
+                        <TableCell />
+                        <TableCell sx={{ color: "#2e7d32" }}>
+                          Giảm giá (
+                          {orderRes.data.promotionCode
+                            ? `${orderRes.data.promotionCode} - `
+                            : ""}
+                          {orderRes.data.promotionValue}%)
+                        </TableCell>
+                        <TableCell align="right">1</TableCell>
+                        <TableCell align="right">
+                          {Number(
+                            Math.round(
+                              (orderRes.data.itemsTotal *
+                                (orderRes.data.promotionValue || 0)) /
+                                100
+                            )
+                          ).toLocaleString()}{" "}
+                          đ
+                        </TableCell>
+                        <TableCell align="right" sx={{ color: "#2e7d32" }}>
+                          -
+                          {Number(
+                            Math.round(
+                              (orderRes.data.itemsTotal *
+                                (orderRes.data.promotionValue || 0)) /
+                                100
+                            )
+                          ).toLocaleString()}{" "}
+                          đ
+                        </TableCell>
+                      </TableRow>
+                    ) : null}
+                    <TableRow>
+                      <TableCell />
+                      <TableCell sx={{ fontWeight: 700 }}>Tổng cộng</TableCell>
+                      <TableCell />
+                      <TableCell />
+                      <TableCell align="right" sx={{ fontWeight: 800 }}>
+                        {Number(
+                          orderRes.data.itemsTotal -
+                            Math.round(
+                              (orderRes.data.itemsTotal *
+                                (orderRes.data.promotionValue || 0)) /
+                                100
+                            )
+                        ).toLocaleString()}{" "}
+                        đ
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </Stack>
+            )}
+          </Box>
+        </Box>
+      )}
+
       <Dialog
         open={attachFromSessionOpen}
         onClose={() => setAttachFromSessionOpen(false)}
@@ -834,6 +998,27 @@ export default function SessionDetailsPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setAttachFromSessionOpen(false)}>Đóng</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={openConfirmOpen} onClose={() => setOpenConfirmOpen(false)}>
+        <DialogTitle>Mở phiên</DialogTitle>
+        <DialogContent>
+          <Typography>Bạn có chắc chắn muốn mở phiên này?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenConfirmOpen(false)}>Hủy</Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              setOpenConfirmOpen(false);
+              reopenSession();
+            }}
+            disabled={isWaiter}
+          >
+            Mở phiên
+          </Button>
         </DialogActions>
       </Dialog>
 
