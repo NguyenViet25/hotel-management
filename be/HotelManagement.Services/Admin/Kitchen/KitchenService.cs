@@ -201,6 +201,21 @@ public class KitchenService : IKitchenService
             return ApiResponse.Fail($"Failed to generate shopping list: {ex.Message}");
         }
     }
+
+    public async Task<ApiResponse<ShoppingDto>> UpdateShoppingOrderStatusAsync(Guid id, ShoppingOrderStatus status)
+    {
+        var order = await _shoppingOrderRepository.Query().FirstOrDefaultAsync(x => x.Id == id);
+        if (order is null)
+        {
+            return ApiResponse<ShoppingDto>.Fail("Shopping order not found");
+        }
+
+        order.ShoppingOrderStatus = status;
+        await _shoppingOrderRepository.SaveChangesAsync();
+
+        var updated = await GetShoppingOrderAsync(id);
+        return updated;
+    }
 }
 
 

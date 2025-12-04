@@ -1,4 +1,5 @@
 using HotelManagement.Services.Common;
+using HotelManagement.Domain.Entities;
 
 namespace HotelManagement.Services.Admin.Kitchen;
 
@@ -9,5 +10,6 @@ public interface IKitchenService
     Task<ApiResponse> UpdateShoppingListAsync(ShoppingListRequestDto request);
     Task<ApiResponse<ShoppingDto>> GetShoppingOrderAsync(Guid id);
     Task<ApiResponse<GetFoodsByWeekResponse>> GetFoodByWeekRequestAsync(GetFoodsByWeekRequest request);
+    Task<ApiResponse<ShoppingDto>> UpdateShoppingOrderStatusAsync(Guid id, ShoppingOrderStatus status);
     
 }

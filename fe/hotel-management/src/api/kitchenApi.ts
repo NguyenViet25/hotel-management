@@ -64,7 +64,7 @@ export enum QualityStatus {
 }
 
 export enum ShoppingOrderStatus {
-  Pending = 0,
+  Draft = 0,
   Confirmed = 1,
   Cancelled = 2,
 }

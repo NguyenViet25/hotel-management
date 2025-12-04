@@ -44,4 +44,11 @@ public class KitchenController : ControllerBase
         var result = await _kitchenService.GetFoodByWeekRequestAsync(request);
         return Ok(result);
     }
+
+    [HttpPut("shopping/{id}/status")]
+    public async Task<IActionResult> UpdateShoppingStatus([FromRoute] Guid id, [FromBody] UpdateShoppingOrderStatusRequest request)
+    {
+        var result = await _kitchenService.UpdateShoppingOrderStatusAsync(id, request.Status);
+        return Ok(result);
+    }
 }

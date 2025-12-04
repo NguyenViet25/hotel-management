@@ -58,3 +58,8 @@ public class ShoppingItemDto
     public string Unit { get; set; } = string.Empty;
     public QualityStatus? QualityStatus { set; get; }
 }
+
+public class UpdateShoppingOrderStatusRequest
+{
+    public ShoppingOrderStatus Status { get; set; }
+}
