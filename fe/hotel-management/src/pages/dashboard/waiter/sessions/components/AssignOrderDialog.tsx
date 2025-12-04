@@ -1,38 +1,31 @@
-import { useEffect, useState } from "react";
+import { Assignment, Close, Person, Phone, Search } from "@mui/icons-material";
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Button,
-  TextField,
   Card,
+  CardActions,
   CardContent,
   CardHeader,
-  CardActions,
-  Typography,
-  Stack,
   Chip,
-  Grid,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Divider,
+  Grid,
   InputAdornment,
+  Stack,
+  TextField,
+  Typography,
 } from "@mui/material";
+import { useEffect, useState } from "react";
+import diningSessionsApi from "../../../../../api/diningSessionsApi";
 import ordersApi, {
+  EOrderStatus,
+  type OrderDetailsDto,
   type OrderSummaryDto,
   type OrdersQueryParams,
-  type OrderDetailsDto,
 } from "../../../../../api/ordersApi";
-import diningSessionsApi from "../../../../../api/diningSessionsApi";
 import { useStore, type StoreState } from "../../../../../hooks/useStore";
-import {
-  Add,
-  AddCircle,
-  Assignment,
-  Close,
-  Person,
-  Phone,
-  Search,
-} from "@mui/icons-material";
 
 interface Props {
   open: boolean;
@@ -50,7 +43,9 @@ export default function AssignOrderDialog({
   onAssignedWithDetails,
 }: Props) {
   const { user, hotelId } = useStore<StoreState>((s) => s);
-  const isWaiter = (user?.roles || []).map((x) => x.toLowerCase()).includes("waiter");
+  const isWaiter = (user?.roles || [])
+    .map((x) => x.toLowerCase())
+    .includes("waiter");
   const [search, setSearch] = useState("");
   const [results, setResults] = useState<OrderSummaryDto[]>([]);
   const [loading, setLoading] = useState(false);
@@ -83,8 +78,6 @@ export default function AssignOrderDialog({
     await diningSessionsApi.assignOrder(sessionId, orderId);
     const found = results.find((o) => o.id === orderId);
 
-    console.log("found", found);
-    console.log("onAssignedWithDetails", onAssignedWithDetails);
     if (found && onAssignedWithDetails) onAssignedWithDetails(found);
     onAssigned();
     onClose();
@@ -122,15 +115,23 @@ export default function AssignOrderDialog({
     }
   };
 
-  const statusLabel = (s: OrderSummaryDto["status"]) => {
-    if (s === "2") return "Đã thanh toán";
-    if (s === "3") return "Đã hủy";
-    return "Đang xử lý";
+  const statusLabel = (status: OrderSummaryDto["status"]) => {
+    if (status === EOrderStatus.Draft) return "Mới";
+    if (status === EOrderStatus.NeedConfirmed) return "Chờ xác nhận";
+    if (status === EOrderStatus.Confirmed) return "Đã xác nhận";
+    if (status === EOrderStatus.InProgress) return "Đang nấu";
+    if (status === EOrderStatus.Ready) return "Sẵn sàng";
+    if (status === EOrderStatus.Completed) return "Đã phục vụ";
+    return "Mới";
   };
 
-  const statusColor = (s: OrderSummaryDto["status"]) => {
-    if (s === "2") return "success";
-    if (s === "3") return "error";
+  const statusColor = (status: OrderSummaryDto["status"]) => {
+    if (status === EOrderStatus.Draft) return "gray";
+    if (status === EOrderStatus.NeedConfirmed) return "gray";
+    if (status === EOrderStatus.Confirmed) return "primary";
+    if (status === EOrderStatus.InProgress) return "primary";
+    if (status === EOrderStatus.Ready) return "primary";
+    if (status === EOrderStatus.Completed) return "success";
     return "default";
   };
 

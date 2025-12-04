@@ -69,7 +69,7 @@ const getOrderPhaseColor = (status: number): string => {
   if (status === EOrderStatus.InProgress) return "primary";
   if (status === EOrderStatus.Ready) return "violet";
   if (status === EOrderStatus.Completed) return "success";
-  return "Mới";
+  return "default";
 };
 
 export default function KitchenManagementPage() {
@@ -421,10 +421,10 @@ export default function KitchenManagementPage() {
                         order.status === EOrderStatus.NeedConfirmed
                           ? "default"
                           : order.status === EOrderStatus.Confirmed
-                          ? "success"
-                          : order.status === EOrderStatus.InProgress
                           ? "primary"
                           : order.status === EOrderStatus.InProgress
+                          ? "primary"
+                          : order.status === EOrderStatus.Ready
                           ? "primary"
                           : order.status === EOrderStatus.Completed
                           ? "success"

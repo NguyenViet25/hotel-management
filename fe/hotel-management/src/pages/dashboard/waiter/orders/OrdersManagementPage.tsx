@@ -410,10 +410,10 @@ const OrdersManagementPage: React.FC = () => {
                           o.status === EOrderStatus.NeedConfirmed
                             ? "default"
                             : o.status === EOrderStatus.Confirmed
-                            ? "success"
-                            : o.status === EOrderStatus.InProgress
                             ? "primary"
                             : o.status === EOrderStatus.InProgress
+                            ? "primary"
+                            : o.status === EOrderStatus.Ready
                             ? "primary"
                             : o.status === EOrderStatus.Completed
                             ? "success"
