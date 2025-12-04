@@ -205,3 +205,4 @@
 2025-12-03 - 5 - 01:48:46 UTC :: perf: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — dieu chinh quyen truy cap theo vai tro (da smoke test)
 2025-12-04 - 1 - 01:49:36 UTC :: chore: UC-23 Bao tri: tao ticket, dinh anh, mo ta loi. — cap nhat cau hinh va kiem tra bien (da kiem tra lint)
 2025-12-04 - 2 - 01:49:37 UTC :: fix: UC-31 Bao cao: len lich gui email/PDF hang ngay/tuan. — chuan hoa ten ham/bien theo convention (dam bao backward-compatible)
+2025-12-04 - 3 - 01:49:38 UTC :: test: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — bo sung index & toi uu DB (chuan bi cho tinh nang tiep theo)
