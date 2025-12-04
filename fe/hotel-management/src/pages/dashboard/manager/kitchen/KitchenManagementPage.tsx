@@ -95,6 +95,9 @@ export default function KitchenManagementPage() {
   } | null>(null);
   const [menuItems, setMenuItems] = useState<MenuItemDto[]>([]);
   const [menuLoading, setMenuLoading] = useState(false);
+  const [menuItemMap, setMenuItemMap] = useState<Record<string, MenuItemDto>>(
+    {}
+  );
 
   const [startDate, setStartDate] = useState<Dayjs>(dayjs());
   const [endDate, setEndDate] = useState<Dayjs>(dayjs());
@@ -149,6 +152,21 @@ export default function KitchenManagementPage() {
 
   useEffect(() => {
     fetchOrders();
+  }, [hotelId]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await menusApi.getMenuItems({
+          isActive: true,
+          page: 1,
+          pageSize: 500,
+        });
+        const map: Record<string, MenuItemDto> = {};
+        for (const mi of res.data || []) map[mi.id] = mi;
+        setMenuItemMap(map);
+      } catch {}
+    })();
   }, [hotelId]);
 
   const grouped = useMemo(() => {
@@ -308,6 +326,9 @@ export default function KitchenManagementPage() {
             : undefined;
           const room =
             booking?.bookingRoomTypes?.[0]?.bookingRooms?.[0]?.roomName;
+          const guestCount = (booking?.bookingRoomTypes || [])
+            .flatMap((brt) => brt.bookingRooms || [])
+            .reduce((sum, br) => sum + (br.guests?.length || 0), 0);
           return (
             <Card key={order.id} sx={{ borderRadius: 3 }}>
               <CardContent>
@@ -334,7 +355,7 @@ export default function KitchenManagementPage() {
                       </Stack>
                       {booking && (
                         <Typography variant="body2" color="text.secondary">
-                          {booking.primaryGuestName} (
+                          Khách: {booking.primaryGuestName} (
                           {(booking.phoneNumber || "").slice(0, 4)}...
                           {(booking.phoneNumber || "").slice(-3)})
                         </Typography>
@@ -342,6 +363,19 @@ export default function KitchenManagementPage() {
                       {room && (
                         <Typography variant="body2" color="text.secondary">
                           Phòng {room}
+                        </Typography>
+                      )}
+                      {(guestCount || order.guests) && (
+                        <Typography variant="body2" color="text.secondary">
+                          Số khách: {guestCount || order.guests}
+                        </Typography>
+                      )}
+                      {order.isWalkIn && (
+                        <Typography variant="body2" color="text.secondary">
+                          Vãng lai: {order.customerName}
+                          {order.customerPhone
+                            ? ` (${order.customerPhone})`
+                            : ""}
                         </Typography>
                       )}
                     </Stack>
@@ -359,9 +393,7 @@ export default function KitchenManagementPage() {
                       spacing={1}
                       alignItems={"center"}
                     >
-                      <Typography fontWeight={600}>
-                        Ghi chú gửi khách
-                      </Typography>
+                      <Typography fontWeight={600}>Ghi chú</Typography>
                       {Number(order.status) !== EOrderStatus.Completed && (
                         <Button
                           startIcon={<Warning />}
@@ -380,19 +412,27 @@ export default function KitchenManagementPage() {
                         </Button>
                       )}
                     </Stack>
-                    <TextField
-                      size="small"
-                      value={notesDraft[order.id] ?? order.notes ?? ""}
-                      onChange={(e) =>
-                        setNotesDraft((m) => ({
-                          ...m,
-                          [order.id]: e.target.value,
-                        }))
-                      }
-                      multiline
-                      minRows={3}
-                      disabled={Number(order.status) === EOrderStatus.Completed}
-                    />
+                    {Number(order.status) === EOrderStatus.Completed ? (
+                      <Typography
+                        variant="body2"
+                        sx={{ whiteSpace: "pre-wrap" }}
+                      >
+                        {order.notes ?? ""}
+                      </Typography>
+                    ) : (
+                      <TextField
+                        size="small"
+                        value={notesDraft[order.id] ?? order.notes ?? ""}
+                        onChange={(e) =>
+                          setNotesDraft((m) => ({
+                            ...m,
+                            [order.id]: e.target.value,
+                          }))
+                        }
+                        multiline
+                        minRows={3}
+                      />
+                    )}
                     <Stack direction="row" spacing={1} flexWrap="wrap">
                       {Number(order.status) !== EOrderStatus.Completed && (
                         <Button
@@ -415,6 +455,35 @@ export default function KitchenManagementPage() {
                         spacing={1}
                         alignItems="center"
                       >
+                        <Box
+                          sx={{
+                            width: 48,
+                            height: 48,
+                            borderRadius: 1,
+                            overflow: "hidden",
+                            border: "1px solid",
+                            borderColor: "divider",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            bgcolor: "grey.100",
+                          }}
+                        >
+                          {menuItemMap[it.menuItemId]?.imageUrl ? (
+                            <Box
+                              component="img"
+                              src={menuItemMap[it.menuItemId]?.imageUrl}
+                              alt={it.menuItemName}
+                              sx={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover",
+                              }}
+                            />
+                          ) : (
+                            <LocalDiningIcon color="action" />
+                          )}
+                        </Box>
                         <Typography
                           sx={{
                             flex: 1,
@@ -533,7 +602,7 @@ export default function KitchenManagementPage() {
 
       {!loading && (
         <Grid container spacing={2}>
-          <Column title="Mới đặt" items={grouped["Mới"]} />
+          {/* <Column title="Mới đặt" items={grouped["Mới"]} /> */}
           <Column title="Chờ xác nhận" items={needConfirmedOrders} />
           <Column title="Đã xác nhận" items={confirmedOrders} />
           <Column title="Đang nấu" items={grouped["Đang nấu"]} />
