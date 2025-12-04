@@ -3,9 +3,6 @@ import {
   Check,
   Close,
   Edit,
-  FoodBank,
-  Kitchen,
-  LocalOffer,
   People,
   Phone,
   Restaurant,
@@ -23,12 +20,12 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import PromotionDialog from "../../frontdesk/invoices/components/PromotionDialog";
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import invoicesApi from "../../../../api/invoicesApi";
 import menusApi, { type MenuItemDto } from "../../../../api/menusApi";
 import ordersApi, {
+  EOrderStatus,
   type OrderDetailsDto,
   type OrderStatus,
   type OrderSummaryDto,
@@ -36,15 +33,24 @@ import ordersApi, {
 import ConfirmModal from "../../../../components/common/ConfirmModel";
 import PageTitle from "../../../../components/common/PageTitle";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
+import PromotionDialog from "../../frontdesk/invoices/components/PromotionDialog";
 import OrderFormModal from "./components/OrderFormModal";
 import OrdersTable from "./components/OrdersTable";
 import WalkInInvoiceDialog from "./components/WalkInInvoiceDialog";
 
 import PersonIcon from "@mui/icons-material/Person";
-import PhoneIphoneIcon from "@mui/icons-material/PhoneIphone";
-import ReceiptIcon from "@mui/icons-material/Receipt";
 import CustomSelect from "../../../../components/common/CustomSelect";
 import EmptyState from "../../../../components/common/EmptyState";
+
+const getOrderPhase = (status: number): string => {
+  if (status === EOrderStatus.Draft) return "Mới";
+  if (status === EOrderStatus.NeedConfirmed) return "Chờ xác nhận";
+  if (status === EOrderStatus.Confirmed) return "Đã xác nhận";
+  if (status === EOrderStatus.InProgress) return "Đang nấu";
+  if (status === EOrderStatus.Ready) return "Sẵn sàng";
+  if (status === EOrderStatus.Completed) return "Đã phục vụ";
+  return "Mới";
+};
 
 const OrdersManagementPage: React.FC = () => {
   // Filters
@@ -412,19 +418,21 @@ const OrdersManagementPage: React.FC = () => {
 
                           <Chip
                             color={
-                              o.status === "2"
+                              o.status === EOrderStatus.NeedConfirmed
+                                ? "default"
+                                : o.status === EOrderStatus.Confirmed
                                 ? "success"
-                                : o.status === "3"
+                                : o.status === EOrderStatus.InProgress
+                                ? "primary"
+                                : o.status === EOrderStatus.InProgress
+                                ? "primary"
+                                : o.status === EOrderStatus.Completed
+                                ? "success"
+                                : o.status === EOrderStatus.Cancelled
                                 ? "error"
                                 : "default"
                             }
-                            label={
-                              o.status === "2"
-                                ? "Đã thanh toán"
-                                : o.status === "3"
-                                ? "Đã hủy"
-                                : "Đang xử lý"
-                            }
+                            label={getOrderPhase(o.status)}
                           />
                         </Stack>
                       </Stack>
@@ -490,7 +498,7 @@ const OrdersManagementPage: React.FC = () => {
                               size="small"
                               variant="contained"
                               startIcon={<ReceiptLongIcon />}
-                              disabled={o.status === "2" || o.status === "3"}
+                              disabled={o.status !== EOrderStatus.Completed}
                               onClick={() => {
                                 setSelectedForInvoice(o);
                                 setInvoiceOpen(true);

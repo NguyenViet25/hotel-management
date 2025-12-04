@@ -1,9 +1,17 @@
-import { Check, Close, Save, Search, Warning } from "@mui/icons-material";
+import {
+  Check,
+  Close,
+  Phone,
+  Save,
+  Search,
+  Warning,
+} from "@mui/icons-material";
 import DoneIcon from "@mui/icons-material/Done";
 import EventIcon from "@mui/icons-material/Event";
 import LocalDiningIcon from "@mui/icons-material/LocalDining";
+import PeopleIcon from "@mui/icons-material/People";
+import PersonIcon from "@mui/icons-material/Person";
 import SoupKitchenIcon from "@mui/icons-material/SoupKitchen";
-import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 import {
   Alert,
   Box,
@@ -21,35 +29,25 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import dayjs, { Dayjs } from "dayjs";
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "react-toastify";
 import bookingsApi, {
   type BookingDetailsDto,
 } from "../../../../api/bookingsApi";
 import menusApi, { type MenuItemDto } from "../../../../api/menusApi";
 import ordersApi, {
+  EOrderStatus,
   type OrderDetailsDto,
-  type OrderItemDto,
   type OrderSummaryDto,
 } from "../../../../api/ordersApi";
 import PageTitle from "../../../../components/common/PageTitle";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
-import { toast } from "react-toastify";
 
 type ColumnKey = "Mới" | "Đang nấu" | "Sẵn sàng" | "Đã phục vụ";
-
-export enum EOrderStatus {
-  Draft = 0,
-  NeedConfirmed = 1,
-  Confirmed = 2,
-  InProgress = 3,
-  Ready = 4,
-  Completed = 5,
-  Cancelled = 6,
-}
 
 const getOrderPhase = (status: number): string => {
   if (status === EOrderStatus.Draft) return "Mới";
@@ -333,57 +331,103 @@ export default function KitchenManagementPage() {
             <Card key={order.id} sx={{ borderRadius: 3 }}>
               <CardContent>
                 <Stack spacing={1.5}>
-                  <Stack
-                    direction="row"
-                    alignItems="center"
-                    justifyContent="space-between"
-                  >
-                    <Stack spacing={0.5}>
+                  <Stack spacing={1}>
+                    <Stack
+                      direction="row"
+                      spacing={0.5}
+                      justifyContent={"space-between"}
+                    >
                       <Typography fontWeight={700}>Order {order.id}</Typography>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <Chip
-                          label={new Date(order.createdAt).toLocaleDateString()}
-                          icon={<EventIcon />}
-                          size="small"
-                        />
-                        {order.bookingId && (
-                          <Chip
-                            label={`Booking ${order.bookingId}`}
-                            size="small"
-                          />
+                      <Chip
+                        label={getOrderPhase(order.status)}
+                        color={
+                          order.status === EOrderStatus.NeedConfirmed
+                            ? "default"
+                            : order.status === EOrderStatus.Confirmed
+                            ? "success"
+                            : order.status === EOrderStatus.InProgress
+                            ? "primary"
+                            : order.status === EOrderStatus.InProgress
+                            ? "primary"
+                            : order.status === EOrderStatus.Completed
+                            ? "success"
+                            : order.status === EOrderStatus.Cancelled
+                            ? "error"
+                            : "default"
+                        }
+                        size="small"
+                      />
+                    </Stack>
+                    {booking && (
+                      <Typography variant="body2" color="text.secondary">
+                        Khách: {booking.primaryGuestName} (
+                        {(booking.phoneNumber || "").slice(0, 4)}...
+                        {(booking.phoneNumber || "").slice(-3)})
+                      </Typography>
+                    )}
+                    {room && (
+                      <Typography variant="body2" color="text.secondary">
+                        Phòng {room}
+                      </Typography>
+                    )}
+                    <Typography fontWeight={600}>
+                      Thông tin khách hàng
+                    </Typography>
+
+                    <Box
+                      sx={{
+                        border: "1px dashed",
+                        borderRadius: 2,
+                        p: 1,
+                        bgcolor: "grey.50",
+                      }}
+                    >
+                      <Stack spacing={0.75}>
+                        <Stack
+                          direction="row"
+                          spacing={0.75}
+                          alignItems="center"
+                        >
+                          <EventIcon fontSize="small" />
+                          <Typography variant="body2">
+                            {dayjs(order.createdAt).format("D/M/YYYY")}
+                          </Typography>
+                        </Stack>
+
+                        <Stack
+                          direction="row"
+                          spacing={0.75}
+                          alignItems="center"
+                        >
+                          <PersonIcon fontSize="small" />
+                          <Typography variant="body2">
+                            Họ và tên: {order.customerName}
+                          </Typography>
+                        </Stack>
+                        <Stack
+                          direction="row"
+                          spacing={0.75}
+                          alignItems="center"
+                        >
+                          <Phone fontSize="small" />
+                          <Typography variant="body2">
+                            SĐT: {order.customerName}
+                          </Typography>
+                        </Stack>
+                        {(guestCount || order.guests) && (
+                          <Stack
+                            direction="row"
+                            spacing={0.75}
+                            alignItems="center"
+                          >
+                            <PeopleIcon fontSize="small" />
+                            <Typography variant="body2">
+                              Số khách: {guestCount || order.guests}
+                            </Typography>
+                          </Stack>
                         )}
                       </Stack>
-                      {booking && (
-                        <Typography variant="body2" color="text.secondary">
-                          Khách: {booking.primaryGuestName} (
-                          {(booking.phoneNumber || "").slice(0, 4)}...
-                          {(booking.phoneNumber || "").slice(-3)})
-                        </Typography>
-                      )}
-                      {room && (
-                        <Typography variant="body2" color="text.secondary">
-                          Phòng {room}
-                        </Typography>
-                      )}
-                      {(guestCount || order.guests) && (
-                        <Typography variant="body2" color="text.secondary">
-                          Số khách: {guestCount || order.guests}
-                        </Typography>
-                      )}
-                      {order.isWalkIn && (
-                        <Typography variant="body2" color="text.secondary">
-                          Vãng lai: {order.customerName}
-                          {order.customerPhone
-                            ? ` (${order.customerPhone})`
-                            : ""}
-                        </Typography>
-                      )}
-                    </Stack>
-                    <Chip
-                      label={getOrderPhase(order.status)}
-                      sx={{ backgroundColor: getOrderPhaseColor(order.status) }}
-                      size="small"
-                    />
+                    </Box>
                   </Stack>
 
                   <Stack spacing={1}>
@@ -439,6 +483,7 @@ export default function KitchenManagementPage() {
                           variant="contained"
                           color="primary"
                           startIcon={<Save />}
+                          size="small"
                           onClick={() => saveNotes(order.id)}
                         >
                           Lưu ghi chú
