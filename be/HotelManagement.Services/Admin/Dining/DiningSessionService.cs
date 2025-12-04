@@ -1,4 +1,4 @@
-using HotelManagement.Domain;
+﻿using HotelManagement.Domain;
 using HotelManagement.Domain.Entities;
 using HotelManagement.Domain.Repositories;
 using HotelManagement.Repository.Common;
@@ -420,6 +420,67 @@ public class DiningSessionService : IDiningSessionService
             var o = await _orderRepository.Query()
                 .Include(o => o.Items)
                 .Where(x => x.DiningSessionId == sessionId)
+                .FirstOrDefaultAsync();
+            if (o == null) return ApiResponse<OrderDetailsDto>.Fail("Order not found");
+
+            var itemIds = o.Items.Select(i => i.MenuItemId).ToList();
+            var menuNames = await _menuItemRepository.Query()
+                .Where(mi => itemIds.Contains(mi.Id))
+                .Select(mi => new { mi.Id, mi.Name })
+                .ToListAsync();
+            var nameMap = menuNames.ToDictionary(x => x.Id, x => x.Name);
+
+            var dto = new OrderDetailsDto
+            {
+                Id = o.Id,
+                HotelId = o.HotelId,
+                BookingId = o.BookingId,
+                IsWalkIn = o.IsWalkIn,
+                CustomerName = o.CustomerName,
+                CustomerPhone = o.CustomerPhone,
+                Status = o.Status,
+                Notes = o.Notes,
+                CreatedAt = o.CreatedAt,
+                ItemsCount = o.Items.Count,
+                ServingDate = o.ServingDate,
+                ItemsTotal = o.Items.Where(i => i.Status != OrderItemStatus.Voided).Sum(i => i.UnitPrice * i.Quantity),
+                PromotionCode = o.PromotionCode,
+                PromotionValue = o.PromotionValue ?? 0,
+                Guests = o.Guests,
+                Items = o.Items.Select(i => new OrderItemDto
+                {
+                    Id = i.Id,
+                    MenuItemId = i.MenuItemId,
+                    MenuItemName = nameMap.TryGetValue(i.MenuItemId, out var n) ? n : string.Empty,
+                    Quantity = i.Quantity,
+                    UnitPrice = i.UnitPrice,
+                    Status = i.Status
+                }).ToList()
+            };
+
+            return ApiResponse<OrderDetailsDto>.Ok(dto);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<OrderDetailsDto>.Fail($"Error retrieving order: {ex.Message}");
+        }
+    }
+
+
+    public async Task<ApiResponse<OrderDetailsDto>> GetOrderOfTableAsync(Guid tableId)
+    {
+        try
+        {
+            var table = await _diningSessionTableRepository.Query()
+                .OrderByDescending(x => x.AttachedAt)
+                .Where(x => x.Id == tableId)
+                .FirstOrDefaultAsync();
+
+            if (table == null) return ApiResponse<OrderDetailsDto>.Fail("Không tìm thấy bàn");
+
+            var o = await _orderRepository.Query()
+                .Include(o => o.Items)
+                .Where(x => x.DiningSessionId == table.DiningSessionId)
                 .FirstOrDefaultAsync();
             if (o == null) return ApiResponse<OrderDetailsDto>.Fail("Order not found");
 

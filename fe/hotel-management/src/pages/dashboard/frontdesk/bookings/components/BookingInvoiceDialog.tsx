@@ -87,14 +87,21 @@ const BookingInvoiceDialog: React.FC<Props> = ({
   const [ordersTotal, setOrdersTotal] = useState<number>(0);
   const [hotel, setHotel] = useState<Hotel | null>(null);
   const [vatPercentage, setVatPercentage] = useState<number>(0);
+  const [showVat, setShowVat] = useState(false);
 
   const invoiceRef = useRef<HTMLDivElement>(null);
 
   const handlePrint = useReactToPrint({
     contentRef: invoiceRef,
     documentTitle: `Hoa don ${booking?.id?.substring(0, 8) ?? ""}`,
-    onBeforePrint: async () => setDisableForPrint(true),
-    onAfterPrint: () => setDisableForPrint(false),
+    onBeforePrint: async () => {
+      setDisableForPrint(true);
+      await new Promise((resolve) => setTimeout(resolve, 300));
+    },
+    onAfterPrint: () => {
+      setDisableForPrint(false);
+      setShowVat(false);
+    },
   });
 
   // Load booking data
@@ -141,16 +148,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
     loadHotel();
   }, [open, hotelId]);
 
-  useEffect(() => {
-    const loadVat = async () => {
-      if (!open || !hotelId) return;
-      try {
-        const res = await hotelService.getVat(hotelId);
-        if (res.isSuccess) setVatPercentage(Number(res.data || 0));
-      } catch {}
-    };
-    loadVat();
-  }, [open, hotelId]);
+  // VAT is only fetched and shown when printing
 
   const tableRows = useMemo(() => {
     if (!booking)
@@ -223,10 +221,27 @@ const BookingInvoiceDialog: React.FC<Props> = ({
     const discountAmt = Math.round((subtotal * (promotionValue || 0)) / 100);
     const deposit = booking?.depositAmount || 0;
     const taxableAmount = subtotal - discountAmt;
-    const vatAmt = Math.round((taxableAmount * (vatPercentage || 0)) / 100);
+    const vatAmt = Math.round(
+      (taxableAmount * (showVat ? vatPercentage || 0 : 0)) / 100
+    );
+    const finalNoVat = taxableAmount - deposit;
     const finalWithVat = taxableAmount + vatAmt - deposit;
-    return { subtotal, discountAmt, deposit, taxableAmount, vatAmt, finalWithVat };
-  }, [tableRows, promotionValue, booking?.depositAmount, vatPercentage]);
+    return {
+      subtotal,
+      discountAmt,
+      deposit,
+      taxableAmount,
+      vatAmt,
+      finalNoVat,
+      finalWithVat,
+    };
+  }, [
+    tableRows,
+    promotionValue,
+    booking?.depositAmount,
+    vatPercentage,
+    showVat,
+  ]);
 
   // Confirm invoice
   const onConfirmInvoice = async () => {
@@ -250,6 +265,14 @@ const BookingInvoiceDialog: React.FC<Props> = ({
         toast.success("Xuất hóa đơn thành công");
         setInvoiceDetails(res.data);
         onInvoiceCreated?.(res.data);
+        // Fetch VAT only when printing
+        try {
+          if (hotelId) {
+            const vatRes = await hotelService.getVat(hotelId);
+            if (vatRes.isSuccess) setVatPercentage(Number(vatRes.data || 0));
+          }
+        } catch {}
+        setShowVat(true);
         handlePrint?.();
         await onRefreshBooking?.();
       } else {
@@ -412,17 +435,22 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                       </TableCell>
                     </TableRow>
                   )}
-                  {vatPercentage > 0 && (
+                  {showVat && vatPercentage > 0 && (
                     <TableRow>
                       <TableCell align="center">
-                        {tableRows.length + (booking && booking.depositAmount > 0 ? 1 : 0) + (promotionValue > 0 ? 1 : 0) + 1}
+                        {tableRows.length +
+                          (booking && booking.depositAmount > 0 ? 1 : 0) +
+                          (promotionValue > 0 ? 1 : 0) +
+                          1}
                       </TableCell>
                       <TableCell sx={{ color: "#c62828" }}>
                         Thuế VAT ({vatPercentage}%)
                       </TableCell>
                       <TableCell align="center">1</TableCell>
                       <TableCell align="center">—</TableCell>
-                      <TableCell align="right">{currency(totals.vatAmt)}</TableCell>
+                      <TableCell align="right">
+                        {currency(totals.vatAmt)}
+                      </TableCell>
                       <TableCell align="right" sx={{ color: "#c62828" }}>
                         +{currency(totals.vatAmt)}
                       </TableCell>
@@ -435,7 +463,9 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                     <TableCell align="right"></TableCell>
                     <TableCell align="right"></TableCell>
                     <TableCell align="right" sx={{ fontWeight: 600 }}>
-                      {currency(totals.finalWithVat)}
+                      {currency(
+                        showVat ? totals.finalWithVat : totals.finalNoVat
+                      )}
                     </TableCell>
                   </TableRow>
                 </TableBody>
@@ -456,7 +486,11 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                       color: "text.primary",
                     }}
                   >
-                    {capitalize(moneyToVietnameseWords(totals.finalWithVat))}
+                    {capitalize(
+                      moneyToVietnameseWords(
+                        showVat ? totals.finalWithVat : totals.finalNoVat
+                      )
+                    )}
                   </Typography>
                 </Stack>
               </Stack>

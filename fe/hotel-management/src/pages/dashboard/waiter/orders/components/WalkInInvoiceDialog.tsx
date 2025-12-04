@@ -61,12 +61,19 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
   const [promotionCode, setPromotionCode] = useState("");
   const [promotionValue, setPromotionValue] = useState<number>(0);
   const [vatPercentage, setVatPercentage] = useState<number>(0);
+  const [showVat, setShowVat] = useState(false);
 
   const handlePrint = useReactToPrint({
     contentRef: invoiceRef,
     documentTitle: `Hoa don ${order?.id?.slice(0, 8) ?? ""}`,
-    onBeforePrint: async () => setDisableForPrint(true),
-    onAfterPrint: () => setDisableForPrint(false),
+    onBeforePrint: async () => {
+      setDisableForPrint(true);
+      await new Promise((resolve) => setTimeout(resolve, 300));
+    },
+    onAfterPrint: () => {
+      setDisableForPrint(false);
+      setShowVat(false);
+    },
   });
 
   useEffect(() => {
@@ -97,16 +104,7 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
     loadHotel();
   }, [open, hotelId]);
 
-  useEffect(() => {
-    const loadVat = async () => {
-      if (!open || !hotelId) return;
-      try {
-        const res = await hotelService.getVat(hotelId);
-        if (res.isSuccess) setVatPercentage(Number(res.data || 0));
-      } catch {}
-    };
-    loadVat();
-  }, [open, hotelId]);
+  // VAT is only fetched and shown when printing
 
   const totals = useMemo(() => {
     const subtotal = (details?.items || []).reduce(
@@ -115,7 +113,9 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
     );
     const discountAmt = Math.round((subtotal * (promotionValue || 0)) / 100);
     const taxableAmount = subtotal - discountAmt;
-    const vatAmt = Math.round((taxableAmount * (vatPercentage || 0)) / 100);
+    const vatAmt = Math.round(
+      (taxableAmount * (showVat ? vatPercentage || 0 : 0)) / 100
+    );
     return {
       subtotal,
       discountAmt,
@@ -123,7 +123,7 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
       vatAmt,
       totalWithVat: taxableAmount + vatAmt,
     };
-  }, [details, promotionValue, vatPercentage]);
+  }, [details, promotionValue, vatPercentage, showVat]);
 
   const onCreateInvoice = async () => {
     if (!order?.id) return;
@@ -138,7 +138,14 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
         setDisableForPrint(true);
         setInvoice(res.data);
         onInvoiceCreated?.(res.data);
-
+        // Fetch VAT only when printing
+        try {
+          if (hotelId) {
+            const vatRes = await hotelService.getVat(hotelId);
+            if (vatRes.isSuccess) setVatPercentage(Number(vatRes.data || 0));
+          }
+        } catch {}
+        setShowVat(true);
         await delay(200);
         handlePrint?.();
         toast.success("Xuất hóa đơn thành công");
@@ -276,7 +283,7 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
                         </TableCell>
                       </TableRow>
                     )}
-                    {vatPercentage > 0 && (
+                    {showVat && vatPercentage > 0 && (
                       <TableRow>
                         <TableCell align="center">
                           {details.items.length + (promotionValue > 0 ? 2 : 1)}
@@ -285,7 +292,9 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
                           Thuế VAT ({vatPercentage}%)
                         </TableCell>
                         <TableCell align="right">1</TableCell>
-                        <TableCell align="right">{currency(totals.vatAmt)}</TableCell>
+                        <TableCell align="right">
+                          {currency(totals.vatAmt)}
+                        </TableCell>
                         <TableCell align="right" sx={{ color: "#c62828" }}>
                           +{currency(totals.vatAmt)}
                         </TableCell>
@@ -297,7 +306,9 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
                       <TableCell align="right"></TableCell>
                       <TableCell align="right"></TableCell>
                       <TableCell align="right" sx={{ fontWeight: 800 }}>
-                        {currency(totals.totalWithVat)}
+                        {currency(
+                          showVat ? totals.totalWithVat : totals.taxableAmount
+                        )}
                       </TableCell>
                     </TableRow>
                   </TableBody>
@@ -351,7 +362,11 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
                         color: "text.primary",
                       }}
                     >
-                      {capitalize(moneyToVietnameseWords(totals.totalWithVat))}
+                      {capitalize(
+                        moneyToVietnameseWords(
+                          showVat ? totals.totalWithVat : totals.taxableAmount
+                        )
+                      )}
                     </Typography>
                   </Stack>
                 </Stack>

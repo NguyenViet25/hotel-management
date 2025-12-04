@@ -127,8 +127,16 @@ public class DiningSessionController : ControllerBase
         return Ok(response);
     }
 
-    [HttpGet("{id}/order")]
-    public async Task<IActionResult> GetOrder(Guid id)
+    [HttpGet("order/by-session/{id}")]
+    public async Task<IActionResult> GetOrderBySession(Guid id)
+    {
+        var response = await _diningSessionService.GetOrderOfSessionAsync(id);
+        return Ok(response);
+    }
+
+
+    [HttpGet("order/by-table/{id}")]
+    public async Task<IActionResult> GetOrderByTable(Guid id)
     {
         var response = await _diningSessionService.GetOrderOfSessionAsync(id);
         return Ok(response);
