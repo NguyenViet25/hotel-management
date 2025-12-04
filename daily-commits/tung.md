@@ -211,3 +211,4 @@
 2025-12-04 - 1 - 01:49:37 UTC :: refactor: UC-29 Thanh toan nha hang: thu tien, in hoa don, dong giao dich. — dieu chinh UI & copy cho ro (dong bo voi BE/FE)
 2025-12-04 - 2 - 01:49:38 UTC :: test: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — cap nhat mock data & seed test (anh huong thap)
 2025-12-04 - 3 - 01:49:41 UTC :: refactor: UC-42 Phan quyen: thiet lap quyen theo co so. — dieu chinh UI & copy cho ro (da kiem tra lint)
+2025-12-04 - 4 - 01:49:44 UTC :: docs: UC-23 Bao tri: tao ticket, dinh anh, mo ta loi. — tach chuc nang de de bao tri (da review so bo)
