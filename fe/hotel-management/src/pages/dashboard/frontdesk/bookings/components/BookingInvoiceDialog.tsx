@@ -451,7 +451,10 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                   <Button
                     variant="outlined"
                     startIcon={<DiscountIcon />}
-                    onClick={() => setPromoOpen(true)}
+                    onClick={() => {
+                      toast.info("Tính năng đang trong quá trình phát triển!");
+                      // setPromoOpen(true);
+                    }}
                     sx={{ width: "fit-content" }}
                   >
                     Chọn mã khuyến mãi

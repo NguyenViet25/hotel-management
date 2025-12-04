@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
+  AccessTime,
   AssignmentInd,
   Info,
   NoteAdd,
@@ -333,6 +334,16 @@ const OrderFormModal: React.FC<IProps> = ({
                     onChange={(v) =>
                       field.onChange(v ? v.toISOString() : undefined)
                     }
+                    slotProps={{
+                      textField: {
+                        fullWidth: true,
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <AccessTime color="primary" />
+                          </InputAdornment>
+                        ),
+                      },
+                    }}
                   />
                 )}
               />

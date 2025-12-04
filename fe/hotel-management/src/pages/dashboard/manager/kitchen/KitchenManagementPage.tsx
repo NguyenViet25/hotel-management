@@ -93,7 +93,9 @@ export default function KitchenManagementPage() {
   } | null>(null);
   const [menuItems, setMenuItems] = useState<MenuItemDto[]>([]);
   const [menuLoading, setMenuLoading] = useState(false);
-  const [menuItemMap, setMenuItemMap] = useState<Record<string, MenuItemDto>>({});
+  const [menuItemMap, setMenuItemMap] = useState<Record<string, MenuItemDto>>(
+    {}
+  );
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmTargetId, setConfirmTargetId] = useState<string | null>(null);
 
@@ -375,13 +377,7 @@ export default function KitchenManagementPage() {
                         size="small"
                       />
                     </Stack>
-                    {booking && (
-                      <Typography variant="body2" color="text.secondary">
-                        Khách: {booking.primaryGuestName} (
-                        {(booking.phoneNumber || "").slice(0, 4)}...
-                        {(booking.phoneNumber || "").slice(-3)})
-                      </Typography>
-                    )}
+
                     {room && (
                       <Typography variant="body2" color="text.secondary">
                         Phòng {room}
@@ -781,7 +777,12 @@ export default function KitchenManagementPage() {
         </DialogActions>
       </Dialog>
 
-      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle sx={{ fontWeight: 600 }}>Xác nhận đơn</DialogTitle>
         <DialogContent dividers>
           <Stack spacing={1.25}>
@@ -789,10 +790,20 @@ export default function KitchenManagementPage() {
               <>
                 <Typography>Order {confirmTargetId}</Typography>
                 <Typography variant="body2" color="text.secondary">
-                  {dayjs(detailsMap[confirmTargetId]?.createdAt).format("D/M/YYYY HH:mm")}
+                  {dayjs(detailsMap[confirmTargetId]?.createdAt).format(
+                    "D/M/YYYY HH:mm"
+                  )}
                 </Typography>
                 {detailsMap[confirmTargetId]?.notes && (
-                  <Box sx={{ p: 1, border: "1px dashed", borderColor: "divider", borderRadius: 2, bgcolor: "grey.50" }}>
+                  <Box
+                    sx={{
+                      p: 1,
+                      border: "1px dashed",
+                      borderColor: "divider",
+                      borderRadius: 2,
+                      bgcolor: "grey.50",
+                    }}
+                  >
                     <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
                       {detailsMap[confirmTargetId]?.notes}
                     </Typography>
@@ -803,8 +814,21 @@ export default function KitchenManagementPage() {
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setConfirmOpen(false)} color="inherit" variant="outlined" startIcon={<Close />}>Đóng</Button>
-          <Button onClick={confirmOrder} variant="contained" startIcon={<Check />}>Xác nhận</Button>
+          <Button
+            onClick={() => setConfirmOpen(false)}
+            color="inherit"
+            variant="outlined"
+            startIcon={<Close />}
+          >
+            Đóng
+          </Button>
+          <Button
+            onClick={confirmOrder}
+            variant="contained"
+            startIcon={<Check />}
+          >
+            Xác nhận
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>
