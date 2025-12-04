@@ -383,6 +383,42 @@ public class DiningSessionService : IDiningSessionService
         return ApiResponse<bool>.Success(true);
     }
 
+    public async Task<ApiResponse<List<SessionTableDto>>> GetTablesBySessionAsync(Guid sessionId)
+    {
+        try
+        {
+            var session = await _diningSessionRepository.FindAsync(sessionId);
+            if (session == null) return ApiResponse<List<SessionTableDto>>.Fail("Dining session not found");
+
+            var links = await _diningSessionTableRepository.Query()
+                .Where(x => x.DiningSessionId == sessionId)
+                .OrderBy(x => x.AttachedAt)
+                .ToListAsync();
+
+            var dtos = new List<SessionTableDto>();
+            foreach (var link in links)
+            {
+                var table = await _tableRepository.FindAsync(link.TableId);
+                if (table != null)
+                {
+                    dtos.Add(new SessionTableDto
+                    {
+                        TableId = table.Id,
+                        TableName = table.Name,
+                        Capacity = table.Capacity,
+                        AttachedAt = link.AttachedAt,
+                    });
+                }
+            }
+
+            return ApiResponse<List<SessionTableDto>>.Ok(dtos);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<List<SessionTableDto>>.Fail($"Error retrieving tables: {ex.Message}");
+        }
+    }
+
     private async Task<DiningSessionDto> MapToDto(DiningSession session)
     {
         string? waiterName = null;

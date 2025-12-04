@@ -142,6 +142,12 @@ const diningSessionsApi = {
     const res = await axios.get(`/dining-sessions/order/by-table/${tableId}`);
     return res.data;
   },
+  async getTablesBySession(
+    sessionId: string
+  ): Promise<ListResponse<SessionTableDto[]>> {
+    const res = await axios.get(`/dining-sessions/${sessionId}/tables`);
+    return res.data;
+  },
 };
 
 export default diningSessionsApi;

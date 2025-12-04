@@ -23,10 +23,10 @@ import {
   RemoveCircle,
   RestaurantMenu,
   Send,
+  StopCircle,
   TableBar,
   TableRestaurant as TableRestaurantIcon,
   WaterDrop,
-  StopCircle,
 } from "@mui/icons-material";
 import {
   Box,
@@ -48,12 +48,12 @@ import {
   Select,
   Stack,
   Tab,
-  Tabs,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableRow,
+  Tabs,
   TextField,
   Typography,
 } from "@mui/material";
@@ -65,10 +65,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import useSWR from "swr";
 import diningSessionsApi from "../../../../api/diningSessionsApi";
-import {
-  type OrderSummaryDto,
-  type OrderDetailsDto,
-} from "../../../../api/ordersApi";
+import { type OrderSummaryDto } from "../../../../api/ordersApi";
 import serviceRequestsApi, {
   type ServiceRequestDto,
 } from "../../../../api/serviceRequestsApi";
@@ -102,6 +99,8 @@ export default function SessionDetailsPage() {
   const [endConfirmOpen, setEndConfirmOpen] = useState(false);
   const [openConfirmOpen, setOpenConfirmOpen] = useState(false);
   const [deleteReqId, setDeleteReqId] = useState<string | null>(null);
+  const [reload, setReload] = useState<number>(0);
+
   const requestTypes = useMemo(
     () => [
       { value: "water", label: "Nước" },
@@ -189,7 +188,7 @@ export default function SessionDetailsPage() {
       (a, b) => a - b
     );
     return caps;
-  }, [session, tablesBySessionRes]);
+  }, [session, tablesBySessionRes, reload]);
 
   const handleCreateRequest = async () => {
     if (!hotelId || !id) return;
@@ -1014,6 +1013,7 @@ export default function SessionDetailsPage() {
                 sessionId={id}
                 onAssigned={async () => {
                   setAttachFromSessionOpen(false);
+                  setReload((prev) => prev + 1);
                   await mutateSession();
                 }}
               />

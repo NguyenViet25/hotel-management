@@ -142,4 +142,11 @@ public class DiningSessionController : ControllerBase
         return Ok(response);
     }
 
+    [HttpGet("{id}/tables")]
+    public async Task<IActionResult> GetTablesBySession(Guid id)
+    {
+        var response = await _diningSessionService.GetTablesBySessionAsync(id);
+        return Ok(response);
+    }
+
 }

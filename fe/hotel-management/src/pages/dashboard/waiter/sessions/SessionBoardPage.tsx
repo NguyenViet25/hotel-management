@@ -55,20 +55,15 @@ import { type Option } from "../../../../components/common/CustomSelect";
 import EmptyState from "../../../../components/common/EmptyState";
 import PageTitle from "../../../../components/common/PageTitle";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
-import AssignMultipleTableDialog from "./components/AssignMultipleTableDialog";
 import AssignOrderDialog from "./components/AssignOrderDialog";
 import CreateSessionDialog from "./components/CreateSessionDialog";
 
 export default function SessionBoardPage() {
   const { user, hotelId } = useStore<StoreState>((s) => s);
-  const [selectedTable, setSelectedTable] = useState<TableDto | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
-  const [attachOpen, setAttachOpen] = useState(false);
-  const [selectedSessionId, setSelectedSessionId] = useState<string>("");
   const [attachFromSessionOpen, setAttachFromSessionOpen] = useState(false);
-  const [attachSessionTargetId, setAttachSessionTargetId] =
-    useState<string>("");
+
   const [activeSession, setActiveSession] = useState<DiningSessionDto | null>(
     null
   );
@@ -79,7 +74,6 @@ export default function SessionBoardPage() {
 
   const [statusFilter, setStatusFilter] = useState<number | "all">("all");
   const [searchText, setSearchText] = useState("");
-  const [dayFilter, setDayFilter] = useState<number>(-1);
   const [sessionStatusFilter, setSessionStatusFilter] = useState<
     "All" | "Open" | "Ended"
   >("All");
@@ -326,44 +320,10 @@ export default function SessionBoardPage() {
     );
   }, [filteredTables]);
 
-  const groupsToRender = useMemo(() => {
-    return dayOptions
-      .filter((o) => o.value !== -1)
-      .filter((o) =>
-        dayFilter === -1 ? true : String(o.value) === String(dayFilter)
-      );
-  }, [dayOptions, dayFilter]);
-
-  const sessionForTable = (tableId: string) =>
-    sessions.find((s) => s.tables?.some((t) => t.tableId === tableId));
-
   const handleCreated = async () => {
     await mutateSessions();
     await mutateTables();
     toast.success("Tạo phiên thành công");
-  };
-
-  const attachSelectedTable = async () => {
-    if (!selectedTable || !selectedSessionId) return;
-    if (isWaiter) return;
-    try {
-      const res = await diningSessionsApi.attachTable(
-        selectedSessionId,
-        selectedTable.id
-      );
-      if (res.isSuccess) {
-        toast.success("Đã gắn bàn vào phiên");
-
-        setAttachOpen(false);
-        setSelectedSessionId("");
-        await mutateSessions();
-        await mutateTables();
-      } else {
-        toast.error(res.message || "Gắn bàn thất bại");
-      }
-    } catch {
-      toast.error("Đã xảy ra lỗi");
-    }
   };
 
   const deleteSessionAction = async (sessionId: string) => {
@@ -380,14 +340,6 @@ export default function SessionBoardPage() {
     } catch {
       toast.error("Đã xảy ra lỗi");
     }
-  };
-
-  const openEdit = (s: DiningSessionDto) => {
-    setEditSession(s);
-    setEditNotes(s.notes || "");
-    setEditGuests(Number(s.totalGuests || 0));
-    setEditStartedAt(dayjs(s.startedAt));
-    setEditOpen(true);
   };
 
   const submitEdit = async () => {
@@ -413,19 +365,9 @@ export default function SessionBoardPage() {
     }
   };
 
-  const refreshAll = async () => {
-    await mutateSessions();
-    await mutateTables();
-  };
-
   useEffect(() => {
     if (!attachFromSessionOpen) return;
   }, [attachFromSessionOpen]);
-
-  const openAttachForSession = (sessionId: string) => {
-    setAttachSessionTargetId(sessionId);
-    setAttachFromSessionOpen(true);
-  };
 
   return (
     <Box>
@@ -620,30 +562,6 @@ export default function SessionBoardPage() {
           }}
         />
       )}
-
-      <Dialog
-        open={attachFromSessionOpen}
-        onClose={() => setAttachFromSessionOpen(false)}
-        fullWidth
-        maxWidth="lg"
-      >
-        <DialogTitle>Gắn bàn vào phiên</DialogTitle>
-        <DialogContent>
-          <Box pt={1}>
-            <AssignMultipleTableDialog
-              sessionId={attachSessionTargetId}
-              onAssigned={async () => {
-                setAttachFromSessionOpen(false);
-                setAttachSessionTargetId("");
-                await refreshAll();
-              }}
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setAttachFromSessionOpen(false)}>Đóng</Button>
-        </DialogActions>
-      </Dialog>
 
       <Dialog
         open={requestsOpen}
@@ -895,41 +813,6 @@ export default function SessionBoardPage() {
             }
           >
             Xóa
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Dialog
-        open={attachOpen}
-        onClose={() => setAttachOpen(false)}
-        fullWidth
-        maxWidth="sm"
-      >
-        <DialogTitle>Gắn bàn vào phiên</DialogTitle>
-        <DialogContent>
-          <FormControl fullWidth size="small" sx={{ mt: 2 }}>
-            <InputLabel>Phiên</InputLabel>
-            <Select
-              label="Phiên"
-              value={selectedSessionId}
-              onChange={(e) => setSelectedSessionId(String(e.target.value))}
-            >
-              {sessions.map((s) => (
-                <MenuItem key={s.id} value={s.id}>
-                  {new Date(s.startedAt).toLocaleString()} • {s.totalGuests}{" "}
-                  khách
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setAttachOpen(false)}>Đóng</Button>
-          <Button
-            variant="contained"
-            disabled={isWaiter || !selectedSessionId}
-            onClick={attachSelectedTable}
-          >
-            Gắn
           </Button>
         </DialogActions>
       </Dialog>
