@@ -12,4 +12,6 @@ public interface IHotelsAdminService
     Task<HotelDetailsDto?> ChangeStatusAsync(Guid id, ChangeHotelStatusDto dto, Guid actorUserId);
     Task<HotelDefaultTimesDto?> GetDefaultTimesAsync(Guid id, Guid actorUserId, bool isAdmin);
     Task<HotelDefaultTimesDto?> UpdateDefaultTimesAsync(Guid id, UpdateHotelDefaultTimesDto dto, Guid actorUserId);
+    Task<bool> UpdateVATAsync(Guid id, decimal vat);
+    Task<decimal> GetVATAsync(Guid id);
 }

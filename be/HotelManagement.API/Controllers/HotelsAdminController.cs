@@ -121,4 +121,26 @@ public class HotelsAdminController : ControllerBase
         if (updated == null) return NotFound(ApiResponse<HotelDefaultTimesDto>.Fail("Hotel not found"));
         return Ok(ApiResponse<HotelDefaultTimesDto>.Ok(updated));
     }
+
+    [HttpGet("{id:guid}/vat")]
+    public async Task<IActionResult> GetVat(Guid id)
+    {
+        var uid = CurrentUserId();
+        if (uid == null) return Forbid();
+        var isAdmin = User.IsInRole("Admin");
+        var dto = await _svc.GetVATAsync(id);
+        return Ok(ApiResponse<decimal>.Ok(dto));
+    }
+
+    [HttpPut("{id:guid}/vat")]
+    [Authorize(Roles = "Manager,Admin")]
+    public async Task<IActionResult> UpdateVat(Guid id, [FromBody] UpdateVatDto request)
+    {
+        var uid = CurrentUserId();
+        if (uid == null) return Forbid();
+        await _svc.UpdateVATAsync(id, request.VAT);
+        return Ok(ApiResponse.Ok());
+    }
 }
+
+public record UpdateVatDto(decimal VAT);

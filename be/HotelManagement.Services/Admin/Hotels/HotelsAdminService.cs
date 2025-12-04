@@ -187,6 +187,24 @@ public class HotelsAdminService : IHotelsAdminService
         };
     }
 
+    public async Task<bool> UpdateVATAsync(Guid id, decimal vat)
+    {
+        var h = await _db.Hotels.FirstOrDefaultAsync(x => x.Id == id);
+        if (h == null) return false;
+
+        h.VAT = vat;
+        await _db.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<decimal> GetVATAsync(Guid id)
+    {
+        var h = await _db.Hotels.FirstOrDefaultAsync(x => x.Id == id);
+        if (h == null) return 0;
+        return h.VAT ?? 0;
+    }
+
+
     private async Task AddAuditAsync(Guid actorUserId, Guid hotelId, string action, object metadata)
     {
         _db.AuditLogs.Add(new AuditLog
