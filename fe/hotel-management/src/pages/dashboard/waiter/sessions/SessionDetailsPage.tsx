@@ -868,14 +868,19 @@ export default function SessionDetailsPage() {
           open={assignOpen}
           sessionId={id}
           onClose={() => setAssignOpen(false)}
-          onAssigned={() => {
-            toast.success("Đã gắn order");
-          }}
+          onAssigned={() => {}}
           onAssignedWithDetails={async (o) => {
             try {
-              await diningSessionsApi.assignOrder(id, o.id);
-              setAssignedOrder(o);
-            } catch {}
+              const res = await diningSessionsApi.assignOrder(id!, o.id);
+              if (res.isSuccess) {
+                setAssignedOrder(o);
+                toast.success("Đã gắn order");
+              } else {
+                toast.error(res.message || "Gắn order thất bại");
+              }
+            } catch {
+              toast.error("Đã xảy ra lỗi");
+            }
           }}
         />
       )}

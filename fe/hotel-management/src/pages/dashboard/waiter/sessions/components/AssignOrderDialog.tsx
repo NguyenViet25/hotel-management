@@ -18,7 +18,6 @@ import {
   Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import diningSessionsApi from "../../../../../api/diningSessionsApi";
 import ordersApi, {
   EOrderStatus,
   type OrderDetailsDto,
@@ -67,6 +66,7 @@ export default function AssignOrderDialog({
       search: value,
       page: 1,
       pageSize: 10,
+      status: EOrderStatus.Ready,
     };
     const res = await ordersApi.listOrders(params);
     setLoading(false);
@@ -75,11 +75,8 @@ export default function AssignOrderDialog({
 
   const handleAssign = async (orderId: string) => {
     if (isWaiter) return;
-    await diningSessionsApi.assignOrder(sessionId, orderId);
     const found = results.find((o) => o.id === orderId);
-
     if (found && onAssignedWithDetails) onAssignedWithDetails(found);
-    onAssigned();
     onClose();
   };
 
@@ -259,7 +256,12 @@ export default function AssignOrderDialog({
                       startIcon={<Assignment />}
                       variant="contained"
                       onClick={() => handleAssign(o.id)}
-                      disabled={isWaiter}
+                      disabled={isWaiter || o.status !== EOrderStatus.Ready}
+                      title={
+                        o.status !== EOrderStatus.Ready
+                          ? "Chỉ có đơn Sẵn sàng (Ready) mới được gắn"
+                          : undefined
+                      }
                     >
                       Gắn vào phiên
                     </Button>
