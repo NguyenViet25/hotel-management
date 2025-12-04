@@ -520,7 +520,6 @@ export default function SessionBoardPage() {
                     py: 1,
                     borderRadius: 2,
                     bgcolor: "primary.light",
-                    border: "2px dashed",
                     borderColor: "primary.main",
                   }}
                 >
@@ -531,7 +530,11 @@ export default function SessionBoardPage() {
                   >
                     {new Date(s.startedAt).toLocaleString()}
                   </Typography>
-                  <Chip label="Đang mở" color="primary" size="small" />
+                  <Chip
+                    label={s.status === "Open" ? "Đang mở" : "Đóng"}
+                    sx={{ color: "white", border: "1px dashed" }}
+                    size="small"
+                  />
                 </Box>
                 <Stack spacing={0.5} sx={{ px: 2, py: 1.5 }}>
                   <Stack direction="row" spacing={1} alignItems="center">

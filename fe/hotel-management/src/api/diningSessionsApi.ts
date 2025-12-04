@@ -1,4 +1,5 @@
 import axios from "./axios";
+import type { OrderDetailsDto } from "./ordersApi";
 
 export interface SessionTableDto {
   tableId: string;
@@ -125,6 +126,14 @@ const diningSessionsApi = {
     payload: { attachTableIds?: string[]; detachTableIds?: string[] }
   ): Promise<ItemResponse<boolean>> {
     const res = await axios.put(`/dining-sessions/${id}/tables`, payload);
+    return res.data;
+  },
+  async getOrderBySession(
+    sessionId: string
+  ): Promise<ItemResponse<OrderDetailsDto>> {
+    const res = await axios.get(
+      `/dining-sessions/order/by-session/${sessionId}`
+    );
     return res.data;
   },
 };

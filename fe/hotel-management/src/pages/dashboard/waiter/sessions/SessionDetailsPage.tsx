@@ -57,7 +57,10 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import useSWR from "swr";
 import diningSessionsApi from "../../../../api/diningSessionsApi";
-import { type OrderSummaryDto } from "../../../../api/ordersApi";
+import {
+  type OrderSummaryDto,
+  type OrderDetailsDto,
+} from "../../../../api/ordersApi";
 import serviceRequestsApi, {
   type ServiceRequestDto,
 } from "../../../../api/serviceRequestsApi";
@@ -114,6 +117,10 @@ export default function SessionDetailsPage() {
   const { data: reqRes, mutate: mutateReq } = useSWR(
     id ? ["requests", id] : null,
     async () => serviceRequestsApi.listBySession(id!, 1, 20)
+  );
+  const { data: orderRes, mutate: mutateOrder } = useSWR(
+    id ? ["session-order", id] : null,
+    async () => diningSessionsApi.getOrderBySession(id!)
   );
 
   const session = sessionRes?.data;
@@ -330,7 +337,7 @@ export default function SessionDetailsPage() {
               py: 1,
               borderRadius: 2,
               bgcolor: "primary.light",
-              border: "2px dashed",
+
               borderColor: "primary.main",
             }}
           >
@@ -343,7 +350,7 @@ export default function SessionDetailsPage() {
             </Typography>
             <Chip
               label={session.status === "Open" ? "Đang mở" : "Đóng"}
-              color={session.status === "Open" ? "primary" : "default"}
+              sx={{ color: "white", border: "1px dashed" }}
               size="small"
             />
           </Box>
@@ -373,13 +380,21 @@ export default function SessionDetailsPage() {
                 )}
               </Typography>
             </Stack>
-            {assignedOrder && (
+            {(orderRes?.data || assignedOrder) && (
               <Stack direction="row" spacing={1} alignItems="center">
                 <ReceiptLong fontSize="small" color="disabled" />
                 <Typography variant="caption" color="text.secondary">
-                  Order: {assignedOrder.customerName || "Walk-in"} •{" "}
-                  {assignedOrder.itemsCount} món •{" "}
-                  {Number(assignedOrder.itemsTotal).toLocaleString()} đ
+                  Order:{" "}
+                  {orderRes?.data?.customerName ||
+                    assignedOrder?.customerName ||
+                    "Walk-in"}{" "}
+                  •{" "}
+                  {orderRes?.data?.itemsCount || assignedOrder?.itemsCount || 0}{" "}
+                  món •{" "}
+                  {Number(
+                    orderRes?.data?.itemsTotal ?? assignedOrder?.itemsTotal ?? 0
+                  ).toLocaleString()}{" "}
+                  đ
                 </Typography>
               </Stack>
             )}
@@ -874,6 +889,7 @@ export default function SessionDetailsPage() {
               const res = await diningSessionsApi.assignOrder(id!, o.id);
               if (res.isSuccess) {
                 setAssignedOrder(o);
+                await mutateOrder();
                 toast.success("Đã gắn order");
               } else {
                 toast.error(res.message || "Gắn order thất bại");
