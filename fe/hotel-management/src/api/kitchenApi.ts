@@ -63,6 +63,12 @@ export enum QualityStatus {
   Expired = 4,
 }
 
+export enum ShoppingOrderStatus {
+  Pending = 0,
+  Confirmed = 1,
+  Cancelled = 2,
+}
+
 export interface ItemResponse<T> {
   isSuccess: boolean;
   message: string | null;
@@ -100,6 +106,14 @@ const kitchenApi = {
     const res = await axios.get(
       `/kitchen/foods-by-week?${queryParams.toString()}`
     );
+    return res.data;
+  },
+
+  async updateShoppingOrderStatus(
+    id: string,
+    status: ShoppingOrderStatus
+  ): Promise<ItemResponse<ShoppingDto>> {
+    const res = await axios.put(`/kitchen/shopping/${id}/status`, { status });
     return res.data;
   },
 };

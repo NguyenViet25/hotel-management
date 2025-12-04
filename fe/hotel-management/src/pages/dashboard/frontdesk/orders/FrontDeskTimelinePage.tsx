@@ -6,6 +6,10 @@ import {
   capitalize,
   Chip,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Grid,
   IconButton,
   List,
@@ -27,6 +31,7 @@ import kitchenApi, {
   type FoodsByDayItem,
   type GetFoodsByWeekResponse,
   type ShoppingItemDto,
+  ShoppingOrderStatus,
 } from "../../../../api/kitchenApi";
 import PageTitle from "../../../../components/common/PageTitle";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
@@ -63,6 +68,13 @@ const FoodTimeline: React.FC = () => {
   const [reviewOpen, setReviewOpen] = useState<boolean>(false);
   const [reviewLoading, setReviewLoading] = useState<boolean>(false);
   const [reviewItems, setReviewItems] = useState<ShoppingItemDto[]>([]);
+  const [statusDialogOpen, setStatusDialogOpen] = useState<boolean>(false);
+  const [statusAction, setStatusAction] = useState<"confirm" | "cancel" | null>(
+    null
+  );
+  const [statusTargetId, setStatusTargetId] = useState<string | undefined>(
+    undefined
+  );
 
   const { start, end } = useMemo(
     () => getWeekRange(currentDate),
@@ -162,6 +174,61 @@ const FoodTimeline: React.FC = () => {
     }
   };
 
+  const openStatusDialog = (
+    shoppingId?: string,
+    action?: "confirm" | "cancel"
+  ) => {
+    if (!shoppingId || !action) {
+      setSnackbar({
+        open: true,
+        message: "Không tìm thấy yêu cầu",
+        severity: "error",
+      });
+      return;
+    }
+    setStatusTargetId(shoppingId);
+    setStatusAction(action);
+    setStatusDialogOpen(true);
+  };
+
+  const confirmStatusChange = async () => {
+    if (!statusTargetId || !statusAction) return;
+    try {
+      const next =
+        statusAction === "confirm"
+          ? ShoppingOrderStatus.Confirmed
+          : ShoppingOrderStatus.Cancelled;
+      const res = await kitchenApi.updateShoppingOrderStatus(
+        statusTargetId,
+        next
+      );
+      if (res.isSuccess) {
+        setSnackbar({
+          open: true,
+          message: "Cập nhật trạng thái thành công",
+          severity: "success",
+        });
+        await fetchWeekFoods();
+      } else {
+        setSnackbar({
+          open: true,
+          message: res.message || "Không thể cập nhật trạng thái",
+          severity: "error",
+        });
+      }
+    } catch {
+      setSnackbar({
+        open: true,
+        message: "Đã xảy ra lỗi khi cập nhật trạng thái",
+        severity: "error",
+      });
+    } finally {
+      setStatusDialogOpen(false);
+      setStatusAction(null);
+      setStatusTargetId(undefined);
+    }
+  };
+
   useEffect(() => {
     const todayKey = getExactVNDate(today.toDate().toDateString());
     const el = document.getElementById(`${todayKey}-foods`);
@@ -245,6 +312,38 @@ const FoodTimeline: React.FC = () => {
                       >
                         Xem và xác nhận yêu cầu mua nguyên liệu
                       </Button>
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        justifyContent="center"
+                      >
+                        <Button
+                          size="small"
+                          variant="contained"
+                          color="success"
+                          onClick={() =>
+                            openStatusDialog(
+                              dayEntry?.shoppingOrderId,
+                              "confirm"
+                            )
+                          }
+                        >
+                          Xác nhận
+                        </Button>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          color="error"
+                          onClick={() =>
+                            openStatusDialog(
+                              dayEntry?.shoppingOrderId,
+                              "cancel"
+                            )
+                          }
+                        >
+                          Hủy
+                        </Button>
+                      </Stack>
                     </Stack>
                   </Stack>
                   <List dense>
@@ -299,6 +398,40 @@ const FoodTimeline: React.FC = () => {
         </Grid>
       )}
 
+      <IngredientReviewDialog
+        open={reviewOpen}
+        hotelId={hotelId || ""}
+        initialValues={initialShopping as any}
+        loading={reviewLoading}
+        ingredients={reviewItems}
+        onClose={() => setReviewOpen(false)}
+        onSubmit={async (payload) => {
+          try {
+            const res = await kitchenApi.updateShoppingList(payload);
+            if (res.isSuccess) {
+              setSnackbar({
+                open: true,
+                message: "Lưu đánh giá thành công",
+                severity: "success",
+              });
+              await fetchWeekFoods();
+            } else {
+              setSnackbar({
+                open: true,
+                message: res.message || "Không thể lưu đánh giá",
+                severity: "error",
+              });
+            }
+          } catch {
+            setSnackbar({
+              open: true,
+              message: "Đã xảy ra lỗi khi lưu đánh giá",
+              severity: "error",
+            });
+          }
+        }}
+      />
+
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}
@@ -308,6 +441,42 @@ const FoodTimeline: React.FC = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
+
+      <Dialog
+        open={statusDialogOpen}
+        onClose={() => setStatusDialogOpen(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 600 }}>
+          {statusAction === "confirm"
+            ? "Xác nhận yêu cầu mua nguyên liệu"
+            : "Hủy yêu cầu mua nguyên liệu"}
+        </DialogTitle>
+        <DialogContent dividers>
+          <Typography variant="body2" color="text.secondary">
+            {statusAction === "confirm"
+              ? "Bạn có muốn xác nhận yêu cầu mua nguyên liệu này?"
+              : "Bạn có chắc chắn muốn hủy yêu cầu mua nguyên liệu này?"}
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            variant="outlined"
+            color="inherit"
+            onClick={() => setStatusDialogOpen(false)}
+          >
+            Đóng
+          </Button>
+          <Button
+            variant="contained"
+            onClick={confirmStatusChange}
+            startIcon={statusAction === "confirm" ? undefined : undefined}
+          >
+            Xác nhận
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
