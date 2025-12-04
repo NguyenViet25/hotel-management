@@ -1,15 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   AssignmentInd,
-  Group,
-  GroupOff,
   Info,
-  NaturePeople,
   NoteAdd,
   People,
   Person,
   Phone,
-  Visibility,
 } from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -22,11 +18,14 @@ import {
   IconButton,
   InputAdornment,
   MenuItem,
-  Tooltip,
   Stack,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
+import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs from "dayjs";
 import React, { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
@@ -38,6 +37,7 @@ import ordersApi, {
   type OrderDetailsDto,
 } from "../../../../../api/ordersApi";
 import CustomSelect from "../../../../../components/common/CustomSelect";
+import { toast } from "react-toastify";
 
 interface IProps {
   open: boolean;
@@ -52,9 +52,10 @@ const schema = z.object({
   bookingId: z.string().optional(),
   customerName: z.string().min(2, "Tên khách hàng bắt buộc"),
   customerPhone: z.string().optional(),
-  status: z.string().optional(),
+  status: z.number().optional(),
   notes: z.string().optional(),
   guests: z.number().min(1, "Số khách phải >= 1").optional(),
+  orderDate: z.string().optional(),
   items: z
     .array(
       z.object({
@@ -72,9 +73,6 @@ interface IMenuItem {
   quantity: number;
 }
 
-// Modal for UC-28: Create walk-in order
-// - Fetches active menu items to select and add quantities
-// - Submits to ordersApi.createWalkIn
 const OrderFormModal: React.FC<IProps> = ({
   open,
   onClose,
@@ -98,8 +96,9 @@ const OrderFormModal: React.FC<IProps> = ({
       customerName: initialValues?.customerName || "",
       customerPhone: initialValues?.customerPhone || "",
       items: initialValues?.items || [],
-      status: initialValues?.status || "1",
+      status: initialValues?.status || 1,
       guests: initialValues?.guests || 1,
+      orderDate: initialValues?.servingDate || dayjs().toISOString(),
     },
   });
 
@@ -108,11 +107,6 @@ const OrderFormModal: React.FC<IProps> = ({
   const [menuItems, setMenuItemss] = useState<MenuItemDto[]>([]);
   const [bookings, setBookings] = useState<BookingDetailsDto[]>([]);
   const [loadingItems, setLoadingItems] = useState(false);
-  const [viewerOpen, setViewerOpen] = useState(false);
-  const [viewerTitle, setViewerTitle] = useState<string>("");
-  const [viewerItems, setViewerItems] = useState<
-    { name: string; imageUrl?: string }[]
-  >([]);
 
   const foodMenuItems = useMemo(
     () => menuItems.filter((mi) => (mi.category || "").trim() !== "Set"),
@@ -185,8 +179,9 @@ const OrderFormModal: React.FC<IProps> = ({
         .map((i) => ({ menuItemId: i.menuItemId, quantity: i.quantity })),
       isWalkIn: isWalkIn,
       bookingId: values.bookingId || undefined,
-      notes: values.notes || "",
+      notes: values.notes,
       guests: values.guests || 1,
+      servingDate: values.orderDate || dayjs().toISOString(),
       status: Number(values.status || "1"),
     };
     try {
@@ -215,6 +210,10 @@ const OrderFormModal: React.FC<IProps> = ({
           reset({ customerName: "", customerPhone: "", items: [] });
         }
       }
+
+      toast.success(
+        isEdit ? "Cập nhật yêu cầu thành công" : "Tạo yêu cầu thành công"
+      );
     } catch {}
   };
 
@@ -231,9 +230,10 @@ const OrderFormModal: React.FC<IProps> = ({
       setValue("bookingId", initialValues.bookingId || undefined);
       setValue("customerName", initialValues.customerName || "");
       setValue("customerPhone", initialValues.customerPhone || "");
-      setValue("status", initialValues.status.toString() || "1");
+      setValue("status", initialValues.status || 1);
       setValue("guests", initialValues.guests || 1);
       setValue("items", initialValues.items || []);
+      setValue("orderDate", initialValues.createdAt || dayjs().toISOString());
     }
   }, [initialValues, setValue]);
 
@@ -322,6 +322,21 @@ const OrderFormModal: React.FC<IProps> = ({
             />
           )}
           <Stack spacing={2}>
+            <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="vi">
+              <Controller
+                name="orderDate"
+                control={control}
+                render={({ field }) => (
+                  <DateTimePicker
+                    label="Thời gian phục vụ"
+                    value={field.value ? dayjs(field.value) : null}
+                    onChange={(v) =>
+                      field.onChange(v ? v.toISOString() : undefined)
+                    }
+                  />
+                )}
+              />
+            </LocalizationProvider>
             {isWalkIn && (
               <>
                 <Controller
@@ -386,9 +401,12 @@ const OrderFormModal: React.FC<IProps> = ({
                       </InputAdornment>
                     }
                     options={[
-                      { value: "1", label: "Đang xử lý" },
-                      { value: "2", label: "Hoàn thành" },
-                      { value: "3", label: "Hủy" },
+                      { value: 1, label: "Chờ xác nhận" },
+                      { value: 2, label: "Đã xác nhận" },
+                      { value: 3, label: "Đang nấu" },
+                      { value: 4, label: "Sẵn sàng" },
+                      { value: 5, label: "Đã phục vụ" },
+                      { value: 6, label: "Đã hủy" },
                     ]}
                     placeholder="Chọn trạng thái"
                   />
@@ -815,48 +833,6 @@ const OrderFormModal: React.FC<IProps> = ({
           {isEdit ? "Cập nhật yêu cầu" : "Tạo yêu cầu"}
         </Button>
       </DialogActions>
-      <Dialog
-        open={viewerOpen}
-        onClose={() => setViewerOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle sx={{ fontWeight: 600 }}>{viewerTitle}</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2} sx={{ mt: 1 }}>
-            {viewerItems.length === 0 ? (
-              <Typography color="text.secondary">
-                Chưa có danh sách món trong set
-              </Typography>
-            ) : (
-              viewerItems.map((it, idx) => (
-                <Stack
-                  key={idx}
-                  direction="row"
-                  spacing={1}
-                  alignItems="center"
-                >
-                  <img
-                    src={it.imageUrl || "/assets/logo.png"}
-                    alt={it.name}
-                    style={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: 6,
-                      objectFit: "cover",
-                      border: "1px solid #eee",
-                    }}
-                  />
-                  <Typography>{it.name}</Typography>
-                </Stack>
-              ))
-            )}
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setViewerOpen(false)}>Đóng</Button>
-        </DialogActions>
-      </Dialog>
     </Dialog>
   );
 };

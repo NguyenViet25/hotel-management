@@ -172,6 +172,7 @@ public class OrdersService : IOrdersService
                 Notes = o.Notes,
                 CreatedAt = o.CreatedAt,
                 ItemsCount = o.Items.Count,
+                ServingDate = o.ServingDate,
                 ItemsTotal = o.Items.Where(i => i.Status != OrderItemStatus.Voided).Sum(i => i.UnitPrice * i.Quantity),
                 PromotionCode = o.PromotionCode,
                 PromotionValue = o.PromotionValue ?? 0,
@@ -477,6 +478,12 @@ public class OrdersService : IOrdersService
                 order.Status = dto.Status.Value;
             }
 
+            if (dto.ServingDate.HasValue)
+            {
+                order.ServingDate = dto.ServingDate;
+            }
+
+
             var oldItems = await _orderItemRepository.Query().Where(x => x.OrderId == dto.Id).ToListAsync();
             await _orderItemRepository.RemoveRangeAsync(oldItems);
             await _orderItemRepository.SaveChangesAsync();
@@ -526,6 +533,11 @@ public class OrdersService : IOrdersService
             if (dto.Status.HasValue)
             {
                 order.Status = dto.Status.Value;
+            }
+
+            if (dto.ServingDate.HasValue)
+            {
+                order.ServingDate = dto.ServingDate;
             }
 
 

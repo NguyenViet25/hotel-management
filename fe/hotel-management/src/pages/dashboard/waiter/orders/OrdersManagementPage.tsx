@@ -103,7 +103,7 @@ const OrdersManagementPage: React.FC = () => {
     severity: "success" | "error";
   }>({ open: false, message: "", severity: "success" });
 
-  const [selectedStatus, setSelectedStatus] = useState<number | undefined>(
+  const [selectedStatus, setSelectedStatus] = useState<number | " ">(
     EOrderStatus.NeedConfirmed
   );
 
@@ -362,7 +362,7 @@ const OrdersManagementPage: React.FC = () => {
               value={(selectedStatus as any) ?? "all"}
               onChange={(e) => {
                 const v = e.target.value;
-                setSelectedStatus(v === " " ? undefined : (v as number));
+                setSelectedStatus(v === " " ? v : (v as number));
               }}
               label="Lọc trạng thái"
               options={statusOptions}
@@ -767,7 +767,10 @@ const OrdersManagementPage: React.FC = () => {
       )}
       <OrderFormModal
         open={openOrder}
-        onClose={() => setOpenOrder(false)}
+        onClose={() => {
+          setOpenOrder(false);
+          setSelectedOrder(null);
+        }}
         hotelId={hotelId}
         onSubmitted={() => fetchOrders(page)}
         initialValues={selectedOrder}

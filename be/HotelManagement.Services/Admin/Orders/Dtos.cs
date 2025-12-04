@@ -146,7 +146,7 @@ public class OrderSummaryDto
     public DateTime CreatedAt { get; set; }
     public int ItemsCount { get; set; }
     public decimal ItemsTotal { get; set; }
-    public DateTime OrderDate { get; set; }
+    public DateTime? ServingDate { get; set; }
     public decimal PromotionValue { get; set; }
     public string? PromotionCode { get; set; }
     public int Guests { get; set; }

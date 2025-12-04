@@ -25,6 +25,7 @@ export interface CreateOrderDto {
   status?: number;
   isWalkIn?: boolean;
   guests?: number;
+  servingDate?: string; // ISO
 }
 
 export interface OrdersQueryParams {
@@ -82,6 +83,7 @@ export interface OrderSummaryDto {
   promotionCode?: string;
   promotionValue?: number;
   guests?: number;
+  servingDate?: string;
 }
 
 export interface OrderDetailsDto extends OrderSummaryDto {
