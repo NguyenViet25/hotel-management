@@ -6,8 +6,16 @@ public class ShoppingOrder
     public Guid HotelId { get; set; }
     public DateTime OrderDate { get; set; }
     public DateTime CreatedAt { get; set; }
+    public ShoppingOrderStatus ShoppingOrderStatus { get; set; }
     public string? Notes { get; set; }
     public ICollection<ShoppingItem> Items { get; set; } = [];
+}
+
+public enum ShoppingOrderStatus
+{
+    Draft = 0,
+    Confirmed = 1,
+    Cancelled = 2,
 }
 
 public class ShoppingItem

@@ -449,6 +449,9 @@ namespace HotelManagement.Domain.Migrations
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("ShoppingOrderStatus")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.ToTable("ShoppingOrders");

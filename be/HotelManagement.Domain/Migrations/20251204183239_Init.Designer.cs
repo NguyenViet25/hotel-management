@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelManagement.Domain.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251202214559_Init")]
+    [Migration("20251204183239_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -451,6 +451,9 @@ namespace HotelManagement.Domain.Migrations
 
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("ShoppingOrderStatus")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
