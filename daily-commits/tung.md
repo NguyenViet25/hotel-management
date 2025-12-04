@@ -210,3 +210,4 @@
 2025-12-03 - 5 - 01:48:40 UTC :: refactor: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — fix race-condition nho trong thao tac (dat tieu chi toi thieu)
 2025-12-04 - 1 - 01:49:37 UTC :: refactor: UC-29 Thanh toan nha hang: thu tien, in hoa don, dong giao dich. — dieu chinh UI & copy cho ro (dong bo voi BE/FE)
 2025-12-04 - 2 - 01:49:38 UTC :: test: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — cap nhat mock data & seed test (anh huong thap)
+2025-12-04 - 3 - 01:49:41 UTC :: refactor: UC-42 Phan quyen: thiet lap quyen theo co so. — dieu chinh UI & copy cho ro (da kiem tra lint)
