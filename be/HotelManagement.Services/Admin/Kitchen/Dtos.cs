@@ -46,6 +46,7 @@ public class ShoppingDto
     public DateTime OrderDate { get; set; }
     public Guid HotelId { get; set; }
     public string? Notes { get; set; }
+    public ShoppingOrderStatus ShoppingOrderStatus { get; set; }
     public List<ShoppingItemDto>? ShoppingItems { get; set; }
 }
 

@@ -42,6 +42,7 @@ export interface ShoppingDto {
   orderDate: string; // DateTime -> ISO string
   hotelId: string; // Guid -> string
   notes?: string | null;
+  shoppingOrderStatus?: ShoppingOrderStatus;
   shoppingItems?: ShoppingItemDto[] | null;
 }
 

@@ -124,15 +124,16 @@ public class KitchenService : IKitchenService
               .Select(x => new ShoppingDto()
               {
                   Id = x.Id,
-                  HotelId = x.Id,
+                  HotelId = x.HotelId,
                   Notes = x.Notes,
                   OrderDate = x.OrderDate,
+                  ShoppingOrderStatus = x.ShoppingOrderStatus,
                   ShoppingItems = x.Items.Select(x => new ShoppingItemDto()
                   {
                       Id = x.Id,
                       Name = x.Name,
                       Quantity = x.Quantity,
-                      ShoppingOrderId = x.Id,
+                      ShoppingOrderId = x.ShoppingOrderId,
                       Unit = x.Unit,
                       QualityStatus = x.QualityStatus,
                   }).ToList()

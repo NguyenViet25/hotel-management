@@ -1,4 +1,10 @@
-import { ChevronLeft, ChevronRight, RemoveRedEye } from "@mui/icons-material";
+import {
+  Cancel,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  RemoveRedEye,
+} from "@mui/icons-material";
 import {
   Alert,
   Box,
@@ -36,7 +42,6 @@ import kitchenApi, {
 import PageTitle from "../../../../components/common/PageTitle";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
 import { getExactVNDate } from "../../../../utils/date-helper";
-import IngredientReviewDialog from "../../manager/kitchen/components/IngredientReviewDialog";
 
 // Compute Monday → Sunday for the given date
 const getWeekRange = (date: Date) => {
@@ -209,6 +214,7 @@ const FoodTimeline: React.FC = () => {
           severity: "success",
         });
         await fetchWeekFoods();
+        setReviewOpen(false);
       } else {
         setSnackbar({
           open: true,
@@ -312,38 +318,6 @@ const FoodTimeline: React.FC = () => {
                       >
                         Xem và xác nhận yêu cầu mua nguyên liệu
                       </Button>
-                      <Stack
-                        direction="row"
-                        spacing={1}
-                        justifyContent="center"
-                      >
-                        <Button
-                          size="small"
-                          variant="contained"
-                          color="success"
-                          onClick={() =>
-                            openStatusDialog(
-                              dayEntry?.shoppingOrderId,
-                              "confirm"
-                            )
-                          }
-                        >
-                          Xác nhận
-                        </Button>
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          color="error"
-                          onClick={() =>
-                            openStatusDialog(
-                              dayEntry?.shoppingOrderId,
-                              "cancel"
-                            )
-                          }
-                        >
-                          Hủy
-                        </Button>
-                      </Stack>
                     </Stack>
                   </Stack>
                   <List dense>
@@ -398,39 +372,100 @@ const FoodTimeline: React.FC = () => {
         </Grid>
       )}
 
-      <IngredientReviewDialog
+      <Dialog
         open={reviewOpen}
-        hotelId={hotelId || ""}
-        initialValues={initialShopping as any}
-        loading={reviewLoading}
-        ingredients={reviewItems}
         onClose={() => setReviewOpen(false)}
-        onSubmit={async (payload) => {
-          try {
-            const res = await kitchenApi.updateShoppingList(payload);
-            if (res.isSuccess) {
-              setSnackbar({
-                open: true,
-                message: "Lưu đánh giá thành công",
-                severity: "success",
-              });
-              await fetchWeekFoods();
-            } else {
-              setSnackbar({
-                open: true,
-                message: res.message || "Không thể lưu đánh giá",
-                severity: "error",
-              });
-            }
-          } catch {
-            setSnackbar({
-              open: true,
-              message: "Đã xảy ra lỗi khi lưu đánh giá",
-              severity: "error",
-            });
-          }
-        }}
-      />
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 600 }}>
+          Yêu cầu mua nguyên liệu
+        </DialogTitle>
+        <DialogContent dividers>
+          <Stack spacing={1.5}>
+            <Stack direction="row" spacing={1} alignItems="center">
+              {initialShopping?.shoppingOrderStatus ===
+                ShoppingOrderStatus.Confirmed && (
+                <Chip label="Đã xác nhận" color="success" size="small" />
+              )}
+              {initialShopping?.shoppingOrderStatus ===
+                ShoppingOrderStatus.Cancelled && (
+                <Chip label="Đã hủy" color="error" size="small" />
+              )}
+              {(initialShopping?.shoppingOrderStatus === undefined ||
+                initialShopping?.shoppingOrderStatus ===
+                  ShoppingOrderStatus.Draft) && (
+                <Chip label="Nháp" color="default" size="small" />
+              )}
+              <Chip
+                label={dayjs(initialShopping?.orderDate).format("DD/MM/YYYY")}
+                size="small"
+              />
+            </Stack>
+            {initialShopping?.notes && (
+              <Box
+                sx={{
+                  p: 1,
+                  border: "1px dashed",
+                  borderColor: "divider",
+                  borderRadius: 2,
+                  bgcolor: "grey.50",
+                }}
+              >
+                <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
+                  {initialShopping?.notes}
+                </Typography>
+              </Box>
+            )}
+            <TableContainer component={Paper}>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>#</TableCell>
+                    <TableCell>Tên nguyên liệu</TableCell>
+                    <TableCell align="center">Số lượng</TableCell>
+                    <TableCell align="center">Đơn vị</TableCell>
+                    <TableCell align="center">Chất lượng</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {(reviewItems || []).map((it, idx) => (
+                    <TableRow key={it.id || idx}>
+                      <TableCell>{idx + 1}</TableCell>
+                      <TableCell>{it.name}</TableCell>
+                      <TableCell align="center">{it.quantity}</TableCell>
+                      <TableCell align="center">{it.unit}</TableCell>
+                      <TableCell align="center">
+                        {it.qualityStatus ?? ""}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            size="small"
+            variant="contained"
+            color="primary"
+            startIcon={<Check />}
+            onClick={() => openStatusDialog(initialShopping?.id, "confirm")}
+          >
+            Xác nhận
+          </Button>
+          <Button
+            size="small"
+            variant="contained"
+            color="error"
+            startIcon={<Cancel />}
+            onClick={() => openStatusDialog(initialShopping?.id, "cancel")}
+          >
+            Hủy
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Snackbar
         open={snackbar.open}
