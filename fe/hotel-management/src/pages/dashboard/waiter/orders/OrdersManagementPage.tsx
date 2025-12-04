@@ -52,6 +52,7 @@ const getOrderPhase = (status: number): string => {
   if (status === EOrderStatus.InProgress) return "Đang nấu";
   if (status === EOrderStatus.Ready) return "Sẵn sàng";
   if (status === EOrderStatus.Completed) return "Đã phục vụ";
+  if (status === EOrderStatus.Cancelled) return "Đã hủy";
   return "Mới";
 };
 
