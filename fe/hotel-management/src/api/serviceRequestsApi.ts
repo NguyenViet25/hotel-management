@@ -6,6 +6,7 @@ export interface ServiceRequestDto {
   diningSessionId: string;
   requestType: string;
   description: string;
+  quantity: number;
   status: string;
   assignedToUserId?: string | null;
   assignedToName?: string | null;
@@ -18,6 +19,7 @@ export interface CreateServiceRequestRequest {
   diningSessionId: string;
   requestType: string;
   description: string;
+  quantity?: number;
 }
 
 export interface UpdateServiceRequestRequest {
@@ -25,6 +27,7 @@ export interface UpdateServiceRequestRequest {
   assignedToUserId?: string;
   requestType?: string;
   description?: string;
+  quantity?: number;
 }
 
 export interface ItemResponse<T> {

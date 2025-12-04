@@ -43,6 +43,7 @@ public class ServiceRequestService : IServiceRequestService
             DiningSessionId = request.DiningSessionId,
             RequestType = request.RequestType,
             Description = request.Description,
+            Quantity = request.Quantity,
             Status = ServiceRequestStatus.Pending,
             CreatedAt = DateTime.UtcNow
         };
@@ -87,6 +88,11 @@ public class ServiceRequestService : IServiceRequestService
         if (request.Description != null)
         {
             serviceRequest.Description = request.Description!;
+        }
+
+        if (request.Quantity.HasValue && request.Quantity.Value > 0)
+        {
+            serviceRequest.Quantity = request.Quantity.Value;
         }
 
         await _serviceRequestRepository.UpdateAsync(serviceRequest);
@@ -176,6 +182,7 @@ public class ServiceRequestService : IServiceRequestService
             DiningSessionId = serviceRequest.DiningSessionId,
             RequestType = serviceRequest.RequestType,
             Description = serviceRequest.Description,
+            Quantity = serviceRequest.Quantity,
             Status = serviceRequest.Status.ToString(),
             AssignedToUserId = serviceRequest.AssignedToUserId,
             AssignedToName = assignedToName,

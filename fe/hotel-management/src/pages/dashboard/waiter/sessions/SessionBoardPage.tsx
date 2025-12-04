@@ -104,6 +104,7 @@ export default function SessionBoardPage() {
   const [reqSearch, setReqSearch] = useState<string>("");
   const [newReqType, setNewReqType] = useState<string>("water");
   const [newReqDesc, setNewReqDesc] = useState<string>("");
+  const [newReqQty, setNewReqQty] = useState<number>(1);
   const requestTypes = useMemo(
     () => [
       { value: "water", label: "Nước" },
@@ -144,10 +145,12 @@ export default function SessionBoardPage() {
         diningSessionId: requestsSessionId,
         requestType: newReqType,
         description: newReqDesc,
+        quantity: newReqQty || 1,
       });
       if (res.isSuccess) {
         toast.success("Đã tạo yêu cầu");
         setNewReqDesc("");
+        setNewReqQty(1);
         const l = await serviceRequestsApi.listBySession(
           requestsSessionId,
           1,
@@ -736,6 +739,17 @@ export default function SessionBoardPage() {
                 onChange={(e) => setNewReqDesc(e.target.value)}
                 fullWidth
               />
+              <TextField
+                label="Số lượng"
+                type="number"
+                size="small"
+                value={newReqQty}
+                onChange={(e) =>
+                  setNewReqQty(Math.max(1, Number(e.target.value || 1)))
+                }
+                sx={{ width: 140 }}
+                inputProps={{ min: 1 }}
+              />
               <Button
                 variant="contained"
                 onClick={createRequest}
@@ -795,7 +809,7 @@ export default function SessionBoardPage() {
                       primary={`${
                         requestTypes.find((t) => t.value === r.requestType)
                           ?.label || r.requestType
-                      } • ${r.description}`}
+                      } • SL: ${r.quantity} • ${r.description}`}
                       secondary={`${new Date(r.createdAt).toLocaleString()} • ${
                         r.status
                       }${r.assignedToName ? " • " + r.assignedToName : ""}`}

@@ -76,6 +76,7 @@ export default function SessionDetailsPage() {
   );
   const [requestType, setRequestType] = useState("water");
   const [requestDesc, setRequestDesc] = useState("");
+  const [requestQty, setRequestQty] = useState<number>(1);
   const [tab, setTab] = useState<number>(0);
   const [attachFromSessionOpen, setAttachFromSessionOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -171,10 +172,12 @@ export default function SessionDetailsPage() {
         diningSessionId: id,
         requestType,
         description: requestDesc,
+        quantity: requestQty || 1,
       });
       if (res.isSuccess) {
         toast.success("Đã ghi nhận yêu cầu");
         setRequestDesc("");
+        setRequestQty(1);
         await mutateReq();
       } else {
         toast.error(res.message || "Ghi nhận yêu cầu thất bại");
@@ -597,6 +600,15 @@ export default function SessionDetailsPage() {
               size="small"
               fullWidth
             />
+            <TextField
+              label="Số lượng"
+              type="number"
+              value={requestQty}
+              onChange={(e) => setRequestQty(Math.max(1, Number(e.target.value || 1)))}
+              size="small"
+              sx={{ width: 120 }}
+              inputProps={{ min: 1 }}
+            />
             <Button
               startIcon={<Send />}
               variant="contained"
@@ -637,6 +649,7 @@ export default function SessionDetailsPage() {
                           size="small"
                         />
                       )}
+                      <Chip label={`SL: ${r.quantity}`} size="small" />
                     </Stack>
                     <Divider sx={{ my: 1 }} />
                     <Stack direction={{ xs: "column", lg: "row" }} spacing={1}>
