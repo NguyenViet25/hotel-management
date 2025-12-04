@@ -130,7 +130,7 @@ export default function SessionDetailsPage() {
     id ? ["session-order", id] : null,
     async () => diningSessionsApi.getOrderBySession(id!)
   );
-  const { data: tablesBySessionRes } = useSWR(
+  const { data: tablesBySessionRes, mutate: mutateTablesBySession } = useSWR(
     id ? ["session-tables", id] : null,
     async () => diningSessionsApi.getTablesBySession(id!)
   );
@@ -240,6 +240,7 @@ export default function SessionDetailsPage() {
       if (res.isSuccess) {
         toast.success("Đã tách bàn");
         await mutateSession();
+        await mutateTablesBySession();
       } else {
         toast.error(res.message || "Tách bàn thất bại");
       }
@@ -1015,6 +1016,7 @@ export default function SessionDetailsPage() {
                   setAttachFromSessionOpen(false);
                   setReload((prev) => prev + 1);
                   await mutateSession();
+                  await mutateTablesBySession();
                 }}
               />
             )}
