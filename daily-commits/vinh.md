@@ -207,3 +207,4 @@
 2025-12-04 - 2 - 01:49:37 UTC :: refactor: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — cai thien hieu nang render/list (anh huong thap)
 2025-12-04 - 3 - 01:49:39 UTC :: docs: UC-33 Phan ca: gan ca, duyet doi ca/ngi phep. — chuan hoa ten ham/bien theo convention (da review so bo)
 2025-12-04 - 4 - 01:49:41 UTC :: feat: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — kiem tra tuong thich mui gio/tien te (da kiem tra lint)
+2025-12-04 - 5 - 01:49:43 UTC :: feat: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — chuan hoa ten ham/bien theo convention (dat tieu chi toi thieu)
