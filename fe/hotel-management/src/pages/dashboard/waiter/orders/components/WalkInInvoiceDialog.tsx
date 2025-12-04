@@ -1,4 +1,4 @@
-import { Close, Download } from "@mui/icons-material";
+import { Close, Download, Print } from "@mui/icons-material";
 import DiscountIcon from "@mui/icons-material/Discount";
 import PercentIcon from "@mui/icons-material/Percent";
 import {
@@ -364,7 +364,7 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
             Đóng
           </Button>
           <Button
-            startIcon={<Download />}
+            startIcon={<Print />}
             variant="contained"
             onClick={onCreateInvoice}
           >

@@ -128,6 +128,19 @@ const hotelService = {
     const res = await axios.put(`/hotels/${id}/default-times`, payload);
     return res.data;
   },
+
+  getVat: async (id: string): Promise<ItemResponse<number>> => {
+    const res = await axios.get(`/hotels/${id}/vat`);
+    return res.data;
+  },
+
+  updateVat: async (
+    id: string,
+    vat: number
+  ): Promise<ItemResponse<any>> => {
+    const res = await axios.put(`/hotels/${id}/vat`, { VAT: vat });
+    return res.data;
+  },
 };
 
 export default hotelService;

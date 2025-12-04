@@ -7,6 +7,7 @@ import {
   Grid,
   Snackbar,
   Stack,
+  TextField,
 } from "@mui/material";
 import { LocalizationProvider, TimePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -25,6 +26,7 @@ const HotelSettingsPage: React.FC = () => {
   const { hotelId } = useStore<StoreState>((s) => s);
   const [checkIn, setCheckIn] = useState<Dayjs | null>(null);
   const [checkOut, setCheckOut] = useState<Dayjs | null>(null);
+  const [vat, setVat] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -37,23 +39,28 @@ const HotelSettingsPage: React.FC = () => {
       if (!hotelId) return;
       setLoading(true);
       try {
-        const res: ItemResponse<HotelDefaultTimesDto> =
-          await hotelService.getDefaultTimes(hotelId);
-        if (res.isSuccess) {
-          const ci = res.data.defaultCheckInTime
-            ? dayjs(res.data.defaultCheckInTime)
+        const [timesRes, vatRes] = await Promise.all([
+          hotelService.getDefaultTimes(hotelId),
+          hotelService.getVat(hotelId),
+        ]);
+        if (timesRes.isSuccess) {
+          const ci = timesRes.data.defaultCheckInTime
+            ? dayjs(timesRes.data.defaultCheckInTime)
             : null;
-          const co = res.data.defaultCheckOutTime
-            ? dayjs(res.data.defaultCheckOutTime)
+          const co = timesRes.data.defaultCheckOutTime
+            ? dayjs(timesRes.data.defaultCheckOutTime)
             : null;
           setCheckIn(ci);
           setCheckOut(co);
         } else {
           setSnackbar({
             open: true,
-            message: res.message || "Không thể tải cài đặt",
+            message: timesRes.message || "Không thể tải cài đặt",
             severity: "error",
           });
+        }
+        if (vatRes.isSuccess) {
+          setVat(Number(vatRes.data));
         }
       } catch {
         setSnackbar({
@@ -76,11 +83,18 @@ const HotelSettingsPage: React.FC = () => {
         defaultCheckOutTime: checkOut ? checkOut.toISOString() : null,
       };
       const res = await hotelService.updateDefaultTimes(hotelId, payload);
-      if (res.isSuccess) {
-        toast.success("Đã cập nhật giờ mặc định");
-      } else {
-        toast.error(res.message || "Cập nhật thất bại");
+      if (!res.isSuccess) {
+        toast.error(res.message || "Cập nhật giờ mặc định thất bại");
+        return;
       }
+      if (vat !== null && !Number.isNaN(vat)) {
+        const vatRes = await hotelService.updateVat(hotelId, vat);
+        if (!vatRes.isSuccess) {
+          toast.error(vatRes.message || "Cập nhật VAT thất bại");
+          return;
+        }
+      }
+      toast.success("Đã cập nhật cài đặt");
     } catch {
       toast.error("Đã xảy ra lỗi");
     }
@@ -120,6 +134,19 @@ const HotelSettingsPage: React.FC = () => {
                     slotProps={{ textField: { size: "small" } }}
                   />
                 </LocalizationProvider>
+
+                <TextField
+                  label="Thuế VAT (%)"
+                  type="number"
+                  value={vat ?? ""}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    const num = v === "" ? null : Number(v);
+                    setVat(num);
+                  }}
+                  size="small"
+                  inputProps={{ min: 0, max: 100, step: 0.1 }}
+                />
 
                 <Stack direction={{ xs: "column", md: "row" }} spacing={1}>
                   <Button

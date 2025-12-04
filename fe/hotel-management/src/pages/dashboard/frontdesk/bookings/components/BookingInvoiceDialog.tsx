@@ -525,7 +525,11 @@ const BookingInvoiceDialog: React.FC<Props> = ({
           >
             Đóng
           </Button>
-          <Button variant="contained" onClick={onConfirmInvoice}>
+          <Button
+            startIcon={<Print />}
+            variant="contained"
+            onClick={onConfirmInvoice}
+          >
             Xuất hóa đơn
           </Button>
         </DialogActions>
