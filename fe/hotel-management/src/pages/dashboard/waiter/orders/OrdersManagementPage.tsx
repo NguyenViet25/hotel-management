@@ -374,11 +374,7 @@ const OrdersManagementPage: React.FC = () => {
               return txt.length ? txt : null;
             })();
             return (
-              <Accordion
-                key={o.id}
-                sx={{ borderRadius: 2, boxShadow: 2 }}
-                disableGutters
-              >
+              <Accordion key={o.id} sx={{ borderRadius: 2, boxShadow: 2 }}>
                 <AccordionSummary expandIcon={<ExpandMore />}>
                   <Stack
                     direction={{ xs: "column", sm: "row" }}
@@ -401,6 +397,8 @@ const OrdersManagementPage: React.FC = () => {
                         {new Date(o.createdAt).toLocaleString()}
                       </Typography>
                       <Chip
+                        sx={{ minWidth: 120 }}
+                        size="small"
                         color={
                           o.status === EOrderStatus.NeedConfirmed
                             ? "default"

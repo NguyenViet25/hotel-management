@@ -5,6 +5,7 @@ import {
   Save,
   Search,
   Warning,
+  ExpandMore,
 } from "@mui/icons-material";
 import DoneIcon from "@mui/icons-material/Done";
 import EventIcon from "@mui/icons-material/Event";
@@ -28,6 +29,9 @@ import {
   Stack,
   TextField,
   Typography,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from "@mui/material";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -347,46 +351,50 @@ export default function KitchenManagementPage() {
             .flatMap((brt) => brt.bookingRooms || [])
             .reduce((sum, br) => sum + (br.guests?.length || 0), 0);
           return (
-            <Card key={order.id} sx={{ borderRadius: 3 }}>
-              <CardContent>
-                <Stack spacing={1.5}>
-                  <Stack spacing={1}>
-                    <Stack
-                      direction="row"
-                      spacing={0.5}
-                      justifyContent={"space-between"}
-                    >
-                      <Typography fontWeight={700}>Order {order.id}</Typography>
-                      <Chip
-                        label={getOrderPhase(order.status)}
-                        color={
-                          order.status === EOrderStatus.NeedConfirmed
-                            ? "default"
-                            : order.status === EOrderStatus.Confirmed
-                            ? "success"
-                            : order.status === EOrderStatus.InProgress
-                            ? "primary"
-                            : order.status === EOrderStatus.InProgress
-                            ? "primary"
-                            : order.status === EOrderStatus.Completed
-                            ? "success"
-                            : order.status === EOrderStatus.Cancelled
-                            ? "error"
-                            : "default"
-                        }
-                        size="small"
-                      />
-                    </Stack>
-
+            <Accordion key={order.id} sx={{ borderRadius: 2 }} disableGutters>
+              <AccordionSummary expandIcon={<ExpandMore />}>
+                <Stack
+                  direction="row"
+                  spacing={0.5}
+                  justifyContent={"space-between"}
+                  alignItems="center"
+                  sx={{ width: "100%" }}
+                >
+                  <Typography fontWeight={700}>Order {order.id}</Typography>
+                  <Stack direction="row" spacing={1} alignItems="center">
                     {room && (
                       <Typography variant="body2" color="text.secondary">
                         Phòng {room}
                       </Typography>
                     )}
+                    <Chip
+                      label={getOrderPhase(order.status)}
+                      color={
+                        order.status === EOrderStatus.NeedConfirmed
+                          ? "default"
+                          : order.status === EOrderStatus.Confirmed
+                          ? "success"
+                          : order.status === EOrderStatus.InProgress
+                          ? "primary"
+                          : order.status === EOrderStatus.InProgress
+                          ? "primary"
+                          : order.status === EOrderStatus.Completed
+                          ? "success"
+                          : order.status === EOrderStatus.Cancelled
+                          ? "error"
+                          : "default"
+                      }
+                      size="small"
+                    />
+                  </Stack>
+                </Stack>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Stack spacing={1.5}>
+                  <Stack spacing={1}>
                     <Typography fontWeight={600}>
                       Thông tin khách hàng
                     </Typography>
-
                     <Box
                       sx={{
                         border: "1px dashed",
@@ -406,7 +414,6 @@ export default function KitchenManagementPage() {
                             {dayjs(order.createdAt).format("D/M/YYYY")}
                           </Typography>
                         </Stack>
-
                         <Stack
                           direction="row"
                           spacing={0.75}
@@ -553,7 +560,6 @@ export default function KitchenManagementPage() {
                         >
                           {it.menuItemName} x {it.quantity}
                         </Typography>
-
                         {order.itemHistories &&
                           order.itemHistories.some(
                             (h) => h.newOrderItemId === it.id
@@ -622,8 +628,8 @@ export default function KitchenManagementPage() {
                     })()}
                   </Stack>
                 </Stack>
-              </CardContent>
-            </Card>
+              </AccordionDetails>
+            </Accordion>
           );
         })}
         {items.length === 0 && <Alert severity="info">Không có đơn</Alert>}
