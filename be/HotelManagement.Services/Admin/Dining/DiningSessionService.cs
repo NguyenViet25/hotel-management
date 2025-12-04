@@ -486,7 +486,7 @@ public class DiningSessionService : IDiningSessionService
         {
             var table = await _diningSessionTableRepository.Query()
                 .OrderByDescending(x => x.AttachedAt)
-                .Where(x => x.Id == tableId)
+                .Where(x => x.TableId == tableId)
                 .FirstOrDefaultAsync();
 
             if (table == null) return ApiResponse<OrderDetailsDto>.Fail("Không tìm thấy bàn");

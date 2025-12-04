@@ -136,6 +136,12 @@ const diningSessionsApi = {
     );
     return res.data;
   },
+  async getOrderByTable(
+    tableId: string
+  ): Promise<ItemResponse<OrderDetailsDto>> {
+    const res = await axios.get(`/dining-sessions/order/by-table/${tableId}`);
+    return res.data;
+  },
 };
 
 export default diningSessionsApi;

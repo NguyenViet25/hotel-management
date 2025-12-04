@@ -8,6 +8,10 @@ import {
   Visibility,
   LineAxis,
   TableBar,
+  Person,
+  Phone,
+  RestaurantMenu,
+  MonetizationOn,
 } from "@mui/icons-material";
 import {
   Box,
@@ -26,6 +30,12 @@ import {
   TextField,
   Tooltip,
   Typography,
+  Divider,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
 } from "@mui/material";
 import React, { useMemo, useState } from "react";
 import type { TableDto, TableStatus } from "../../../../../api/tablesApi";
@@ -34,6 +44,8 @@ import EmptyState from "../../../../../components/common/EmptyState";
 import CustomSelect, {
   type Option,
 } from "../../../../../components/common/CustomSelect";
+import diningSessionsApi from "../../../../../api/diningSessionsApi";
+import type { OrderDetailsDto } from "../../../../../api/ordersApi";
 
 interface TablesTableProps {
   data: TableDto[];
@@ -75,6 +87,30 @@ const TablesTable: React.FC<TablesTableProps> = ({
   const [dayFilter, setDayFilter] = useState<number>(-1);
   const [statusFilter, setStatusFilter] = useState<number>(-1);
   const [viewItem, setViewItem] = useState<TableDto | null>(null);
+  const [orderLoading, setOrderLoading] = useState(false);
+  const [orderDetails, setOrderDetails] = useState<OrderDetailsDto | null>(
+    null
+  );
+
+  React.useEffect(() => {
+    const run = async () => {
+      if (!viewItem) {
+        setOrderDetails(null);
+        return;
+      }
+      console.log("viewItem", viewItem);
+      setOrderLoading(true);
+      try {
+        const res = await diningSessionsApi.getOrderByTable(viewItem.id);
+        setOrderDetails(res?.data || null);
+      } catch {
+        setOrderDetails(null);
+      } finally {
+        setOrderLoading(false);
+      }
+    };
+    run();
+  }, [viewItem]);
 
   const dayOptions: Option[] = useMemo(() => {
     const caps = Array.from(new Set((data || []).map((t) => t.capacity))).sort(
@@ -89,7 +125,6 @@ const TablesTable: React.FC<TablesTableProps> = ({
     { value: -1, label: "Tất cả trạng thái" },
     { value: 0, label: "Sẵn sàng" },
     { value: 1, label: "Đang sử dụng" },
-    { value: 2, label: "Đã đặt" },
     { value: 3, label: "Ngừng phục vụ" },
   ];
 
@@ -109,11 +144,7 @@ const TablesTable: React.FC<TablesTableProps> = ({
         sx={{ mb: 2 }}
         justifyContent={"space-between"}
       >
-        <Stack
-          direction={{ xs: "column", md: "row" }}
-          spacing={1}
-          alignItems="center"
-        >
+        <Stack direction={{ xs: "column", md: "row" }} spacing={1}>
           <TextField
             placeholder="Tìm kiếm..."
             size="small"
@@ -123,7 +154,7 @@ const TablesTable: React.FC<TablesTableProps> = ({
               setSearchText(v);
               onSearch?.(v);
             }}
-            sx={{ width: 320 }}
+            sx={{ width: { xs: "100%", md: 320 } }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -402,7 +433,7 @@ const TablesTable: React.FC<TablesTableProps> = ({
         open={!!viewItem}
         onClose={() => setViewItem(null)}
         fullWidth
-        maxWidth="xs"
+        maxWidth="md"
       >
         <DialogTitle>Chi tiết bàn</DialogTitle>
         <DialogContent>
@@ -417,11 +448,125 @@ const TablesTable: React.FC<TablesTableProps> = ({
               <Stack direction="row" spacing={1} alignItems="center">
                 <Chip label={`Dãy ${viewItem.capacity}`} color="warning" />
                 {statusChip(viewItem.status)}
-                <Chip
-                  label={viewItem.isActive ? "Hoạt động" : "Vô hiệu"}
-                  size="small"
-                />
               </Stack>
+              <Divider />
+              {orderLoading ? (
+                <Typography color="text.secondary">Đang tải đơn...</Typography>
+              ) : orderDetails ? (
+                <Stack spacing={1}>
+                  <Stack direction={{ xs: "column", md: "row" }} spacing={1}>
+                    <Chip
+                      icon={<Person fontSize="small" />}
+                      label={`Khách: ${orderDetails.customerName || "Walk-in"}`}
+                    />
+                    {orderDetails.customerPhone && (
+                      <Chip
+                        icon={<Phone fontSize="small" />}
+                        label={`SĐT: ${orderDetails.customerPhone}`}
+                      />
+                    )}
+                    <Chip
+                      icon={<RestaurantMenu fontSize="small" />}
+                      label={`Món: ${orderDetails.itemsCount}`}
+                    />
+                    <Chip
+                      icon={<MonetizationOn fontSize="small" />}
+                      label={`Tổng: ${Number(
+                        orderDetails.itemsTotal
+                      ).toLocaleString()} đ`}
+                    />
+                  </Stack>
+                  <Divider />
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Tên món</TableCell>
+                        <TableCell align="right" sx={{ width: "18%" }}>
+                          SL
+                        </TableCell>
+                        <TableCell align="right" sx={{ width: "24%" }}>
+                          Đơn giá
+                        </TableCell>
+                        <TableCell align="right" sx={{ width: "24%" }}>
+                          Thành tiền
+                        </TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {(orderDetails.items || []).map((it) => (
+                        <TableRow key={it.id}>
+                          <TableCell>{it.menuItemName}</TableCell>
+                          <TableCell align="right">{it.quantity}</TableCell>
+                          <TableCell align="right">
+                            {Number(it.unitPrice).toLocaleString()} đ
+                          </TableCell>
+                          <TableCell align="right">
+                            {Number(
+                              it.unitPrice * it.quantity
+                            ).toLocaleString()}{" "}
+                            đ
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {orderDetails.promotionValue ? (
+                        <TableRow>
+                          <TableCell sx={{ color: "#2e7d32" }}>
+                            Giảm giá (
+                            {orderDetails.promotionCode
+                              ? `${orderDetails.promotionCode} - `
+                              : ""}
+                            {orderDetails.promotionValue}%)
+                          </TableCell>
+                          <TableCell align="right">1</TableCell>
+                          <TableCell align="right">
+                            {Number(
+                              Math.round(
+                                (orderDetails.itemsTotal *
+                                  (orderDetails.promotionValue || 0)) /
+                                  100
+                              )
+                            ).toLocaleString()}{" "}
+                            đ
+                          </TableCell>
+                          <TableCell align="right" sx={{ color: "#2e7d32" }}>
+                            -
+                            {Number(
+                              Math.round(
+                                (orderDetails.itemsTotal *
+                                  (orderDetails.promotionValue || 0)) /
+                                  100
+                              )
+                            ).toLocaleString()}{" "}
+                            đ
+                          </TableCell>
+                        </TableRow>
+                      ) : null}
+                      <TableRow>
+                        <TableCell sx={{ fontWeight: 700 }}>
+                          Tổng cộng
+                        </TableCell>
+                        <TableCell />
+                        <TableCell />
+                        <TableCell align="right" sx={{ fontWeight: 800 }}>
+                          {Number(
+                            orderDetails.itemsTotal -
+                              Math.round(
+                                (orderDetails.itemsTotal *
+                                  (orderDetails.promotionValue || 0)) /
+                                  100
+                              )
+                          ).toLocaleString()}{" "}
+                          đ
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </Stack>
+              ) : (
+                <Typography color="text.secondary">
+                  Không có order gắn cho bàn này
+                </Typography>
+              )}
             </Stack>
           )}
         </DialogContent>

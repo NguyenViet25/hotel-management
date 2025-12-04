@@ -138,7 +138,7 @@ public class DiningSessionController : ControllerBase
     [HttpGet("order/by-table/{id}")]
     public async Task<IActionResult> GetOrderByTable(Guid id)
     {
-        var response = await _diningSessionService.GetOrderOfSessionAsync(id);
+        var response = await _diningSessionService.GetOrderOfTableAsync(id);
         return Ok(response);
     }
 

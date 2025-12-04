@@ -87,7 +87,6 @@ const TableFormModal: React.FC<TableFormModalProps> = ({
   const statusOptions = [
     { value: 0, label: "Sẵn sàng" },
     { value: 1, label: "Đang sử dụng" },
-    { value: 2, label: "Đã đặt" },
     { value: 3, label: "Ngừng phục vụ" },
   ];
 
