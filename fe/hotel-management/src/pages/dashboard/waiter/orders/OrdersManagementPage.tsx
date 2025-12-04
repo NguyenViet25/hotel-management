@@ -54,7 +54,6 @@ const getOrderPhase = (status: number): string => {
 
 const OrdersManagementPage: React.FC = () => {
   // Filters
-  const [status, _] = useState<OrderStatus | undefined>("0");
   const [search, setSearch] = useState<string>("");
   const { hotelId, user } = useStore<StoreState>((state) => state);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -86,14 +85,17 @@ const OrdersManagementPage: React.FC = () => {
   }>({ open: false, message: "", severity: "success" });
 
   const [selectedStatus, setSelectedStatus] = useState<OrderStatus | undefined>(
-    "0"
+    EOrderStatus.NeedConfirmed
   );
 
   const statusOptions = [
-    { value: "0", label: "Tất cả" },
-    { value: "1", label: "Đang xử lý" },
-    { value: "2", label: "Đã hoàn thành" },
-    { value: "3", label: "Đã hủy" },
+    { value: " ", label: "Tất cả" },
+    { value: EOrderStatus.NeedConfirmed, label: "Chờ xác nhận" },
+    { value: EOrderStatus.Confirmed, label: "Đã xác nhận" },
+    { value: EOrderStatus.InProgress, label: "Đang nấu" },
+    { value: EOrderStatus.Ready, label: "Sẵn sàng" },
+    { value: EOrderStatus.Completed, label: "Đã phục vụ" },
+    { value: EOrderStatus.Cancelled, label: "Đã hủy" },
   ];
   const [invoiceOpen, setInvoiceOpen] = useState(false);
   const [selectedForInvoice, setSelectedForInvoice] =
@@ -122,7 +124,7 @@ const OrdersManagementPage: React.FC = () => {
     try {
       const res = await ordersApi.listOrders({
         hotelId: hotelId || undefined,
-        status,
+        status: selectedStatus,
         search: search || undefined,
         page: pageNum,
         pageSize,
@@ -152,7 +154,7 @@ const OrdersManagementPage: React.FC = () => {
   useEffect(() => {
     fetchOrders(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, search, hotelId]);
+  }, [selectedStatus, search, hotelId]);
 
   useEffect(() => {
     const loadMenu = async () => {

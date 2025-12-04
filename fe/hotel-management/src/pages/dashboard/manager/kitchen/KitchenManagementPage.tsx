@@ -93,9 +93,9 @@ export default function KitchenManagementPage() {
   } | null>(null);
   const [menuItems, setMenuItems] = useState<MenuItemDto[]>([]);
   const [menuLoading, setMenuLoading] = useState(false);
-  const [menuItemMap, setMenuItemMap] = useState<Record<string, MenuItemDto>>(
-    {}
-  );
+  const [menuItemMap, setMenuItemMap] = useState<Record<string, MenuItemDto>>({});
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmTargetId, setConfirmTargetId] = useState<string | null>(null);
 
   const [startDate, setStartDate] = useState<Dayjs>(dayjs());
   const [endDate, setEndDate] = useState<Dayjs>(dayjs());
@@ -265,6 +265,23 @@ export default function KitchenManagementPage() {
     await ordersApi.updateStatus(orderId, { status: next as any });
     const res = await ordersApi.getById(orderId);
     setDetailsMap((m) => ({ ...m, [orderId]: res.data }));
+  };
+
+  const openConfirmDialog = (orderId: string) => {
+    setConfirmTargetId(orderId);
+    setConfirmOpen(true);
+  };
+
+  const confirmOrder = async () => {
+    if (!confirmTargetId) return;
+    await ordersApi.updateStatus(confirmTargetId, {
+      status: EOrderStatus.Confirmed as any,
+    });
+    const res = await ordersApi.getById(confirmTargetId);
+    setDetailsMap((m) => ({ ...m, [confirmTargetId]: res.data }));
+    setConfirmOpen(false);
+    setConfirmTargetId(null);
+    toast.success("Xác nhận đơn thành công");
   };
 
   const saveNotes = async (orderId: string) => {
@@ -579,16 +596,24 @@ export default function KitchenManagementPage() {
                         );
                       return (
                         <>
-                          {cs !== EOrderStatus.NeedConfirmed &&
-                            cs !== EOrderStatus.Draft && (
-                              <Button
-                                variant="contained"
-                                startIcon={icon}
-                                onClick={() => advanceOrderStatus(order.id)}
-                              >
-                                {label}
-                              </Button>
-                            )}
+                          {cs === EOrderStatus.NeedConfirmed ? (
+                            <Button
+                              variant="contained"
+                              color="warning"
+                              startIcon={<Check />}
+                              onClick={() => openConfirmDialog(order.id)}
+                            >
+                              Xác nhận đơn
+                            </Button>
+                          ) : cs !== EOrderStatus.Draft ? (
+                            <Button
+                              variant="contained"
+                              startIcon={icon}
+                              onClick={() => advanceOrderStatus(order.id)}
+                            >
+                              {label}
+                            </Button>
+                          ) : null}
                         </>
                       );
                     })()}
@@ -753,6 +778,33 @@ export default function KitchenManagementPage() {
           >
             Đóng
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontWeight: 600 }}>Xác nhận đơn</DialogTitle>
+        <DialogContent dividers>
+          <Stack spacing={1.25}>
+            {confirmTargetId && (
+              <>
+                <Typography>Order {confirmTargetId}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {dayjs(detailsMap[confirmTargetId]?.createdAt).format("D/M/YYYY HH:mm")}
+                </Typography>
+                {detailsMap[confirmTargetId]?.notes && (
+                  <Box sx={{ p: 1, border: "1px dashed", borderColor: "divider", borderRadius: 2, bgcolor: "grey.50" }}>
+                    <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
+                      {detailsMap[confirmTargetId]?.notes}
+                    </Typography>
+                  </Box>
+                )}
+              </>
+            )}
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmOpen(false)} color="inherit" variant="outlined" startIcon={<Close />}>Đóng</Button>
+          <Button onClick={confirmOrder} variant="contained" startIcon={<Check />}>Xác nhận</Button>
         </DialogActions>
       </Dialog>
     </Box>

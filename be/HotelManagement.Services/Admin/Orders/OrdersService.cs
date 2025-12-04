@@ -61,6 +61,11 @@ public class OrdersService : IOrdersService
                                   (o.CustomerPhone ?? "").Contains(query.Search!));
             }
 
+            if(query.Status.HasValue)
+            {
+                q = q.Where(o => o.Status == query.Status);
+            }
+
             var items = await q
                 .OrderByDescending(o => o.CreatedAt)
                 .Skip((query.Page - 1) * query.PageSize)
