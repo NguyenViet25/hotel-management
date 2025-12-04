@@ -1,4 +1,5 @@
 using HotelManagement.Services.Admin.Dining.Dtos;
+using HotelManagement.Services.Admin.Orders.Dtos;
 using HotelManagement.Services.Common;
 
 namespace HotelManagement.Services.Admin.Dining;
@@ -15,4 +16,5 @@ public interface IDiningSessionService
     Task<ApiResponse<bool>> DeleteSessionAsync(Guid id);
     Task<ApiResponse<bool>> UpdateSessionTablesAsync(Guid sessionId, UpdateSessionTablesRequest request);
     Task<ApiResponse<bool>> AssignOrderAsync(Guid sessionId, Guid orderId);
+    Task<ApiResponse<OrderDetailsDto>> GetOrderOfSessionAsync(Guid sessionId);
 }

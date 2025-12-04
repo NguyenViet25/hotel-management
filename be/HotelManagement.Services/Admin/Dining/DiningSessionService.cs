@@ -3,6 +3,7 @@ using HotelManagement.Domain.Entities;
 using HotelManagement.Domain.Repositories;
 using HotelManagement.Repository.Common;
 using HotelManagement.Services.Admin.Dining.Dtos;
+using HotelManagement.Services.Admin.Orders.Dtos;
 using HotelManagement.Services.Common;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,6 +16,7 @@ public class DiningSessionService : IDiningSessionService
     private readonly IRepository<DiningSessionTable> _diningSessionTableRepository;
     private readonly IRepository<AppUser> _userRepository;
     private readonly IRepository<Order> _orderRepository;
+    private readonly IRepository<MenuItem> _menuItemRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public DiningSessionService(
@@ -23,6 +25,7 @@ public class DiningSessionService : IDiningSessionService
         IRepository<DiningSessionTable> diningSessionTableRepository,
         IRepository<AppUser> userRepository,
         IRepository<Order> orderRepository,
+        IRepository<MenuItem> menuItemRepository,
         IUnitOfWork unitOfWork)
     {
         _diningSessionRepository = diningSessionRepository;
@@ -31,6 +34,7 @@ public class DiningSessionService : IDiningSessionService
         _userRepository = userRepository;
         _orderRepository = orderRepository;
         _unitOfWork = unitOfWork;
+        _menuItemRepository = menuItemRepository;
     }
 
     public async Task<ApiResponse<DiningSessionDto>> CreateSessionAsync(CreateDiningSessionRequest request)
@@ -325,7 +329,7 @@ public class DiningSessionService : IDiningSessionService
             };
             await _diningSessionTableRepository.AddAsync(link);
             await _diningSessionTableRepository.SaveChangesAsync();
-           
+
             table.TableStatus = 1;
             await _tableRepository.UpdateAsync(table);
             await _tableRepository.SaveChangesAsync();
@@ -360,6 +364,7 @@ public class DiningSessionService : IDiningSessionService
             return ApiResponse<bool>.Fail("Order not ready");
         }
         order.DiningSessionId = sessionId;
+
         await _orderRepository.UpdateAsync(order);
         await _orderRepository.SaveChangesAsync();
         return ApiResponse<bool>.Success(true);
@@ -406,5 +411,58 @@ public class DiningSessionService : IDiningSessionService
             TotalGuests = session.TotalGuests,
             Tables = tableDtos,
         };
+    }
+
+    public async Task<ApiResponse<OrderDetailsDto>> GetOrderOfSessionAsync(Guid sessionId)
+    {
+        try
+        {
+            var o = await _orderRepository.Query()
+                .Include(o => o.Items)
+                .Where(x => x.DiningSessionId == sessionId)
+                .FirstOrDefaultAsync();
+            if (o == null) return ApiResponse<OrderDetailsDto>.Fail("Order not found");
+
+            var itemIds = o.Items.Select(i => i.MenuItemId).ToList();
+            var menuNames = await _menuItemRepository.Query()
+                .Where(mi => itemIds.Contains(mi.Id))
+                .Select(mi => new { mi.Id, mi.Name })
+                .ToListAsync();
+            var nameMap = menuNames.ToDictionary(x => x.Id, x => x.Name);
+
+            var dto = new OrderDetailsDto
+            {
+                Id = o.Id,
+                HotelId = o.HotelId,
+                BookingId = o.BookingId,
+                IsWalkIn = o.IsWalkIn,
+                CustomerName = o.CustomerName,
+                CustomerPhone = o.CustomerPhone,
+                Status = o.Status,
+                Notes = o.Notes,
+                CreatedAt = o.CreatedAt,
+                ItemsCount = o.Items.Count,
+                ServingDate = o.ServingDate,
+                ItemsTotal = o.Items.Where(i => i.Status != OrderItemStatus.Voided).Sum(i => i.UnitPrice * i.Quantity),
+                PromotionCode = o.PromotionCode,
+                PromotionValue = o.PromotionValue ?? 0,
+                Guests = o.Guests,
+                Items = o.Items.Select(i => new OrderItemDto
+                {
+                    Id = i.Id,
+                    MenuItemId = i.MenuItemId,
+                    MenuItemName = nameMap.TryGetValue(i.MenuItemId, out var n) ? n : string.Empty,
+                    Quantity = i.Quantity,
+                    UnitPrice = i.UnitPrice,
+                    Status = i.Status
+                }).ToList()
+            };
+
+            return ApiResponse<OrderDetailsDto>.Ok(dto);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<OrderDetailsDto>.Fail($"Error retrieving order: {ex.Message}");
+        }
     }
 }

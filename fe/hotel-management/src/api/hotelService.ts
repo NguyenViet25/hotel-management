@@ -116,7 +116,9 @@ const hotelService = {
     return response.data;
   },
 
-  getDefaultTimes: async (id: string): Promise<ItemResponse<HotelDefaultTimesDto>> => {
+  getDefaultTimes: async (
+    id: string
+  ): Promise<ItemResponse<HotelDefaultTimesDto>> => {
     const res = await axios.get(`/hotels/${id}/default-times`);
     return res.data;
   },
@@ -134,10 +136,7 @@ const hotelService = {
     return res.data;
   },
 
-  updateVat: async (
-    id: string,
-    vat: number
-  ): Promise<ItemResponse<any>> => {
+  updateVat: async (id: string, vat: number): Promise<ItemResponse<any>> => {
     const res = await axios.put(`/hotels/${id}/vat`, { VAT: vat });
     return res.data;
   },
