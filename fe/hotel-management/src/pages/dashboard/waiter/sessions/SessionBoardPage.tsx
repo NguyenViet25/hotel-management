@@ -206,9 +206,13 @@ export default function SessionBoardPage() {
     } catch {}
   };
   const confirmDeleteRequest = async () => {
-    if (isWaiter) return;
     try {
       if (!deleteReqId) return;
+      const target = (requests || []).find((r) => r.id === deleteReqId);
+      if (isWaiter && target?.status === "Completed") {
+        toast.error("Không thể xóa yêu cầu đã hoàn tất");
+        return;
+      }
       const res = await serviceRequestsApi.delete(deleteReqId);
       if (res.isSuccess) {
         toast.success("Đã xóa yêu cầu");
@@ -789,7 +793,7 @@ export default function SessionBoardPage() {
                           size="small"
                           color="error"
                           onClick={() => setDeleteReqId(r.id)}
-                          disabled={isWaiter}
+                          disabled={isWaiter && r.status === "Completed"}
                         >
                           Xóa
                         </Button>
@@ -882,7 +886,10 @@ export default function SessionBoardPage() {
             color="error"
             variant="contained"
             onClick={confirmDeleteRequest}
-            disabled={isWaiter}
+            disabled={
+              isWaiter &&
+              requests.find((x) => x.id === deleteReqId)?.status === "Completed"
+            }
           >
             Xóa
           </Button>

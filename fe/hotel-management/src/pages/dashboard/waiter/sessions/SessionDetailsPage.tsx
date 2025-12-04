@@ -23,6 +23,7 @@ import {
   TableBar,
   TableRestaurant as TableRestaurantIcon,
   WaterDrop,
+  StopCircle,
 } from "@mui/icons-material";
 import {
   Box,
@@ -69,11 +70,14 @@ import AssignOrderDialog from "./components/AssignOrderDialog";
 export default function SessionDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, hotelId } = useStore<StoreState>((s) => s);
+  const { hotelId, user } = useStore<StoreState>((s) => s);
   const [assignOpen, setAssignOpen] = useState(false);
   const [assignedOrder, setAssignedOrder] = useState<OrderSummaryDto | null>(
     null
   );
+  const isWaiter = (user?.roles || [])
+    .map((x) => x.toLowerCase())
+    .includes("waiter");
   const [requestType, setRequestType] = useState("water");
   const [requestDesc, setRequestDesc] = useState("");
   const [requestQty, setRequestQty] = useState<number>(1);
@@ -84,6 +88,8 @@ export default function SessionDetailsPage() {
   const [editGuests, setEditGuests] = useState<number>(0);
   const [editStartedAt, setEditStartedAt] = useState<Dayjs | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [endConfirmOpen, setEndConfirmOpen] = useState(false);
+  const [deleteReqId, setDeleteReqId] = useState<string | null>(null);
   const requestTypes = useMemo(
     () => [
       { value: "water", label: "Nước" },
@@ -268,6 +274,44 @@ export default function SessionDetailsPage() {
     }
   };
 
+  const confirmEndSession = async () => {
+    if (isWaiter) return;
+    if (!id) return;
+    try {
+      const res = await diningSessionsApi.endSession(id);
+      if (res.isSuccess) {
+        toast.success("Đã kết thúc phiên");
+        setEndConfirmOpen(false);
+        await mutateSession();
+      } else {
+        toast.error(res.message || "Kết thúc phiên thất bại");
+      }
+    } catch {
+      toast.error("Đã xảy ra lỗi");
+    }
+  };
+
+  const confirmDeleteRequest = async () => {
+    try {
+      if (!deleteReqId) return;
+      const target = (requests || []).find((x) => x.id === deleteReqId);
+      if (target?.status === "Completed") {
+        toast.error("Không thể xóa yêu cầu đã hoàn tất");
+        return;
+      }
+      const res = await serviceRequestsApi.delete(deleteReqId);
+      if (res.isSuccess) {
+        toast.success("Đã xóa yêu cầu");
+        setDeleteReqId(null);
+        await mutateReq();
+      } else {
+        toast.error(res.message || "Xóa yêu cầu thất bại");
+      }
+    } catch {
+      toast.error("Đã xảy ra lỗi");
+    }
+  };
+
   return (
     <Box>
       <PageTitle
@@ -348,55 +392,68 @@ export default function SessionDetailsPage() {
               </Stack>
             )}
           </Stack>
-          <Stack
-            direction={{ xs: "column", lg: "row" }}
-            spacing={1}
-            sx={{ px: 2, pb: 2 }}
-          >
-            <Button
-              size="small"
-              variant="contained"
-              color="inherit"
-              startIcon={<TableBar />}
-              onClick={openAttachForSession}
-              disabled={isWaiter}
+
+          {!isWaiter && (
+            <Stack
+              direction={{ xs: "column", lg: "row" }}
+              spacing={1}
+              sx={{ px: 2, pb: 2 }}
             >
-              Gắn bàn
-            </Button>
-            <Button
-              size="small"
-              variant="contained"
-              color="info"
-              startIcon={<ReceiptLong />}
-              onClick={() => {
-                if (isWaiter) return;
-                setAssignOpen(true);
-              }}
-              disabled={isWaiter}
-            >
-              Gán yêu cầu đặt món
-            </Button>
-            <Button
-              size="small"
-              variant="contained"
-              color="success"
-              startIcon={<Edit />}
-              onClick={openEdit}
-              disabled={isWaiter}
-            >
-              Sửa
-            </Button>
-            <Button
-              size="small"
-              color="error"
-              variant="contained"
-              startIcon={<Delete />}
-              onClick={() => setDeleteTargetId(id || null)}
-              disabled={isWaiter}
-            >
-              Xóa
-            </Button>
-          </Stack>
+              <Button
+                size="small"
+                variant="contained"
+                color="inherit"
+                startIcon={<TableBar />}
+                onClick={openAttachForSession}
+                disabled={isWaiter}
+              >
+                Gắn bàn
+              </Button>
+              <Button
+                size="small"
+                variant="contained"
+                color="info"
+                startIcon={<ReceiptLong />}
+                onClick={() => {
+                  if (isWaiter) return;
+                  setAssignOpen(true);
+                }}
+                disabled={isWaiter}
+              >
+                Gán yêu cầu đặt món
+              </Button>
+              <Button
+                size="small"
+                variant="contained"
+                color="warning"
+                startIcon={<StopCircle />}
+                onClick={() => setEndConfirmOpen(true)}
+                disabled={isWaiter || session?.status !== "Open"}
+              >
+                Kết thúc
+              </Button>
+              <Button
+                size="small"
+                variant="contained"
+                color="success"
+                startIcon={<Edit />}
+                onClick={openEdit}
+                disabled={isWaiter}
+              >
+                Sửa
+              </Button>
+              <Button
+                size="small"
+                color="error"
+                variant="contained"
+                startIcon={<Delete />}
+                onClick={() => setDeleteTargetId(id || null)}
+                disabled={isWaiter}
+              >
+                Xóa
+              </Button>
+            </Stack>
+          )}
         </Card>
       )}
 
@@ -560,22 +617,24 @@ export default function SessionDetailsPage() {
                             </Typography>
                           </Stack>
                         </Stack>
-                        <Stack
-                          direction={{ xs: "column", lg: "row" }}
-                          spacing={1}
-                          sx={{ px: 2, pb: 2 }}
-                        >
-                          <Button
-                            size="small"
-                            color="warning"
-                            variant="contained"
-                            fullWidth
-                            startIcon={<RemoveCircle />}
-                            onClick={() => detachTable(t.tableId)}
+                        {!isWaiter && (
+                          <Stack
+                            direction={{ xs: "column", lg: "row" }}
+                            spacing={1}
+                            sx={{ px: 2, pb: 2 }}
                           >
-                            Tách
-                          </Button>
-                        </Stack>
+                            <Button
+                              size="small"
+                              color="warning"
+                              variant="contained"
+                              fullWidth
+                              startIcon={<RemoveCircle />}
+                              onClick={() => detachTable(t.tableId)}
+                            >
+                              Tách
+                            </Button>
+                          </Stack>
+                        )}
                       </Card>
                     ))}
                   </Box>
@@ -615,7 +674,9 @@ export default function SessionDetailsPage() {
               label="Số lượng"
               type="number"
               value={requestQty}
-              onChange={(e) => setRequestQty(Math.max(1, Number(e.target.value || 1)))}
+              onChange={(e) =>
+                setRequestQty(Math.max(1, Number(e.target.value || 1)))
+              }
               size="small"
               sx={{ width: 120 }}
               inputProps={{ min: 1 }}
@@ -664,39 +725,62 @@ export default function SessionDetailsPage() {
                     </Stack>
                     <Divider sx={{ my: 1 }} />
                     <Stack direction={{ xs: "column", lg: "row" }} spacing={1}>
-                      <Button
-                        size="small"
-                        startIcon={<PlayCircle />}
-                        color="primary"
-                        variant="contained"
-                        fullWidth
-                        onClick={() => updateRequestStatus(r.id, "InProgress")}
-                        disabled={isWaiter}
-                      >
-                        Bắt đầu
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="contained"
-                        startIcon={<CheckCircle />}
-                        color="success"
-                        fullWidth
-                        onClick={() => updateRequestStatus(r.id, "Completed")}
-                        disabled={isWaiter}
-                      >
-                        Hoàn tất
-                      </Button>
-                      <Button
-                        size="small"
-                        color="warning"
-                        variant="contained"
-                        fullWidth
-                        startIcon={<Cancel />}
-                        onClick={() => updateRequestStatus(r.id, "Cancelled")}
-                        disabled={isWaiter}
-                      >
-                        Huỷ
-                      </Button>
+                      {!isWaiter ? (
+                        <>
+                          <Button
+                            size="small"
+                            startIcon={<PlayCircle />}
+                            color="primary"
+                            variant="contained"
+                            fullWidth
+                            onClick={() =>
+                              updateRequestStatus(r.id, "InProgress")
+                            }
+                            disabled={isWaiter}
+                          >
+                            Bắt đầu
+                          </Button>
+                          <Button
+                            size="small"
+                            variant="contained"
+                            startIcon={<CheckCircle />}
+                            color="success"
+                            fullWidth
+                            onClick={() =>
+                              updateRequestStatus(r.id, "Completed")
+                            }
+                            disabled={isWaiter}
+                          >
+                            Hoàn tất
+                          </Button>
+                          <Button
+                            size="small"
+                            color="warning"
+                            variant="contained"
+                            fullWidth
+                            startIcon={<Cancel />}
+                            onClick={() =>
+                              updateRequestStatus(r.id, "Cancelled")
+                            }
+                          >
+                            Huỷ
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <Button
+                            size="small"
+                            color="warning"
+                            variant="contained"
+                            fullWidth
+                            startIcon={<Delete />}
+                            onClick={() => setDeleteReqId(r.id)}
+                            disabled={r.status === "Completed"}
+                          >
+                            Xóa
+                          </Button>
+                        </>
+                      )}
                     </Stack>
                   </CardContent>
                 </Card>
@@ -791,6 +875,44 @@ export default function SessionDetailsPage() {
         />
       )}
 
+      <Dialog open={!!deleteReqId} onClose={() => setDeleteReqId(null)}>
+        <DialogTitle>Xóa yêu cầu</DialogTitle>
+        <DialogContent>
+          <Typography>Bạn có chắc muốn xóa yêu cầu này?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteReqId(null)}>Hủy</Button>
+          <Button
+            color="error"
+            variant="contained"
+            onClick={confirmDeleteRequest}
+            disabled={
+              requests.find((x) => x.id === deleteReqId)?.status === "Completed"
+            }
+          >
+            Xóa
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={endConfirmOpen} onClose={() => setEndConfirmOpen(false)}>
+        <DialogTitle>Kết thúc phiên</DialogTitle>
+        <DialogContent>
+          <Typography>Bạn có chắc chắn muốn kết thúc phiên này?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEndConfirmOpen(false)}>Hủy</Button>
+          <Button
+            variant="contained"
+            color="warning"
+            onClick={confirmEndSession}
+            disabled={isWaiter}
+          >
+            Kết thúc
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Dialog open={!!deleteTargetId} onClose={() => setDeleteTargetId(null)}>
         <DialogTitle>Xóa phiên</DialogTitle>
         <DialogContent>
@@ -813,4 +935,3 @@ export default function SessionDetailsPage() {
     </Box>
   );
 }
-  const isWaiter = (user?.roles || []).map((x) => x.toLowerCase()).includes("waiter");

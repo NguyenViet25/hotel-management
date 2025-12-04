@@ -161,6 +161,10 @@ public class ServiceRequestService : IServiceRequestService
         {
             return ApiResponse<bool>.Fail("Service request not found");
         }
+        if (serviceRequest.Status == ServiceRequestStatus.Completed)
+        {
+            return ApiResponse<bool>.Fail("Cannot delete a completed service request");
+        }
         await _serviceRequestRepository.RemoveAsync(serviceRequest);
         await _serviceRequestRepository.SaveChangesAsync();
         return ApiResponse<bool>.Success(true);
