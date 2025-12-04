@@ -203,3 +203,4 @@
 2025-12-03 - 3 - 01:48:41 UTC :: chore: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — bo sung unit test muc co ban (chuan bi cho tinh nang tiep theo)
 2025-12-03 - 4 - 01:48:44 UTC :: refactor: UC-11 Goi gia: bat/tam ngung goi gia dang ap dung. — dieu chinh quyen truy cap theo vai tro (da review so bo)
 2025-12-03 - 5 - 01:48:46 UTC :: perf: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — dieu chinh quyen truy cap theo vai tro (da smoke test)
+2025-12-04 - 1 - 01:49:36 UTC :: chore: UC-23 Bao tri: tao ticket, dinh anh, mo ta loi. — cap nhat cau hinh va kiem tra bien (da kiem tra lint)
