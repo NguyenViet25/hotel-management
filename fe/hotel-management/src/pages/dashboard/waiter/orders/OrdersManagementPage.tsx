@@ -3,6 +3,7 @@ import {
   Check,
   Close,
   Edit,
+  Info,
   People,
   Phone,
   Restaurant,
@@ -548,30 +549,35 @@ const OrdersManagementPage: React.FC = () => {
                             </Typography>
                           </Stack>
                         </Stack>
+
                         <Stack
                           direction={{ xs: "column", lg: "row" }}
                           spacing={1}
                         >
-                          <Button
-                            size="small"
-                            variant="outlined"
-                            startIcon={<Edit />}
-                            onClick={() => openEditModal(o as any)}
-                          >
-                            Sửa
-                          </Button>
+                          {Number(o.status) !== EOrderStatus.Cancelled && (
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              startIcon={<Edit />}
+                              onClick={() => openEditModal(o as any)}
+                            >
+                              Sửa
+                            </Button>
+                          )}
 
-                          <Button
-                            size="small"
-                            variant="contained"
-                            startIcon={<ReceiptLongIcon />}
-                            onClick={() => {
-                              setSelectedForInvoice(o);
-                              setInvoiceOpen(true);
-                            }}
-                          >
-                            Xuất hóa đơn
-                          </Button>
+                          {Number(o.status) !== EOrderStatus.Cancelled && (
+                            <Button
+                              size="small"
+                              variant="contained"
+                              startIcon={<ReceiptLongIcon />}
+                              onClick={() => {
+                                setSelectedForInvoice(o);
+                                setInvoiceOpen(true);
+                              }}
+                            >
+                              Xuất hóa đơn
+                            </Button>
+                          )}
                           {Number(o.status) === EOrderStatus.NeedConfirmed && (
                             <Button
                               size="small"
@@ -605,7 +611,20 @@ const OrdersManagementPage: React.FC = () => {
                           )}
                         </Stack>
                       </Stack>
-
+                      <Stack
+                        direction={{ xs: "row" }}
+                        spacing={1}
+                        alignItems="center"
+                        sx={{
+                          border: "1px dashed",
+                          borderRadius: 3,
+                          p: 1,
+                          backgroundColor: "yellow",
+                        }}
+                      >
+                        <Info color="action" />
+                        <Typography>Ghi chú: {o.notes || "—"}</Typography>
+                      </Stack>
                       <Stack spacing={1}>
                         <Typography variant="subtitle2" fontWeight={700}>
                           Món ăn
