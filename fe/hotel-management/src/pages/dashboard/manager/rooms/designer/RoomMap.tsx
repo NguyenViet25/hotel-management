@@ -59,6 +59,7 @@ import bookingsApi, {
   type BookingDetailsDto,
   type BookingIntervalDto,
   type BookingRoomDto,
+  type RoomStayHistoryDto,
 } from "../../../../../api/bookingsApi";
 import housekeepingApi from "../../../../../api/housekeepingApi";
 import mediaApi, { type MediaDto } from "../../../../../api/mediaApi";
@@ -119,7 +120,10 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
   const [occupancySchedule, setOccupancySchedule] = useState<
     BookingIntervalDto[]
   >([]);
-  const [occFromDate, setOccFromDate] = useState(dayjs().subtract(12, "month"));
+  const [occupancyHistory, setOccupancyHistory] = useState<
+    RoomStayHistoryDto[]
+  >([]);
+  const [occFromDate, setOccFromDate] = useState(dayjs().subtract(1, "month"));
   const [occToDate, setOccToDate] = useState(dayjs());
   const [occupancyScheduleLoading, setOccupancyScheduleLoading] =
     useState(false);
@@ -325,7 +329,7 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
     setOccupancyOpen(true);
     setOccupancyRoom(room);
     try {
-      const defaultFrom = dayjs().subtract(12, "month").startOf("day");
+      const defaultFrom = dayjs().subtract(1, "month").startOf("day");
       const defaultTo = dayjs().endOf("day");
       setOccFromDate(defaultFrom);
       setOccToDate(defaultTo);
@@ -336,17 +340,8 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
           defaultFrom.toISOString(),
           defaultTo.toISOString()
         );
-        const intervals = ((histRes.data || []) as any[]).map((h) => ({
-          bookingId: h.bookingId,
-          start: h.start,
-          end: h.end,
-          status: h.status,
-          guestName:
-            (Array.isArray(h.guests) && h.guests[0]?.fullname) ||
-            h.primaryGuestName ||
-            undefined,
-        })) as BookingIntervalDto[];
-        setOccupancySchedule(intervals);
+        const hist = (histRes.data || []) as RoomStayHistoryDto[];
+        setOccupancyHistory(hist);
       } finally {
         setOccupancyScheduleLoading(false);
       }
@@ -382,17 +377,8 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
         occFromDate.startOf("day").toISOString(),
         occToDate.endOf("day").toISOString()
       );
-      const intervals = ((res.data || []) as any[]).map((h) => ({
-        bookingId: h.bookingId,
-        start: h.start,
-        end: h.end,
-        status: h.status,
-        guestName:
-          (Array.isArray(h.guests) && h.guests[0]?.fullname) ||
-          h.primaryGuestName ||
-          undefined,
-      })) as BookingIntervalDto[];
-      setOccupancySchedule(intervals);
+      const hist = (res.data || []) as RoomStayHistoryDto[];
+      setOccupancyHistory(hist);
     } finally {
       setOccupancyScheduleLoading(false);
     }
@@ -1188,272 +1174,6 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
         </DialogTitle>
         <DialogContent>
           <Stack spacing={2}>
-            {occupancyRoomBooking && (
-              <>
-                <Paper
-                  sx={{
-                    p: 1.5,
-                    border: "1px dashed",
-                    borderColor: "divider",
-                    borderRadius: 2,
-                  }}
-                >
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Chip
-                      icon={<CalendarMonth />}
-                      color="success"
-                      label={`Nhận: ${formatDateTime(
-                        occupancyRoomBooking.startDate
-                      )}`}
-                    />
-                    <Chip
-                      icon={<CalendarMonth />}
-                      color="warning"
-                      label={`Trả: ${formatDateTime(
-                        occupancyRoomBooking.endDate
-                      )}`}
-                    />
-                    {occupancyRoomBooking.bookingStatus &&
-                      statusChip(occupancyRoomBooking.bookingStatus)}
-                  </Stack>
-                </Paper>
-                <Typography variant="subtitle2">Danh sách khách</Typography>
-                <Stack spacing={1}>
-                  {(occupancyRoomBooking.guests || []).map((g) => (
-                    <Paper
-                      key={g.guestId}
-                      variant="outlined"
-                      sx={{
-                        p: 1,
-                        borderStyle: "dashed",
-                        borderColor: "grey.400",
-                        borderRadius: 1,
-                      }}
-                    >
-                      <Grid container spacing={1} alignItems="center">
-                        <Grid item xs={12} sm={6}>
-                          <Stack
-                            direction="row"
-                            spacing={1}
-                            alignItems="center"
-                            flexWrap="wrap"
-                          >
-                            <Chip
-                              size="small"
-                              icon={<Person />}
-                              color="primary"
-                              label={g.fullname || "Khách"}
-                            />
-                            {g.phone && (
-                              <Chip
-                                size="small"
-                                icon={<Phone />}
-                                label={g.phone}
-                              />
-                            )}
-                          </Stack>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                          <Stack
-                            direction="row"
-                            spacing={1}
-                            alignItems="center"
-                            flexWrap="wrap"
-                          >
-                            {g.idCard && (
-                              <Chip
-                                size="small"
-                                icon={<CreditCard />}
-                                color="secondary"
-                                label={g.idCard}
-                              />
-                            )}
-                          </Stack>
-                          {(g.idCardFrontImageUrl || g.idCardBackImageUrl) && (
-                            <Stack
-                              direction="row"
-                              spacing={1}
-                              alignItems="center"
-                            >
-                              {g.idCardFrontImageUrl && (
-                                <Tooltip title="Mặt trước CMND/CCCD">
-                                  <Box
-                                    component="a"
-                                    href={g.idCardFrontImageUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    sx={{
-                                      display: "inline-flex",
-                                      alignItems: "center",
-                                    }}
-                                  >
-                                    <Image sx={{ mr: 0.5 }} />
-                                    <Box
-                                      component="img"
-                                      src={g.idCardFrontImageUrl}
-                                      alt="Front"
-                                      sx={{
-                                        width: 56,
-                                        height: 36,
-                                        objectFit: "cover",
-                                        borderRadius: 1,
-                                        border: "1px solid",
-                                        borderColor: "divider",
-                                      }}
-                                    />
-                                  </Box>
-                                </Tooltip>
-                              )}
-                              {g.idCardBackImageUrl && (
-                                <Tooltip title="Mặt sau CMND/CCCD">
-                                  <Box
-                                    component="a"
-                                    href={g.idCardBackImageUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    sx={{
-                                      display: "inline-flex",
-                                      alignItems: "center",
-                                    }}
-                                  >
-                                    <Image sx={{ mr: 0.5 }} />
-                                    <Box
-                                      component="img"
-                                      src={g.idCardBackImageUrl}
-                                      alt="Back"
-                                      sx={{
-                                        width: 56,
-                                        height: 36,
-                                        objectFit: "cover",
-                                        borderRadius: 1,
-                                        border: "1px solid",
-                                        borderColor: "divider",
-                                      }}
-                                    />
-                                  </Box>
-                                </Tooltip>
-                              )}
-                            </Stack>
-                          )}
-                        </Grid>
-                      </Grid>
-                    </Paper>
-                  ))}
-                </Stack>
-                {occupancyBooking && (
-                  <Stack spacing={1}>
-                    <Typography variant="subtitle2">
-                      Thông tin booking
-                    </Typography>
-                    <Paper
-                      variant="outlined"
-                      sx={{
-                        p: 1.5,
-                        borderStyle: "dashed",
-                        borderColor: "grey.400",
-                        borderRadius: 2,
-                      }}
-                    >
-                      <Grid container spacing={1}>
-                        <Grid item xs={12} sm={6} md={4}>
-                          <Stack
-                            direction="row"
-                            spacing={1}
-                            flexWrap="wrap"
-                            alignItems="center"
-                          >
-                            <Chip
-                              size="small"
-                              icon={<ReceiptLong />}
-                              label={`Mã: ${occupancyBooking.id}`}
-                            />
-                            {occupancyBooking.primaryGuestName && (
-                              <Chip
-                                size="small"
-                                icon={<Person />}
-                                color="primary"
-                                label={occupancyBooking.primaryGuestName}
-                              />
-                            )}
-                            {occupancyBooking.phoneNumber && (
-                              <Chip
-                                size="small"
-                                icon={<Phone />}
-                                label={occupancyBooking.phoneNumber}
-                              />
-                            )}
-                            {occupancyBooking.email && (
-                              <Chip
-                                size="small"
-                                icon={<Email />}
-                                label={occupancyBooking.email}
-                              />
-                            )}
-                          </Stack>
-                        </Grid>
-                        <Grid item xs={12} sm={6} md={4}>
-                          <Stack
-                            direction="row"
-                            spacing={1}
-                            flexWrap="wrap"
-                            alignItems="center"
-                          >
-                            <Chip
-                              size="small"
-                              icon={<AttachMoney />}
-                              color="success"
-                              label={`Tổng: ${occupancyBooking.totalAmount}`}
-                            />
-                            <Chip
-                              size="small"
-                              icon={<AttachMoney />}
-                              color="info"
-                              label={`Đặt cọc: ${occupancyBooking.depositAmount}`}
-                            />
-                            <Chip
-                              size="small"
-                              icon={<LocalOffer />}
-                              color="warning"
-                              label={`Giảm giá: ${occupancyBooking.discountAmount}`}
-                            />
-                            <Chip
-                              size="small"
-                              icon={<AttachMoney />}
-                              color="secondary"
-                              label={`Còn lại: ${occupancyBooking.leftAmount}`}
-                            />
-                          </Stack>
-                        </Grid>
-                        <Grid item xs={12} sm={6} md={4}>
-                          <Stack
-                            direction="row"
-                            spacing={1}
-                            flexWrap="wrap"
-                            alignItems="center"
-                          >
-                            <Chip
-                              size="small"
-                              icon={<Event />}
-                              label={`Tạo lúc: ${dayjs(
-                                occupancyBooking.createdAt
-                              ).format("DD/MM/YYYY HH:mm")}`}
-                            />
-                            {occupancyBooking.notes && (
-                              <Chip
-                                size="small"
-                                icon={<Info />}
-                                label={occupancyBooking.notes}
-                              />
-                            )}
-                          </Stack>
-                        </Grid>
-                      </Grid>
-                    </Paper>
-                  </Stack>
-                )}
-              </>
-            )}
-
             <Stack spacing={1}>
               <Typography variant="subtitle2">
                 Lịch sử người ở theo khoảng ngày
@@ -1482,92 +1202,69 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                 </Stack>
               </LocalizationProvider>
               {occupancyScheduleLoading && <LinearProgress />}
-              {(() => {
-                const start = occFromDate.startOf("day");
-                const end = occToDate.endOf("day");
-                if (!start.isValid() || !end.isValid() || end.isBefore(start)) {
-                  return (
-                    <Typography variant="body2" color="text.secondary">
-                      Khoảng ngày không hợp lệ
-                    </Typography>
-                  );
-                }
-                const daysCount = Math.max(1, end.diff(start, "day") + 1);
-                const days = Array.from({ length: daysCount }).map((_, i) =>
-                  start.add(i, "day")
-                );
-                if (days.length === 0) return null as any;
-                return (
-                  <Box sx={{ width: "100%", overflowX: "auto" }}>
-                    <Stack
-                      direction="row"
-                      spacing={0.5}
-                      sx={{ minWidth: days.length * 100 }}
-                    >
-                      {days.map((d) => {
-                        const intervals = (occupancySchedule || []).filter(
-                          (i) => {
-                            const s = dayjs(i.start);
-                            const e = dayjs(i.end);
-                            const ds = s.startOf("day");
-                            const de = e.endOf("day");
-                            return (
-                              d.isSame(ds, "day") ||
-                              d.isSame(de, "day") ||
-                              (d.isAfter(ds, "day") && d.isBefore(de, "day"))
-                            );
-                          }
-                        );
-                        if (!intervals.length)
-                          return (
-                            <Box
-                              key={d.toISOString()}
-                              sx={{ width: 100, height: 32 }}
-                            />
-                          );
-                        const i = intervals[0];
-                        const bg =
-                          i.status === 2
-                            ? "success.light"
-                            : i.status === 1
-                            ? "warning.light"
-                            : "info.light";
-                        return (
-                          <Tooltip
-                            key={d.toISOString()}
-                            title={`${dayjs(i.start).format("DD/MM")} - ${dayjs(
-                              i.end
-                            ).format("DD/MM")}`}
-                          >
-                            <Paper
-                              sx={{
-                                width: 100,
-                                height: 32,
-                                bgcolor: bg,
-                                border: "1px dashed",
-                                borderColor: "divider",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                              }}
-                            >
-                              <Typography variant="caption">
-                                {i.guestName || "—"}
-                              </Typography>
-                            </Paper>
-                          </Tooltip>
-                        );
-                      })}
-                    </Stack>
-                  </Box>
-                );
-              })()}
               {!occupancyScheduleLoading &&
-                (occupancySchedule || []).length === 0 && (
+                (occupancyHistory || []).length === 0 && (
                   <Typography variant="body2" color="text.secondary">
                     Không có lịch sử trong khoảng ngày đã chọn
                   </Typography>
                 )}
+              <Stack spacing={1}>
+                {(occupancyHistory || []).map((h) => (
+                  <Paper key={`${h.bookingRoomId}-${h.start}`} sx={{ p: 1 }}>
+                    <Stack spacing={0.5}>
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        alignItems="center"
+                        flexWrap="wrap"
+                      >
+                        <Chip
+                          size="small"
+                          icon={<CalendarMonth />}
+                          label={`${dayjs(h.start).format(
+                            "DD/MM/YYYY"
+                          )} - ${dayjs(h.end).format("DD/MM/YYYY")}`}
+                        />
+                      </Stack>
+                      <Stack spacing={0.5}>
+                        {(h.guests || []).map((g) => (
+                          <Stack
+                            key={g.guestId}
+                            direction="row"
+                            spacing={1}
+                            alignItems="center"
+                            flexWrap="wrap"
+                          >
+                            <Chip
+                              size="small"
+                              icon={<Person />}
+                              label={g.fullname || "—"}
+                            />
+                            <Chip
+                              size="small"
+                              icon={<Phone />}
+                              label={g.phone || "—"}
+                            />
+                            <Chip
+                              size="small"
+                              icon={<CreditCard />}
+                              label={g.idCard || "—"}
+                            />
+                          </Stack>
+                        ))}
+                        {(h.guests || []).length === 0 &&
+                          h.primaryGuestName && (
+                            <Chip
+                              size="small"
+                              icon={<Person />}
+                              label={h.primaryGuestName}
+                            />
+                          )}
+                      </Stack>
+                    </Stack>
+                  </Paper>
+                ))}
+              </Stack>
             </Stack>
           </Stack>
         </DialogContent>
