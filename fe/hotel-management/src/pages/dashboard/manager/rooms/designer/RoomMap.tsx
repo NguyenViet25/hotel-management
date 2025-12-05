@@ -5,9 +5,11 @@ import {
   ChevronLeft,
   ChevronRight,
   CreditCard,
+  History,
   Info,
   Person,
   Phone,
+  RemoveRedEye,
 } from "@mui/icons-material";
 import BlockIcon from "@mui/icons-material/Block";
 import ChangeCircleIcon from "@mui/icons-material/ChangeCircle";
@@ -39,6 +41,12 @@ import {
   Paper,
   Snackbar,
   Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   TextField,
   Tooltip,
   Typography,
@@ -114,6 +122,16 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
   const [occToDate, setOccToDate] = useState(dayjs());
   const [occupancyScheduleLoading, setOccupancyScheduleLoading] =
     useState(false);
+  const [idCardPreviewOpen, setIdCardPreviewOpen] = useState(false);
+  const [idCardPreviewFront, setIdCardPreviewFront] = useState<string | null>(
+    null
+  );
+  const [idCardPreviewBack, setIdCardPreviewBack] = useState<string | null>(
+    null
+  );
+  const [idCardPreviewName, setIdCardPreviewName] = useState<string | null>(
+    null
+  );
 
   const [hkOpen, setHkOpen] = useState(false);
   const [hkRoom, setHkRoom] = useState<RoomDto | null>(null);
@@ -381,6 +399,18 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
     } finally {
       setOccupancyScheduleLoading(false);
     }
+  };
+
+  const openIdCardPreview = (
+    front?: string | null,
+    back?: string | null,
+    name?: string
+  ) => {
+    if (!front && !back) return;
+    setIdCardPreviewFront(front ?? null);
+    setIdCardPreviewBack(back ?? null);
+    setIdCardPreviewName(name ?? null);
+    setIdCardPreviewOpen(true);
   };
 
   const openCreate = () => {
@@ -754,14 +784,14 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                           />
                           <Button
                             size="small"
-                            startIcon={<Info />}
+                            startIcon={<History />}
                             variant="outlined"
                             onClick={(e) => {
                               e.stopPropagation();
                               openOccupancyDialog(r);
                             }}
                           >
-                            Chi tiết
+                            Lịch sử
                           </Button>
                         </Stack>
                       </Stack>
@@ -1144,24 +1174,19 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
         onClose={() => setOccupancyOpen(false)}
         maxWidth="md"
         fullWidth
+        sx={{ minHeight: 500 }}
       >
         <DialogTitle>
           <Stack direction="row" spacing={1} alignItems="center">
             <HotelIcon color="primary" />
             <Typography variant="h6" fontWeight={700}>
-              {occupancyRoom
-                ? `Người đang ở phòng ${occupancyRoom.number}`
-                : "Thông tin người ở"}
+              {`Lịch sử người ở phòng ${occupancyRoom?.number}`}
             </Typography>
           </Stack>
         </DialogTitle>
-        <DialogContent>
+        <DialogContent sx={{ minHeight: 500, maxHeight: 500 }}>
           <Stack spacing={2}>
             <Stack spacing={1}>
-              <Typography variant="subtitle2">
-                Lịch sử người ở theo khoảng ngày
-              </Typography>
-
               <Stack
                 direction="row"
                 alignItems="center"
@@ -1201,154 +1226,273 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                     onChange={(v) => v && loadHistoryForWeek(v)}
                     slotProps={{ textField: { size: "small" } }}
                   />
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<CalendarMonth />}
+                    onClick={() => loadHistoryForWeek(dayjs())}
+                  >
+                    Tuần hiện tại
+                  </Button>
                 </Stack>
               </LocalizationProvider>
-              {occupancyScheduleLoading && <LinearProgress />}
-              {!occupancyScheduleLoading &&
-                (occupancyHistory || []).length === 0 && (
-                  <Typography variant="body2" color="text.secondary">
-                    Không có lịch sử trong khoảng ngày đã chọn
-                  </Typography>
-                )}
-              <Grid container spacing={1.5} sx={{ mt: 1 }}>
-                {weekDays.map((d, idx) => {
-                  const dayStart = d.startOf("day");
-                  const dayEnd = d.endOf("day");
-                  const isToday = d.isSame(dayjs(), "day");
-                  const items = (occupancyHistory || [])
-                    .filter((h) => {
-                      const s = dayjs(h.start);
-                      const e = dayjs(h.end);
-                      return dayStart.isBefore(e) && dayEnd.isAfter(s);
-                    })
-                    .sort(
-                      (a, b) =>
-                        dayjs(a.start).valueOf() - dayjs(b.start).valueOf()
-                    );
-                  return (
-                    <Grid size={{ xs: 12 }} key={`${idx}-day`}>
-                      <Paper
-                        sx={{
-                          p: 1.5,
-                          bgcolor: isToday
-                            ? "action.selected"
-                            : "background.paper",
-                        }}
-                      >
-                        <Stack spacing={0.75}>
-                          <Stack
-                            direction="row"
-                            spacing={1}
-                            alignItems="center"
-                          >
-                            <Chip
-                              size="small"
-                              icon={<CalendarMonth />}
-                              label={`${d
-                                .locale("vi")
-                                .format("dddd")} • ${d.format("DD/MM/YYYY")}`}
-                            />
-                          </Stack>
+              {occupancyScheduleLoading ? (
+                <Loading />
+              ) : (
+                <Grid container spacing={1.5} sx={{ mt: 1 }}>
+                  {weekDays.map((d, idx) => {
+                    const dayStart = d.startOf("day");
+                    const dayEnd = d.endOf("day");
+                    const isToday = d.isSame(dayjs(), "day");
+                    const items = (occupancyHistory || [])
+                      .filter((h) => {
+                        const s = dayjs(h.start);
+                        const e = dayjs(h.end);
+                        return dayStart.isBefore(e) && dayEnd.isAfter(s);
+                      })
+                      .sort(
+                        (a, b) =>
+                          dayjs(a.start).valueOf() - dayjs(b.start).valueOf()
+                      );
+                    return (
+                      <Grid size={{ xs: 12 }} key={`${idx}-day`}>
+                        <Paper
+                          sx={{
+                            p: 1.5,
+                            bgcolor: isToday
+                              ? "action.selected"
+                              : "background.paper",
+                          }}
+                        >
                           <Stack spacing={0.75}>
-                            {items.length === 0 ? (
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                              >
-                                Không có người ở trong ngày này
-                              </Typography>
-                            ) : (
-                              items.map((h) => {
-                                return (
-                                  <Stack spacing={0.5}>
-                                    <Stack spacing={0.5}>
-                                      {(h.guests || []).map((g, idx) => (
-                                        <Paper
-                                          key={g.guestId}
-                                          sx={{
-                                            p: 1,
-                                            backgroundColor: "yellow",
-                                            border: "1px dashed blue",
-                                            borderRadius: 5,
-                                          }}
-                                        >
-                                          <Stack
-                                            direction="row"
-                                            spacing={1}
-                                            alignItems="center"
-                                            flexWrap="wrap"
-                                          >
-                                            <Chip
-                                              size="small"
-                                              label={`STT ${idx + 1}`}
-                                            />
-                                            <Chip
-                                              size="small"
-                                              icon={<Person />}
-                                              label={
-                                                g.fullname
-                                                  ? `Họ và tên: ${g.fullname}`
-                                                  : "—"
-                                              }
-                                            />
-                                            <Chip
-                                              size="small"
-                                              icon={<Phone />}
-                                              label={g.phone || "—"}
-                                            />
-                                            <Chip
-                                              size="small"
-                                              icon={<CreditCard />}
-                                              label={g.idCard || "—"}
-                                            />
-                                          </Stack>
-                                        </Paper>
-                                      ))}
-                                      {(h.guests || []).length === 0 &&
-                                        h.primaryGuestName && (
-                                          <Paper
-                                            sx={{
-                                              p: 1,
-                                              backgroundColor: "yellow",
-                                              border: "1px dashed blue",
-                                              borderRadius: 5,
-                                            }}
-                                          >
-                                            <Stack
-                                              direction="row"
-                                              spacing={1}
-                                              alignItems="center"
-                                              flexWrap="wrap"
+                            <Stack
+                              direction="row"
+                              spacing={1}
+                              alignItems="center"
+                            >
+                              <Chip
+                                size="small"
+                                icon={<CalendarMonth />}
+                                label={`${d
+                                  .locale("vi")
+                                  .format("dddd")} • ${d.format("DD/MM/YYYY")}`}
+                              />
+                            </Stack>
+                            <Stack spacing={0.75}>
+                              {items.length === 0 ? (
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                >
+                                  Không có người ở trong ngày này
+                                </Typography>
+                              ) : (
+                                items.map((h) => {
+                                  const guests = h.guests || [];
+                                  return (
+                                    <TableContainer
+                                      component={Paper}
+                                      variant="outlined"
+                                    >
+                                      <Table
+                                        size="small"
+                                        sx={{ tableLayout: "fixed" }}
+                                      >
+                                        <TableHead>
+                                          <TableRow>
+                                            <TableCell sx={{ width: "8%" }}>
+                                              STT
+                                            </TableCell>
+                                            <TableCell sx={{ width: "28%" }}>
+                                              Họ và tên
+                                            </TableCell>
+                                            <TableCell sx={{ width: "28%" }}>
+                                              Điện thoại
+                                            </TableCell>
+                                            <TableCell sx={{ width: "28%" }}>
+                                              CMND/CCCD
+                                            </TableCell>
+                                            <TableCell
+                                              sx={{ width: "8%" }}
+                                              align="center"
                                             >
-                                              <Chip
-                                                size="small"
-                                                label="STT 1"
-                                              />
-                                              <Chip
-                                                size="small"
-                                                icon={<Person />}
-                                                label={h.primaryGuestName}
-                                              />
-                                            </Stack>
-                                          </Paper>
-                                        )}
-                                    </Stack>
-                                  </Stack>
-                                );
-                              })
-                            )}
+                                              Xem
+                                            </TableCell>
+                                          </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                          {guests.length > 0 ? (
+                                            guests.map((g, idx) => (
+                                              <TableRow key={g.guestId}>
+                                                <TableCell>{idx + 1}</TableCell>
+                                                <TableCell>
+                                                  <Chip
+                                                    size="small"
+                                                    icon={<Person />}
+                                                    label={
+                                                      g.fullname
+                                                        ? `${g.fullname}`
+                                                        : "—"
+                                                    }
+                                                  />
+                                                </TableCell>
+                                                <TableCell>
+                                                  <Chip
+                                                    size="small"
+                                                    icon={<Phone />}
+                                                    label={g.phone || "—"}
+                                                  />
+                                                </TableCell>
+                                                <TableCell>
+                                                  <Chip
+                                                    size="small"
+                                                    icon={<CreditCard />}
+                                                    label={g.idCard || "—"}
+                                                  />
+                                                </TableCell>
+                                                <TableCell align="center">
+                                                  <IconButton
+                                                    size="small"
+                                                    color="primary"
+                                                    onClick={() =>
+                                                      openIdCardPreview(
+                                                        g.idCardFrontImageUrl,
+                                                        g.idCardBackImageUrl,
+                                                        g.fullname || undefined
+                                                      )
+                                                    }
+                                                    disabled={
+                                                      !g.idCardFrontImageUrl &&
+                                                      !g.idCardBackImageUrl
+                                                    }
+                                                  >
+                                                    <RemoveRedEye />
+                                                  </IconButton>
+                                                </TableCell>
+                                              </TableRow>
+                                            ))
+                                          ) : h.primaryGuestName ? (
+                                            <TableRow>
+                                              <TableCell>1</TableCell>
+                                              <TableCell>
+                                                <Chip
+                                                  size="small"
+                                                  icon={<Person />}
+                                                  label={h.primaryGuestName}
+                                                />
+                                              </TableCell>
+                                              <TableCell>
+                                                <Chip
+                                                  size="small"
+                                                  icon={<Phone />}
+                                                  label={"—"}
+                                                />
+                                              </TableCell>
+                                              <TableCell>
+                                                <Chip
+                                                  size="small"
+                                                  icon={<CreditCard />}
+                                                  label={"—"}
+                                                />
+                                              </TableCell>
+                                              <TableCell align="center">
+                                                <IconButton
+                                                  size="small"
+                                                  disabled
+                                                >
+                                                  <RemoveRedEye />
+                                                </IconButton>
+                                              </TableCell>
+                                            </TableRow>
+                                          ) : (
+                                            <TableRow>
+                                              <TableCell colSpan={5}>
+                                                <Typography
+                                                  variant="body2"
+                                                  color="text.secondary"
+                                                >
+                                                  Không có khách
+                                                </Typography>
+                                              </TableCell>
+                                            </TableRow>
+                                          )}
+                                        </TableBody>
+                                      </Table>
+                                    </TableContainer>
+                                  );
+                                })
+                              )}
+                            </Stack>
                           </Stack>
-                        </Stack>
-                      </Paper>
-                    </Grid>
-                  );
-                })}
-              </Grid>
+                        </Paper>
+                      </Grid>
+                    );
+                  })}
+                </Grid>
+              )}
             </Stack>
           </Stack>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOccupancyOpen(false)}>Đóng</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={idCardPreviewOpen}
+        onClose={() => {
+          setIdCardPreviewOpen(false);
+          setIdCardPreviewFront(null);
+          setIdCardPreviewBack(null);
+          setIdCardPreviewName(null);
+        }}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>
+          {`CMND/CCCD${idCardPreviewName ? ` - ${idCardPreviewName}` : ""}`}
+        </DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} alignItems="center">
+            {idCardPreviewFront ? (
+              <img
+                src={idCardPreviewFront}
+                alt={`${idCardPreviewName || ""} - Mặt trước`}
+                style={{
+                  width: "100%",
+                  height: "auto",
+                  borderRadius: 10,
+                  objectFit: "cover",
+                  border: "1px solid #ddd",
+                }}
+              />
+            ) : null}
+            {idCardPreviewBack ? (
+              <img
+                src={idCardPreviewBack}
+                alt={`${idCardPreviewName || ""} - Mặt sau`}
+                style={{
+                  width: "100%",
+                  height: "auto",
+                  borderRadius: 10,
+                  objectFit: "cover",
+                  border: "1px solid #ddd",
+                }}
+              />
+            ) : null}
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setIdCardPreviewOpen(false);
+              setIdCardPreviewFront(null);
+              setIdCardPreviewBack(null);
+              setIdCardPreviewName(null);
+            }}
+          >
+            Đóng
+          </Button>
         </DialogActions>
       </Dialog>
 
