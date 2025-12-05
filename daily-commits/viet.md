@@ -212,3 +212,4 @@
 2025-12-05 - 2 - 01:49:46 UTC :: perf: UC-21 Housekeeping: cap nhat Dirty/In-progress/Cleaned/Inspected. — don dep code va xoa doan thua (dat tieu chi toi thieu)
 2025-12-05 - 3 - 01:49:49 UTC :: feat: UC-23 Bao tri: tao ticket, dinh anh, mo ta loi. — chinh sua tai lieu & mo ta API (da kiem tra lint)
 2025-12-05 - 4 - 01:49:53 UTC :: build: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — chuan hoa ten ham/bien theo convention (anh huong thap)
+2025-12-05 - 5 - 01:49:55 UTC :: fix: UC-06 Co so: gan quan ly phu trach va quyen truy cap. — sua validate va bo sung thong bao loi (da review so bo)
