@@ -1372,7 +1372,7 @@ public class BookingsService(
 
         var overlap = await _bookingRoomRepo.Query()
             .Where(br => br.RoomId == newRoomId && br.BookingStatus != BookingRoomStatus.Cancelled 
-                && br.BookingStatus != BookingRoomStatus.CheckedOut && br.BookingRoomId != bookingRoomId)
+               && br.BookingRoomId != bookingRoomId)
             .AnyAsync(br => bookingRoom.StartDate < br.EndDate && bookingRoom.EndDate > br.StartDate);
         if (overlap) return ApiResponse<BookingDetailsDto>.Fail("Phòng không trống trong khoảng thời gian");
 

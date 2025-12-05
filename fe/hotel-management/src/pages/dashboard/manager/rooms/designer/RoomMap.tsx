@@ -2,12 +2,12 @@ import {
   Add,
   Bed,
   CalendarMonth,
+  ChevronLeft,
+  ChevronRight,
   CreditCard,
   Info,
   Person,
   Phone,
-  ChevronLeft,
-  ChevronRight,
 } from "@mui/icons-material";
 import BlockIcon from "@mui/icons-material/Block";
 import ChangeCircleIcon from "@mui/icons-material/ChangeCircle";
@@ -46,11 +46,11 @@ import {
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
+import "dayjs/locale/vi";
 import React, { useEffect, useMemo, useState } from "react";
 import bookingsApi, {
   type BookingDetailsDto,
   type BookingIntervalDto,
-  type BookingRoomDto,
   type RoomStayHistoryDto,
 } from "../../../../../api/bookingsApi";
 import housekeepingApi from "../../../../../api/housekeepingApi";
@@ -70,6 +70,7 @@ import { useStore, type StoreState } from "../../../../../hooks/useStore";
 import ChangeRoomStatusModal from "../components/ChangeRoomStatusModal";
 import RoomFormModal from "../components/RoomFormModal";
 import { ROOM_STATUS_OPTIONS } from "../components/roomsConstants";
+dayjs.locale("vi");
 
 interface IProps {
   allowAddNew?: boolean;
@@ -104,13 +105,7 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
   >({});
   const [occupancyOpen, setOccupancyOpen] = useState(false);
   const [occupancyRoom, setOccupancyRoom] = useState<RoomDto | null>(null);
-  const [occupancyBooking, setOccupancyBooking] =
-    useState<BookingDetailsDto | null>(null);
-  const [occupancyRoomBooking, setOccupancyRoomBooking] =
-    useState<BookingRoomDto | null>(null);
-  const [occupancySchedule, setOccupancySchedule] = useState<
-    BookingIntervalDto[]
-  >([]);
+
   const [occupancyHistory, setOccupancyHistory] = useState<
     RoomStayHistoryDto[]
   >([]);
@@ -343,38 +338,15 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
       if (bookingId) {
         const bookingRes = await bookingsApi.getById(bookingId);
         const booking = bookingRes.data as BookingDetailsDto;
-        setOccupancyBooking(booking);
         const br =
           (booking.bookingRoomTypes || [])
             .flatMap((rt) => rt.bookingRooms || [])
             .find(
               (b) => b.roomId === room.id || (b.roomName || "") === room.number
             ) || null;
-        setOccupancyRoomBooking(br);
       } else {
-        setOccupancyBooking(null);
-        setOccupancyRoomBooking(null);
       }
-    } catch {
-      setOccupancyBooking(null);
-      setOccupancyRoomBooking(null);
-    }
-  };
-
-  const applyHistoryFilter = async () => {
-    if (!occupancyRoom) return;
-    setOccupancyScheduleLoading(true);
-    try {
-      const res = await bookingsApi.roomHistory(
-        occupancyRoom.id,
-        occFromDate.startOf("day").toISOString(),
-        occToDate.endOf("day").toISOString()
-      );
-      const hist = (res.data || []) as RoomStayHistoryDto[];
-      setOccupancyHistory(hist);
-    } finally {
-      setOccupancyScheduleLoading(false);
-    }
+    } catch {}
   };
 
   const getWeekRange = (date: dayjs.Dayjs) => {
@@ -475,22 +447,6 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
         message: "Đã xảy ra lỗi khi cập nhật buồng phòng",
         severity: "error",
       });
-    }
-  };
-
-  const getActiveBookingIdForRoom = async (room: RoomDto) => {
-    try {
-      const todayStart = dayjs().startOf("day").toISOString();
-      const todayEnd = dayjs().endOf("day").toISOString();
-      const schedRes = await bookingsApi.roomSchedule(
-        room.id,
-        todayStart,
-        todayEnd
-      );
-      const intervals = (schedRes.data || []) as BookingIntervalDto[];
-      return intervals[0]?.bookingId || "";
-    } catch {
-      return "";
     }
   };
 
@@ -1233,6 +1189,20 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                   <ChevronRight />
                 </IconButton>
               </Stack>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <Stack
+                  direction={{ xs: "column", sm: "row" }}
+                  spacing={1}
+                  alignItems={{ xs: "stretch", sm: "center" }}
+                >
+                  <DatePicker
+                    label="Tuần"
+                    value={occCurrentDate}
+                    onChange={(v) => v && loadHistoryForWeek(v)}
+                    slotProps={{ textField: { size: "small" } }}
+                  />
+                </Stack>
+              </LocalizationProvider>
               {occupancyScheduleLoading && <LinearProgress />}
               {!occupancyScheduleLoading &&
                 (occupancyHistory || []).length === 0 && (
@@ -1274,9 +1244,9 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                             <Chip
                               size="small"
                               icon={<CalendarMonth />}
-                              label={`${d.format("dddd")} • ${d.format(
-                                "DD/MM/YYYY"
-                              )}`}
+                              label={`${d
+                                .locale("vi")
+                                .format("dddd")} • ${d.format("DD/MM/YYYY")}`}
                             />
                           </Stack>
                           <Stack spacing={0.75}>
@@ -1289,42 +1259,20 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                               </Typography>
                             ) : (
                               items.map((h) => {
-                                const color =
-                                  h.status === 2
-                                    ? "success.light"
-                                    : h.status === 1
-                                    ? "warning.light"
-                                    : "info.light";
                                 return (
-                                  <Paper
-                                    key={`${h.bookingRoomId}-${h.start}`}
-                                    sx={{
-                                      p: 1,
-                                      borderLeft: "4px solid",
-                                      borderColor: color,
-                                    }}
-                                  >
+                                  <Stack spacing={0.5}>
                                     <Stack spacing={0.5}>
-                                      <Stack
-                                        direction="row"
-                                        spacing={1}
-                                        alignItems="center"
-                                        flexWrap="wrap"
-                                      >
-                                        <Chip
-                                          size="small"
-                                          icon={<CalendarMonth />}
-                                          label={`${dayjs(h.start).format(
-                                            "DD/MM/YYYY"
-                                          )} - ${dayjs(h.end).format(
-                                            "DD/MM/YYYY"
-                                          )}`}
-                                        />
-                                      </Stack>
-                                      <Stack spacing={0.5}>
-                                        {(h.guests || []).map((g) => (
+                                      {(h.guests || []).map((g, idx) => (
+                                        <Paper
+                                          key={g.guestId}
+                                          sx={{
+                                            p: 1,
+                                            backgroundColor: "yellow",
+                                            border: "1px dashed blue",
+                                            borderRadius: 5,
+                                          }}
+                                        >
                                           <Stack
-                                            key={g.guestId}
                                             direction="row"
                                             spacing={1}
                                             alignItems="center"
@@ -1332,8 +1280,16 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                                           >
                                             <Chip
                                               size="small"
+                                              label={`STT ${idx + 1}`}
+                                            />
+                                            <Chip
+                                              size="small"
                                               icon={<Person />}
-                                              label={g.fullname || "—"}
+                                              label={
+                                                g.fullname
+                                                  ? `Họ và tên: ${g.fullname}`
+                                                  : "—"
+                                              }
                                             />
                                             <Chip
                                               size="small"
@@ -1346,18 +1302,38 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                                               label={g.idCard || "—"}
                                             />
                                           </Stack>
-                                        ))}
-                                        {(h.guests || []).length === 0 &&
-                                          h.primaryGuestName && (
-                                            <Chip
-                                              size="small"
-                                              icon={<Person />}
-                                              label={h.primaryGuestName}
-                                            />
-                                          )}
-                                      </Stack>
+                                        </Paper>
+                                      ))}
+                                      {(h.guests || []).length === 0 &&
+                                        h.primaryGuestName && (
+                                          <Paper
+                                            sx={{
+                                              p: 1,
+                                              backgroundColor: "yellow",
+                                              border: "1px dashed blue",
+                                              borderRadius: 5,
+                                            }}
+                                          >
+                                            <Stack
+                                              direction="row"
+                                              spacing={1}
+                                              alignItems="center"
+                                              flexWrap="wrap"
+                                            >
+                                              <Chip
+                                                size="small"
+                                                label="STT 1"
+                                              />
+                                              <Chip
+                                                size="small"
+                                                icon={<Person />}
+                                                label={h.primaryGuestName}
+                                              />
+                                            </Stack>
+                                          </Paper>
+                                        )}
                                     </Stack>
-                                  </Paper>
+                                  </Stack>
                                 );
                               })
                             )}
