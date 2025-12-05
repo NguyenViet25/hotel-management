@@ -1,20 +1,13 @@
 import {
   Add,
   Bed,
-  Info,
   CalendarMonth,
+  CreditCard,
+  Info,
   Person,
   Phone,
-  CreditCard,
-  Image,
-  ReceiptLong,
-  Email,
-  AttachMoney,
-  LocalOffer,
-  Event,
-  Recycling,
-  Circle,
-  RestartAlt,
+  ChevronLeft,
+  ChevronRight,
 } from "@mui/icons-material";
 import BlockIcon from "@mui/icons-material/Block";
 import ChangeCircleIcon from "@mui/icons-material/ChangeCircle";
@@ -34,7 +27,6 @@ import {
   Card,
   CardContent,
   Chip,
-  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -51,7 +43,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import React, { useEffect, useMemo, useState } from "react";
@@ -73,12 +65,11 @@ import roomsApi, {
 } from "../../../../../api/roomsApi";
 import roomTypesApi, { type RoomType } from "../../../../../api/roomTypesApi";
 import EmptyState from "../../../../../components/common/EmptyState";
+import Loading from "../../../../../components/common/Loading";
 import { useStore, type StoreState } from "../../../../../hooks/useStore";
 import ChangeRoomStatusModal from "../components/ChangeRoomStatusModal";
 import RoomFormModal from "../components/RoomFormModal";
 import { ROOM_STATUS_OPTIONS } from "../components/roomsConstants";
-import { formatDateTime } from "../../../../../utils/date-helper";
-import Loading from "../../../../../components/common/Loading";
 
 interface IProps {
   allowAddNew?: boolean;
@@ -123,6 +114,7 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
   const [occupancyHistory, setOccupancyHistory] = useState<
     RoomStayHistoryDto[]
   >([]);
+  const [occCurrentDate, setOccCurrentDate] = useState(dayjs());
   const [occFromDate, setOccFromDate] = useState(dayjs().subtract(1, "month"));
   const [occToDate, setOccToDate] = useState(dayjs());
   const [occupancyScheduleLoading, setOccupancyScheduleLoading] =
@@ -333,6 +325,7 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
       const defaultTo = dayjs().endOf("day");
       setOccFromDate(defaultFrom);
       setOccToDate(defaultTo);
+      setOccCurrentDate(dayjs());
       setOccupancyScheduleLoading(true);
       try {
         const histRes = await bookingsApi.roomHistory(
@@ -379,6 +372,40 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
       );
       const hist = (res.data || []) as RoomStayHistoryDto[];
       setOccupancyHistory(hist);
+    } finally {
+      setOccupancyScheduleLoading(false);
+    }
+  };
+
+  const getWeekRange = (date: dayjs.Dayjs) => {
+    const start = date.startOf("week").add(1, "day");
+    const end = start.add(6, "day");
+    return { start, end };
+  };
+  const { start: weekStart, end: weekEnd } = useMemo(
+    () => getWeekRange(occCurrentDate),
+    [occCurrentDate]
+  );
+  const weekDays = useMemo(
+    () => Array.from({ length: 7 }, (_, i) => weekStart.add(i, "day")),
+    [weekStart]
+  );
+
+  const loadHistoryForWeek = async (date: dayjs.Dayjs) => {
+    if (!occupancyRoom) return;
+    setOccupancyScheduleLoading(true);
+    try {
+      const { start, end } = getWeekRange(date);
+      const res = await bookingsApi.roomHistory(
+        occupancyRoom.id,
+        start.startOf("day").toISOString(),
+        end.endOf("day").toISOString()
+      );
+      const hist = (res.data || []) as RoomStayHistoryDto[];
+      setOccupancyHistory(hist);
+      setOccFromDate(start);
+      setOccToDate(end);
+      setOccCurrentDate(date);
     } finally {
       setOccupancyScheduleLoading(false);
     }
@@ -1178,29 +1205,34 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
               <Typography variant="subtitle2">
                 Lịch sử người ở theo khoảng ngày
               </Typography>
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <Stack
-                  direction={{ xs: "column", sm: "row" }}
-                  spacing={1}
-                  alignItems={{ xs: "stretch", sm: "center" }}
+
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+                sx={{ mt: 1 }}
+              >
+                <IconButton
+                  aria-label="Tuần trước"
+                  onClick={() =>
+                    loadHistoryForWeek(occCurrentDate.subtract(7, "day"))
+                  }
                 >
-                  <DatePicker
-                    label="Từ ngày"
-                    value={occFromDate}
-                    onChange={(v) => v && setOccFromDate(v)}
-                    slotProps={{ textField: { size: "small" } }}
-                  />
-                  <DatePicker
-                    label="Đến ngày"
-                    value={occToDate}
-                    onChange={(v) => v && setOccToDate(v)}
-                    slotProps={{ textField: { size: "small" } }}
-                  />
-                  <Button variant="contained" onClick={applyHistoryFilter}>
-                    Áp dụng
-                  </Button>
-                </Stack>
-              </LocalizationProvider>
+                  <ChevronLeft />
+                </IconButton>
+                <Typography variant="subtitle1">
+                  {weekStart.format("DD/MM/YYYY")} -{" "}
+                  {weekEnd.format("DD/MM/YYYY")}
+                </Typography>
+                <IconButton
+                  aria-label="Tuần sau"
+                  onClick={() =>
+                    loadHistoryForWeek(occCurrentDate.add(7, "day"))
+                  }
+                >
+                  <ChevronRight />
+                </IconButton>
+              </Stack>
               {occupancyScheduleLoading && <LinearProgress />}
               {!occupancyScheduleLoading &&
                 (occupancyHistory || []).length === 0 && (
@@ -1208,63 +1240,134 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                     Không có lịch sử trong khoảng ngày đã chọn
                   </Typography>
                 )}
-              <Stack spacing={1}>
-                {(occupancyHistory || []).map((h) => (
-                  <Paper key={`${h.bookingRoomId}-${h.start}`} sx={{ p: 1 }}>
-                    <Stack spacing={0.5}>
-                      <Stack
-                        direction="row"
-                        spacing={1}
-                        alignItems="center"
-                        flexWrap="wrap"
+              <Grid container spacing={1.5} sx={{ mt: 1 }}>
+                {weekDays.map((d, idx) => {
+                  const dayStart = d.startOf("day");
+                  const dayEnd = d.endOf("day");
+                  const isToday = d.isSame(dayjs(), "day");
+                  const items = (occupancyHistory || [])
+                    .filter((h) => {
+                      const s = dayjs(h.start);
+                      const e = dayjs(h.end);
+                      return dayStart.isBefore(e) && dayEnd.isAfter(s);
+                    })
+                    .sort(
+                      (a, b) =>
+                        dayjs(a.start).valueOf() - dayjs(b.start).valueOf()
+                    );
+                  return (
+                    <Grid size={{ xs: 12 }} key={`${idx}-day`}>
+                      <Paper
+                        sx={{
+                          p: 1.5,
+                          bgcolor: isToday
+                            ? "action.selected"
+                            : "background.paper",
+                        }}
                       >
-                        <Chip
-                          size="small"
-                          icon={<CalendarMonth />}
-                          label={`${dayjs(h.start).format(
-                            "DD/MM/YYYY"
-                          )} - ${dayjs(h.end).format("DD/MM/YYYY")}`}
-                        />
-                      </Stack>
-                      <Stack spacing={0.5}>
-                        {(h.guests || []).map((g) => (
+                        <Stack spacing={0.75}>
                           <Stack
-                            key={g.guestId}
                             direction="row"
                             spacing={1}
                             alignItems="center"
-                            flexWrap="wrap"
                           >
                             <Chip
                               size="small"
-                              icon={<Person />}
-                              label={g.fullname || "—"}
-                            />
-                            <Chip
-                              size="small"
-                              icon={<Phone />}
-                              label={g.phone || "—"}
-                            />
-                            <Chip
-                              size="small"
-                              icon={<CreditCard />}
-                              label={g.idCard || "—"}
+                              icon={<CalendarMonth />}
+                              label={`${d.format("dddd")} • ${d.format(
+                                "DD/MM/YYYY"
+                              )}`}
                             />
                           </Stack>
-                        ))}
-                        {(h.guests || []).length === 0 &&
-                          h.primaryGuestName && (
-                            <Chip
-                              size="small"
-                              icon={<Person />}
-                              label={h.primaryGuestName}
-                            />
-                          )}
-                      </Stack>
-                    </Stack>
-                  </Paper>
-                ))}
-              </Stack>
+                          <Stack spacing={0.75}>
+                            {items.length === 0 ? (
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
+                                Không có người ở trong ngày này
+                              </Typography>
+                            ) : (
+                              items.map((h) => {
+                                const color =
+                                  h.status === 2
+                                    ? "success.light"
+                                    : h.status === 1
+                                    ? "warning.light"
+                                    : "info.light";
+                                return (
+                                  <Paper
+                                    key={`${h.bookingRoomId}-${h.start}`}
+                                    sx={{
+                                      p: 1,
+                                      borderLeft: "4px solid",
+                                      borderColor: color,
+                                    }}
+                                  >
+                                    <Stack spacing={0.5}>
+                                      <Stack
+                                        direction="row"
+                                        spacing={1}
+                                        alignItems="center"
+                                        flexWrap="wrap"
+                                      >
+                                        <Chip
+                                          size="small"
+                                          icon={<CalendarMonth />}
+                                          label={`${dayjs(h.start).format(
+                                            "DD/MM/YYYY"
+                                          )} - ${dayjs(h.end).format(
+                                            "DD/MM/YYYY"
+                                          )}`}
+                                        />
+                                      </Stack>
+                                      <Stack spacing={0.5}>
+                                        {(h.guests || []).map((g) => (
+                                          <Stack
+                                            key={g.guestId}
+                                            direction="row"
+                                            spacing={1}
+                                            alignItems="center"
+                                            flexWrap="wrap"
+                                          >
+                                            <Chip
+                                              size="small"
+                                              icon={<Person />}
+                                              label={g.fullname || "—"}
+                                            />
+                                            <Chip
+                                              size="small"
+                                              icon={<Phone />}
+                                              label={g.phone || "—"}
+                                            />
+                                            <Chip
+                                              size="small"
+                                              icon={<CreditCard />}
+                                              label={g.idCard || "—"}
+                                            />
+                                          </Stack>
+                                        ))}
+                                        {(h.guests || []).length === 0 &&
+                                          h.primaryGuestName && (
+                                            <Chip
+                                              size="small"
+                                              icon={<Person />}
+                                              label={h.primaryGuestName}
+                                            />
+                                          )}
+                                      </Stack>
+                                    </Stack>
+                                  </Paper>
+                                );
+                              })
+                            )}
+                          </Stack>
+                        </Stack>
+                      </Paper>
+                    </Grid>
+                  );
+                })}
+              </Grid>
             </Stack>
           </Stack>
         </DialogContent>
