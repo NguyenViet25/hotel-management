@@ -1,4 +1,4 @@
-import { Add, Bed, Info, Room } from "@mui/icons-material";
+import { Add, Bed, Info } from "@mui/icons-material";
 import BlockIcon from "@mui/icons-material/Block";
 import ChangeCircleIcon from "@mui/icons-material/ChangeCircle";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -17,7 +17,6 @@ import {
   Card,
   CardContent,
   Chip,
-  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -42,7 +41,7 @@ import bookingsApi, {
 } from "../../../../../api/bookingsApi";
 import housekeepingApi from "../../../../../api/housekeepingApi";
 import mediaApi, { type MediaDto } from "../../../../../api/mediaApi";
-import minibarApi, { type Minibar } from "../../../../../api/minibarApi";
+import { type Minibar } from "../../../../../api/minibarApi";
 import roomsApi, {
   getRoomStatusString,
   type CreateRoomRequest,
@@ -51,11 +50,11 @@ import roomsApi, {
   type UpdateRoomRequest,
 } from "../../../../../api/roomsApi";
 import roomTypesApi, { type RoomType } from "../../../../../api/roomTypesApi";
+import EmptyState from "../../../../../components/common/EmptyState";
 import { useStore, type StoreState } from "../../../../../hooks/useStore";
 import ChangeRoomStatusModal from "../components/ChangeRoomStatusModal";
 import RoomFormModal from "../components/RoomFormModal";
 import { ROOM_STATUS_OPTIONS } from "../components/roomsConstants";
-import EmptyState from "../../../../../components/common/EmptyState";
 
 interface IProps {
   allowAddNew?: boolean;
@@ -299,15 +298,7 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
     setOccupancyOpen(true);
     setOccupancyRoom(room);
     try {
-      const todayStart = dayjs().startOf("day").toISOString();
-      const todayEnd = dayjs().endOf("day").toISOString();
-      const schedRes = await bookingsApi.roomSchedule(
-        room.id,
-        todayStart,
-        todayEnd
-      );
-      const intervals = (schedRes.data || []) as BookingIntervalDto[];
-      const bookingId = intervals[0]?.bookingId;
+      const bookingId = (await bookingsApi.getCurrentBookingId(room.id)).data;
       if (!bookingId) {
         setOccupancySchedule([]);
         setOccupancyBooking(null);
@@ -324,16 +315,6 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
             (b) => b.roomId === room.id || (b.roomName || "") === room.number
           ) || null;
       setOccupancyRoomBooking(br);
-      if (br) {
-        const fullSched = await bookingsApi.roomSchedule(
-          room.id,
-          dayjs(br.startDate).toISOString(),
-          dayjs(br.endDate).toISOString()
-        );
-        setOccupancySchedule((fullSched.data || []) as BookingIntervalDto[]);
-      } else {
-        setOccupancySchedule(intervals);
-      }
     } catch {
       setOccupancyBooking(null);
       setOccupancyRoomBooking(null);
@@ -421,26 +402,6 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
     } catch {
       return "";
     }
-  };
-
-  const openMinibar = async (room: RoomDto) => {
-    setMinibarRoom(room);
-    setMinibarLoading(true);
-    const bid = await getActiveBookingIdForRoom(room);
-    setMinibarBookingId(bid);
-    try {
-      const res = await minibarApi.list({
-        roomTypeId: room.roomTypeId,
-        page: 1,
-        pageSize: 200,
-      });
-      const items = (res.data || []).map((it) => ({ item: it, qty: 0 }));
-      setMinibarItems(items);
-    } catch {
-      setMinibarItems([]);
-    }
-    setMinibarLoading(false);
-    setMinibarOpen(true);
   };
 
   const submitMinibar = async () => {
@@ -864,7 +825,7 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                 severity: "error",
               });
             }
-          } catch (error) {
+          } catch (error: any) {
             console.log(error);
             setSnackbar({
               open: true,

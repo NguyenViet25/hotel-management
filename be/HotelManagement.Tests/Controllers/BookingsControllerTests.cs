@@ -120,6 +120,17 @@ public class BookingsControllerTests
     }
 
     [Fact]
+    public async Task GetCurrentBookingId_ReturnsOk()
+    {
+        var mock = new Mock<IBookingsService>();
+        mock.Setup(s => s.GetCurrentBookingIdAsync(It.IsAny<Guid>()))
+            .ReturnsAsync(ApiResponse<string>.Ok(Guid.NewGuid().ToString()));
+        var controller = CreateController(mock);
+        var result = await controller.GetCurrentBookingId(Guid.NewGuid());
+        Assert.IsType<OkObjectResult>(result.Result);
+    }
+
+    [Fact]
     public async Task AddRoomToBooking_ReturnsOk()
     {
         var mock = new Mock<IBookingsService>();

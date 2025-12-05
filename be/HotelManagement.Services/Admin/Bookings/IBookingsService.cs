@@ -17,6 +17,7 @@ public interface IBookingsService
     Task<ApiResponse<List<CallLogDto>>> GetCallLogsAsync(Guid bookingId);
     Task<ApiResponse<object>> GetRoomAvailabilityAsync(RoomAvailabilityQueryDto query);
     Task<ApiResponse<List<BookingIntervalDto>>> GetRoomScheduleAsync(Guid roomId, DateTime from, DateTime to);
+    Task<ApiResponse<string>> GetCurrentBookingIdAsync(Guid roomId);
     Task<ApiResponse> AddRoomToBookingAsync(Guid bookingRoomTypeId, Guid roomId);
     Task<ApiResponse> CheckInAsync(CheckInDto dto);
     Task<ApiResponse<BookingDetailsDto>> ChangeRoomAsync(Guid bookingRoomId, Guid newRoomId);

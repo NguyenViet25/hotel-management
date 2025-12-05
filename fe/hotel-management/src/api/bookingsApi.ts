@@ -545,6 +545,11 @@ const bookingsApi = {
     );
     return res.data;
   },
+
+  async getCurrentBookingId(roomId: string): Promise<ApiResponse<string>> {
+    const res = await axios.get(`/bookings/rooms/${roomId}/current-booking`);
+    return res.data;
+  },
 };
 
 export default bookingsApi;

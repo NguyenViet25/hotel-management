@@ -123,6 +123,13 @@ public class BookingsController(IBookingsService bookingsService, IWebHostEnviro
         return Ok(result);
     }
 
+    [HttpGet("rooms/{roomId}/current-booking")]
+    public async Task<ActionResult<ApiResponse<string>>> GetCurrentBookingId(Guid roomId)
+    {
+        var result = await _bookingsService.GetCurrentBookingIdAsync(roomId);
+        return Ok(result);
+    }
+
 
     [HttpPost("add-room")]
     public async Task<IActionResult> AddRoomToBooking([FromBody] AddRoomToBooking request)

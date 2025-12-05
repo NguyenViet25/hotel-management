@@ -891,6 +891,36 @@ public class BookingsService(
         }
     }
 
+    public async Task<ApiResponse<string>> GetCurrentBookingIdAsync(Guid roomId)
+    {
+        try
+        {
+            var now = DateTime.UtcNow;
+            var bookingRoom = await _bookingRoomRepo.Query()
+                .Include(br => br.BookingRoomType)
+                .Where(br => br.RoomId == roomId && br.BookingStatus != BookingRoomStatus.Cancelled)
+                .Where(br => now < br.EndDate && now >= br.StartDate)
+                .OrderByDescending(br => br.StartDate)
+                .FirstOrDefaultAsync();
+
+            if (bookingRoom == null)
+            {
+                return ApiResponse<string>.Fail("Không có booking hiện tại cho phòng này");
+            }
+
+            var bookingRoomType = await _bookingRoomTypeRepo.Query()
+                .Where(x => x.BookingRoomTypeId == bookingRoom.BookingRoomTypeId)
+                .FirstOrDefaultAsync();
+
+            var bookingId = bookingRoomType?.BookingId;
+            return ApiResponse<string>.Ok(bookingId.ToString());
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<string>.Fail($"Error retrieving current booking ID: {ex.Message}");
+        }
+    }
+
     private List<RoomTimelineSegmentDto> BuildDayTimeline(DateTime day, bool hasBooking)
     {
         var segments = new List<RoomTimelineSegmentDto>();
