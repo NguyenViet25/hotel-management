@@ -217,3 +217,4 @@
 2025-12-05 - 2 - 01:49:48 UTC :: refactor: UC-06 Co so: gan quan ly phu trach va quyen truy cap. — bo sung index & toi uu DB (can theo doi them)
 2025-12-05 - 3 - 01:49:50 UTC :: feat: UC-10 Goi gia: tao rate plan, thoi gian ap dung linh hoat. — bo sung case canh bien & no-show (khong doi hanh vi)
 2025-12-05 - 4 - 01:49:51 UTC :: build: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — tach chuc nang de de bao tri (dong bo voi BE/FE)
+2025-12-05 - 5 - 01:49:53 UTC :: feat: UC-31 Bao cao: len lich gui email/PDF hang ngay/tuan. — don dep code va xoa doan thua (can theo doi them)
