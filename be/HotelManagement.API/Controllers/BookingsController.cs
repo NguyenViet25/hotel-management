@@ -214,6 +214,13 @@ public class BookingsController(IBookingsService bookingsService, IWebHostEnviro
         var result = await _bookingsService.SwapGuestsAsync(bookingRoomId, guestId, dto.TargetBookingRoomId, dto.TargetGuestId);
         return Ok(result);
     }
+
+    [HttpGet("rooms/{roomId}/history")]
+    public async Task<ActionResult<ApiResponse<List<RoomStayHistoryDto>>>> RoomHistory(Guid roomId, [FromQuery] DateTime? from, [FromQuery] DateTime? to)
+    {
+        var result = await _bookingsService.GetRoomHistoryAsync(roomId, from, to);
+        return Ok(result);
+    }
 }
 
 public class AddRoomToBooking

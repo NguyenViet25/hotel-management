@@ -275,6 +275,16 @@ export interface BookingIntervalDto {
   guestName?: string;
 }
 
+export interface RoomStayHistoryDto {
+  bookingId: string;
+  bookingRoomId: string;
+  start: string; // ISO
+  end: string; // ISO
+  status: BookingStatus;
+  primaryGuestName?: string;
+  guests: BookingGuestDto[];
+}
+
 // Summary row used for the table display
 export interface BookingSummaryDto {
   id: string;
@@ -543,6 +553,21 @@ const bookingsApi = {
         from
       )}&to=${encodeURIComponent(to)}`
     );
+    return res.data;
+  },
+
+  async roomHistory(
+    roomId: string,
+    from?: string,
+    to?: string
+  ): Promise<ApiResponse<RoomStayHistoryDto[]>> {
+    const qp = new URLSearchParams();
+    if (from) qp.append("from", from);
+    if (to) qp.append("to", to);
+    const url = qp.toString().length
+      ? `/bookings/rooms/${roomId}/history?${qp.toString()}`
+      : `/bookings/rooms/${roomId}/history`;
+    const res = await axios.get(url);
     return res.data;
   },
 

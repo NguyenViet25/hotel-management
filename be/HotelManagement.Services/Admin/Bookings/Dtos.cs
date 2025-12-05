@@ -212,6 +212,17 @@ public class BookingIntervalDto
     public string? GuestName { get; set; }
 }
 
+public class RoomStayHistoryDto
+{
+    public Guid BookingId { get; set; }
+    public Guid BookingRoomId { get; set; }
+    public DateTime Start { get; set; }
+    public DateTime End { get; set; }
+    public BookingStatus Status { get; set; }
+    public string? PrimaryGuestName { get; set; }
+    public List<BookingGuestDto> Guests { get; set; } = new();
+}
+
 public class RoomAvailabilityQueryDto
 {
     public Guid? HotelId { get; set; }

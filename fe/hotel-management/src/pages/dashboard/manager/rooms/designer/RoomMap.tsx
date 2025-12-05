@@ -51,6 +51,8 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
+import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import React, { useEffect, useMemo, useState } from "react";
 import bookingsApi, {
@@ -117,6 +119,10 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
   const [occupancySchedule, setOccupancySchedule] = useState<
     BookingIntervalDto[]
   >([]);
+  const [occFromDate, setOccFromDate] = useState(dayjs().subtract(12, "month"));
+  const [occToDate, setOccToDate] = useState(dayjs());
+  const [occupancyScheduleLoading, setOccupancyScheduleLoading] =
+    useState(false);
 
   const [hkOpen, setHkOpen] = useState(false);
   const [hkRoom, setHkRoom] = useState<RoomDto | null>(null);
@@ -319,26 +325,76 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
     setOccupancyOpen(true);
     setOccupancyRoom(room);
     try {
+      const defaultFrom = dayjs().subtract(12, "month").startOf("day");
+      const defaultTo = dayjs().endOf("day");
+      setOccFromDate(defaultFrom);
+      setOccToDate(defaultTo);
+      setOccupancyScheduleLoading(true);
+      try {
+        const histRes = await bookingsApi.roomHistory(
+          room.id,
+          defaultFrom.toISOString(),
+          defaultTo.toISOString()
+        );
+        const intervals = ((histRes.data || []) as any[]).map((h) => ({
+          bookingId: h.bookingId,
+          start: h.start,
+          end: h.end,
+          status: h.status,
+          guestName:
+            (Array.isArray(h.guests) && h.guests[0]?.fullname) ||
+            h.primaryGuestName ||
+            undefined,
+        })) as BookingIntervalDto[];
+        setOccupancySchedule(intervals);
+      } finally {
+        setOccupancyScheduleLoading(false);
+      }
+
       const bookingId = (await bookingsApi.getCurrentBookingId(room.id)).data;
-      if (!bookingId) {
-        setOccupancySchedule([]);
+      if (bookingId) {
+        const bookingRes = await bookingsApi.getById(bookingId);
+        const booking = bookingRes.data as BookingDetailsDto;
+        setOccupancyBooking(booking);
+        const br =
+          (booking.bookingRoomTypes || [])
+            .flatMap((rt) => rt.bookingRooms || [])
+            .find(
+              (b) => b.roomId === room.id || (b.roomName || "") === room.number
+            ) || null;
+        setOccupancyRoomBooking(br);
+      } else {
         setOccupancyBooking(null);
         setOccupancyRoomBooking(null);
-        return;
       }
-      const bookingRes = await bookingsApi.getById(bookingId);
-      const booking = bookingRes.data as BookingDetailsDto;
-      setOccupancyBooking(booking);
-      const br =
-        (booking.bookingRoomTypes || [])
-          .flatMap((rt) => rt.bookingRooms || [])
-          .find(
-            (b) => b.roomId === room.id || (b.roomName || "") === room.number
-          ) || null;
-      setOccupancyRoomBooking(br);
     } catch {
       setOccupancyBooking(null);
       setOccupancyRoomBooking(null);
+    }
+  };
+
+  const applyHistoryFilter = async () => {
+    if (!occupancyRoom) return;
+    setOccupancyScheduleLoading(true);
+    try {
+      const res = await bookingsApi.roomHistory(
+        occupancyRoom.id,
+        occFromDate.startOf("day").toISOString(),
+        occToDate.endOf("day").toISOString()
+      );
+      const intervals = ((res.data || []) as any[]).map((h) => ({
+        bookingId: h.bookingId,
+        start: h.start,
+        end: h.end,
+        status: h.status,
+        guestName:
+          (Array.isArray(h.guests) && h.guests[0]?.fullname) ||
+          h.primaryGuestName ||
+          undefined,
+      })) as BookingIntervalDto[];
+      setOccupancySchedule(intervals);
+    } finally {
+      setOccupancyScheduleLoading(false);
     }
   };
 
@@ -1132,7 +1188,7 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
         </DialogTitle>
         <DialogContent>
           <Stack spacing={2}>
-            {occupancyRoomBooking ? (
+            {occupancyRoomBooking && (
               <>
                 <Paper
                   sx={{
@@ -1395,87 +1451,124 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                     </Paper>
                   </Stack>
                 )}
-
-                {(() => {
-                  const br = occupancyRoomBooking;
-                  if (!br) return null as any;
-                  const start = dayjs(br.startDate);
-                  const end = dayjs(br.endDate);
-                  const daysCount = Math.max(1, end.diff(start, "day") + 1);
-                  const days = Array.from({ length: daysCount }).map((_, i) =>
-                    start.add(i, "day")
-                  );
-                  return (
-                    <Box sx={{ width: "100%", overflowX: "auto" }}>
-                      <Stack
-                        direction="row"
-                        spacing={0.5}
-                        sx={{ minWidth: days.length * 100 }}
-                      >
-                        {days.map((d) => {
-                          const intervals = (occupancySchedule || []).filter(
-                            (i) => {
-                              const s = dayjs(i.start);
-                              const e = dayjs(i.end);
-                              const ds = s.startOf("day");
-                              const de = e.endOf("day");
-                              return (
-                                d.isSame(ds, "day") ||
-                                d.isSame(de, "day") ||
-                                (d.isAfter(ds, "day") && d.isBefore(de, "day"))
-                              );
-                            }
-                          );
-                          if (!intervals.length)
-                            return (
-                              <Box
-                                key={d.toISOString()}
-                                sx={{ width: 100, height: 32 }}
-                              />
-                            );
-                          const i = intervals[0];
-                          const bg =
-                            i.status === 2
-                              ? "success.light"
-                              : i.status === 1
-                              ? "warning.light"
-                              : "info.light";
-                          return (
-                            <Tooltip
-                              key={d.toISOString()}
-                              title={`${dayjs(i.start).format(
-                                "DD/MM"
-                              )} - ${dayjs(i.end).format("DD/MM")}`}
-                            >
-                              <Paper
-                                sx={{
-                                  width: 100,
-                                  height: 32,
-                                  bgcolor: bg,
-                                  border: "1px dashed",
-                                  borderColor: "divider",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                }}
-                              >
-                                <Typography variant="caption">
-                                  {i.guestName || "—"}
-                                </Typography>
-                              </Paper>
-                            </Tooltip>
-                          );
-                        })}
-                      </Stack>
-                    </Box>
-                  );
-                })()}
               </>
-            ) : (
-              <Typography variant="body2" color="text.secondary">
-                Không có người ở hoặc chưa có dữ liệu
-              </Typography>
             )}
+
+            <Stack spacing={1}>
+              <Typography variant="subtitle2">
+                Lịch sử người ở theo khoảng ngày
+              </Typography>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <Stack
+                  direction={{ xs: "column", sm: "row" }}
+                  spacing={1}
+                  alignItems={{ xs: "stretch", sm: "center" }}
+                >
+                  <DatePicker
+                    label="Từ ngày"
+                    value={occFromDate}
+                    onChange={(v) => v && setOccFromDate(v)}
+                    slotProps={{ textField: { size: "small" } }}
+                  />
+                  <DatePicker
+                    label="Đến ngày"
+                    value={occToDate}
+                    onChange={(v) => v && setOccToDate(v)}
+                    slotProps={{ textField: { size: "small" } }}
+                  />
+                  <Button variant="contained" onClick={applyHistoryFilter}>
+                    Áp dụng
+                  </Button>
+                </Stack>
+              </LocalizationProvider>
+              {occupancyScheduleLoading && <LinearProgress />}
+              {(() => {
+                const start = occFromDate.startOf("day");
+                const end = occToDate.endOf("day");
+                if (!start.isValid() || !end.isValid() || end.isBefore(start)) {
+                  return (
+                    <Typography variant="body2" color="text.secondary">
+                      Khoảng ngày không hợp lệ
+                    </Typography>
+                  );
+                }
+                const daysCount = Math.max(1, end.diff(start, "day") + 1);
+                const days = Array.from({ length: daysCount }).map((_, i) =>
+                  start.add(i, "day")
+                );
+                if (days.length === 0) return null as any;
+                return (
+                  <Box sx={{ width: "100%", overflowX: "auto" }}>
+                    <Stack
+                      direction="row"
+                      spacing={0.5}
+                      sx={{ minWidth: days.length * 100 }}
+                    >
+                      {days.map((d) => {
+                        const intervals = (occupancySchedule || []).filter(
+                          (i) => {
+                            const s = dayjs(i.start);
+                            const e = dayjs(i.end);
+                            const ds = s.startOf("day");
+                            const de = e.endOf("day");
+                            return (
+                              d.isSame(ds, "day") ||
+                              d.isSame(de, "day") ||
+                              (d.isAfter(ds, "day") && d.isBefore(de, "day"))
+                            );
+                          }
+                        );
+                        if (!intervals.length)
+                          return (
+                            <Box
+                              key={d.toISOString()}
+                              sx={{ width: 100, height: 32 }}
+                            />
+                          );
+                        const i = intervals[0];
+                        const bg =
+                          i.status === 2
+                            ? "success.light"
+                            : i.status === 1
+                            ? "warning.light"
+                            : "info.light";
+                        return (
+                          <Tooltip
+                            key={d.toISOString()}
+                            title={`${dayjs(i.start).format("DD/MM")} - ${dayjs(
+                              i.end
+                            ).format("DD/MM")}`}
+                          >
+                            <Paper
+                              sx={{
+                                width: 100,
+                                height: 32,
+                                bgcolor: bg,
+                                border: "1px dashed",
+                                borderColor: "divider",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
+                            >
+                              <Typography variant="caption">
+                                {i.guestName || "—"}
+                              </Typography>
+                            </Paper>
+                          </Tooltip>
+                        );
+                      })}
+                    </Stack>
+                  </Box>
+                );
+              })()}
+              {!occupancyScheduleLoading &&
+                (occupancySchedule || []).length === 0 && (
+                  <Typography variant="body2" color="text.secondary">
+                    Không có lịch sử trong khoảng ngày đã chọn
+                  </Typography>
+                )}
+            </Stack>
           </Stack>
         </DialogContent>
         <DialogActions>

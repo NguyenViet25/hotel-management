@@ -921,6 +921,90 @@ public class BookingsService(
         }
     }
 
+    public async Task<ApiResponse<List<RoomStayHistoryDto>>> GetRoomHistoryAsync(Guid roomId, DateTime? from, DateTime? to)
+    {
+        try
+        {
+            var query = _bookingRoomRepo.Query()
+                .Include(br => br.BookingRoomType)
+                .ThenInclude(brt => brt.Booking)
+                .Where(br => br.RoomId == roomId && br.BookingStatus != BookingRoomStatus.Cancelled);
+
+            if (from.HasValue && to.HasValue)
+            {
+                query = query.Where(br => from.Value < br.EndDate && to.Value > br.StartDate);
+            }
+            else if (from.HasValue)
+            {
+                query = query.Where(br => from.Value < br.EndDate);
+            }
+            else if (to.HasValue)
+            {
+                query = query.Where(br => to.Value > br.StartDate);
+            }
+
+            var baseItems = await query
+                .Select(br => new
+                {
+                    br.BookingRoomId,
+                    br.RoomId,
+                    br.RoomName,
+                    br.StartDate,
+                    br.EndDate,
+                    BookingId = br.BookingRoomType.BookingId,
+                    Status = br.BookingRoomType.Booking.Status,
+                    PrimaryGuestId = br.BookingRoomType.Booking.PrimaryGuestId
+                })
+                .OrderBy(x => x.StartDate)
+                .ToListAsync();
+
+            var results = new List<RoomStayHistoryDto>();
+            foreach (var it in baseItems)
+            {
+                var guests = await _bookingGuestRepo.Query()
+                    .Include(bg => bg.Guest)
+                    .Where(bg => bg.BookingRoomId == it.BookingRoomId)
+                    .Select(bg => new BookingGuestDto
+                    {
+                        GuestId = bg.GuestId,
+                        Fullname = bg.Guest != null ? bg.Guest.FullName : null,
+                        Phone = bg.Guest!.Phone,
+                        Email = bg.Guest!.Email,
+                        IdCard = bg.Guest!.IdCard,
+                        IdCardFrontImageUrl = bg.Guest!.IdCardFrontImageUrl,
+                        IdCardBackImageUrl = bg.Guest!.IdCardBackImageUrl
+                    })
+                    .ToListAsync();
+
+                string? primaryName = null;
+                if (it.PrimaryGuestId.HasValue)
+                {
+                    primaryName = await _guestRepo.Query()
+                        .Where(g => g.Id == it.PrimaryGuestId.Value)
+                        .Select(g => g.FullName)
+                        .FirstOrDefaultAsync();
+                }
+
+                results.Add(new RoomStayHistoryDto
+                {
+                    BookingId = it.BookingId,
+                    BookingRoomId = it.BookingRoomId,
+                    Start = it.StartDate,
+                    End = it.EndDate,
+                    Status = it.Status,
+                    PrimaryGuestName = primaryName,
+                    Guests = guests
+                });
+            }
+
+            return ApiResponse<List<RoomStayHistoryDto>>.Ok(results);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<List<RoomStayHistoryDto>>.Fail($"Error retrieving room history: {ex.Message}");
+        }
+    }
+
     private List<RoomTimelineSegmentDto> BuildDayTimeline(DateTime day, bool hasBooking)
     {
         var segments = new List<RoomTimelineSegmentDto>();
