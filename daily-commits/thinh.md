@@ -209,3 +209,4 @@
 2025-12-04 - 4 - 01:49:39 UTC :: feat: UC-26 Order: tao/chinh sua order, ghi chu, void/discount. — them kiem soat loi & retry nhe (dam bao backward-compatible)
 2025-12-04 - 5 - 01:49:42 UTC :: build: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — fix race-condition nho trong thao tac (chuan bi cho tinh nang tiep theo)
 2025-12-05 - 1 - 01:49:44 UTC :: perf: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — kiem tra tuong thich mui gio/tien te (anh huong thap)
+2025-12-05 - 2 - 01:49:45 UTC :: refactor: UC-38 Audit Log: xem/loc thao tac, hanh dong, thoi gian. — bo sung unit test muc co ban (dong bo voi BE/FE)
