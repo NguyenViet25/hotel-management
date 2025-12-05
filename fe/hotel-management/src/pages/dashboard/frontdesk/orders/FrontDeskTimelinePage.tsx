@@ -11,7 +11,6 @@ import {
   Button,
   capitalize,
   Chip,
-  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -30,6 +29,7 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
+import Loading from "../../../../components/common/Loading";
 import dayjs from "dayjs";
 import "dayjs/locale/vi"; // make sure Vietnamese locale is imported
 import React, { useEffect, useMemo, useState } from "react";
@@ -264,7 +264,7 @@ const FoodTimeline: React.FC = () => {
 
       {loading && (
         <Box display="flex" justifyContent="center" my={4}>
-          <CircularProgress />
+          <Loading label="Đang tải..." />
         </Box>
       )}
 

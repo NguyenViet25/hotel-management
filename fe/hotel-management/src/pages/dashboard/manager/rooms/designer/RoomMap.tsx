@@ -1,4 +1,21 @@
-import { Add, Bed, Info } from "@mui/icons-material";
+import {
+  Add,
+  Bed,
+  Info,
+  CalendarMonth,
+  Person,
+  Phone,
+  CreditCard,
+  Image,
+  ReceiptLong,
+  Email,
+  AttachMoney,
+  LocalOffer,
+  Event,
+  Recycling,
+  Circle,
+  RestartAlt,
+} from "@mui/icons-material";
 import BlockIcon from "@mui/icons-material/Block";
 import ChangeCircleIcon from "@mui/icons-material/ChangeCircle";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -17,6 +34,7 @@ import {
   Card,
   CardContent,
   Chip,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -24,6 +42,7 @@ import {
   Grid,
   IconButton,
   InputAdornment,
+  LinearProgress,
   MenuItem,
   Paper,
   Snackbar,
@@ -55,6 +74,8 @@ import { useStore, type StoreState } from "../../../../../hooks/useStore";
 import ChangeRoomStatusModal from "../components/ChangeRoomStatusModal";
 import RoomFormModal from "../components/RoomFormModal";
 import { ROOM_STATUS_OPTIONS } from "../components/roomsConstants";
+import { formatDateTime } from "../../../../../utils/date-helper";
+import Loading from "../../../../../components/common/Loading";
 
 interface IProps {
   allowAddNew?: boolean;
@@ -208,7 +229,7 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
     return map;
   }, [roomTypes]);
 
-  const statusChip = (status: RoomStatus) => {
+  const statusChip = (status: number) => {
     const s = getRoomStatusString(status);
     const map: Record<string, { bg: string; text: string; label: string }> = {
       "Sẵn sàng": { bg: "#F2F4F7", text: "#344054", label: "Trống" },
@@ -525,11 +546,7 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
         )}
       </Stack>
 
-      {loading && (
-        <Alert severity="info" sx={{ mb: 2 }}>
-          <Typography>Đang tải danh sách phòng</Typography>{" "}
-        </Alert>
-      )}
+      {loading && <Loading label="Đang tải danh sách phòng" />}
 
       {floors.length === 0 && !loading && (
         <EmptyState
@@ -1100,46 +1117,171 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
       <Dialog
         open={occupancyOpen}
         onClose={() => setOccupancyOpen(false)}
-        maxWidth="sm"
+        maxWidth="md"
         fullWidth
       >
         <DialogTitle>
-          {occupancyRoom
-            ? `Người đang ở phòng ${occupancyRoom.number}`
-            : "Thông tin người ở"}
+          <Stack direction="row" spacing={1} alignItems="center">
+            <HotelIcon color="primary" />
+            <Typography variant="h6" fontWeight={700}>
+              {occupancyRoom
+                ? `Người đang ở phòng ${occupancyRoom.number}`
+                : "Thông tin người ở"}
+            </Typography>
+          </Stack>
         </DialogTitle>
         <DialogContent>
           <Stack spacing={2}>
             {occupancyRoomBooking ? (
               <>
-                <Stack direction="row" spacing={1}>
-                  <Chip
-                    label={`Nhận: ${dayjs(
-                      occupancyRoomBooking.startDate
-                    ).format("DD/MM/YYYY")}`}
-                  />
-                  <Chip
-                    label={`Trả: ${dayjs(occupancyRoomBooking.endDate).format(
-                      "DD/MM/YYYY"
-                    )}`}
-                  />
-                </Stack>
+                <Paper
+                  sx={{
+                    p: 1.5,
+                    border: "1px dashed",
+                    borderColor: "divider",
+                    borderRadius: 2,
+                  }}
+                >
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Chip
+                      icon={<CalendarMonth />}
+                      color="success"
+                      label={`Nhận: ${formatDateTime(
+                        occupancyRoomBooking.startDate
+                      )}`}
+                    />
+                    <Chip
+                      icon={<CalendarMonth />}
+                      color="warning"
+                      label={`Trả: ${formatDateTime(
+                        occupancyRoomBooking.endDate
+                      )}`}
+                    />
+                    {occupancyRoomBooking.bookingStatus &&
+                      statusChip(occupancyRoomBooking.bookingStatus)}
+                  </Stack>
+                </Paper>
                 <Typography variant="subtitle2">Danh sách khách</Typography>
                 <Stack spacing={1}>
                   {(occupancyRoomBooking.guests || []).map((g) => (
-                    <Stack
+                    <Paper
                       key={g.guestId}
-                      direction="row"
-                      spacing={1}
-                      alignItems="center"
+                      variant="outlined"
+                      sx={{
+                        p: 1,
+                        borderStyle: "dashed",
+                        borderColor: "grey.400",
+                        borderRadius: 1,
+                      }}
                     >
-                      <Chip
-                        size="small"
-                        icon={<GroupsIcon />}
-                        label={g.fullname || "Khách"}
-                      />
-                      {g.phone && <Chip size="small" label={g.phone} />}
-                    </Stack>
+                      <Grid container spacing={1} alignItems="center">
+                        <Grid item xs={12} sm={6}>
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            alignItems="center"
+                            flexWrap="wrap"
+                          >
+                            <Chip
+                              size="small"
+                              icon={<Person />}
+                              color="primary"
+                              label={g.fullname || "Khách"}
+                            />
+                            {g.phone && (
+                              <Chip
+                                size="small"
+                                icon={<Phone />}
+                                label={g.phone}
+                              />
+                            )}
+                          </Stack>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            alignItems="center"
+                            flexWrap="wrap"
+                          >
+                            {g.idCard && (
+                              <Chip
+                                size="small"
+                                icon={<CreditCard />}
+                                color="secondary"
+                                label={g.idCard}
+                              />
+                            )}
+                          </Stack>
+                          {(g.idCardFrontImageUrl || g.idCardBackImageUrl) && (
+                            <Stack
+                              direction="row"
+                              spacing={1}
+                              alignItems="center"
+                            >
+                              {g.idCardFrontImageUrl && (
+                                <Tooltip title="Mặt trước CMND/CCCD">
+                                  <Box
+                                    component="a"
+                                    href={g.idCardFrontImageUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    sx={{
+                                      display: "inline-flex",
+                                      alignItems: "center",
+                                    }}
+                                  >
+                                    <Image sx={{ mr: 0.5 }} />
+                                    <Box
+                                      component="img"
+                                      src={g.idCardFrontImageUrl}
+                                      alt="Front"
+                                      sx={{
+                                        width: 56,
+                                        height: 36,
+                                        objectFit: "cover",
+                                        borderRadius: 1,
+                                        border: "1px solid",
+                                        borderColor: "divider",
+                                      }}
+                                    />
+                                  </Box>
+                                </Tooltip>
+                              )}
+                              {g.idCardBackImageUrl && (
+                                <Tooltip title="Mặt sau CMND/CCCD">
+                                  <Box
+                                    component="a"
+                                    href={g.idCardBackImageUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    sx={{
+                                      display: "inline-flex",
+                                      alignItems: "center",
+                                    }}
+                                  >
+                                    <Image sx={{ mr: 0.5 }} />
+                                    <Box
+                                      component="img"
+                                      src={g.idCardBackImageUrl}
+                                      alt="Back"
+                                      sx={{
+                                        width: 56,
+                                        height: 36,
+                                        objectFit: "cover",
+                                        borderRadius: 1,
+                                        border: "1px solid",
+                                        borderColor: "divider",
+                                      }}
+                                    />
+                                  </Box>
+                                </Tooltip>
+                              )}
+                            </Stack>
+                          )}
+                        </Grid>
+                      </Grid>
+                    </Paper>
                   ))}
                 </Stack>
                 {occupancyBooking && (
@@ -1147,14 +1289,110 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                     <Typography variant="subtitle2">
                       Thông tin booking
                     </Typography>
-                    <Stack direction="row" spacing={1}>
-                      <Chip label={`Mã: ${occupancyBooking.id}`} />
-                      {occupancyBooking.primaryGuestName && (
-                        <Chip
-                          label={`Khách chính: ${occupancyBooking.primaryGuestName}`}
-                        />
-                      )}
-                    </Stack>
+                    <Paper
+                      variant="outlined"
+                      sx={{
+                        p: 1.5,
+                        borderStyle: "dashed",
+                        borderColor: "grey.400",
+                        borderRadius: 2,
+                      }}
+                    >
+                      <Grid container spacing={1}>
+                        <Grid item xs={12} sm={6} md={4}>
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            flexWrap="wrap"
+                            alignItems="center"
+                          >
+                            <Chip
+                              size="small"
+                              icon={<ReceiptLong />}
+                              label={`Mã: ${occupancyBooking.id}`}
+                            />
+                            {occupancyBooking.primaryGuestName && (
+                              <Chip
+                                size="small"
+                                icon={<Person />}
+                                color="primary"
+                                label={occupancyBooking.primaryGuestName}
+                              />
+                            )}
+                            {occupancyBooking.phoneNumber && (
+                              <Chip
+                                size="small"
+                                icon={<Phone />}
+                                label={occupancyBooking.phoneNumber}
+                              />
+                            )}
+                            {occupancyBooking.email && (
+                              <Chip
+                                size="small"
+                                icon={<Email />}
+                                label={occupancyBooking.email}
+                              />
+                            )}
+                          </Stack>
+                        </Grid>
+                        <Grid item xs={12} sm={6} md={4}>
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            flexWrap="wrap"
+                            alignItems="center"
+                          >
+                            <Chip
+                              size="small"
+                              icon={<AttachMoney />}
+                              color="success"
+                              label={`Tổng: ${occupancyBooking.totalAmount}`}
+                            />
+                            <Chip
+                              size="small"
+                              icon={<AttachMoney />}
+                              color="info"
+                              label={`Đặt cọc: ${occupancyBooking.depositAmount}`}
+                            />
+                            <Chip
+                              size="small"
+                              icon={<LocalOffer />}
+                              color="warning"
+                              label={`Giảm giá: ${occupancyBooking.discountAmount}`}
+                            />
+                            <Chip
+                              size="small"
+                              icon={<AttachMoney />}
+                              color="secondary"
+                              label={`Còn lại: ${occupancyBooking.leftAmount}`}
+                            />
+                          </Stack>
+                        </Grid>
+                        <Grid item xs={12} sm={6} md={4}>
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            flexWrap="wrap"
+                            alignItems="center"
+                          >
+                            <Chip
+                              size="small"
+                              icon={<Event />}
+                              label={`Tạo lúc: ${dayjs(
+                                occupancyBooking.createdAt
+                              ).format("DD/MM/YYYY HH:mm")}`}
+                            />
+                            {occupancyBooking.notes && (
+                              <Chip
+                                size="small"
+                                icon={<Info />}
+                                label={occupancyBooking.notes}
+                              />
+                            )}
+                          </Stack>
+                        </Grid>
+                      </Grid>
+                    </Paper>
                   </Stack>
                 )}
 
@@ -1214,6 +1452,8 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                                   width: 100,
                                   height: 32,
                                   bgcolor: bg,
+                                  border: "1px dashed",
+                                  borderColor: "divider",
                                   display: "flex",
                                   alignItems: "center",
                                   justifyContent: "center",
