@@ -23,7 +23,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import bookingsApi, {
   type BookingDetailsDto,
   type BookingGuestDto,
@@ -31,7 +31,11 @@ import bookingsApi, {
   type BookingRoomTypeDto,
 } from "../../../../../api/bookingsApi";
 import StripedLabelWrapper from "../../../../../components/LabelStripedWrapper";
-import { formatDateTime } from "../../../../../utils/date-helper";
+import {
+  formatDate,
+  formatDateTime,
+  formatTime,
+} from "../../../../../utils/date-helper";
 import AssignRoomDialog from "./AssignRoomDialog";
 import ChangeRoomDialog from "./ChangeRoomDialog";
 import CheckInTimeDialog from "./CheckInTimeDialog";
@@ -41,6 +45,10 @@ import GuestDialog from "./GuestDialog";
 import GuestList from "./GuestList";
 import MoveGuestDialog from "./MoveGuestDialog";
 import PlannedDatesDialog from "./PlannedDatesDialog";
+import type { Dayjs } from "dayjs";
+import hotelService from "../../../../../api/hotelService";
+import { useStore, type StoreState } from "../../../../../hooks/useStore";
+import dayjs from "dayjs";
 
 type Props = {
   booking: BookingDetailsDto | null;
@@ -76,12 +84,16 @@ const RoomTypeBlock: React.FC<{
   rt: BookingRoomTypeDto;
   onRefresh?: () => Promise<void> | void;
 }> = ({ booking, rt, onRefresh }) => {
+  const { hotelId } = useStore<StoreState>((s) => s);
+
   const [assignOpen, setAssignOpen] = useState(false);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
     severity: "success" | "error" | "warning";
   }>({ open: false, message: "", severity: "success" });
+  const [checkIn, setCheckIn] = useState<string | null | undefined>(null);
+  const [checkOut, setCheckOut] = useState<string | null | undefined>(null);
 
   const assignedRooms: BookingRoomDto[] = rt.bookingRooms || [];
   const remaining = Math.max(0, (rt.totalRoom || 0) - assignedRooms.length);
@@ -195,6 +207,38 @@ const RoomTypeBlock: React.FC<{
       });
     }
   };
+
+  useEffect(() => {
+    const run = async () => {
+      if (!hotelId) return;
+      try {
+        const [timesRes, vatRes] = await Promise.all([
+          hotelService.getDefaultTimes(hotelId),
+          hotelService.getVat(hotelId),
+        ]);
+        if (timesRes.isSuccess) {
+          const ci = timesRes.data.defaultCheckInTime;
+          const co = timesRes.data.defaultCheckOutTime;
+          setCheckIn(ci);
+          setCheckOut(co);
+        } else {
+          setSnackbar({
+            open: true,
+            message: timesRes.message || "Không thể tải cài đặt",
+            severity: "error",
+          });
+        }
+      } catch {
+        setSnackbar({
+          open: true,
+          message: "Không thể tải cài đặt",
+          severity: "error",
+        });
+      } finally {
+      }
+    };
+    run();
+  }, [hotelId]);
 
   return (
     <Card variant="outlined" sx={{ borderRadius: 2, minWidth: 320 }}>
@@ -336,9 +380,9 @@ const RoomTypeBlock: React.FC<{
                                 <Chip
                                   label={`Nhận: ${
                                     br.startDate
-                                      ? formatDateTime(br.startDate)
+                                      ? formatDate(br.startDate)
                                       : "—"
-                                  }`}
+                                  } ${checkIn ? formatTime(checkIn) : "-"}`}
                                   size="small"
                                   sx={{
                                     width: "100%",
@@ -352,10 +396,8 @@ const RoomTypeBlock: React.FC<{
                                 />
                                 <Chip
                                   label={`Trả: ${
-                                    br.endDate
-                                      ? formatDateTime(br.endDate)
-                                      : "—"
-                                  }`}
+                                    br.endDate ? formatDate(br.endDate) : "—"
+                                  } ${checkOut ? formatTime(checkOut) : "-"}`}
                                   size="small"
                                   sx={{
                                     width: "100%",
@@ -368,16 +410,6 @@ const RoomTypeBlock: React.FC<{
                                   }}
                                 />{" "}
                               </Stack>
-                              <IconButton
-                                size="small"
-                                onClick={() => {
-                                  setActiveRoom(br);
-                                  setPlannedOpen(true);
-                                }}
-                                sx={{ alignSelf: "flex-start" }}
-                              >
-                                <Edit fontSize="small" />
-                              </IconButton>
                             </Stack>
                             <Button
                               startIcon={<CalendarMonth />}
@@ -607,6 +639,8 @@ const RoomTypeBlock: React.FC<{
           open={checkInOpen}
           scheduledStart={activeRoom?.startDate || ""}
           scheduledEnd={activeRoom?.endDate || undefined}
+          defaultCheckInTime={checkIn ?? undefined}
+          defaultCheckOutTime={checkOut ?? undefined}
           onClose={() => setCheckInOpen(false)}
           onConfirm={async (iso, info) => {
             try {
@@ -645,6 +679,8 @@ const RoomTypeBlock: React.FC<{
           open={checkOutOpen}
           scheduledEnd={activeRoom?.endDate || ""}
           scheduledStart={activeRoom?.startDate || undefined}
+          defaultCheckInTime={checkIn ?? undefined}
+          defaultCheckOutTime={checkOut ?? undefined}
           onClose={() => setCheckOutOpen(false)}
           onConfirm={async (iso, info) => {
             try {

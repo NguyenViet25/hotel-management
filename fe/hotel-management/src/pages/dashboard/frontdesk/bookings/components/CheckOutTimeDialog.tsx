@@ -17,6 +17,8 @@ type Props = {
   open: boolean;
   scheduledEnd: string;
   scheduledStart?: string;
+  defaultCheckInTime?: string | null;
+  defaultCheckOutTime?: string | null;
   onClose: () => void;
   onConfirm: (
     selectedIso: string,
@@ -28,25 +30,54 @@ export default function CheckOutTimeDialog({
   open,
   scheduledEnd,
   scheduledStart,
+  defaultCheckInTime,
+  defaultCheckOutTime,
   onClose,
   onConfirm,
 }: Props) {
   const [value, setValue] = useState<Dayjs>(dayjs());
 
-  useEffect(() => {
-    if (open) setValue(dayjs());
-  }, [open]);
-
   const scheduled = useMemo(() => dayjs(scheduledEnd), [scheduledEnd]);
 
+  const displayScheduledStart = useMemo(() => {
+    if (!scheduledStart) return null as Dayjs | null;
+    const base = dayjs(scheduledStart);
+    const def = defaultCheckInTime ? dayjs(defaultCheckInTime) : null;
+    if (def && base.isValid() && def.isValid()) {
+      return base
+        .hour(def.hour())
+        .minute(def.minute())
+        .second(0)
+        .millisecond(0);
+    }
+    return base;
+  }, [scheduledStart, defaultCheckInTime]);
+
+  const displayScheduledEnd = useMemo(() => {
+    const base = dayjs(scheduledEnd);
+    const def = defaultCheckOutTime ? dayjs(defaultCheckOutTime) : null;
+    if (def && base.isValid() && def.isValid()) {
+      return base
+        .hour(def.hour())
+        .minute(def.minute())
+        .second(0)
+        .millisecond(0);
+    }
+    return base;
+  }, [scheduledEnd, defaultCheckOutTime]);
+  useEffect(() => {
+    if (open) setValue(displayScheduledEnd || dayjs());
+  }, [open, displayScheduledEnd]);
+
   const { isLate, days, hours, minutes } = useMemo(() => {
-    const late = value.isAfter(scheduled);
-    const diff = Math.abs(value.diff(scheduled, "minute"));
+    const base = displayScheduledEnd || scheduled;
+    const late = value.isAfter(base);
+    const diff = Math.abs(value.diff(base, "minute"));
     const d = Math.floor(diff / 1440);
     const h = Math.floor((diff % 1440) / 60);
     const m = diff % 60;
     return { isLate: late, days: d, hours: h, minutes: m };
-  }, [value, scheduled]);
+  }, [value, scheduled, displayScheduledEnd]);
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
@@ -58,20 +89,24 @@ export default function CheckOutTimeDialog({
               <Typography variant="subtitle2" fontWeight={700}>
                 Dự kiến nhận phòng:
               </Typography>
-              <Chip label={dayjs(scheduledStart).format("DD/MM/YYYY HH:mm")} />
+              <Chip
+                label={(displayScheduledStart || dayjs(scheduledStart)).format(
+                  "DD/MM/YYYY HH:mm"
+                )}
+              />
             </Stack>
           ) : null}
           <Stack direction="row" spacing={1} alignItems="center">
             <Typography variant="subtitle2" fontWeight={700}>
               Dự kiến trả phòng:
             </Typography>
-            <Chip label={dayjs(scheduledEnd).format("DD/MM/YYYY HH:mm")} />
+            <Chip label={displayScheduledEnd.format("DD/MM/YYYY HH:mm")} />
           </Stack>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DateTimePicker
               label="Thời gian check-out"
               value={value}
-              minDate={dayjs(scheduledEnd)}
+              minDate={dayjs(scheduledStart)}
               onChange={(v) => v && setValue(v)}
             />
           </LocalizationProvider>
