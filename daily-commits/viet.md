@@ -211,3 +211,4 @@
 2025-12-05 - 1 - 01:49:44 UTC :: docs: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — them log chi tiet phuc vu audit (anh huong thap)
 2025-12-05 - 2 - 01:49:46 UTC :: perf: UC-21 Housekeeping: cap nhat Dirty/In-progress/Cleaned/Inspected. — don dep code va xoa doan thua (dat tieu chi toi thieu)
 2025-12-05 - 3 - 01:49:49 UTC :: feat: UC-23 Bao tri: tao ticket, dinh anh, mo ta loi. — chinh sua tai lieu & mo ta API (da kiem tra lint)
+2025-12-05 - 4 - 01:49:53 UTC :: build: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — chuan hoa ten ham/bien theo convention (anh huong thap)
