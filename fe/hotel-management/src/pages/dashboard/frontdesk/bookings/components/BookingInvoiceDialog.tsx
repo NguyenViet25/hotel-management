@@ -525,11 +525,20 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                   </Button>
                   <TextField
                     type="number"
-                    value={additionalAmount}
-                    label="Phụ thu"
-                    onChange={(e) =>
-                      setAdditionalAmount(Number(e.target.value) || 0)
+                    value={
+                      additionalAmount !== undefined &&
+                      additionalAmount !== null
+                        ? new Intl.NumberFormat("vi-VN").format(
+                            Number(additionalAmount)
+                          )
+                        : ""
                     }
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/[^0-9]/g, "");
+                      const num = raw ? Number(raw) : 0;
+                      setAdditionalAmount(num);
+                    }}
+                    label="Phụ thu"
                     slotProps={{
                       input: {
                         endAdornment: (

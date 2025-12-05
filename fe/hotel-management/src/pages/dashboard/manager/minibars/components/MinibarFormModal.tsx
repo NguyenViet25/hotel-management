@@ -18,6 +18,7 @@ import {
   TextField,
   Box,
   IconButton,
+  Typography,
 } from "@mui/material";
 import React, { useEffect, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -31,6 +32,7 @@ import roomTypesApi, { type RoomType } from "../../../../../api/roomTypesApi";
 import mediaApi from "../../../../../api/mediaApi";
 import LinkIcon from "@mui/icons-material/Link";
 import PhotoCamera from "@mui/icons-material/PhotoCamera";
+import { MonetizationOn } from "@mui/icons-material";
 
 type Mode = "create" | "edit";
 
@@ -166,17 +168,34 @@ const MinibarFormModal: React.FC<MinibarFormModalProps> = ({
             name="price"
             render={({ field }) => (
               <TextField
-                label="Giá"
-                type="number"
+                {...field}
+                label="Đơn giá"
+                type="text"
                 fullWidth
-                value={field.value}
-                onChange={(e) => field.onChange(Number(e.target.value))}
+                value={
+                  field.value !== undefined && field.value !== null
+                    ? new Intl.NumberFormat("vi-VN").format(Number(field.value))
+                    : ""
+                }
+                onChange={(e) => {
+                  const raw = e.target.value.replace(/[^0-9]/g, "");
+                  const num = raw ? Number(raw) : 0;
+                  field.onChange(num);
+                }}
                 error={!!errors.price}
-                helperText={errors.price?.message as string}
+                helperText={errors.price?.message}
+                inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <AttachMoneyIcon />
+                      <MonetizationOn />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <Typography variant="body2" color="text.secondary">
+                        VND
+                      </Typography>
                     </InputAdornment>
                   ),
                 }}

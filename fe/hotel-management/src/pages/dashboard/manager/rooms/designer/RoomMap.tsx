@@ -1039,7 +1039,7 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
       >
         <DialogTitle>
           <Stack direction="row" spacing={1} alignItems="center">
-            <HotelIcon color="primary" />
+            <History color="primary" />
             <Typography variant="h6" fontWeight={700}>
               {`Lịch sử người ở phòng ${occupancyRoom?.number}`}
             </Typography>

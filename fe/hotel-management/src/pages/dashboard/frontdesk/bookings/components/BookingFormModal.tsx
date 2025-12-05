@@ -519,7 +519,7 @@ const BookingFormModal: React.FC<Props> = ({
                 render={({ field }) => (
                   <TextField
                     label="Tiền cọc"
-                    type="number"
+                    type="text"
                     fullWidth
                     error={!!errors.depositAmount}
                     helperText={errors.depositAmount?.message}
@@ -529,6 +529,18 @@ const BookingFormModal: React.FC<Props> = ({
                       ),
                     }}
                     {...field}
+                    value={
+                      field.value !== undefined && field.value !== null
+                        ? new Intl.NumberFormat("vi-VN").format(
+                            Number(field.value)
+                          )
+                        : ""
+                    }
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/[^0-9]/g, "");
+                      const num = raw ? Number(raw) : 0;
+                      field.onChange(num);
+                    }}
                   />
                 )}
               />

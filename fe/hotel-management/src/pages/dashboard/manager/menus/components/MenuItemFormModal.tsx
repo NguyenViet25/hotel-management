@@ -1,41 +1,37 @@
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Switch,
-  FormControlLabel,
-  Stack,
-  InputAdornment,
-  Box,
-} from "@mui/material";
-import React, { use, useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  Group as GroupIcon,
+  Block as BlockIcon,
+  CheckCircle as CheckCircleIcon,
+  Close,
   Fastfood as FastfoodIcon,
+  Group as GroupIcon,
+  Image as ImageIcon,
   MonetizationOn as MonetizationOnIcon,
   RestaurantMenu as RestaurantMenuIcon,
-  Image as ImageIcon,
-  Info as InfoIcon,
-  CheckCircle as CheckCircleIcon,
-  Block as BlockIcon,
-  Close,
   Save,
 } from "@mui/icons-material";
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  InputAdornment,
+  InputLabel,
+  MenuItem,
+  Select,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
+import React, { useEffect } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { z } from "zod";
 import type {
-  MenuGroupDto,
   CreateMenuItemRequest,
-  UpdateMenuItemRequest,
   MenuItemDto,
+  UpdateMenuItemRequest,
 } from "../../../../../api/menusApi";
 import { useStore, type StoreState } from "../../../../../hooks/useStore";
 
@@ -138,8 +134,6 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
       description: initialValues?.description ?? "",
     },
   });
-
-  console.log("errors", errors);
 
   const isSetMode = (watch("category") || "") === "Set" || createType === "set";
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -299,17 +293,36 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
               name="unitPrice"
               render={({ field }) => (
                 <TextField
+                  {...field}
                   label="Đơn giá"
-                  type="number"
+                  type="text"
                   fullWidth
-                  value={field.value}
-                  onChange={(e) => field.onChange(Number(e.target.value))}
+                  value={
+                    field.value !== undefined && field.value !== null
+                      ? new Intl.NumberFormat("vi-VN").format(
+                          Number(field.value)
+                        )
+                      : ""
+                  }
+                  onChange={(e) => {
+                    const raw = e.target.value.replace(/[^0-9]/g, "");
+                    const num = raw ? Number(raw) : 0;
+                    field.onChange(num);
+                  }}
                   error={!!errors.unitPrice}
                   helperText={errors.unitPrice?.message}
+                  inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
                         <MonetizationOnIcon />
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <Typography variant="body2" color="text.secondary">
+                          VND
+                        </Typography>
                       </InputAdornment>
                     ),
                   }}
