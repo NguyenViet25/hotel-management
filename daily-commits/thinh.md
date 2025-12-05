@@ -210,3 +210,4 @@
 2025-12-04 - 5 - 01:49:42 UTC :: build: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — fix race-condition nho trong thao tac (chuan bi cho tinh nang tiep theo)
 2025-12-05 - 1 - 01:49:44 UTC :: perf: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — kiem tra tuong thich mui gio/tien te (anh huong thap)
 2025-12-05 - 2 - 01:49:45 UTC :: refactor: UC-38 Audit Log: xem/loc thao tac, hanh dong, thoi gian. — bo sung unit test muc co ban (dong bo voi BE/FE)
+2025-12-05 - 3 - 01:49:47 UTC :: refactor: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — bo sung metrics/telemetry co ban (dam bao backward-compatible)
