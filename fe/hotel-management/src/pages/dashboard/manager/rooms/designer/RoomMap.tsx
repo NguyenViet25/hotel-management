@@ -37,7 +37,6 @@ import {
   Grid,
   IconButton,
   InputAdornment,
-  LinearProgress,
   MenuItem,
   Paper,
   Snackbar,
@@ -64,7 +63,6 @@ import bookingsApi, {
 } from "../../../../../api/bookingsApi";
 import housekeepingApi from "../../../../../api/housekeepingApi";
 import mediaApi, { type MediaDto } from "../../../../../api/mediaApi";
-import { type Minibar } from "../../../../../api/minibarApi";
 import roomsApi, {
   getRoomStatusString,
   type CreateRoomRequest,
@@ -119,8 +117,6 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
     RoomStayHistoryDto[]
   >([]);
   const [occCurrentDate, setOccCurrentDate] = useState(dayjs());
-  const [occFromDate, setOccFromDate] = useState(dayjs().subtract(1, "month"));
-  const [occToDate, setOccToDate] = useState(dayjs());
   const [occupancyScheduleLoading, setOccupancyScheduleLoading] =
     useState(false);
   const [idCardPreviewOpen, setIdCardPreviewOpen] = useState(false);
@@ -140,14 +136,6 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
   const [hkNotes, setHkNotes] = useState("");
   const [hkEvidence, setHkEvidence] = useState<MediaDto[]>([]);
   const [hkUploading, setHkUploading] = useState(false);
-
-  const [minibarOpen, setMinibarOpen] = useState(false);
-  const [minibarRoom, setMinibarRoom] = useState<RoomDto | null>(null);
-  const [minibarItems, setMinibarItems] = useState<
-    { item: Minibar; qty: number }[]
-  >([]);
-  const [minibarLoading, setMinibarLoading] = useState(false);
-  const [minibarBookingId, setMinibarBookingId] = useState<string>("");
 
   useEffect(() => {
     const fetchRoomTypes = async () => {
@@ -334,38 +322,22 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
   const openOccupancyDialog = async (room: RoomDto) => {
     setOccupancyOpen(true);
     setOccupancyRoom(room);
-    try {
-      const defaultFrom = dayjs().subtract(1, "month").startOf("day");
-      const defaultTo = dayjs().endOf("day");
-      setOccFromDate(defaultFrom);
-      setOccToDate(defaultTo);
-      setOccCurrentDate(dayjs());
-      setOccupancyScheduleLoading(true);
-      try {
-        const histRes = await bookingsApi.roomHistory(
-          room.id,
-          defaultFrom.toISOString(),
-          defaultTo.toISOString()
-        );
-        const hist = (histRes.data || []) as RoomStayHistoryDto[];
-        setOccupancyHistory(hist);
-      } finally {
-        setOccupancyScheduleLoading(false);
-      }
 
-      const bookingId = (await bookingsApi.getCurrentBookingId(room.id)).data;
-      if (bookingId) {
-        const bookingRes = await bookingsApi.getById(bookingId);
-        const booking = bookingRes.data as BookingDetailsDto;
-        const br =
-          (booking.bookingRoomTypes || [])
-            .flatMap((rt) => rt.bookingRooms || [])
-            .find(
-              (b) => b.roomId === room.id || (b.roomName || "") === room.number
-            ) || null;
-      } else {
-      }
-    } catch {}
+    const defaultFrom = dayjs().subtract(1, "month").startOf("day");
+    const defaultTo = dayjs().endOf("day");
+    setOccCurrentDate(dayjs());
+    setOccupancyScheduleLoading(true);
+    try {
+      const histRes = await bookingsApi.roomHistory(
+        room.id,
+        defaultFrom.toISOString(),
+        defaultTo.toISOString()
+      );
+      const hist = (histRes.data || []) as RoomStayHistoryDto[];
+      setOccupancyHistory(hist);
+    } finally {
+      setOccupancyScheduleLoading(false);
+    }
   };
 
   const getWeekRange = (date: dayjs.Dayjs) => {
@@ -379,7 +351,7 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
   );
   const weekDays = useMemo(
     () => Array.from({ length: 7 }, (_, i) => weekStart.add(i, "day")),
-    [weekStart]
+    [weekStart, occCurrentDate]
   );
 
   const loadHistoryForWeek = async (date: dayjs.Dayjs) => {
@@ -394,8 +366,6 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
       );
       const hist = (res.data || []) as RoomStayHistoryDto[];
       setOccupancyHistory(hist);
-      setOccFromDate(start);
-      setOccToDate(end);
       setOccCurrentDate(date);
     } finally {
       setOccupancyScheduleLoading(false);
@@ -476,63 +446,6 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
       setSnackbar({
         open: true,
         message: "Đã xảy ra lỗi khi cập nhật buồng phòng",
-        severity: "error",
-      });
-    }
-  };
-
-  const submitMinibar = async () => {
-    if (!minibarRoom || !minibarBookingId) {
-      setSnackbar({
-        open: true,
-        message: "Không tìm thấy booking đang ở",
-        severity: "warning",
-      });
-      return;
-    }
-    const items = minibarItems
-      .filter((x) => x.qty > 0)
-      .map((x) => ({ minibarId: x.item.id, quantity: x.qty }));
-    const hasDiscrepancy = minibarItems.some((x) => x.qty > x.item.quantity);
-    if (hasDiscrepancy) {
-      setSnackbar({
-        open: true,
-        message: "Số lượng vượt quá tồn minibar",
-        severity: "warning",
-      });
-      return;
-    }
-    if (items.length === 0) {
-      setSnackbar({
-        open: true,
-        message: "Chưa chọn hao hụt minibar",
-        severity: "info",
-      });
-      return;
-    }
-    try {
-      const res = await bookingsApi.recordMinibarConsumption(minibarBookingId, {
-        items,
-      });
-      if (res.isSuccess) {
-        setSnackbar({
-          open: true,
-          message: "Đã ghi nhận minibar",
-          severity: "success",
-        });
-        setMinibarOpen(false);
-        setMinibarRoom(null);
-      } else {
-        setSnackbar({
-          open: true,
-          message: res.message || "Không thể ghi nhận minibar",
-          severity: "error",
-        });
-      }
-    } catch {
-      setSnackbar({
-        open: true,
-        message: "Đã xảy ra lỗi khi ghi nhận minibar",
         severity: "error",
       });
     }
@@ -1055,59 +968,6 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
             disabled={hkUploading}
           >
             Lưu
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog
-        open={minibarOpen}
-        onClose={() => setMinibarOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>Ghi nhận minibar</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2} sx={{ mt: 1 }}>
-            {minibarLoading ? (
-              <Typography>Đang tải...</Typography>
-            ) : minibarItems.length === 0 ? (
-              <Typography>Không có mặt hàng minibar</Typography>
-            ) : (
-              minibarItems.map((mi, idx) => (
-                <Stack
-                  key={mi.item.id}
-                  direction="row"
-                  spacing={1}
-                  alignItems="center"
-                >
-                  <Chip label={mi.item.name} />
-                  <Chip label={`${mi.item.price.toLocaleString()}₫`} />
-                  <TextField
-                    type="number"
-                    size="small"
-                    inputProps={{ min: 0 }}
-                    value={mi.qty}
-                    onChange={(e) => {
-                      const v = Number(e.target.value);
-                      setMinibarItems((prev) => {
-                        const arr = [...prev];
-                        arr[idx] = { ...arr[idx], qty: isNaN(v) ? 0 : v };
-                        return arr;
-                      });
-                    }}
-                  />
-                  {mi.qty > mi.item.quantity && (
-                    <Chip color="warning" label="Vượt tồn" />
-                  )}
-                </Stack>
-              ))
-            )}
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setMinibarOpen(false)}>Đóng</Button>
-          <Button variant="contained" onClick={submitMinibar}>
-            Ghi nhận
           </Button>
         </DialogActions>
       </Dialog>
