@@ -208,3 +208,4 @@
 2025-12-04 - 3 - 01:49:36 UTC :: build: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — cai thien hieu nang render/list (chuan bi cho tinh nang tiep theo)
 2025-12-04 - 4 - 01:49:39 UTC :: feat: UC-26 Order: tao/chinh sua order, ghi chu, void/discount. — them kiem soat loi & retry nhe (dam bao backward-compatible)
 2025-12-04 - 5 - 01:49:42 UTC :: build: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — fix race-condition nho trong thao tac (chuan bi cho tinh nang tiep theo)
+2025-12-05 - 1 - 01:49:44 UTC :: perf: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — kiem tra tuong thich mui gio/tien te (anh huong thap)
