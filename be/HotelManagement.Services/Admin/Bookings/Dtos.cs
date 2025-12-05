@@ -220,6 +220,7 @@ public class RoomStayHistoryDto
     public DateTime End { get; set; }
     public BookingStatus Status { get; set; }
     public string? PrimaryGuestName { get; set; }
+    public string? PrimaryGuestPhone { get; set; }
     public List<BookingGuestDto> Guests { get; set; } = new();
 }
 

@@ -26,6 +26,7 @@ import {
   Alert,
   Box,
   Button,
+  capitalize,
   Card,
   CardContent,
   Chip,
@@ -1184,7 +1185,24 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
             </Typography>
           </Stack>
         </DialogTitle>
-        <DialogContent sx={{ minHeight: 500, maxHeight: 500 }}>
+        <DialogContent
+          sx={{
+            minHeight: 500,
+            maxHeight: 500,
+            overflowY: "auto",
+
+            /* Hide scrollbar for Webkit browsers (Chrome, Safari) */
+            "&::-webkit-scrollbar": {
+              display: "none",
+            },
+
+            /* Hide scrollbar for Firefox */
+            scrollbarWidth: "none",
+
+            /* Hide scrollbar for IE/Edge */
+            msOverflowStyle: "none",
+          }}
+        >
           <Stack spacing={2}>
             <Stack spacing={1}>
               <Stack
@@ -1201,10 +1219,12 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                 >
                   <ChevronLeft />
                 </IconButton>
-                <Typography variant="subtitle1">
-                  {weekStart.format("DD/MM/YYYY")} -{" "}
-                  {weekEnd.format("DD/MM/YYYY")}
-                </Typography>
+                <Chip
+                  sx={{ width: "100%" }}
+                  label={`${weekStart.format("DD/MM/YYYY")} - ${weekEnd.format(
+                    "DD/MM/YYYY"
+                  )}`}
+                />
                 <IconButton
                   aria-label="Tuần sau"
                   onClick={() =>
@@ -1262,6 +1282,7 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                             bgcolor: isToday
                               ? "action.selected"
                               : "background.paper",
+                            border: "1px dashed blue",
                           }}
                         >
                           <Stack spacing={0.75}>
@@ -1272,10 +1293,11 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                             >
                               <Chip
                                 size="small"
+                                color="primary"
                                 icon={<CalendarMonth />}
-                                label={`${d
-                                  .locale("vi")
-                                  .format("dddd")} • ${d.format("DD/MM/YYYY")}`}
+                                label={`${capitalize(
+                                  d.locale("vi").format("dddd")
+                                )} • ${d.format("DD/MM/YYYY")}`}
                               />
                             </Stack>
                             <Stack spacing={0.75}>
@@ -1290,135 +1312,156 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                                 items.map((h) => {
                                   const guests = h.guests || [];
                                   return (
-                                    <TableContainer
-                                      component={Paper}
-                                      variant="outlined"
-                                    >
-                                      <Table
-                                        size="small"
-                                        sx={{ tableLayout: "fixed" }}
+                                    <Stack spacing={0.75}>
+                                      <TableContainer
+                                        component={Paper}
+                                        variant="outlined"
                                       >
-                                        <TableHead>
-                                          <TableRow>
-                                            <TableCell sx={{ width: "8%" }}>
-                                              STT
-                                            </TableCell>
-                                            <TableCell sx={{ width: "28%" }}>
-                                              Họ và tên
-                                            </TableCell>
-                                            <TableCell sx={{ width: "28%" }}>
-                                              Điện thoại
-                                            </TableCell>
-                                            <TableCell sx={{ width: "28%" }}>
-                                              CMND/CCCD
-                                            </TableCell>
-                                            <TableCell
-                                              sx={{ width: "8%" }}
-                                              align="center"
-                                            >
-                                              Xem
-                                            </TableCell>
-                                          </TableRow>
-                                        </TableHead>
-                                        <TableBody>
-                                          {guests.length > 0 ? (
-                                            guests.map((g, idx) => (
-                                              <TableRow key={g.guestId}>
-                                                <TableCell>{idx + 1}</TableCell>
+                                        <Table
+                                          size="small"
+                                          sx={{ tableLayout: "fixed" }}
+                                        >
+                                          <TableHead>
+                                            <TableRow>
+                                              <TableCell sx={{ width: "8%" }}>
+                                                STT
+                                              </TableCell>
+                                              <TableCell sx={{ width: "28%" }}>
+                                                Họ và tên
+                                              </TableCell>
+                                              <TableCell sx={{ width: "28%" }}>
+                                                Điện thoại
+                                              </TableCell>
+                                              <TableCell sx={{ width: "28%" }}>
+                                                CMND/CCCD
+                                              </TableCell>
+                                              <TableCell
+                                                sx={{ width: "8%" }}
+                                                align="center"
+                                              >
+                                                Xem
+                                              </TableCell>
+                                            </TableRow>
+                                          </TableHead>
+                                          <TableBody>
+                                            {guests.length > 0 ? (
+                                              guests.map((g, idx) => (
+                                                <TableRow key={g.guestId}>
+                                                  <TableCell>
+                                                    {idx + 1}
+                                                  </TableCell>
+                                                  <TableCell>
+                                                    <Chip
+                                                      size="small"
+                                                      icon={<Person />}
+                                                      label={
+                                                        g.fullname
+                                                          ? `${g.fullname}`
+                                                          : "—"
+                                                      }
+                                                    />
+                                                  </TableCell>
+                                                  <TableCell>
+                                                    <Chip
+                                                      size="small"
+                                                      icon={<Phone />}
+                                                      label={g.phone || "—"}
+                                                    />
+                                                  </TableCell>
+                                                  <TableCell>
+                                                    <Chip
+                                                      size="small"
+                                                      icon={<CreditCard />}
+                                                      label={g.idCard || "—"}
+                                                    />
+                                                  </TableCell>
+                                                  <TableCell align="center">
+                                                    <IconButton
+                                                      size="small"
+                                                      color="primary"
+                                                      onClick={() =>
+                                                        openIdCardPreview(
+                                                          g.idCardFrontImageUrl,
+                                                          g.idCardBackImageUrl,
+                                                          g.fullname ||
+                                                            undefined
+                                                        )
+                                                      }
+                                                      disabled={
+                                                        !g.idCardFrontImageUrl &&
+                                                        !g.idCardBackImageUrl
+                                                      }
+                                                    >
+                                                      <RemoveRedEye />
+                                                    </IconButton>
+                                                  </TableCell>
+                                                </TableRow>
+                                              ))
+                                            ) : h.primaryGuestName ? (
+                                              <TableRow>
+                                                <TableCell>1</TableCell>
                                                 <TableCell>
                                                   <Chip
                                                     size="small"
                                                     icon={<Person />}
-                                                    label={
-                                                      g.fullname
-                                                        ? `${g.fullname}`
-                                                        : "—"
-                                                    }
+                                                    label={h.primaryGuestName}
                                                   />
                                                 </TableCell>
                                                 <TableCell>
                                                   <Chip
                                                     size="small"
                                                     icon={<Phone />}
-                                                    label={g.phone || "—"}
+                                                    label={"—"}
                                                   />
                                                 </TableCell>
                                                 <TableCell>
                                                   <Chip
                                                     size="small"
                                                     icon={<CreditCard />}
-                                                    label={g.idCard || "—"}
+                                                    label={"—"}
                                                   />
                                                 </TableCell>
                                                 <TableCell align="center">
                                                   <IconButton
                                                     size="small"
-                                                    color="primary"
-                                                    onClick={() =>
-                                                      openIdCardPreview(
-                                                        g.idCardFrontImageUrl,
-                                                        g.idCardBackImageUrl,
-                                                        g.fullname || undefined
-                                                      )
-                                                    }
-                                                    disabled={
-                                                      !g.idCardFrontImageUrl &&
-                                                      !g.idCardBackImageUrl
-                                                    }
+                                                    disabled
                                                   >
                                                     <RemoveRedEye />
                                                   </IconButton>
                                                 </TableCell>
                                               </TableRow>
-                                            ))
-                                          ) : h.primaryGuestName ? (
-                                            <TableRow>
-                                              <TableCell>1</TableCell>
-                                              <TableCell>
-                                                <Chip
-                                                  size="small"
-                                                  icon={<Person />}
-                                                  label={h.primaryGuestName}
-                                                />
-                                              </TableCell>
-                                              <TableCell>
-                                                <Chip
-                                                  size="small"
-                                                  icon={<Phone />}
-                                                  label={"—"}
-                                                />
-                                              </TableCell>
-                                              <TableCell>
-                                                <Chip
-                                                  size="small"
-                                                  icon={<CreditCard />}
-                                                  label={"—"}
-                                                />
-                                              </TableCell>
-                                              <TableCell align="center">
-                                                <IconButton
-                                                  size="small"
-                                                  disabled
-                                                >
-                                                  <RemoveRedEye />
-                                                </IconButton>
-                                              </TableCell>
-                                            </TableRow>
-                                          ) : (
-                                            <TableRow>
-                                              <TableCell colSpan={5}>
-                                                <Typography
-                                                  variant="body2"
-                                                  color="text.secondary"
-                                                >
-                                                  Không có khách
-                                                </Typography>
-                                              </TableCell>
-                                            </TableRow>
-                                          )}
-                                        </TableBody>
-                                      </Table>
-                                    </TableContainer>
+                                            ) : (
+                                              <TableRow>
+                                                <TableCell colSpan={5}>
+                                                  <Typography
+                                                    variant="body2"
+                                                    color="text.secondary"
+                                                  >
+                                                    Không có khách
+                                                  </Typography>
+                                                </TableCell>
+                                              </TableRow>
+                                            )}
+                                          </TableBody>
+                                        </Table>
+                                      </TableContainer>
+                                      <Stack
+                                        direction="row"
+                                        spacing={1}
+                                        alignItems="center"
+                                      >
+                                        <Chip
+                                          size="small"
+                                          icon={<Person />}
+                                          color="default"
+                                          label={
+                                            h.primaryGuestName
+                                              ? `Người đặt: ${h.primaryGuestName} - ${h.primaryGuestPhone}`
+                                              : "Người đặt: —"
+                                          }
+                                        />
+                                      </Stack>
+                                    </Stack>
                                   );
                                 })
                               )}

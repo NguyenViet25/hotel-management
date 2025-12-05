@@ -1009,12 +1009,18 @@ public class BookingsService(
                 }
 
                 string? primaryName = null;
+                string? primaryPhone = null;
                 if (booking.PrimaryGuestId.HasValue)
                 {
                     primaryName = await _guestRepo.Query()
                         .Where(g => g.Id == booking.PrimaryGuestId.Value)
                         .Select(g => g.FullName)
                         .FirstOrDefaultAsync();
+
+                    primaryPhone = await _guestRepo.Query()
+                     .Where(g => g.Id == booking.PrimaryGuestId.Value)
+                     .Select(g => g.Phone)
+                     .FirstOrDefaultAsync();
                 }
 
                 results.Add(new RoomStayHistoryDto
@@ -1025,6 +1031,7 @@ public class BookingsService(
                     End = it.EndDate,
                     Status = booking.Status,
                     PrimaryGuestName = primaryName,
+                    PrimaryGuestPhone = primaryPhone,
                     Guests = guests
                 });
             }

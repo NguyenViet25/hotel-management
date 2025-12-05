@@ -282,6 +282,7 @@ export interface RoomStayHistoryDto {
   end: string; // ISO
   status: BookingStatus;
   primaryGuestName?: string;
+  primaryGuestPhone?: string;
   guests: BookingGuestDto[];
 }
 
