@@ -212,3 +212,4 @@
 2025-12-05 - 2 - 01:49:47 UTC :: chore: UC-38 Audit Log: xem/loc thao tac, hanh dong, thoi gian. — toi uu truy van va bo nho (anh huong thap)
 2025-12-05 - 3 - 01:49:48 UTC :: refactor: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — don dep code va xoa doan thua (can theo doi them)
 2025-12-05 - 4 - 01:49:51 UTC :: feat: UC-35 Ngoai le: gui yeu cau mien/giam phi, vuot tran. — cap nhat mock data & seed test (da kiem tra lint)
+2025-12-05 - 5 - 01:49:53 UTC :: chore: UC-10 Goi gia: tao rate plan, thoi gian ap dung linh hoat. — bo sung unit test muc co ban (can theo doi them)
