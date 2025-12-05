@@ -208,3 +208,4 @@
 2025-12-04 - 3 - 01:49:38 UTC :: test: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — bo sung index & toi uu DB (chuan bi cho tinh nang tiep theo)
 2025-12-04 - 4 - 01:49:41 UTC :: ci: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — tach chuc nang de de bao tri (dong bo voi BE/FE)
 2025-12-04 - 5 - 01:49:42 UTC :: perf: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — fix race-condition nho trong thao tac (dong bo voi BE/FE)
+2025-12-05 - 1 - 01:49:44 UTC :: docs: UC-41 Doanh thu ngay: tong hop doanh thu phong va F&B. — them log chi tiet phuc vu audit (anh huong thap)
