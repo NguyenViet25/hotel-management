@@ -212,3 +212,4 @@
 2025-12-05 - 2 - 01:49:45 UTC :: refactor: UC-38 Audit Log: xem/loc thao tac, hanh dong, thoi gian. — bo sung unit test muc co ban (dong bo voi BE/FE)
 2025-12-05 - 3 - 01:49:47 UTC :: refactor: UC-08 Phong: khai bao so phong, tang, huong, trang thai. — bo sung metrics/telemetry co ban (dam bao backward-compatible)
 2025-12-05 - 4 - 01:49:50 UTC :: refactor: UC-36 Duyet ngoai le: duyet/tu choi theo han muc. — bo sung case canh bien & no-show (can theo doi them)
+2025-12-05 - 5 - 01:49:53 UTC :: docs: UC-29 Thanh toan nha hang: thu tien, in hoa don, dong giao dich. — bo sung metrics/telemetry co ban (da review so bo)
