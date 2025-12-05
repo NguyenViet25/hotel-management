@@ -209,3 +209,4 @@
 2025-12-04 - 4 - 01:49:41 UTC :: feat: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — kiem tra tuong thich mui gio/tien te (da kiem tra lint)
 2025-12-04 - 5 - 01:49:43 UTC :: feat: UC-04 Co so: cap nhat ten, dia chi, mui gio, thue, tien te. — chuan hoa ten ham/bien theo convention (dat tieu chi toi thieu)
 2025-12-05 - 1 - 01:49:46 UTC :: chore: UC-06 Co so: gan quan ly phu trach va quyen truy cap. — chinh sua tai lieu & mo ta API (dam bao backward-compatible)
+2025-12-05 - 2 - 01:49:47 UTC :: chore: UC-38 Audit Log: xem/loc thao tac, hanh dong, thoi gian. — toi uu truy van va bo nho (anh huong thap)
