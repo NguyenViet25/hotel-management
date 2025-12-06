@@ -215,3 +215,4 @@
 2025-12-05 - 5 - 01:49:55 UTC :: fix: UC-06 Co so: gan quan ly phu trach va quyen truy cap. — sua validate va bo sung thong bao loi (da review so bo)
 2025-12-06 - 1 - 01:43:40 UTC :: refactor: UC-22 Minibar/Amenity: ghi tieu hao, post charge vao folio. — them log chi tiet phuc vu audit (dong bo voi BE/FE)
 2025-12-06 - 2 - 01:43:43 UTC :: fix: UC-28 Room charge F&B: ghi hoa don ban an vao folio. — toi uu truy van va bo nho (da kiem tra lint)
+2025-12-06 - 3 - 01:43:45 UTC :: fix: UC-23 Bao tri: tao ticket, dinh anh, mo ta loi. — them kiem soat loi & retry nhe (da smoke test)
