@@ -213,3 +213,4 @@
 2025-12-05 - 3 - 01:49:48 UTC :: refactor: UC-24 Bao tri: theo doi xu ly, xac nhan hoan thanh, dong ticket. — don dep code va xoa doan thua (can theo doi them)
 2025-12-05 - 4 - 01:49:51 UTC :: feat: UC-35 Ngoai le: gui yeu cau mien/giam phi, vuot tran. — cap nhat mock data & seed test (da kiem tra lint)
 2025-12-05 - 5 - 01:49:53 UTC :: chore: UC-10 Goi gia: tao rate plan, thoi gian ap dung linh hoat. — bo sung unit test muc co ban (can theo doi them)
+2025-12-06 - 1 - 01:43:41 UTC :: refactor: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — chuan hoa ten ham/bien theo convention (dam bao backward-compatible)
