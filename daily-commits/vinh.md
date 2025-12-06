@@ -216,3 +216,4 @@
 2025-12-06 - 1 - 01:43:41 UTC :: refactor: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — chuan hoa ten ham/bien theo convention (dam bao backward-compatible)
 2025-12-06 - 2 - 01:43:43 UTC :: fix: UC-01 RBAC: tao, sua, khoa tai khoan; gan vai tro. — cap nhat cau hinh va kiem tra bien (khong doi hanh vi)
 2025-12-06 - 3 - 01:43:44 UTC :: fix: UC-37 Night Audit: kiem tra folio chua chot, khoa giao dich. — cai thien hieu nang render/list (da kiem tra lint)
+2025-12-06 - 4 - 01:43:46 UTC :: refactor: UC-20 Keo-tha: gan/doi phong truc quan, tranh trung. — bo sung unit test muc co ban (can theo doi them)
