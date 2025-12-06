@@ -221,3 +221,4 @@
 2025-12-06 - 1 - 01:43:40 UTC :: refactor: UC-14 Check-in: xac thuc khach, in phieu nhan phong. — don dep code va xoa doan thua (da review so bo)
 2025-12-06 - 2 - 01:43:41 UTC :: fix: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — kiem tra tuong thich mui gio/tien te (da smoke test)
 2025-12-06 - 3 - 01:43:42 UTC :: fix: UC-47 Dashboard: gioi han xem theo vai tro va co so. — fix race-condition nho trong thao tac (dam bao backward-compatible)
+2025-12-06 - 4 - 01:43:43 UTC :: feat: UC-40 Thu/chi: doi soat tien mat/the/le phi PG. — chinh sua tai lieu & mo ta API (dat tieu chi toi thieu)
