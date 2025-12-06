@@ -214,3 +214,4 @@
 2025-12-05 - 4 - 01:49:50 UTC :: refactor: UC-36 Duyet ngoai le: duyet/tu choi theo han muc. — bo sung case canh bien & no-show (can theo doi them)
 2025-12-05 - 5 - 01:49:53 UTC :: docs: UC-29 Thanh toan nha hang: thu tien, in hoa don, dong giao dich. — bo sung metrics/telemetry co ban (da review so bo)
 2025-12-06 - 1 - 01:43:38 UTC :: build: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — fix race-condition nho trong thao tac (da review so bo)
+2025-12-06 - 2 - 01:43:40 UTC :: feat: UC-47 Dashboard: gioi han xem theo vai tro va co so. — cap nhat mock data & seed test (anh huong thap)
