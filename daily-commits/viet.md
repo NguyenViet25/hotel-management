@@ -216,3 +216,4 @@
 2025-12-06 - 1 - 01:43:40 UTC :: refactor: UC-22 Minibar/Amenity: ghi tieu hao, post charge vao folio. — them log chi tiet phuc vu audit (dong bo voi BE/FE)
 2025-12-06 - 2 - 01:43:43 UTC :: fix: UC-28 Room charge F&B: ghi hoa don ban an vao folio. — toi uu truy van va bo nho (da kiem tra lint)
 2025-12-06 - 3 - 01:43:45 UTC :: fix: UC-23 Bao tri: tao ticket, dinh anh, mo ta loi. — them kiem soat loi & retry nhe (da smoke test)
+2025-12-06 - 4 - 01:43:47 UTC :: ci: UC-47 Dashboard: gioi han xem theo vai tro va co so. — cap nhat cau hinh va kiem tra bien (da review so bo)
