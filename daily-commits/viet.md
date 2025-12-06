@@ -213,3 +213,4 @@
 2025-12-05 - 3 - 01:49:49 UTC :: feat: UC-23 Bao tri: tao ticket, dinh anh, mo ta loi. — chinh sua tai lieu & mo ta API (da kiem tra lint)
 2025-12-05 - 4 - 01:49:53 UTC :: build: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — chuan hoa ten ham/bien theo convention (anh huong thap)
 2025-12-05 - 5 - 01:49:55 UTC :: fix: UC-06 Co so: gan quan ly phu trach va quyen truy cap. — sua validate va bo sung thong bao loi (da review so bo)
+2025-12-06 - 1 - 01:43:40 UTC :: refactor: UC-22 Minibar/Amenity: ghi tieu hao, post charge vao folio. — them log chi tiet phuc vu audit (dong bo voi BE/FE)
