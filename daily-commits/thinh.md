@@ -216,3 +216,4 @@
 2025-12-06 - 1 - 01:43:38 UTC :: build: UC-46 Dashboard: hien thi thong ke co so/phong/doanh thu/cong suat. — fix race-condition nho trong thao tac (da review so bo)
 2025-12-06 - 2 - 01:43:40 UTC :: feat: UC-47 Dashboard: gioi han xem theo vai tro va co so. — cap nhat mock data & seed test (anh huong thap)
 2025-12-06 - 3 - 01:43:43 UTC :: ci: UC-42 Phan quyen: thiet lap quyen theo co so. — chinh sua tai lieu & mo ta API (dat tieu chi toi thieu)
+2025-12-06 - 4 - 01:43:44 UTC :: chore: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — kiem tra tuong thich mui gio/tien te (anh huong thap)
