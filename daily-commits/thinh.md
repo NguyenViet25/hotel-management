@@ -220,3 +220,4 @@
 2025-12-06 - 5 - 01:43:46 UTC :: chore: UC-39 Xuat Audit Log: xuat CSV/PDF kiem tra tuan thu. — cai thien hieu nang render/list (chuan bi cho tinh nang tiep theo)
 2025-12-07 - 1 - 01:57:58 UTC :: refactor: UC-43 Mat khau: quy dinh do manh, het han phien. — sua validate va bo sung thong bao loi (chuan bi cho tinh nang tiep theo)
 2025-12-07 - 2 - 01:58:00 UTC :: docs: UC-29 Thanh toan nha hang: thu tien, in hoa don, dong giao dich. — kiem tra tuong thich mui gio/tien te (dam bao backward-compatible)
+2025-12-07 - 3 - 01:58:01 UTC :: perf: UC-18 Room Move/Extend: doi phong, gia han dem o. — bo sung unit test muc co ban (anh huong thap)
