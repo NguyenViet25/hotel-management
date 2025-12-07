@@ -218,3 +218,4 @@
 2025-12-06 - 3 - 01:43:43 UTC :: ci: UC-42 Phan quyen: thiet lap quyen theo co so. — chinh sua tai lieu & mo ta API (dat tieu chi toi thieu)
 2025-12-06 - 4 - 01:43:44 UTC :: chore: UC-13 Dat phong: sua/huy, dieu chinh ngay, phong, khach. — kiem tra tuong thich mui gio/tien te (anh huong thap)
 2025-12-06 - 5 - 01:43:46 UTC :: chore: UC-39 Xuat Audit Log: xuat CSV/PDF kiem tra tuan thu. — cai thien hieu nang render/list (chuan bi cho tinh nang tiep theo)
+2025-12-07 - 1 - 01:57:58 UTC :: refactor: UC-43 Mat khau: quy dinh do manh, het han phien. — sua validate va bo sung thong bao loi (chuan bi cho tinh nang tiep theo)
