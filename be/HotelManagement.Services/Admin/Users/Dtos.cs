@@ -58,3 +58,6 @@ public record UsersQueryDto(
     bool? LockedOnly = null,
     bool? EmailConfirmed = null
 );
+
+
+public record UserByRoleQuery(Guid HotelId, string Role);

@@ -23,19 +23,23 @@ export interface ChangePasswordRequest {
 }
 
 const profileApi = {
-  getMe: async (): Promise<{ success: boolean; data: ProfileDto }> => {
+  getMe: async (): Promise<{
+    isSuccess: boolean;
+    data: ProfileDto;
+    message: string;
+  }> => {
     const res = await axiosInstance.get("/profile/me");
     return res.data;
   },
   update: async (
     dto: UpdateProfileRequest
-  ): Promise<{ success: boolean; data: ProfileDto; message?: string }> => {
+  ): Promise<{ isSuccess: boolean; data: ProfileDto; message?: string }> => {
     const res = await axiosInstance.put("/profile", dto);
     return res.data;
   },
   changePassword: async (
     dto: ChangePasswordRequest
-  ): Promise<{ success: boolean; message?: string }> => {
+  ): Promise<{ isSuccess: boolean; message?: string }> => {
     const res = await axiosInstance.post("/profile/change-password", dto);
     return res.data;
   },

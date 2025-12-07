@@ -81,18 +81,26 @@ const userService = {
     search?: string
   ): Promise<UserListResponse> => {
     const response = await axios.get(
-      `/admin/users?page=${page}&pageSize=${pageSize}&search=${search || ""}`
+      `/users?page=${page}&pageSize=${pageSize}&search=${search || ""}`
     );
     return response.data;
   },
-
+  getUsersByRole: async (
+    hotelId: string,
+    role: "housekeeper"
+  ): Promise<UserListResponse> => {
+    const response = await axios.get(
+      `/users/by-role?hotelId=${hotelId}&role=${role}`
+    );
+    return response.data;
+  },
   getUserById: async (id: string): Promise<UserResponse> => {
-    const response = await axios.get(`/admin/users/${id}`);
+    const response = await axios.get(`/users/${id}`);
     return response.data;
   },
 
   createUser: async (user: CreateUserRequest): Promise<UserResponse> => {
-    const response = await axios.post("/admin/users", user);
+    const response = await axios.post("/users", user);
     return response.data;
   },
 
@@ -100,27 +108,27 @@ const userService = {
     id: string,
     user: UpdateUserRequest
   ): Promise<UserResponse> => {
-    const response = await axios.put(`/admin/users/${id}`, user);
+    const response = await axios.put(`/users/${id}`, user);
     return response.data;
   },
 
   lockUser: async (
     id: string
   ): Promise<{ isSuccess: boolean; message: string }> => {
-    const response = await axios.post(`/admin/users/${id}/lock`, {});
+    const response = await axios.post(`/users/${id}/lock`, {});
     return response.data;
   },
   unlockUser: async (
     id: string
   ): Promise<{ isSuccess: boolean; message: string }> => {
-    const response = await axios.post(`/admin/users/${id}/unlock`, {});
+    const response = await axios.post(`/users/${id}/unlock`, {});
     return response.data;
   },
 
   resetPassword: async (
     id: string
   ): Promise<{ isSuccess: boolean; message: string }> => {
-    const response = await axios.post(`/admin/users/${id}/reset-password`);
+    const response = await axios.post(`/users/${id}/reset-password`);
     return response.data;
   },
 
@@ -129,7 +137,7 @@ const userService = {
     propertyRole: PropertyRoleRequest
   ): Promise<PropertyRoleResponse> => {
     const response = await axios.post(
-      `/admin/users/${id}/property-roles`,
+      `/users/${id}/property-roles`,
       propertyRole
     );
     return response.data;

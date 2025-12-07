@@ -13,17 +13,18 @@ const HotelsListPage: React.FC = () => {
   const [isStatusModalVisible, setIsStatusModalVisible] = useState(false);
   const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null);
   const [searchText, setSearchText] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
 
-  const { hotels, loading, pagination, fetchHotels } = useHotels();
+  const { hotels, loading, pagination, fetchHotels, handleTableChange } =
+    useHotels();
 
   useEffect(() => {
+    handleTableChange(1, pagination.pageSize);
     fetchHotels({
       page: 1,
-      pageSize: 10,
+      pageSize: pagination.pageSize,
       search: searchText,
     });
-  }, [searchText, statusFilter, searchText]);
+  }, [searchText, pagination.pageSize]);
 
   const columns: Column<Hotel>[] = [
     {
@@ -33,10 +34,20 @@ const HotelsListPage: React.FC = () => {
     {
       id: "name",
       label: "Tên cơ sở",
+      minWidth: 150,
     },
     {
       id: "address",
       label: "Địa chỉ",
+    },
+    {
+      id: "phone",
+      label: "Số điện thoại",
+      minWidth: 150,
+    },
+    {
+      id: "email",
+      label: "Email",
     },
     {
       id: "isActive",
@@ -60,12 +71,8 @@ const HotelsListPage: React.FC = () => {
     setIsEditModalVisible(true);
   };
 
-  const handleOpenStatusModal = (hotel: Hotel) => {
-    setSelectedHotel(hotel);
-    setIsStatusModalVisible(true);
-  };
-
   const handlePageChange = (page: number) => {
+    handleTableChange(page, pagination.pageSize);
     fetchHotels({
       page,
       pageSize: pagination.pageSize,
@@ -97,7 +104,7 @@ const HotelsListPage: React.FC = () => {
         }}
         onAdd={handleOpenCreateModal}
         onEdit={handleOpenEditModal}
-        onLock={handleOpenStatusModal}
+        // onLock={handleOpenStatusModal}
         getRowId={(row) => row.id}
         onSort={handleSort}
         onSearch={(e) => setSearchText(e)}

@@ -33,6 +33,8 @@ export const useHotels = () => {
           setHotels(response.data);
           setPagination({
             ...pagination,
+            current: response.meta.page,
+            pageSize: response.meta.pageSize,
             total: response.meta.total,
           });
         } else {

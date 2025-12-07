@@ -2,7 +2,14 @@ import React, { useMemo, useState } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import { Box, Button, Stack, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Stack,
+  Typography,
+  ToggleButton,
+  ToggleButtonGroup,
+} from "@mui/material";
 import SetPriceDialog from "./SetPriceDialog";
 import dayjs from "dayjs";
 import viLocale from "@fullcalendar/core/locales/vi";
@@ -10,13 +17,14 @@ import viLocale from "@fullcalendar/core/locales/vi";
 type PriceMap = Record<string, number>;
 
 export interface CalendarPriceSetupProps {
-  // Optional callback to expose selected prices to parent if needed in future
+  value?: PriceMap;
   onChangePriceMap?: (map: PriceMap) => void;
 }
 
 const toKey = (d: Date) => dayjs(d).format("YYYY-MM-DD");
 
 const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
+  value,
   onChangePriceMap,
 }) => {
   const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
@@ -35,8 +43,8 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
     [priceMap]
   );
 
-  const handleDateClick = (arg: any) => {
-    const key = arg.dateStr; // already in YYYY-MM-DD
+  const handleSelectDate = (arg: any) => {
+    const key = arg.format("YYYY-MM-DD");
     setSelectedDates((prev) => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
@@ -68,18 +76,40 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
   const handleCloseDialog = () => setDialogOpen(false);
 
   const handleConfirmPrice = (price: number) => {
+    let next: PriceMap = {};
     setPriceMap((prev) => {
-      const next: PriceMap = { ...prev };
+      next = { ...prev };
       selectedDates.forEach((k) => {
         next[k] = price;
       });
       return next;
     });
     setDialogOpen(false);
-    if (onChangePriceMap) onChangePriceMap(priceMap);
+    if (onChangePriceMap) onChangePriceMap(next);
+    setSelectedDates(new Set());
   };
 
+  const handleClearPrices = () => {
+    let next: PriceMap = {};
+    setPriceMap((prev) => {
+      next = { ...prev };
+      selectedDates.forEach((k) => {
+        delete next[k];
+      });
+      return next;
+    });
+    if (onChangePriceMap) onChangePriceMap(next);
+    setSelectedDates(new Set());
+  };
+
+  React.useEffect(() => {
+    if (value) {
+      setPriceMap(value);
+    }
+  }, [value]);
+
   const selectedCount = selectedDates.size;
+  const handleClearSelection = () => setSelectedDates(new Set());
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -93,9 +123,25 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
           Chọn các ngày để cài đặt giá
         </Typography>
         {selectedCount > 0 && (
-          <Button variant="contained" onClick={handleOpenDialog}>
-            Cài đặt giá chung ({selectedCount})
-          </Button>
+          <Stack direction="row" spacing={1}>
+            <Button
+              variant="outlined"
+              color="inherit"
+              onClick={handleClearSelection}
+            >
+              Xóa chọn
+            </Button>
+            <Button
+              variant="outlined"
+              color="warning"
+              onClick={handleClearPrices}
+            >
+              Xóa giá
+            </Button>
+            <Button variant="contained" onClick={handleOpenDialog}>
+              Cài đặt giá chung ({selectedCount})
+            </Button>
+          </Stack>
         )}
       </Stack>
 
@@ -114,6 +160,16 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
           "& .fc-daygrid-day": {
             cursor: "pointer",
           },
+          "& .fc-daygrid-day.selected-date": {
+            backgroundColor: "transparent",
+          },
+          "& .fc-daygrid-day.selected-date .fc-daygrid-day-number": {
+            border: (theme) => `2px solid ${theme.palette.primary.main}`,
+            borderRadius: 12,
+            padding: "2px 6px",
+            lineHeight: 1.2,
+            display: "inline-block",
+          },
           "& .fc-daygrid-day.fc-day-today": {
             backgroundColor: (theme) => theme.palette.action.hover,
           },
@@ -125,10 +181,10 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
           locale="vi" // <-- Force Vietnamese
           initialView="dayGridMonth"
           selectable
-          selectMirror
+          selectMirror={false}
           dayMaxEvents
           events={events}
-          dateClick={handleDateClick}
+          dateClick={handleSelectDate}
           select={handleSelectRange}
           headerToolbar={{
             left: "prev,next today",

@@ -24,22 +24,30 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
     public DbSet<CallLog> CallLogs => Set<CallLog>();
     public DbSet<HousekeepingTask> HousekeepingTasks => Set<HousekeepingTask>();
     public DbSet<RoomStatusLog> RoomStatusLogs => Set<RoomStatusLog>();
-    public DbSet<MenuGroup> MenuGroups => Set<MenuGroup>();
     public DbSet<MenuItem> MenuItems => Set<MenuItem>();
     public DbSet<Table> Tables => Set<Table>();
     public DbSet<DiningSession> DiningSessions => Set<DiningSession>();
+    public DbSet<DiningSessionTable> DiningSessionTables => Set<DiningSessionTable>();
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+    public DbSet<OrderItemHistory> OrderItemHistories => Set<OrderItemHistory>();
     public DbSet<Invoice> Invoices => Set<Invoice>();
     public DbSet<InvoiceLine> InvoiceLines => Set<InvoiceLine>();
     public DbSet<UserPropertyRole> UserPropertyRoles => Set<UserPropertyRole>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<ShoppingItem> ShoppingItems => Set<ShoppingItem>();
+    public DbSet<ShoppingOrder> ShoppingOrders => Set<ShoppingOrder>();
+    public DbSet<Promotion> Promotions => Set<Promotion>();
+    public DbSet<Minibar> Minibars => Set<Minibar>();
+    public DbSet<MinibarBooking> MinibarBookings => Set<MinibarBooking>();
+    public DbSet<Media> Media => Set<Media>();
+    public DbSet<ServiceRequest> ServiceRequests => Set<ServiceRequest>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
 
-        builder.Entity<BookingGuest>().HasKey(x => new { x.BookingRoomId, x.GuestId });
+        builder.Entity<BookingGuest>().HasKey(x =>x.BookingGuestId);
 
         builder.Entity<Hotel>().HasIndex(h => h.Code).IsUnique();
         builder.Entity<HotelRoom>().HasIndex(r => new { r.HotelId, r.RoomTypeId, r.Id }).IsUnique();
@@ -56,6 +64,16 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
             .HasForeignKey(r => r.HotelId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.Entity<Promotion>()
+            .HasIndex(p => new { p.HotelId, p.Code })
+            .IsUnique();
+
+        builder.Entity<ShoppingItem>()
+          .HasOne(r => r.ShoppingOrder)
+          .WithMany(h => h.Items)
+          .HasForeignKey(r => r.ShoppingOrderId)
+          .OnDelete(DeleteBehavior.Restrict);
+
         builder.Entity<RoomType>()
             .HasOne(rt => rt.Hotel)
             .WithMany(h => h.RoomTypes)
@@ -67,11 +85,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
             .WithMany(o => o.Items)
             .HasForeignKey(oi => oi.OrderId);
 
-        builder.Entity<MenuItem>()
-            .HasOne(mi => mi.Group)
-            .WithMany(g => g.Items)
-            .HasForeignKey(mi => mi.MenuGroupId);
-
+ 
         // Rules relations
         builder.Entity<SurchargeRule>()
             .HasOne<Hotel>()
@@ -88,7 +102,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
         builder.Entity<Booking>()
             .HasOne<Hotel>()
             .WithMany()
-            .HasForeignKey(b => b.HotelIdKey)
+            .HasForeignKey(b => b.HotelId)
             .OnDelete(DeleteBehavior.Restrict);
 
         var booking = builder.Entity<Booking>();
@@ -115,22 +129,46 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
         var menuItem = builder.Entity<MenuItem>();
         menuItem.Property(s => s.UnitPrice).HasPrecision(18, 2);
 
+        var promotion = builder.Entity<Promotion>();
+        promotion.Property(s => s.Value).HasPrecision(18, 2);
+
         var orderItem = builder.Entity<OrderItem>();
         orderItem.Property(s => s.UnitPrice).HasPrecision(18, 2);
 
         var invoiceLine = builder.Entity<InvoiceLine>();
         invoiceLine.Property(s => s.Amount).HasPrecision(18, 2);
 
+        var minibar = builder.Entity<Minibar>();
+        minibar.Property(s => s.Price).HasPrecision(18, 2);
+
+        builder.Entity<MinibarBooking>()
+            .HasOne<Booking>()
+            .WithMany()
+            .HasForeignKey(mb => mb.BookingId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<MinibarBooking>()
+            .HasOne<Minibar>()
+            .WithMany()
+            .HasForeignKey(mb => mb.MinibarId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.Entity<BookingRoomType>()
             .HasOne<Booking>()
             .WithMany()
-            .HasForeignKey(b => b.BookingIdKey)
+            .HasForeignKey(b => b.BookingId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<BookingRoom>()
             .HasOne<BookingRoomType>()
             .WithMany()
-            .HasForeignKey(b => b.BookingRoomTypeIdKey)
+            .HasForeignKey(b => b.BookingRoomTypeId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<BookingRoom>()
+            .HasOne<HotelRoom>()
+            .WithMany()
+            .HasForeignKey(b => b.RoomId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<Booking>()
@@ -182,13 +220,6 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
             .HasForeignKey(rsl => rsl.RoomId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Menu relations
-        builder.Entity<MenuGroup>()
-            .HasOne<Hotel>()
-            .WithMany()
-            .HasForeignKey(mg => mg.HotelId)
-            .OnDelete(DeleteBehavior.Restrict);
-
         builder.Entity<MenuItem>()
             .HasOne<Hotel>()
             .WithMany()
@@ -212,6 +243,18 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
             .HasOne<Table>()
             .WithMany()
             .HasForeignKey(ds => ds.TableId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<DiningSessionTable>()
+            .HasOne<DiningSession>()
+            .WithMany()
+            .HasForeignKey(dst => dst.DiningSessionId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<DiningSessionTable>()
+            .HasOne<Table>()
+            .WithMany()
+            .HasForeignKey(dst => dst.TableId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.Entity<DiningSession>()
@@ -249,6 +292,30 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
             .HasOne<MenuItem>()
             .WithMany()
             .HasForeignKey(oi => oi.ProposedReplacementMenuItemId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<OrderItemHistory>()
+            .HasOne<Order>()
+            .WithMany()
+            .HasForeignKey(h => h.OrderId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<OrderItemHistory>()
+            .HasOne<OrderItem>()
+            .WithMany()
+            .HasForeignKey(h => h.OldOrderItemId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<OrderItemHistory>()
+            .HasOne<OrderItem>()
+            .WithMany()
+            .HasForeignKey(h => h.NewOrderItemId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<OrderItemHistory>()
+            .HasOne<AppUser>()
+            .WithMany()
+            .HasForeignKey(h => h.UserId)
             .OnDelete(DeleteBehavior.SetNull);
 
 

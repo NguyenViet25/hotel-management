@@ -7,6 +7,7 @@ public class ServiceRequest
     public Guid DiningSessionId { get; set; }
     public string RequestType { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
+    public int Quantity { get; set; } = 1;
     public ServiceRequestStatus Status { get; set; } = ServiceRequestStatus.Pending;
     public Guid? AssignedToUserId { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

@@ -13,12 +13,14 @@ public class AuthService : IAuthService
     private readonly UserManager<AppUser> _userManager;
     private readonly ApplicationDbContext _db;
     private readonly ITokenService _tokenService;
+    private readonly Email.IEmailService _emailService;
 
-    public AuthService(UserManager<AppUser> userManager, ITokenService tokenService, ApplicationDbContext dbContext)
+    public AuthService(UserManager<AppUser> userManager, ITokenService tokenService, ApplicationDbContext dbContext, Email.IEmailService emailService)
     {
         _userManager = userManager;
         _tokenService = tokenService;
         _db = dbContext;
+        _emailService = emailService;
     }
 
     public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request)
@@ -49,22 +51,31 @@ public class AuthService : IAuthService
             if (!valid2fa) return new LoginResponseDto(true, null, null, null);
         }
 
-        var roles = await _userManager.GetRolesAsync(user);
-        var token = _tokenService.CreateAccessToken(user.Id, user.UserName!, roles, new[]
-        {
-            new Claim("twoFactor", (await _userManager.GetTwoFactorEnabledAsync(user)).ToString())
-        });
-
 
         var propertyRoles = await _db.UserPropertyRoles.AsNoTracking()
             .Select(pr => new UserPropertyRoleDto(pr.UserId, pr.HotelId, pr.Role, "")).ToListAsync();
 
         var hotel = propertyRoles.Where(x => x.Id == user.Id).FirstOrDefault();
+        var hotelId = hotel?.HotelId.ToString() ?? string.Empty;
+        var roles = await _userManager.GetRolesAsync(user);
+
+        var extraClaims = new[]
+        {
+            new Claim("twoFactor", (await _userManager.GetTwoFactorEnabledAsync(user)).ToString()),
+            new Claim("hotelId", hotelId)    
+        };
+
+        var token = _tokenService.CreateAccessToken(
+            user.Id,
+            user.UserName!,
+            roles,
+            extraClaims
+        );
 
         return new LoginResponseDto(false, token, null, UserMapper.MapToResponseAsync(user, roles.ToList(), hotel?.HotelId));
     }
 
-  
+
 
     public Task LogoutAsync(string userName)
     {
@@ -77,11 +88,10 @@ public class AuthService : IAuthService
         var user = await _userManager.FindByNameAsync(request.UsernameOrEmail) ?? await _userManager.FindByEmailAsync(request.UsernameOrEmail);
         if (user is null) return false;
 
-        // Use Email provider for simplicity
         var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-        // TODO: send code via email/SMS based on OtpDelivery
-        // For now, we can store in-memory or rely on client to provide code from email
-        return !string.IsNullOrWhiteSpace(code);
+        if (string.IsNullOrWhiteSpace(code)) return false;
+        var sent = await _emailService.SendForgotPasswordEmailAsync(user.Email!, user.UserName, code);
+        return sent;
     }
 
     public async Task<bool> ResetPasswordAsync(ResetPasswordRequestDto request)

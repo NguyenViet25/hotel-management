@@ -1,4 +1,5 @@
 using HotelManagement.Api.Infrastructure;
+using HotelManagement.Api.Infrastructure.Middleware;
 using HotelManagement.Services;
 using HotelManagement.Repository;
 
@@ -9,6 +10,7 @@ builder.Services.AddIdentityAndJwt(builder.Configuration);
 
 builder.Services.AddRepositories();
 builder.Services.AddApplicationServices();
+builder.Services.AddEmailing(builder.Configuration);
 builder.Services.AddApiSwagger(builder.Configuration);
 builder.Services.AddControllers();
 
@@ -36,6 +38,10 @@ app.UseSwaggerUI(c =>
 app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseStaticFiles();
+
+app.UseMiddleware<AuditMiddleware>();
 
 app.MapControllers();
 
