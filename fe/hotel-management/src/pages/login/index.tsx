@@ -155,7 +155,7 @@ const LoginPage = () => {
                 variant="h4"
                 sx={{ fontWeight: 700, mb: 1 }}
               >
-                Quản lý Khách sạn
+                Tân Trường Sơn Hotels
               </Typography>
               <Typography variant="body1" color="text.secondary">
                 Chào mừng trở lại! Vui lòng đăng nhập để quản lý đặt phòng,
