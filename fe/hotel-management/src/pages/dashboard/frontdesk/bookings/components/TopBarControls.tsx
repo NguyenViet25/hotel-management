@@ -31,7 +31,7 @@ const TopBarControls: React.FC<TopBarControlsProps> = ({
         color="info"
         onClick={onOpenRoomMap}
       >
-        Xem sơ đồ phòng
+        Xem danh sách phòng
       </Button>
     </Stack>
   );

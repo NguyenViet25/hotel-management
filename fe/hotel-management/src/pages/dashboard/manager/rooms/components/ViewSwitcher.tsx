@@ -25,7 +25,7 @@ export default function ViewSwitcher({ view, onChange }: ViewSwitcherProps) {
     >
       <ToggleButton value="map">
         <MapIcon sx={{ mr: 1 }} />
-        Xem Sơ Đồ
+        Xem Theo Tầng
       </ToggleButton>
       <ToggleButton value="table">
         <TableChartIcon sx={{ mr: 1 }} />

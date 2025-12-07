@@ -59,7 +59,7 @@ const FrontDeskTableManagementPage: React.FC = () => {
 
   return (
     <Box>
-      <PageTitle title="Sơ đồ bàn" subtitle="Xem sơ đồ bàn ăn" />
+      <PageTitle title="Danh sách bàn" subtitle="Xem danh sách bàn ăn" />
 
       <TablesTable
         data={items}

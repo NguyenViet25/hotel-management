@@ -378,7 +378,7 @@ public static class DatabaseInitializationExtensions
             Role = UserRole.Waiter,
             Fullname = "Hoàng Văn Phục Vụ",
             PhoneNumber = "0901000005",
-            Description = "Quản lý sơ đồ bàn, tạo order, chỉnh sửa, void/discount, post charge vào phòng, thu tiền và đóng hóa đơn."
+            Description = "Quản lý danh sách bàn, tạo order, chỉnh sửa, void/discount, post charge vào phòng, thu tiền và đóng hóa đơn."
         },
          new {
             Username = "housekeeping",

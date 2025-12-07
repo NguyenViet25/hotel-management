@@ -392,7 +392,7 @@ const TablesTable: React.FC<TablesTableProps> = ({
                                   </IconButton>
                                 </Tooltip>
                               )}
-                              {onDelete && (
+                              {/* {onDelete && (
                                 <Tooltip title="Xóa">
                                   <IconButton
                                     size="small"
@@ -402,7 +402,7 @@ const TablesTable: React.FC<TablesTableProps> = ({
                                     <Delete fontSize="small" />
                                   </IconButton>
                                 </Tooltip>
-                              )}
+                              )} */}
                             </>
                           )}
                           {selectionMode && (

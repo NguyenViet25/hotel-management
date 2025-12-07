@@ -499,7 +499,7 @@ export default function SessionDetailsPage() {
               >
                 Sửa
               </Button>
-              <Button
+              {/* <Button
                 size="small"
                 color="error"
                 variant="contained"
@@ -508,7 +508,7 @@ export default function SessionDetailsPage() {
                 disabled={isWaiter || session?.status !== "Open"}
               >
                 Xóa
-              </Button>
+              </Button> */}
             </Stack>
           )}
         </Card>
@@ -834,7 +834,7 @@ export default function SessionDetailsPage() {
                         </>
                       ) : (
                         <>
-                          <Button
+                          {/* <Button
                             size="small"
                             color="warning"
                             variant="contained"
@@ -844,7 +844,7 @@ export default function SessionDetailsPage() {
                             disabled={session?.status !== "Open"}
                           >
                             Xóa
-                          </Button>
+                          </Button> */}
                         </>
                       )}
                     </Stack>

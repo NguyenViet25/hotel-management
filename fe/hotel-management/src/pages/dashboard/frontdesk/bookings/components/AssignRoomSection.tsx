@@ -89,7 +89,7 @@ const AssignRoomSection: React.FC<Props> = ({ booking, onAssigned }) => {
     <Card variant="outlined" sx={{ borderRadius: 3 }}>
       <CardHeader
         title="Chọn Phòng"
-        subheader={loading ? "Đang tải sơ đồ phòng…" : undefined}
+        subheader={loading ? "Đang tải danh sách phòng…" : undefined}
       />
       <CardContent>
         <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>

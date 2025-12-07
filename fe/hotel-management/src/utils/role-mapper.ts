@@ -28,7 +28,7 @@ const roleMap: Record<string, RoleInfo> = {
   Waiter: {
     label: "Chạy bàn",
     description:
-      "Quản lý sơ đồ bàn, tạo order, chỉnh sửa, void/discount, post charge vào phòng, thu tiền và đóng hóa đơn.",
+      "Quản lý danh sách bàn, tạo order, chỉnh sửa, void/discount, post charge vào phòng, thu tiền và đóng hóa đơn.",
   },
   Housekeeper: {
     label: "Buồng phòng",

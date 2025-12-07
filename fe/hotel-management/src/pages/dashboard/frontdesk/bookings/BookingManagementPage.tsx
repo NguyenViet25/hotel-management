@@ -201,7 +201,7 @@ const BookingManagementPage: React.FC = () => {
       >
         <PageTitle
           title="Quản lý yêu cầu đặt phòng"
-          subtitle="Tạo, chỉnh sửa, hủy, xác nhận yêu cầu và xem sơ đồ phòng"
+          subtitle="Tạo, chỉnh sửa, hủy, xác nhận yêu cầu và xem danh sách phòng"
         />
 
         {/* Top bar: hotel scope & refresh */}

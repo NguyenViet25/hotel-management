@@ -10,7 +10,7 @@ export interface RoomMapDialogProps {
 const RoomMapDialog: React.FC<RoomMapDialogProps> = ({ open, onClose }) => {
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
-      <DialogTitle>Sơ đồ phòng</DialogTitle>
+      <DialogTitle>Danh sách phòng</DialogTitle>
       <DialogContent>
         <Box pt={1}>
           <RoomMap allowAddNew={false} />

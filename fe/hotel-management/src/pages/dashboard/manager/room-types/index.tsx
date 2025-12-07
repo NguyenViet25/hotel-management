@@ -361,7 +361,7 @@ const RoomTypePage: React.FC = () => {
                         >
                           Sửa
                         </Button>
-                        <Button
+                        {/* <Button
                           size="small"
                           color="error"
                           variant="contained"
@@ -369,7 +369,7 @@ const RoomTypePage: React.FC = () => {
                           onClick={() => handleDelete(rt)}
                         >
                           Xóa
-                        </Button>
+                        </Button> */}
                       </Stack>
                     </Stack>
                   </Stack>

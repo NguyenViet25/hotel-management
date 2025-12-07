@@ -13,14 +13,14 @@ export default function RoomPage() {
       <PageTitle
         title={
           view === "map"
-            ? "Sơ Đồ Phòng"
+            ? "Danh Sách Phòng"
             : view === "assign"
             ? "Phân công dọn dẹp"
             : "Quản lý phòng"
         }
         subtitle={
           view === "map"
-            ? "Quản lý phòng theo dạng sơ đồ trực quan"
+            ? "Quản lý phòng theo dạng danh sáchtrực quan"
             : view === "assign"
             ? "Giao nhiệm vụ dọn buồng"
             : "Xem danh sách phòng, thêm/sửa/xóa và cập nhật trạng thái"

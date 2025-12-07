@@ -1,15 +1,24 @@
-import { Hotel as HotelIcon, Login } from "@mui/icons-material";
+import {
+  Hotel as HotelIcon,
+  Login,
+  Person,
+  Lock,
+  Visibility,
+  VisibilityOff,
+} from "@mui/icons-material";
 import {
   Box,
   Button,
   Card,
   Container,
+  InputAdornment,
   Stack,
   TextField,
   Typography,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
+import { IconButton } from "@mui/material";
 import { useLayoutEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -17,6 +26,7 @@ import axiosInstance from "../../api/axios";
 import type { User } from "../../api/userService";
 import { useStore, type StoreState } from "../../hooks/useStore";
 import { localStorageHelper } from "../../utils/local-storage-helper";
+import { uppercase } from "zod";
 
 export interface LoginResponseDto {
   data: {
@@ -43,6 +53,7 @@ const LoginPage = () => {
 
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({ username: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -59,7 +70,6 @@ const LoginPage = () => {
       );
       const { accessToken, user } = response.data.data;
       if (!user) throw new Error();
-      console.log("user", user);
       setUser(user);
       localStorageHelper.setAuthData(accessToken!, user);
       navigateToCorrectPage(user);
@@ -82,7 +92,6 @@ const LoginPage = () => {
       );
       const { accessToken, user } = response.data.data;
       if (!user) throw new Error();
-      console.log("user", user);
       setUser(user);
       localStorageHelper.setAuthData(accessToken!, user);
       navigateToCorrectPage(user);
@@ -96,7 +105,6 @@ const LoginPage = () => {
 
   const navigateToCorrectPage = (user: User) => {
     const role = user?.roles[0]?.toLowerCase();
-    console.log("role", role);
     let path = "/dashboard";
     switch (role) {
       case "admin":
@@ -133,38 +141,48 @@ const LoginPage = () => {
           backgroundColor: "#f5f5f5",
         }}
       >
-        <Container maxWidth="md">
+        <Container maxWidth="sm">
+          <Typography
+            component="h1"
+            variant="h5"
+            sx={{ fontWeight: 800, mb: 1, textAlign: "center" }}
+          >
+            {"Hệ thống quản lý chuỗi khách sạn Tân Trường Sơn".toUpperCase()}
+          </Typography>
           <Box
             sx={{
               backgroundColor: "#fff",
               borderRadius: 3,
               boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
-              p: isMobile ? 2 : 6,
+              p: isMobile ? 2 : 4,
               display: "flex",
-              flexDirection: isMobile ? "column" : "row",
+              flexDirection: "column",
               alignItems: "center",
               justifyContent: "space-between",
               textAlign: isMobile ? "center" : "left",
             }}
           >
             {/* Left: Icon + Description */}
-            <Box sx={{ flex: 1, pr: isMobile ? 0 : 4, mb: isMobile ? 4 : 0 }}>
-              <HotelIcon sx={{ fontSize: 80, color: "#5563DE", mb: 2 }} />
+            <Box sx={{ flex: 1, px: 6 }}>
               <Typography
                 component="h1"
-                variant="h4"
-                sx={{ fontWeight: 700, mb: 1 }}
+                variant="h5"
+                sx={{ fontWeight: 800, mb: 1, textAlign: "center" }}
               >
-                Tân Trường Sơn Hotels
+                Đăng nhập
               </Typography>
-              <Typography variant="body1" color="text.secondary">
+              <Typography
+                variant="body1"
+                color="text.secondary"
+                textAlign={"center"}
+              >
                 Chào mừng trở lại! Vui lòng đăng nhập để quản lý đặt phòng,
                 phòng và khách hàng hiệu quả.
               </Typography>
             </Box>
 
             {/* Right: Form */}
-            <Box sx={{ flex: 1, maxWidth: 400 }}>
+            <Box sx={{ flex: 1 }}>
               <Box component="form" onSubmit={handleSubmit} sx={{ mb: 2 }}>
                 <TextField
                   fullWidth
@@ -175,23 +193,54 @@ const LoginPage = () => {
                   margin="normal"
                   variant="outlined"
                   autoFocus
+                  placeholder="Nhập tên đăng nhập"
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Person />
+                        </InputAdornment>
+                      ),
+                    },
+                  }}
                 />
                 <TextField
                   fullWidth
                   label="Mật khẩu"
                   name="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   value={formData.password}
                   onChange={handleChange}
                   margin="normal"
                   variant="outlined"
+                  placeholder="Nhập mật khẩu"
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Lock />
+                        </InputAdornment>
+                      ),
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="toggle password visibility"
+                            onClick={() => setShowPassword((prev) => !prev)}
+                            edge="end"
+                          >
+                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    },
+                  }}
                 />
                 <Button
                   type="submit"
                   fullWidth
                   variant="contained"
                   sx={{
-                    mt: 3,
+                    mt: 2,
                     py: 1.5,
                     fontWeight: 600,
                     borderRadius: 3,
@@ -203,18 +252,6 @@ const LoginPage = () => {
                   {loading ? "Đang đăng nhập..." : "Đăng nhập"}
                 </Button>
               </Box>
-
-              {/* <Divider sx={{ my: 2 }}>HOẶC</Divider> */}
-              {/* 
-            <Button
-              fullWidth
-              variant="outlined"
-              startIcon={<GoogleIcon />}
-              onClick={handleGoogleLogin}
-              sx={{ py: 1.5, borderRadius: 3, textTransform: "none" }}
-            >
-              Đăng nhập với Google
-            </Button> */}
             </Box>
           </Box>
         </Container>

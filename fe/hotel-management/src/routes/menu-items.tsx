@@ -83,7 +83,7 @@ export const menuItems = {
       icon: <SensorsOutlined />,
     },
     {
-      title: "Sơ đồ bàn",
+      title: "Danh sách bàn",
       path: "/frontdesk/table-map",
       icon: <TableBar />,
     },
