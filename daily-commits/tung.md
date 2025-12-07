@@ -225,3 +225,4 @@
 2025-12-06 - 5 - 01:43:46 UTC :: refactor: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — cap nhat cau hinh va kiem tra bien (dam bao backward-compatible)
 2025-12-07 - 1 - 01:57:55 UTC :: build: UC-26 Order: tao/chinh sua order, ghi chu, void/discount. — them log chi tiet phuc vu audit (da smoke test)
 2025-12-07 - 2 - 01:57:57 UTC :: fix: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — tach chuc nang de de bao tri (da smoke test)
+2025-12-07 - 3 - 01:57:58 UTC :: ci: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — sua validate va bo sung thong bao loi (da kiem tra lint)
