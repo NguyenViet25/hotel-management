@@ -205,7 +205,6 @@ const RoomManagementPage: React.FC = () => {
         onPageChange={onPageChange}
         onAdd={handleAdd}
         onEdit={handleEdit}
-        onDelete={handleDelete}
         onChangeStatus={handleChangeStatus}
         onSearch={(txt: string) => setSearchNumber(txt || "")}
       />

@@ -765,7 +765,7 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                           </IconButton>
                         </Tooltip> */}
 
-                        <Tooltip title="Xoá Phòng">
+                        {/* <Tooltip title="Xoá Phòng">
                           <IconButton
                             size="small"
                             color="error"
@@ -777,7 +777,7 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                           >
                             <DeleteOutlineIcon fontSize="small" />
                           </IconButton>
-                        </Tooltip>
+                        </Tooltip> */}
                       </Box>
                     )}
                   </Card>

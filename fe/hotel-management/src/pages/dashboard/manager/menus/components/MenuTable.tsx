@@ -117,7 +117,7 @@ const MenuTable: React.FC<MenuTableProps> = ({
       loading={loading}
       onAdd={onAdd}
       onEdit={handleEdit}
-      onDelete={handleDelete}
+      // onDelete={handleDelete}
       getRowId={(row) => row.id}
       onSearch={onSearch}
       pagination={{

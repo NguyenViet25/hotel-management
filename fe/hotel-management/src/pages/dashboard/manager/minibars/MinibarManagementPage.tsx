@@ -315,7 +315,7 @@ const MinibarManagementPage: React.FC = () => {
                                         </IconButton>
                                       </span>
                                     </Tooltip>
-                                    <Tooltip title="Xóa minibar">
+                                    {/* <Tooltip title="Xóa minibar">
                                       <span>
                                         <IconButton
                                           size="small"
@@ -326,7 +326,7 @@ const MinibarManagementPage: React.FC = () => {
                                           <Delete fontSize="small" />
                                         </IconButton>
                                       </span>
-                                    </Tooltip>
+                                    </Tooltip> */}
                                   </TableCell>
                                 </TableRow>
                               ))}

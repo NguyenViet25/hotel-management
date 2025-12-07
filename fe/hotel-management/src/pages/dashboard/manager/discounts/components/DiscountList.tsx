@@ -89,7 +89,9 @@ const DiscountList: React.FC<DiscountListProps> = ({
       render: (row) => {
         const end = new Date(row.endDate);
         const now = new Date();
-        const daysLeft = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        const daysLeft = Math.ceil(
+          (end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+        );
         const color = daysLeft <= 3 ? "warning.main" : "text.secondary";
         const weight = daysLeft <= 3 ? 600 : undefined;
         return (
@@ -105,8 +107,7 @@ const DiscountList: React.FC<DiscountListProps> = ({
       render: (row) => {
         const now = new Date();
         const expired = new Date(row.endDate) < now;
-        if (expired)
-          return <Chip size="small" label="Hết hạn" color="error" />;
+        if (expired) return <Chip size="small" label="Hết hạn" color="error" />;
         return (
           <Chip
             size="small"
@@ -126,7 +127,7 @@ const DiscountList: React.FC<DiscountListProps> = ({
       loading={loading}
       onAdd={onAdd}
       onEdit={onEdit}
-      onDelete={onDelete}
+      // onDelete={onDelete}
       onSearch={onSearch}
       getRowId={(r) => r.id || r.code}
       borderRadius={3}

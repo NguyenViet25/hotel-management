@@ -367,7 +367,7 @@ const MenuManagementPage: React.FC = () => {
             data={typeFilter === "food" ? foodItemsFiltered : setRecords}
             loading={loading}
             onEdit={openEdit}
-            onDelete={openDelete}
+            // onDelete={openDelete}
             isFood={typeFilter === "food"}
           />
         )
@@ -473,13 +473,13 @@ const MenuManagementPage: React.FC = () => {
                                 >
                                   <EditIcon fontSize="small" />
                                 </IconButton>
-                                <IconButton
+                                {/* <IconButton
                                   size="small"
                                   color="error"
                                   onClick={() => openDelete(it)}
                                 >
                                   <DeleteOutlineIcon fontSize="small" />
-                                </IconButton>
+                                </IconButton> */}
                               </Stack>
                             </Stack>
                           </Stack>
@@ -622,13 +622,13 @@ const MenuManagementPage: React.FC = () => {
                                   >
                                     <EditIcon fontSize="small" />
                                   </IconButton>
-                                  <IconButton
+                                  {/* <IconButton
                                     size="small"
                                     color="error"
                                     onClick={() => openDelete(it)}
                                   >
                                     <DeleteOutlineIcon fontSize="small" />
-                                  </IconButton>
+                                  </IconButton> */}
                                 </Stack>
                               </Stack>
                             </Stack>

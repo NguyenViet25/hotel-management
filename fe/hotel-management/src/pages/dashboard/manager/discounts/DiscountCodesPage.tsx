@@ -430,13 +430,13 @@ const DiscountCodesPage = () => {
                                 >
                                   <EditIcon fontSize="small" />
                                 </IconButton>
-                                <IconButton
+                                {/* <IconButton
                                   size="small"
                                   color="error"
                                   onClick={() => onDelete(c)}
                                 >
                                   <DeleteIcon fontSize="small" />
-                                </IconButton>
+                                </IconButton> */}
                               </Stack>
                             </Stack>
                           </Box>
