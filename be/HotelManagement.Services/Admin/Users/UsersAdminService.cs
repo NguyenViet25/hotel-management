@@ -12,12 +12,14 @@ public class UsersAdminService : IUsersAdminService
     private readonly ApplicationDbContext _db;
     private readonly UserManager<AppUser> _users;
     private readonly RoleManager<IdentityRole<Guid>> _roles;
+    private readonly Email.IEmailService _emailService;
 
-    public UsersAdminService(ApplicationDbContext db, UserManager<AppUser> users, RoleManager<IdentityRole<Guid>> roles)
+    public UsersAdminService(ApplicationDbContext db, UserManager<AppUser> users, RoleManager<IdentityRole<Guid>> roles, Email.IEmailService emailService)
     {
         _db = db;
         _users = users;
         _roles = roles;
+        _emailService = emailService;
     }
 
     public async Task<(IEnumerable<UserSummaryDto> Items, int Total)> ListByHotelAsync(UsersQueryDto query, Guid hotelId)
@@ -361,7 +363,9 @@ public class UsersAdminService : IUsersAdminService
         var user = await _users.FindByIdAsync(id.ToString());
         if (user == null) return false;
         var token = await _users.GeneratePasswordResetTokenAsync(user);
-        var res = await _users.ResetPasswordAsync(user, token, dto.NewPassword);
+        var res = await _users.ResetPasswordAsync(user, token, token);
+
+        await _emailService.SendResetPasswordEmailAsync(user.Email!, user.UserName, token);
         return res.Succeeded;
     }
 

@@ -10,4 +10,5 @@ public interface IInvoiceService
     Task<InvoiceDto> IssueInvoiceAsync(Guid id);
     Task<InvoiceDto> CancelInvoiceAsync(Guid id);
     Task<PagedResult<InvoiceDto>> GetInvoicesAsync(InvoiceFilterDto filter);
+    Task<RevenueStatsDto> GetRevenueAsync(RevenueQueryDto query);
 }

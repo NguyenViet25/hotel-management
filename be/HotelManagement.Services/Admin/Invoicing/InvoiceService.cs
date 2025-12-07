@@ -242,6 +242,50 @@ public class InvoiceService : IInvoiceService
         };
     }
 
+    public async Task<RevenueStatsDto> GetRevenueAsync(RevenueQueryDto query)
+    {
+        var q = _invoiceRepository.Query().AsQueryable();
+
+        q = q.Where(i => i.HotelId == query.HotelId);
+        q = q.Where(i => i.Status != InvoiceStatus.Cancelled);
+
+        if (!(query.IncludeIssued && query.IncludePaid))
+        {
+            var statuses = new List<InvoiceStatus>();
+            if (query.IncludeIssued) statuses.Add(InvoiceStatus.Issued);
+            if (query.IncludePaid) statuses.Add(InvoiceStatus.Paid);
+            q = q.Where(i => statuses.Contains(i.Status));
+        }
+
+        if (query.FromDate.HasValue)
+        {
+            q = q.Where(i => i.CreatedAt >= query.FromDate);
+        }
+        if (query.ToDate.HasValue)
+        {
+            q = q.Where(i => i.CreatedAt <= query.ToDate);
+        }
+
+        var items = await q.Select(i => new { i.TotalAmount, i.CreatedAt }).ToListAsync();
+
+        var gran = (query.Granularity ?? "day").ToLowerInvariant();
+
+        Func<DateTime, DateTime> bucket = gran == "month"
+            ? (d => new DateTime(d.Year, d.Month, 1))
+            : (d => d.Date);
+
+        var points = items
+            .GroupBy(i => bucket(i.CreatedAt))
+            .OrderBy(g => g.Key)
+            .Select(g => new RevenuePointDto { Date = g.Key, Total = g.Sum(x => x.TotalAmount) })
+            .ToList();
+
+        var total = items.Sum(i => i.TotalAmount);
+        var count = items.Count;
+
+        return new RevenueStatsDto { Total = total, Count = count, Points = points };
+    }
+
     private void CalculateInvoiceTotals(Invoice invoice)
     {
         // Calculate subtotal (sum of all positive line amounts)

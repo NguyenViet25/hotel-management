@@ -17,6 +17,7 @@ import { useStore, type StoreState } from "../../../hooks/useStore";
 import dashboardApi, {
   type ManagerDashboardSummary,
 } from "../../../api/dashboardApi";
+import RevenuePage from "./revenue/RevenuePage";
 
 const ManagerDashboardPage: React.FC = () => {
   const { hotelId } = useStore<StoreState>((s) => s);
@@ -184,6 +185,8 @@ const ManagerDashboardPage: React.FC = () => {
           </Card>
         </Grid>
       </Grid>
+
+      <RevenuePage />
     </Box>
   );
 };

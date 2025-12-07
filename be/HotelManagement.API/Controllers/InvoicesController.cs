@@ -41,6 +41,13 @@ public class InvoicesController : ControllerBase
         _unitOfWork = unitOfWork;
     }
 
+    [HttpGet("revenue")]
+    public async Task<ActionResult<ApiResponse<RevenueStatsDto>>> GetRevenue([FromQuery] RevenueQueryDto query)
+    {
+        var stats = await _invoiceService.GetRevenueAsync(query);
+        return Ok(ApiResponse<RevenueStatsDto>.Ok(stats));
+    }
+
     [HttpGet]
     public async Task<ActionResult<ApiResponse<PagedResult<InvoiceDto>>>> List([FromQuery] InvoiceFilterDto filter)
     {

@@ -14,13 +14,13 @@ public static class EmailTemplates
         return (subject, html, text);
     }
 
-    public static (string subject, string html, string text) ResetPassword(string? displayName, string link)
+    public static (string subject, string html, string text) ResetPassword(string? displayName, string newPassword)
     {
         var name = WebUtility.HtmlEncode(displayName ?? "");
-        var l = WebUtility.HtmlEncode(link);
         var subject = "Đặt lại mật khẩu";
-        var html = $"<p>Xin chào {name},</p><p>Liên kết đặt lại mật khẩu của bạn:</p><p><a href=\"{l}\">Đặt lại mật khẩu</a></p>";
-        var text = $"Xin chào {displayName},\nLiên kết đặt lại mật khẩu: {link}";
+        var html = $"<p>Xin chào {name},</p><p>Mật khẩu mới của bạn là: {newPassword}</p>";
+        var text = $"Cảm ơn!";
+
         return (subject, html, text);
     }
 }
