@@ -221,3 +221,4 @@
 2025-12-07 - 1 - 01:57:56 UTC :: build: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — tach chuc nang de de bao tri (chuan bi cho tinh nang tiep theo)
 2025-12-07 - 2 - 01:57:58 UTC :: fix: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — bo sung case canh bien & no-show (dam bao backward-compatible)
 2025-12-07 - 3 - 01:57:59 UTC :: ci: UC-03 Audit: xem lich su dang nhap, thao tac; xuat log. — them kiem soat loi & retry nhe (da kiem tra lint)
+2025-12-07 - 4 - 01:58:00 UTC :: feat: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — cap nhat mock data & seed test (da smoke test)
