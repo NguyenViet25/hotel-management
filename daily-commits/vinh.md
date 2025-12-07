@@ -220,3 +220,4 @@
 2025-12-06 - 5 - 01:43:49 UTC :: docs: UC-39 Xuat Audit Log: xuat CSV/PDF kiem tra tuan thu. — cap nhat cau hinh va kiem tra bien (dong bo voi BE/FE)
 2025-12-07 - 1 - 01:57:56 UTC :: perf: UC-10 Goi gia: tao rate plan, thoi gian ap dung linh hoat. — chinh sua tai lieu & mo ta API (da smoke test)
 2025-12-07 - 2 - 01:57:59 UTC :: build: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — chinh sua tai lieu & mo ta API (anh huong thap)
+2025-12-07 - 3 - 01:58:00 UTC :: test: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — fix race-condition nho trong thao tac (can theo doi them)
