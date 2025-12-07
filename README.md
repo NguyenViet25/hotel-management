@@ -1,4 +1,4 @@
-# HỆ THỐNG QUẢN LÝ CHUỖI KHÁCH SẠN TÂN TRƯỜNG SƠN
+# Hệ thống quản lý chuỗi khách sạn Tân Trường Sơn
 
 **Tổng quan dự án:**  
 Đây là một dự án tốt nghiệp được xây dựng nhằm quản lý hoạt động khách sạn một cách hiệu quả. Hệ thống bao gồm các chức năng quản lý đặt phòng, phòng, khách hàng và nhiều nghiệp vụ khác trong quản lý khách sạn.
