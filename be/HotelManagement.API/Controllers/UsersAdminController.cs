@@ -22,6 +22,15 @@ public class UsersAdminController : ControllerBase
         return Ok(ApiResponse<IEnumerable<UserSummaryDto>>.Ok(items, meta: meta));
     }
 
+
+    [HttpGet("by-hotel/{hotelId}")]
+    public async Task<ActionResult<ApiResponse<IEnumerable<UserSummaryDto>>>> ListByHotels([FromRoute] Guid hotelId, [FromQuery] UsersQueryDto query)
+    {
+        var (items, total) = await _svc.ListByHotelAsync(query, hotelId);
+        var meta = new { total, page = query.Page, pageSize = query.PageSize };
+        return Ok(ApiResponse<IEnumerable<UserSummaryDto>>.Ok(items, meta: meta));
+    }
+
     [HttpGet("by-role")]
     public async Task<ActionResult<ApiResponse<IEnumerable<UserSummaryDto>>>> ListHouseKeppers([FromQuery] UserByRoleQuery query)
     {

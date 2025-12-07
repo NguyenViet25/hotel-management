@@ -5,6 +5,7 @@ namespace HotelManagement.Services.Admin.Users;
 public interface IUsersAdminService
 {
     Task<(IEnumerable<UserSummaryDto> Items, int Total)> ListAsync(UsersQueryDto query);
+    Task<(IEnumerable<UserSummaryDto> Items, int Total)> ListByHotelAsync(UsersQueryDto query, Guid hotelId);
     Task<IEnumerable<UserSummaryDto>> ListByRoleAsync(UserByRoleQuery query);
     Task<UserDetailsDto?> GetAsync(Guid id);
     Task<UserDetailsDto> CreateAsync(CreateUserDto dto);

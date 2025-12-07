@@ -15,6 +15,7 @@ import CreateUserDialog from "../../admin/user-management/dialogs/CreateUserDial
 import EditUserDialog from "../../admin/user-management/dialogs/EditUserDialog";
 import LockUserDialog from "../../admin/user-management/dialogs/LockUserDialog";
 import ResetPasswordDialog from "../../admin/user-management/dialogs/ResetPasswordDialog";
+import { type StoreState, useStore } from "../../../../hooks/useStore";
 
 const ManagerUserManagement: React.FC = () => {
   // State for user list
@@ -24,7 +25,7 @@ const ManagerUserManagement: React.FC = () => {
   const [search, setSearch] = useState("");
   const [pageSize] = useState(10);
   const [total, setTotal] = useState(0);
-
+  const { hotelId } = useStore<StoreState>((state) => state);
   // State for sorting
   const [sortBy, setSortBy] = useState<string>("username");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
@@ -111,7 +112,12 @@ const ManagerUserManagement: React.FC = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const response = await userService.getUsers(page, pageSize, search);
+      const response = await userService.getUsersByHotel(
+        hotelId || "",
+        page,
+        pageSize,
+        search
+      );
       console.log("response", response.data);
       if (response.isSuccess) {
         setUsers(response.data);

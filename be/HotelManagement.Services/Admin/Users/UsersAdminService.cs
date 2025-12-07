@@ -4,7 +4,6 @@ using HotelManagement.Repository;
 using HotelManagement.Services.Admin.Users.Dtos;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
 
 namespace HotelManagement.Services.Admin.Users;
 
@@ -19,6 +18,75 @@ public class UsersAdminService : IUsersAdminService
         _db = db;
         _users = users;
         _roles = roles;
+    }
+
+    public async Task<(IEnumerable<UserSummaryDto> Items, int Total)> ListByHotelAsync(UsersQueryDto query, Guid hotelId)
+    {
+        var q = _users.Users.AsNoTracking();
+        if (!string.IsNullOrWhiteSpace(query.Search))
+        {
+            var s = query.Search.Trim();
+            q = q.Where(u => (u.UserName != null && u.UserName.Contains(s)) ||
+                             (u.Email != null && u.Email.Contains(s)) ||
+                             (u.PhoneNumber != null && u.PhoneNumber.Contains(s)));
+        }
+        if (query.EmailConfirmed.HasValue)
+        {
+            q = q.Where(u => u.EmailConfirmed == query.EmailConfirmed.Value);
+        }
+        if (query.LockedOnly == true)
+        {
+            var now = DateTimeOffset.UtcNow;
+            q = q.Where(u => u.LockoutEnd != null && u.LockoutEnd > now);
+        }
+
+        // Optional filter by Identity role name
+        if (!string.IsNullOrWhiteSpace(query.Role))
+        {
+            var role = await _roles.FindByNameAsync(query.Role.Trim());
+            if (role != null)
+            {
+                var userIdsInRole = await _db.UserRoles
+                    .Where(ur => ur.RoleId == role.Id)
+                    .Select(ur => ur.UserId)
+                    .Distinct()
+                    .ToListAsync();
+                q = q.Where(u => userIdsInRole.Contains(u.Id));
+            }
+        }
+
+        var total = await q.CountAsync();
+        var page = Math.Max(1, query.Page);
+        var pageSize = Math.Clamp(query.PageSize, 1, 200);
+        var users = await q.OrderBy(u => u.UserName).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+
+        // Load roles in batch
+        var userIds = users.Select(u => u.Id).ToList();
+        var userRolePairs = await _db.UserRoles
+            .Where(ur => userIds.Contains(ur.UserId))
+            .Join(_db.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => new { ur.UserId, r.Name })
+            .ToListAsync();
+        var rolesByUser = userRolePairs.GroupBy(x => x.UserId).ToDictionary(g => g.Key, g => g.Select(x => x.Name ?? string.Empty).ToList());
+        var propertyRoles = await _db.UserPropertyRoles.AsNoTracking().Select(pr => new UserPropertyRoleDto(pr.UserId, pr.HotelId, pr.Role, "")).ToListAsync();
+
+        var usersByHotel = await _db.UserPropertyRoles.Where(x => x.HotelId == hotelId)
+           .AsNoTracking().Select(pr => pr.UserId).ToListAsync();
+
+        var list = await GetHotel(propertyRoles);
+
+        var items = users.Where(x => usersByHotel.Contains(x.Id) && x.UserName != "admin").Select(u => new UserSummaryDto(
+            u.Id,
+            u.UserName,
+            u.Email,
+            u.PhoneNumber,
+            u.Fullname,
+            u.EmailConfirmed,
+            u.LockoutEnd,
+            rolesByUser.TryGetValue(u.Id, out var r) ? r : Array.Empty<string>(),
+            propertyRoles = list.Where(x => x.Id == u.Id).ToList()
+        ));
+
+        return (items, total);
     }
 
     public async Task<(IEnumerable<UserSummaryDto> Items, int Total)> ListAsync(UsersQueryDto query)
@@ -73,7 +141,7 @@ public class UsersAdminService : IUsersAdminService
 
         var list = await GetHotel(propertyRoles);
 
-        var items = users.Select(u => new UserSummaryDto(
+        var items = users.Where(x => x.UserName != "admin").Select(u => new UserSummaryDto(
             u.Id,
             u.UserName,
             u.Email,
@@ -91,7 +159,7 @@ public class UsersAdminService : IUsersAdminService
     public async Task<IEnumerable<UserSummaryDto>> ListByRoleAsync(UserByRoleQuery query)
     {
         var q = _users.Users.AsNoTracking();
-      
+
         // Optional filter by Identity role name
         if (!string.IsNullOrWhiteSpace(query.Role))
         {
@@ -167,7 +235,7 @@ public class UsersAdminService : IUsersAdminService
 
         var existUser = await _db.Users.Where(x => x.UserName == dto.UserName || x.Email == dto.Email).AnyAsync();
 
-        if(existUser)
+        if (existUser)
             throw new InvalidOperationException($"Người dùng đã tồn tại");
 
         var user = new AppUser

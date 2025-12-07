@@ -85,6 +85,19 @@ const userService = {
     );
     return response.data;
   },
+  getUsersByHotel: async (
+    hotelId: string,
+    page: number = 1,
+    pageSize: number = 10,
+    search?: string
+  ): Promise<UserListResponse> => {
+    const response = await axios.get(
+      `/users/by-hotel/${hotelId}?page=${page}&pageSize=${pageSize}&search=${
+        search || ""
+      }`
+    );
+    return response.data;
+  },
   getUsersByRole: async (
     hotelId: string,
     role: "housekeeper"
