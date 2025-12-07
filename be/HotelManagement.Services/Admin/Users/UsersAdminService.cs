@@ -88,6 +88,55 @@ public class UsersAdminService : IUsersAdminService
         return (items, total);
     }
 
+    public async Task<IEnumerable<UserSummaryDto>> ListByRoleAsync(UserByRoleQuery query)
+    {
+        var q = _users.Users.AsNoTracking();
+      
+        // Optional filter by Identity role name
+        if (!string.IsNullOrWhiteSpace(query.Role))
+        {
+            var role = await _roles.FindByNameAsync(query.Role.Trim());
+            if (role != null)
+            {
+                var userIdsInRole = await _db.UserRoles
+                    .Where(ur => ur.RoleId == role.Id)
+                    .Select(ur => ur.UserId)
+                    .Distinct()
+                    .ToListAsync();
+                q = q.Where(u => userIdsInRole.Contains(u.Id));
+            }
+        }
+
+        var total = await q.CountAsync();
+        var users = await q.ToListAsync();
+
+        // Load roles in batch
+        var userIds = users.Select(u => u.Id).ToList();
+        var userRolePairs = await _db.UserRoles
+            .Where(ur => userIds.Contains(ur.UserId))
+            .Join(_db.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => new { ur.UserId, r.Name })
+            .ToListAsync();
+        var rolesByUser = userRolePairs.GroupBy(x => x.UserId).ToDictionary(g => g.Key, g => g.Select(x => x.Name ?? string.Empty).ToList());
+        var propertyRoles = await _db.UserPropertyRoles.AsNoTracking().Select(pr => new UserPropertyRoleDto(pr.UserId, pr.HotelId, pr.Role, "")).ToListAsync();
+
+
+        var list = await GetHotel(propertyRoles);
+
+        var items = users.Select(u => new UserSummaryDto(
+            u.Id,
+            u.UserName,
+            u.Email,
+            u.PhoneNumber,
+            u.Fullname,
+            u.EmailConfirmed,
+            u.LockoutEnd,
+            rolesByUser.TryGetValue(u.Id, out var r) ? r : Array.Empty<string>(),
+            propertyRoles = list.Where(x => x.Id == u.Id).ToList()
+        ));
+
+        return items;
+    }
+
     private async Task<List<UserPropertyRoleDto>> GetHotel(List<UserPropertyRoleDto> propertyRoles)
     {
         var list = new List<UserPropertyRoleDto>();

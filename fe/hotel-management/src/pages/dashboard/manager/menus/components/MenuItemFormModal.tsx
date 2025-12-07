@@ -1,63 +1,59 @@
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Switch,
-  FormControlLabel,
-  Stack,
-  InputAdornment,
-} from "@mui/material";
-import React from "react";
-import { useForm, Controller } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  Group as GroupIcon,
+  Block as BlockIcon,
+  CheckCircle as CheckCircleIcon,
+  Close,
   Fastfood as FastfoodIcon,
+  Group as GroupIcon,
+  Image as ImageIcon,
   MonetizationOn as MonetizationOnIcon,
   RestaurantMenu as RestaurantMenuIcon,
-  Image as ImageIcon,
-  Info as InfoIcon,
-  CheckCircle as CheckCircleIcon,
-  Block as BlockIcon,
-  Close,
   Save,
 } from "@mui/icons-material";
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  InputAdornment,
+  InputLabel,
+  MenuItem,
+  Select,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
+import React, { useEffect } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { z } from "zod";
 import type {
-  MenuGroupDto,
   CreateMenuItemRequest,
+  MenuItemDto,
   UpdateMenuItemRequest,
 } from "../../../../../api/menusApi";
+import { useStore, type StoreState } from "../../../../../hooks/useStore";
 
 type FormValues = {
-  menuGroupId: string;
+  category: string;
   name: string;
   unitPrice: number;
-  portionSize?: string;
   imageUrl?: string;
-  status: string;
+  status: number;
   isActive: boolean;
   description?: string;
 };
 
 const schema = z.object({
-  menuGroupId: z.string().min(1, "Vui lòng chọn nhóm món"),
+  category: z.string().min(1, "Vui lòng chọn nhóm món"),
   name: z.string().min(1, "Tên món là bắt buộc").max(100, "Tối đa 100 ký tự"),
   unitPrice: z
-    .number({ invalid_type_error: "Giá phải là số" })
+    .number("Giá phải là số")
     .min(0.01, "Giá phải lớn hơn 0")
     .max(10000000, "Giá quá lớn"),
-  portionSize: z.string().optional(),
-  imageUrl: z.string().url("URL không hợp lệ").optional().or(z.literal("")),
-  status: z.enum(["Available", "Unavailable", "SeasonallyUnavailable"]),
-  isActive: z.boolean().default(true),
+  imageUrl: z.string().optional().or(z.literal("")),
+  status: z.number().int().min(0).max(1),
   description: z.string().max(500, "Tối đa 500 ký tự").optional(),
 });
 
@@ -67,85 +63,199 @@ export interface MenuItemFormModalProps {
   onSubmit: (
     payload: CreateMenuItemRequest | UpdateMenuItemRequest
   ) => Promise<void> | void;
-  menuGroups: MenuGroupDto[];
-  initialValues?: Partial<FormValues>;
+  initialValues?: MenuItemDto;
   mode?: "create" | "edit";
+  createType?: "food" | "set";
 }
 
 const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
   open,
   onClose,
   onSubmit,
-  menuGroups,
   initialValues,
   mode = "create",
+  createType = "food",
 }) => {
+  const { user } = useStore<StoreState>((state) => state);
   const {
     control,
     handleSubmit,
     formState: { errors, isSubmitting },
+    reset,
+    setValue,
+    watch,
   } = useForm<FormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(
+      z
+        .object({
+          category: z.string().optional(),
+          name: z.string().min(1, "Tên là bắt buộc").max(100),
+          unitPrice: z.number("Giá phải là số").optional(),
+          imageUrl: z.string().optional().or(z.literal("")),
+          status: z.number().int().min(0).max(1),
+          isActive: z.boolean().optional(),
+          description: z.string().max(2000, "Tối đa 2000 ký tự").optional(),
+        })
+        .superRefine((data, ctx) => {
+          const isSet =
+            (data.category || "").trim() === "Set" || createType === "set";
+          if (!isSet) {
+            if (!data.category || (data.category || "").trim().length === 0) {
+              ctx.addIssue({
+                path: ["category"],
+                code: z.ZodIssueCode.custom,
+                message: "Vui lòng chọn nhóm món",
+              });
+            }
+            if (
+              typeof data.unitPrice !== "number" ||
+              Number.isNaN(data.unitPrice) ||
+              data.unitPrice < 0.01
+            ) {
+              ctx.addIssue({
+                path: ["unitPrice"],
+                code: z.ZodIssueCode.custom,
+                message: "Giá phải lớn hơn 0",
+              });
+            }
+          }
+        })
+    ),
     defaultValues: {
-      menuGroupId: initialValues?.menuGroupId || "",
-      name: initialValues?.name || "",
-      unitPrice: initialValues?.unitPrice ?? 0,
-      portionSize: initialValues?.portionSize || "",
-      imageUrl: initialValues?.imageUrl || "",
-      status: initialValues?.status || "Available",
+      category:
+        createType === "set"
+          ? initialValues?.category ?? "Set"
+          : initialValues?.category ?? "Món khai vị",
+      name: initialValues?.name ?? "",
+      unitPrice: createType === "set" ? 1 : initialValues?.unitPrice ?? 0,
+      imageUrl: initialValues?.imageUrl ?? "",
+      status: initialValues?.status ?? 0,
       isActive: initialValues?.isActive ?? true,
-      description: initialValues?.description || "",
+      description: initialValues?.description ?? "",
     },
   });
 
-  const submitHandler = async (values: FormValues) => {
-    await onSubmit({
-      menuGroupId: values.menuGroupId,
-      name: values.name,
-      unitPrice: values.unitPrice,
-      portionSize: values.portionSize,
-      imageUrl: values.imageUrl,
-      status: values.status,
-      isActive: values.isActive,
-      description: values.description,
-    });
+  const isSetMode = (watch("category") || "") === "Set" || createType === "set";
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const handleSelectImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setValue("imageUrl", String(reader.result || ""));
+    reader.readAsDataURL(file);
   };
+  useEffect(() => {
+    if (mode === "edit") {
+      setValue("category", initialValues?.category ?? "Món khai vị");
+      setValue("name", initialValues?.name ?? "");
+      setValue("unitPrice", initialValues?.unitPrice ?? 0);
+      setValue("imageUrl", initialValues?.imageUrl ?? "");
+      setValue("status", initialValues?.status ?? 0);
+      setValue("isActive", initialValues?.isActive ?? true);
+      setValue("description", initialValues?.description ?? "");
+    }
+  }, [initialValues]);
+
+  const submitHandler = async (values: FormValues) => {
+    console.log("values", values);
+    const isSetSubmit =
+      (values.category || "") === "Set" || createType === "set";
+    if (isSetSubmit && mode === "create") {
+      const setName = (values.name || "").trim();
+      const list = (values.description || "")
+        .split(/\n|,/)
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
+      const joined = list.join(", ");
+      await onSubmit({
+        hotelId: user?.hotelId,
+        category: "Set",
+        name: setName,
+        unitPrice: values.unitPrice,
+        imageUrl: values.imageUrl,
+        status: Number(values.status),
+        isActive: values.status === 0,
+        description: joined,
+      });
+    } else if (isSetSubmit && mode === "edit") {
+      await onSubmit({
+        hotelId: user?.hotelId,
+        name: values.name,
+        description: values.description,
+        status: Number(values.status),
+        isActive: values.status === 0,
+        category: values.category,
+        unitPrice: values.unitPrice,
+      });
+    } else {
+      await onSubmit({
+        hotelId: user?.hotelId,
+        category: values.category,
+        name: values.name,
+        unitPrice: values.unitPrice,
+        imageUrl: values.imageUrl,
+        status: Number(values.status),
+        isActive: values.isActive,
+        description: values.description,
+      });
+    }
+
+    reset();
+  };
+
+  const foodGroups = [
+    { id: "Món khai vị", name: "Món khai vị" },
+    { id: "Món chính", name: "Món chính" },
+    { id: "Món lẩu", name: "Món lẩu" },
+    { id: "Món nướng", name: "Món nướng" },
+    { id: "Món tráng miệng", name: "Món tráng miệng" },
+    { id: "Thức uống", name: "Thức uống" },
+  ];
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle fontWeight={600}>
-        {mode === "create" ? "Thêm món mới" : "Chỉnh sửa món"}
+        {mode === "create"
+          ? isSetMode
+            ? "Thêm set mới"
+            : "Thêm món mới"
+          : isSetMode
+          ? "Chỉnh sửa set"
+          : "Chỉnh sửa món"}
       </DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
           {/* Menu Group */}
-          <FormControl fullWidth>
-            <InputLabel id="menuGroup-label">Nhóm món</InputLabel>
-            <Controller
-              control={control}
-              name="menuGroupId"
-              render={({ field }) => (
-                <Select
-                  labelId="menuGroup-label"
-                  label="Nhóm món"
-                  value={field.value}
-                  onChange={(e) => field.onChange(e.target.value)}
-                  error={!!errors.menuGroupId}
-                  startAdornment={
-                    <InputAdornment position="start">
-                      <GroupIcon />
-                    </InputAdornment>
-                  }
-                >
-                  {menuGroups.map((g) => (
-                    <MenuItem key={g.id} value={g.id}>
-                      {g.name} ({g.shift})
-                    </MenuItem>
-                  ))}
-                </Select>
-              )}
-            />
-          </FormControl>
+          {!isSetMode && (
+            <FormControl fullWidth>
+              <InputLabel id="menuGroup-label">Nhóm món</InputLabel>
+              <Controller
+                control={control}
+                name="category"
+                render={({ field }) => (
+                  <Select
+                    labelId="menuGroup-label"
+                    label="Nhóm món"
+                    value={field.value}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    error={!!errors.category}
+                    startAdornment={
+                      <InputAdornment position="start">
+                        <GroupIcon />
+                      </InputAdornment>
+                    }
+                  >
+                    {foodGroups.map((g) => (
+                      <MenuItem key={g.id} value={g.id}>
+                        {g.name}
+                      </MenuItem>
+                    ))}
+                    <MenuItem value="Set">Set</MenuItem>
+                  </Select>
+                )}
+              />
+            </FormControl>
+          )}
 
           {/* Name */}
           <Controller
@@ -153,16 +263,21 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
             name="name"
             render={({ field }) => (
               <TextField
-                label="Tên món"
+                label={isSetMode ? "Tên set (Nhóm món)" : "Tên món"}
                 fullWidth
                 value={field.value}
+                placeholder={
+                  isSetMode
+                    ? "Nhập tên set (ví dụ: BBQ Set)"
+                    : "Nhập tên món ăn"
+                }
                 onChange={field.onChange}
                 error={!!errors.name}
                 helperText={errors.name?.message}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <FastfoodIcon />
+                      {isSetMode ? <GroupIcon /> : <FastfoodIcon />}
                     </InputAdornment>
                   ),
                 }}
@@ -170,47 +285,44 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
             )}
           />
 
-          {/* Horizontal Stack: Unit Price & Portion Size */}
+          {/* Unit Price - hidden in set create mode */}
+
           <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
             <Controller
               control={control}
               name="unitPrice"
               render={({ field }) => (
                 <TextField
+                  {...field}
                   label="Đơn giá"
-                  type="number"
+                  type="text"
                   fullWidth
-                  value={field.value}
-                  onChange={(e) => field.onChange(Number(e.target.value))}
+                  value={
+                    field.value !== undefined && field.value !== null
+                      ? new Intl.NumberFormat("vi-VN").format(
+                          Number(field.value)
+                        )
+                      : ""
+                  }
+                  onChange={(e) => {
+                    const raw = e.target.value.replace(/[^0-9]/g, "");
+                    const num = raw ? Number(raw) : 0;
+                    field.onChange(num);
+                  }}
                   error={!!errors.unitPrice}
                   helperText={errors.unitPrice?.message}
+                  inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
                         <MonetizationOnIcon />
                       </InputAdornment>
                     ),
-                  }}
-                />
-              )}
-            />
-
-            <Controller
-              control={control}
-              name="portionSize"
-              render={({ field }) => (
-                <TextField
-                  label="Khẩu phần"
-                  placeholder="1 phần"
-                  fullWidth
-                  value={field.value}
-                  onChange={field.onChange}
-                  error={!!errors.portionSize}
-                  helperText={errors.portionSize?.message}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <RestaurantMenuIcon />
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <Typography variant="body2" color="text.secondary">
+                          VND
+                        </Typography>
                       </InputAdornment>
                     ),
                   }}
@@ -219,6 +331,101 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
             />
           </Stack>
 
+          <Stack spacing={1}>
+            <Controller
+              control={control}
+              name="imageUrl"
+              render={({ field }) => (
+                <TextField
+                  label={
+                    isSetMode
+                      ? "Ảnh set (URL hoặc tải lên)"
+                      : "Ảnh món (URL hoặc tải lên)"
+                  }
+                  fullWidth
+                  value={field.value || ""}
+                  placeholder="Dán URL ảnh hoặc dùng nút Tải ảnh"
+                  onChange={field.onChange}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <ImageIcon />
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          Tải ảnh
+                        </Button>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          style={{ display: "none" }}
+                          onChange={handleSelectImage}
+                        />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              )}
+            />
+            {watch("imageUrl") && (
+              <Box
+                sx={{
+                  mt: 1,
+                  borderRadius: 2,
+                  overflow: "hidden",
+                  border: "1px solid #eee",
+                  display: "flex",
+                  justifyContent: "center",
+                }}
+              >
+                <img
+                  src={watch("imageUrl")}
+                  alt="preview"
+                  style={{
+                    width: 200,
+                    height: 200,
+                    objectFit: "contain",
+                  }}
+                />
+              </Box>
+            )}
+          </Stack>
+          {/* Description or Set Items List */}
+          <Controller
+            control={control}
+            name="description"
+            render={({ field }) => (
+              <TextField
+                label={isSetMode ? "Danh sách món trong set" : "Mô tả"}
+                fullWidth
+                multiline={isSetMode}
+                minRows={isSetMode ? 3 : 1}
+                value={field.value}
+                placeholder={
+                  isSetMode
+                    ? "Mỗi dòng một món hoặc ngăn cách bằng dấu phẩy"
+                    : "Nhập mô tả món ăn"
+                }
+                onChange={field.onChange}
+                error={!!errors.description}
+                helperText={errors.description?.message as any}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <RestaurantMenuIcon />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            )}
+          />
           {/* Horizontal Stack: Status & IsActive */}
           <Stack
             direction={{ xs: "column", sm: "row" }}
@@ -239,7 +446,7 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
                     error={!!errors.status}
                     startAdornment={
                       <InputAdornment position="start">
-                        {field.value === "Available" ? (
+                        {field.value === 0 ? (
                           <CheckCircleIcon color="success" />
                         ) : (
                           <BlockIcon color="disabled" />
@@ -247,39 +454,13 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
                       </InputAdornment>
                     }
                   >
-                    <MenuItem value="Available">Đang bán</MenuItem>
-                    <MenuItem value="Unavailable">Tạm ngừng</MenuItem>
-                    <MenuItem value="SeasonallyUnavailable">Theo mùa</MenuItem>
+                    <MenuItem value={0}>Đang bán</MenuItem>
+                    <MenuItem value={1}>Ngừng bán</MenuItem>
                   </Select>
                 )}
               />
             </FormControl>
           </Stack>
-
-          {/* Description */}
-          <Controller
-            control={control}
-            name="description"
-            render={({ field }) => (
-              <TextField
-                label="Mô tả"
-                fullWidth
-                multiline
-                minRows={2}
-                value={field.value}
-                onChange={field.onChange}
-                error={!!errors.description}
-                helperText={errors.description?.message}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <InfoIcon />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            )}
-          />
         </Stack>
         <Stack
           direction="row"

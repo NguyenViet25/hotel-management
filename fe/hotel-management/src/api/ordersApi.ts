@@ -1,32 +1,36 @@
 import axios from "./axios";
 
-// Orders API client aligned with OrdersAPI.md
-
-export type OrderStatus = "Draft" | "Serving" | "Paid" | "Cancelled";
-export type OrderItemStatus = "Pending" | "Prepared" | "Served" | "Voided";
+export enum EOrderStatus {
+  Draft = 0,
+  NeedConfirmed = 1,
+  Confirmed = 2,
+  InProgress = 3,
+  Ready = 4,
+  Completed = 5,
+  Cancelled = 6,
+}
 
 export interface OrderItemInputDto {
   menuItemId: string;
   quantity: number; // 1..1000
 }
 
-export interface CreateWalkInOrderDto {
-  hotelId: string;
-  customerName: string;
+export interface CreateOrderDto {
+  bookingId?: string | null;
+  hotelId?: string | null;
+  customerName?: string;
   customerPhone?: string;
-  items?: OrderItemInputDto[];
-}
-
-export interface CreateBookingOrderDto {
-  hotelId: string;
-  bookingId: string;
   notes?: string;
   items?: OrderItemInputDto[];
+  status?: number;
+  isWalkIn?: boolean;
+  guests?: number;
+  servingDate?: string; // ISO
 }
 
 export interface OrdersQueryParams {
   hotelId?: string;
-  status?: OrderStatus;
+  status?: number;
   bookingId?: string;
   isWalkIn?: boolean;
   search?: string;
@@ -34,16 +38,21 @@ export interface OrdersQueryParams {
   pageSize?: number;
 }
 
-export interface UpdateOrderDto {
-  notes?: string;
-  status?: OrderStatus;
+export interface UpdateOrderDto extends CreateOrderDto {
+  id: string;
 }
 
 export interface AddOrderItemDto extends OrderItemInputDto {}
 
 export interface UpdateOrderItemDto {
   quantity?: number;
-  status?: OrderItemStatus;
+  status?: number;
+}
+
+export interface ReplaceOrderItemDto {
+  newMenuItemId: string;
+  quantity?: number;
+  reason?: string;
 }
 
 export interface ApplyDiscountDto {
@@ -56,95 +65,164 @@ export interface OrderItemDto {
   menuItemName: string;
   quantity: number;
   unitPrice: number;
-  status: OrderItemStatus;
+  status: number;
 }
 
 export interface OrderSummaryDto {
   id: string;
   hotelId: string;
-  bookingId?: string | null;
+  bookingId?: string;
   isWalkIn: boolean;
-  customerName?: string | null;
-  customerPhone?: string | null;
-  status: OrderStatus;
-  notes?: string | null;
+  customerName?: string;
+  customerPhone?: string;
+  status: number;
+  notes?: string;
   createdAt: string; // ISO
   itemsCount: number;
   itemsTotal: number;
+  promotionCode?: string;
+  promotionValue?: number;
+  guests?: number;
+  servingDate?: string;
 }
 
 export interface OrderDetailsDto extends OrderSummaryDto {
   items: OrderItemDto[];
+  itemHistories?: OrderItemHistoryDto[];
+}
+
+export interface OrderItemHistoryDto {
+  id: string;
+  oldOrderItemId: string;
+  newOrderItemId: string;
+  oldMenuItemId: string;
+  newMenuItemId: string;
+  oldMenuItemName: string;
+  newMenuItemName: string;
+  changedAt: string;
+  userId?: string | null;
+  reason?: string | null;
 }
 
 export interface ListResponse<T> {
   isSuccess: boolean;
-  message: string | null;
+  message: string;
   data: T[];
   meta?: {
     total?: number;
     page?: number;
     pageSize?: number;
-  } | null;
+  };
 }
 
 export interface ItemResponse<T> {
   isSuccess: boolean;
-  message: string | null;
+  message: string;
   data: T;
 }
 
 const ordersApi = {
-  async listOrders(params: OrdersQueryParams = {}): Promise<ListResponse<OrderSummaryDto>> {
+  async listOrders(
+    params: OrdersQueryParams = {}
+  ): Promise<ListResponse<OrderSummaryDto>> {
     const qp = new URLSearchParams();
     if (params.hotelId) qp.append("hotelId", params.hotelId);
-    if (params.status) qp.append("status", params.status);
+    if (params.status) qp.append("status", params.status.toString());
     if (params.bookingId) qp.append("bookingId", params.bookingId);
-    if (params.isWalkIn !== undefined) qp.append("isWalkIn", String(params.isWalkIn));
+    if (params.isWalkIn !== undefined)
+      qp.append("isWalkIn", String(params.isWalkIn));
     if (params.search) qp.append("search", params.search);
     qp.append("page", String(params.page ?? 1));
     qp.append("pageSize", String(params.pageSize ?? 10));
-    const res = await axios.get(`/admin/orders?${qp.toString()}`);
+    const res = await axios.get(`/orders?${qp.toString()}`);
     return res.data;
   },
 
   async getById(id: string): Promise<ItemResponse<OrderDetailsDto>> {
-    const res = await axios.get(`/admin/orders/${id}`);
+    const res = await axios.get(`/orders/${id}`);
     return res.data;
   },
 
-  async createWalkIn(payload: CreateWalkInOrderDto): Promise<ItemResponse<OrderDetailsDto>> {
-    const res = await axios.post(`/admin/orders/walk-in`, payload);
+  async createWalkIn(
+    payload: CreateOrderDto
+  ): Promise<ItemResponse<OrderDetailsDto>> {
+    const res = await axios.post(`/orders/walk-in`, payload);
     return res.data;
   },
 
-  async createForBooking(payload: CreateBookingOrderDto): Promise<ItemResponse<OrderDetailsDto>> {
-    const res = await axios.post(`/admin/orders/booking`, payload);
+  async createForBooking(
+    payload: CreateOrderDto
+  ): Promise<ItemResponse<OrderDetailsDto>> {
+    const res = await axios.post(`/orders/booking`, payload);
     return res.data;
   },
 
-  async update(id: string, payload: UpdateOrderDto): Promise<ItemResponse<OrderDetailsDto>> {
-    const res = await axios.put(`/admin/orders/${id}`, payload);
+  async updateWalkIn(
+    id: string,
+    payload: UpdateOrderDto
+  ): Promise<ItemResponse<OrderDetailsDto>> {
+    const res = await axios.put(`/orders/walk-in/${id}`, payload);
     return res.data;
   },
 
-  async addItem(orderId: string, payload: AddOrderItemDto): Promise<ItemResponse<OrderDetailsDto>> {
-    const res = await axios.post(`/admin/orders/${orderId}/items`, payload);
+  async updateForBooking(
+    id: string,
+    payload: UpdateOrderDto
+  ): Promise<ItemResponse<OrderDetailsDto>> {
+    const res = await axios.put(`/orders/booking/${id}`, payload);
     return res.data;
   },
 
-  async updateItem(orderId: string, itemId: string, payload: UpdateOrderItemDto): Promise<ItemResponse<OrderDetailsDto>> {
-    const res = await axios.put(`/admin/orders/${orderId}/items/${itemId}`, payload);
+  async addItem(
+    orderId: string,
+    payload: AddOrderItemDto
+  ): Promise<ItemResponse<OrderDetailsDto>> {
+    const res = await axios.post(`/orders/${orderId}/items`, payload);
     return res.data;
   },
 
-  async removeItem(orderId: string, itemId: string): Promise<ItemResponse<OrderDetailsDto>> {
-    const res = await axios.delete(`/admin/orders/${orderId}/items/${itemId}`);
+  async updateItem(
+    orderId: string,
+    itemId: string,
+    payload: UpdateOrderItemDto
+  ): Promise<ItemResponse<OrderDetailsDto>> {
+    const res = await axios.put(`/orders/${orderId}/items/${itemId}`, payload);
     return res.data;
   },
 
-  async applyDiscount(orderId: string, payload: ApplyDiscountDto): Promise<ItemResponse<number>> {
-    const res = await axios.post(`/admin/orders/${orderId}/apply-discount`, payload);
+  async removeItem(
+    orderId: string,
+    itemId: string
+  ): Promise<ItemResponse<OrderDetailsDto>> {
+    const res = await axios.delete(`/orders/${orderId}/items/${itemId}`);
+    return res.data;
+  },
+
+  async replaceItem(
+    orderId: string,
+    itemId: string,
+    payload: ReplaceOrderItemDto
+  ): Promise<ItemResponse<OrderDetailsDto>> {
+    const res = await axios.post(
+      `/orders/${orderId}/items/${itemId}/replace`,
+      payload
+    );
+    return res.data;
+  },
+
+  async updateStatus(
+    id: string,
+    payload: { status: number; notes?: string }
+  ): Promise<ItemResponse<OrderDetailsDto>> {
+    const res = await axios.put(`/orders/${id}/status`, payload);
+    return res.data;
+  },
+
+  async applyDiscount(
+    orderId: string,
+    payload: ApplyDiscountDto
+  ): Promise<ItemResponse<number>> {
+    const res = await axios.post(`/orders/${orderId}/apply-discount`, payload);
     return res.data;
   },
 };

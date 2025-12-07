@@ -23,19 +23,19 @@ export enum RoomStatus {
 export function getRoomStatusString(status: number | RoomStatus): string {
   switch (status) {
     case RoomStatus.Available:
-      return "Available";
+      return "Sẵn sàng";
     case RoomStatus.Occupied:
-      return "Occupied";
+      return "Đang sử dụng";
     case RoomStatus.Cleaning:
-      return "Cleaning";
+      return "Đang dọn dẹp";
     case RoomStatus.OutOfService:
-      return "OutOfService";
+      return "Ngừng phục vụ";
     case RoomStatus.Dirty:
-      return "Dirty";
+      return "Bẩn";
     case RoomStatus.Clean:
-      return "Clean";
+      return "Đã dọn sạch";
     case RoomStatus.Maintenance:
-      return "Maintenance";
+      return "Bảo trì";
     default:
       return "Unknown";
   }
@@ -86,22 +86,22 @@ const roomsApi = {
     if (params.hotelId) qp.append("hotelId", params.hotelId);
     if (params.status) qp.append("status", params.status);
     if (params.floor !== undefined) qp.append("floor", String(params.floor));
-    if (params.typeId) qp.append("typeId", params.typeId);
-    if (params.number) qp.append("number", params.number);
+    if (params.typeId) qp.append("roomTypeId", params.typeId);
+    if (params.number) qp.append("search", params.number);
     qp.append("page", String(params.page ?? 1));
     qp.append("pageSize", String(params.pageSize ?? 10));
 
-    const res = await axios.get(`/admin/rooms?${qp.toString()}`);
+    const res = await axios.get(`/rooms?${qp.toString()}`);
     return res.data;
   },
 
   async getRoomById(id: string): Promise<ItemResponse<RoomDto>> {
-    const res = await axios.get(`/admin/rooms/${id}`);
+    const res = await axios.get(`/rooms/${id}`);
     return res.data;
   },
 
   async createRoom(payload: CreateRoomRequest): Promise<ItemResponse<RoomDto>> {
-    const res = await axios.post(`/admin/rooms`, payload);
+    const res = await axios.post(`/rooms`, payload);
     return res.data;
   },
 
@@ -109,14 +109,14 @@ const roomsApi = {
     id: string,
     payload: UpdateRoomRequest
   ): Promise<ItemResponse<RoomDto>> {
-    const res = await axios.put(`/admin/rooms/${id}`, payload);
+    const res = await axios.put(`/rooms/${id}`, payload);
     return res.data;
   },
 
   async deleteRoom(
     id: string
   ): Promise<{ isSuccess: boolean; message: string | null }> {
-    const res = await axios.delete(`/admin/rooms/${id}`);
+    const res = await axios.delete(`/rooms/${id}`);
     return res.data;
   },
 
@@ -124,7 +124,7 @@ const roomsApi = {
     id: string
   ): Promise<{ isSuccess: boolean; message: string | null }> {
     // Optional endpoint; if not supported, server should enforce and return error on delete
-    const res = await axios.get(`/admin/rooms/${id}/can-delete`);
+    const res = await axios.get(`/rooms/${id}/can-delete`);
     return res.data;
   },
 };

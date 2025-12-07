@@ -1,24 +1,45 @@
-import React, { useEffect, useState } from "react";
 import {
-  Box,
-  Snackbar,
   Alert,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
+  Box,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Snackbar,
 } from "@mui/material";
-import PageTitle from "../../../../components/common/PageTitle";
+import React, { useEffect, useState } from "react";
 import menusApi, {
-  type MenuItemDto,
-  type MenuGroupDto,
   type CreateMenuItemRequest,
+  type MenuGroupDto,
+  type MenuItemDto,
   type UpdateMenuItemRequest,
 } from "../../../../api/menusApi";
-import MenuFilters from "./components/MenuFilters";
-import MenuTable from "./components/MenuTable";
+import PageTitle from "../../../../components/common/PageTitle";
 import MenuItemFormModal from "./components/MenuItemFormModal";
+import MenuTable from "./components/MenuTable";
+import {
+  Stack,
+  TextField,
+  MenuItem,
+  ToggleButtonGroup,
+  ToggleButton,
+  Grid,
+  Chip,
+  IconButton,
+  Typography,
+  Card,
+  CardContent,
+  InputAdornment,
+} from "@mui/material";
+import FastfoodIcon from "@mui/icons-material/Fastfood";
+import TableRestaurantIcon from "@mui/icons-material/TableRestaurant";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import AddIcon from "@mui/icons-material/Add";
+import { CardMembership, TableChart } from "@mui/icons-material";
+import { Search as SearchIcon } from "@mui/icons-material";
+import EmptyState from "../../../../components/common/EmptyState";
 
 // Menu Management Page implementing UC-45 to UC-48
 // - UC-45: View menu list with filters (group, shift, status, active)
@@ -27,22 +48,24 @@ import MenuItemFormModal from "./components/MenuItemFormModal";
 // - UC-48: Delete dish (server enforces order-history rule)
 
 const MenuManagementPage: React.FC = () => {
-  // Data state
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const [items, setItems] = useState<MenuItemDto[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [groups, setGroups] = useState<MenuGroupDto[]>([]);
-
-  // Filters state
-  const [groupId, setGroupId] = useState<string>("");
-  const [shift, setShift] = useState<string>("");
-  const [status, setStatus] = useState<string>("");
-  const [isActive, setIsActive] = useState<string>(""); // "" | "true" | "false"
+  const [status, setStatus] = useState<string>("0");
+  const [typeFilter, setTypeFilter] = useState<"food" | "set">("food");
+  const [viewMode, setViewMode] = useState<"table" | "card">("card");
+  const [categoryFilter, setCategoryFilter] = useState<string>(" ");
 
   // Modal state
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<MenuItemDto | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<MenuItemDto | null>(null);
+  const [editingItem, setEditingItem] = useState<MenuItemDto | undefined>(
+    undefined
+  );
+  const [deleteTarget, setDeleteTarget] = useState<MenuItemDto | undefined>(
+    undefined
+  );
 
   // Notifications
   const [snackbar, setSnackbar] = useState<{
@@ -66,10 +89,8 @@ const MenuManagementPage: React.FC = () => {
     setLoading(true);
     try {
       const qp = {
-        groupId: groupId || undefined,
-        shift: shift || undefined,
         status: status || undefined,
-        isActive: isActive ? isActive === "true" : undefined,
+        searchTerm: searchTerm || undefined,
       };
       const res = await menusApi.getMenuItems(qp);
       if (res.isSuccess) {
@@ -101,7 +122,7 @@ const MenuManagementPage: React.FC = () => {
   useEffect(() => {
     fetchMenuItems();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [groupId, shift, status, isActive]);
+  }, [status, searchTerm]);
 
   const openCreate = () => setCreateOpen(true);
   const openEdit = (record: MenuItemDto) => {
@@ -113,7 +134,7 @@ const MenuManagementPage: React.FC = () => {
   const closeCreate = () => setCreateOpen(false);
   const closeEdit = () => {
     setEditOpen(false);
-    setEditingItem(null);
+    setEditingItem(undefined);
   };
 
   const createSubmit = async (payload: CreateMenuItemRequest) => {
@@ -143,14 +164,23 @@ const MenuManagementPage: React.FC = () => {
     }
   };
 
-  const editSubmit = async (payload: UpdateMenuItemRequest) => {
+  const editSubmit = async (payload: UpdateMenuItemRequest | any) => {
     if (!editingItem) return;
     try {
-      const res = await menusApi.updateMenuItem(editingItem.id, payload);
+      const cast: UpdateMenuItemRequest = {
+        name: payload?.name,
+        description: payload?.description,
+        unitPrice: payload?.unitPrice,
+        imageUrl: payload?.imageUrl,
+        status:
+          payload?.status !== undefined ? Number(payload.status) : undefined,
+        isActive: payload?.isActive,
+      };
+      const res = await menusApi.updateMenuItem(editingItem.id, cast);
       if (res.isSuccess) {
         setSnackbar({
           open: true,
-          message: "Cập nhật món thành công",
+          message: "Cập nhật thành công",
           severity: "success",
         });
         closeEdit();
@@ -158,7 +188,7 @@ const MenuManagementPage: React.FC = () => {
       } else {
         setSnackbar({
           open: true,
-          message: res.message || "Không thể cập nhật món",
+          message: res.message || "Không thể cập nhật",
           severity: "error",
         });
       }
@@ -178,16 +208,15 @@ const MenuManagementPage: React.FC = () => {
       if (res.isSuccess) {
         setSnackbar({
           open: true,
-          message: "Xóa món thành công",
+          message: "Xóa thành công",
           severity: "success",
         });
-        setDeleteTarget(null);
+        setDeleteTarget(undefined);
         fetchMenuItems();
       } else {
         setSnackbar({
           open: true,
-          message:
-            res.message || "Không thể xóa món (có thể có đơn hàng liên quan)",
+          message: res.message || "Không thể xóa",
           severity: "error",
         });
       }
@@ -200,21 +229,432 @@ const MenuManagementPage: React.FC = () => {
     }
   };
 
-  const [searchTerm, setSearchTerm] = useState<string>("");
+  const foodItems: MenuItemDto[] = React.useMemo(
+    () => items.filter((it) => (it.category || "").trim() !== "Set"),
+    [items]
+  );
+  const setRecords: MenuItemDto[] = React.useMemo(
+    () => items.filter((it) => (it.category || "").trim() === "Set"),
+    [items]
+  );
+  const foodItemsFiltered: MenuItemDto[] = React.useMemo(
+    () =>
+      foodItems.filter(
+        (it) =>
+          !categoryFilter.trim() ||
+          (it.category || "") === categoryFilter.trim()
+      ),
+    [foodItems, categoryFilter]
+  );
 
   return (
     <Box>
-      <PageTitle title="Quản lý thực đơn" subtitle="Xem, thêm, sửa, xóa món" />
+      <Stack
+        direction={{ xs: "column", lg: "row" }}
+        justifyContent={"space-between"}
+        sx={{ mb: 2 }}
+        spacing={2}
+      >
+        <PageTitle
+          title="Quản lý thực đơn"
+          subtitle="Xem, thêm, sửa, xóa món"
+        />
+        <Box>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<AddIcon />}
+            onClick={openCreate}
+          >
+            {typeFilter === "set" ? "Thêm set" : "Thêm món"}
+          </Button>
+        </Box>
+      </Stack>
 
-      {/* Table with actions */}
-      <MenuTable
-        data={items}
-        loading={loading}
-        onAdd={openCreate}
-        onEdit={openEdit}
-        onDelete={openDelete}
-        onSearch={(e) => setSearchTerm(e)}
-      />
+      <Stack direction={{ xs: "column", lg: "row" }} mb={2} spacing={2}>
+        <ToggleButtonGroup
+          size="small"
+          value={viewMode}
+          exclusive
+          onChange={(_, v) => setViewMode(v ?? viewMode)}
+        >
+          <ToggleButton value="table">
+            <TableChart sx={{ mr: 1 }} fontSize="small" />
+            Bảng
+          </ToggleButton>
+          <ToggleButton value="card">
+            <CardMembership sx={{ mr: 1 }} fontSize="small" />
+            Thẻ
+          </ToggleButton>
+        </ToggleButtonGroup>
+
+        <TextField
+          select
+          label="Xem theo"
+          size="small"
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value as any)}
+          sx={{ minWidth: 180 }}
+        >
+          <MenuItem value="food">Theo món</MenuItem>
+          <MenuItem value="set">Theo set</MenuItem>
+        </TextField>
+        {typeFilter === "food" && (
+          <TextField
+            select
+            label="Nhóm món"
+            size="small"
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            sx={{ minWidth: 200 }}
+          >
+            <MenuItem value=" ">Tất cả</MenuItem>
+            <MenuItem value="Món khai vị">Món khai vị</MenuItem>
+            <MenuItem value="Món chính">Món chính</MenuItem>
+            <MenuItem value="Món lẩu">Món lẩu</MenuItem>
+            <MenuItem value="Món nướng">Món nướng</MenuItem>
+            <MenuItem value="Món tráng miệng">Món tráng miệng</MenuItem>
+            <MenuItem value="Thức uống">Thức uống</MenuItem>
+          </TextField>
+        )}
+        <TextField
+          select
+          label="Trạng thái"
+          size="small"
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+          sx={{ minWidth: 180 }}
+        >
+          <MenuItem value="0">Đang bán</MenuItem>
+          <MenuItem value="1">Ngừng bán</MenuItem>
+        </TextField>
+        <TextField
+          label="Tìm kiếm"
+          size="small"
+          value={searchTerm}
+          placeholder="Tìm kiếm món"
+          onChange={(e) => setSearchTerm(e.target.value)}
+          fullWidth
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
+        />
+      </Stack>
+
+      {viewMode === "table" ? (
+        (typeFilter === "food" ? foodItemsFiltered : setRecords).length === 0 &&
+        !loading ? (
+          <EmptyState
+            title={typeFilter === "food" ? "Không có món" : "Không có set"}
+            description={
+              "Không tìm thấy kết quả phù hợp. Thử thay đổi bộ lọc hoặc từ khóa."
+            }
+            icon={
+              typeFilter === "food" ? (
+                <FastfoodIcon color="disabled" sx={{ fontSize: 40 }} />
+              ) : (
+                <TableRestaurantIcon color="disabled" sx={{ fontSize: 40 }} />
+              )
+            }
+            height={240}
+          />
+        ) : (
+          <MenuTable
+            data={typeFilter === "food" ? foodItemsFiltered : setRecords}
+            loading={loading}
+            onEdit={openEdit}
+            onDelete={openDelete}
+            isFood={typeFilter === "food"}
+          />
+        )
+      ) : (
+        <Grid container spacing={3}>
+          {typeFilter === "food" ? (
+            <Grid size={{ xs: 12 }}>
+              <Stack spacing={2}>
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <FastfoodIcon color="primary" />
+                  <Typography variant="h6">Theo món</Typography>
+                  <Chip
+                    label={`${foodItemsFiltered.length}`}
+                    color="primary"
+                    size="small"
+                  />
+                </Stack>
+                {foodItemsFiltered.length === 0 && !loading ? (
+                  <EmptyState
+                    title="Không có món"
+                    description="Không tìm thấy kết quả phù hợp. Thử thay đổi bộ lọc hoặc từ khóa."
+                    icon={
+                      <FastfoodIcon color="disabled" sx={{ fontSize: 40 }} />
+                    }
+                  />
+                ) : (
+                  <Grid container spacing={2}>
+                    {foodItemsFiltered.map((it) => (
+                      <Grid key={it.id} size={{ xs: 12, md: 6, lg: 3 }}>
+                        <Card
+                          elevation={0}
+                          sx={{
+                            borderRadius: 3,
+                            p: 2,
+                            backgroundColor: "#F5FAEE",
+                            boxShadow: "0 4px 16px rgba(0,0,0,0.06)",
+                          }}
+                        >
+                          <Stack spacing={1}>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                              }}
+                            >
+                              <img
+                                src={it.imageUrl || "/assets/logo.png"}
+                                alt={it.name}
+                                style={{
+                                  width: "100%",
+                                  height: 160,
+                                  objectFit: "contain",
+                                }}
+                              />
+                            </Box>
+                            <Typography
+                              variant="subtitle1"
+                              sx={{ fontWeight: 700 }}
+                            >
+                              {it.name}
+                            </Typography>
+                            <Stack
+                              direction="row"
+                              spacing={1}
+                              sx={{ flexWrap: "wrap" }}
+                            >
+                              <Chip
+                                label={it.category || ""}
+                                color="success"
+                                size="small"
+                                variant="outlined"
+                              />
+                              <Chip
+                                label={
+                                  it.status == 0 ? "Đang bán" : "Ngừng bán"
+                                }
+                                color={it.status == 0 ? "success" : "error"}
+                                size="small"
+                              />
+                            </Stack>
+                            <Typography variant="body2" color="text.secondary">
+                              {it.description || ""}
+                            </Typography>
+                            <Stack
+                              direction="row"
+                              alignItems="center"
+                              justifyContent="space-between"
+                              sx={{ mt: 1 }}
+                            >
+                              <Typography variant="h6" sx={{ fontWeight: 800 }}>
+                                {`${Number(it.unitPrice).toLocaleString()} ₫`}
+                              </Typography>
+                              <Stack
+                                direction="row"
+                                spacing={1}
+                                alignItems="center"
+                              >
+                                <IconButton
+                                  size="small"
+                                  color="primary"
+                                  onClick={() => openEdit(it)}
+                                >
+                                  <EditIcon fontSize="small" />
+                                </IconButton>
+                                <IconButton
+                                  size="small"
+                                  color="error"
+                                  onClick={() => openDelete(it)}
+                                >
+                                  <DeleteOutlineIcon fontSize="small" />
+                                </IconButton>
+                              </Stack>
+                            </Stack>
+                          </Stack>
+                        </Card>
+                      </Grid>
+                    ))}
+                  </Grid>
+                )}
+              </Stack>
+            </Grid>
+          ) : (
+            <Grid size={{ xs: 12 }}>
+              <Stack spacing={2}>
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <TableRestaurantIcon color="success" />
+                  <Typography variant="h6">Theo set</Typography>
+                  <Chip
+                    label={`${setRecords.length}`}
+                    color="success"
+                    size="small"
+                  />
+                </Stack>
+                {setRecords.length === 0 && !loading ? (
+                  <EmptyState
+                    title="Không có set"
+                    description="Không tìm thấy kết quả phù hợp. Thử thay đổi bộ lọc hoặc từ khóa."
+                    icon={
+                      <TableRestaurantIcon
+                        color="disabled"
+                        sx={{ fontSize: 40 }}
+                      />
+                    }
+                  />
+                ) : (
+                  <Grid container spacing={2}>
+                    {setRecords.map((it) => (
+                      <Grid key={it.id} size={{ xs: 12, lg: 6 }}>
+                        <Card
+                          elevation={0}
+                          sx={{
+                            borderRadius: 3,
+                            p: 2,
+                            backgroundColor: "#FFF8E1",
+                            boxShadow: "0 4px 16px rgba(0,0,0,0.06)",
+                            position: "relative",
+                          }}
+                        >
+                          <Stack
+                            direction={{ xs: "column", md: "row" }}
+                            spacing={2}
+                          >
+                            <Stack
+                              justifyContent={"center"}
+                              sx={{ height: "100%" }}
+                            >
+                              <Box
+                                sx={{
+                                  width: 240,
+                                  minWidth: 240,
+                                  height: 240,
+                                  borderRadius: 2,
+                                  overflow: "hidden",
+                                }}
+                              >
+                                <img
+                                  src={it.imageUrl || "/assets/logo.png"}
+                                  alt={it.name}
+                                  style={{
+                                    width: "100%",
+                                    height: "100%",
+                                    objectFit: "contain",
+                                  }}
+                                />
+                              </Box>
+                            </Stack>
+
+                            <Stack spacing={1} sx={{ flexGrow: 1 }}>
+                              <Stack
+                                direction="row"
+                                alignItems="center"
+                                justifyContent="space-between"
+                              >
+                                <Stack
+                                  direction="row"
+                                  alignItems="center"
+                                  spacing={1}
+                                >
+                                  <TableRestaurantIcon color="warning" />
+                                  <Typography
+                                    variant="subtitle1"
+                                    sx={{ fontWeight: 800 }}
+                                  >
+                                    {it.name}
+                                  </Typography>
+                                </Stack>
+                                <Chip
+                                  label="Set"
+                                  color="warning"
+                                  size="small"
+                                />
+                              </Stack>
+                              <Stack spacing={0.5} sx={{ mt: 0.5 }}>
+                                {(it.description || "")
+                                  .split(/\n|,/)
+                                  .map((s) => s.trim())
+                                  .filter((s) => s.length > 0)
+                                  .map((food, idx) => (
+                                    <Typography
+                                      key={idx}
+                                      variant="body2"
+                                      color="text.secondary"
+                                    >
+                                      {`${idx + 1}. ${food}`}
+                                    </Typography>
+                                  ))}
+                              </Stack>
+                              <Stack
+                                direction="row"
+                                justifyContent="space-between"
+                                alignItems="center"
+                              >
+                                <Stack
+                                  direction="row"
+                                  spacing={1}
+                                  alignItems="center"
+                                >
+                                  <Chip
+                                    label={
+                                      it.status == 0 ? "Đang bán" : "Ngừng bán"
+                                    }
+                                    color={it.status == 0 ? "success" : "error"}
+                                    size="small"
+                                  />
+                                </Stack>
+                                <Stack direction="row" spacing={0.5}>
+                                  <IconButton
+                                    size="small"
+                                    color="primary"
+                                    onClick={() => openEdit(it)}
+                                  >
+                                    <EditIcon fontSize="small" />
+                                  </IconButton>
+                                  <IconButton
+                                    size="small"
+                                    color="error"
+                                    onClick={() => openDelete(it)}
+                                  >
+                                    <DeleteOutlineIcon fontSize="small" />
+                                  </IconButton>
+                                </Stack>
+                              </Stack>
+                            </Stack>
+                          </Stack>
+                          <Chip
+                            label={`Giá/người: ${Number(
+                              it.unitPrice
+                            ).toLocaleString()} ₫`}
+                            color="warning"
+                            sx={{
+                              position: "absolute",
+                              left: 16,
+                              bottom: 16,
+                              fontWeight: 700,
+                            }}
+                          />
+                        </Card>
+                      </Grid>
+                    ))}
+                  </Grid>
+                )}
+              </Stack>
+            </Grid>
+          )}
+        </Grid>
+      )}
 
       {/* Create modal */}
       <MenuItemFormModal
@@ -223,6 +663,7 @@ const MenuManagementPage: React.FC = () => {
         onSubmit={createSubmit}
         menuGroups={groups}
         mode="create"
+        createType={typeFilter}
       />
 
       {/* Edit modal */}
@@ -230,17 +671,17 @@ const MenuManagementPage: React.FC = () => {
         open={editOpen}
         onClose={closeEdit}
         onSubmit={editSubmit}
-        menuGroups={groups}
-        initialValues={editingItem || undefined}
+        initialValues={editingItem}
         mode="edit"
+        createType={editingItem?.category === "Set" ? "set" : "food"}
       />
 
       {/* Delete confirm */}
-      <Dialog open={!!deleteTarget} onClose={() => setDeleteTarget(null)}>
+      <Dialog open={!!deleteTarget} onClose={() => setDeleteTarget(undefined)}>
         <DialogTitle>Xóa món</DialogTitle>
         <DialogContent>Bạn có chắc chắn muốn xóa món này?</DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteTarget(null)} color="inherit">
+          <Button onClick={() => setDeleteTarget(undefined)} color="inherit">
             Hủy
           </Button>
           <Button onClick={confirmDelete} variant="contained" color="error">

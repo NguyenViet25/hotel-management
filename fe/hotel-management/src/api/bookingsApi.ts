@@ -1,8 +1,9 @@
 import axios from "./axios";
+import type { RoomStatus } from "./roomsApi";
 
 // Booking API client aligned with fe/api-documentation/BookingsAPI.md
 
-export type BookingStatus = 0 | 1 | 2 | 3 | 4; // example: Pending=0, Confirmed=1, CheckedIn=2, Completed=3, Cancelled=4
+export type BookingStatus = 0 | 1 | 2 | 3 | 4 | 5; // example: Pending=0, Confirmed=1, CheckedIn=2, Completed=3, Cancelled=4
 export type PaymentType = 0 | 1 | 2 | 3; // example: Cash=0, Card=1, Transfer=2, Other=3
 export type CallResult = 0 | 1 | 2; // example: Confirmed=0, NoAnswer=1, Cancelled=2
 
@@ -59,6 +60,9 @@ export interface BookingGuestDto {
   fullname?: string;
   phone?: string;
   email?: string;
+  idCard?: string;
+  idCardFrontImageUrl?: string;
+  idCardBackImageUrl?: string;
 }
 
 export interface BookingRoomDto {
@@ -67,6 +71,9 @@ export interface BookingRoomDto {
   roomName?: string;
   startDate: string;
   endDate: string;
+  extendedDate?: string;
+  actualCheckInAt: string;
+  actualCheckOutAt: string;
   bookingStatus: BookingRoomStatus;
   guests: BookingGuestDto[];
 }
@@ -107,6 +114,10 @@ export interface BookingDetailsDto {
   notes?: string;
   bookingRoomTypes: BookingRoomTypeDto[];
   callLogs: CallLogDto[];
+  additionalAmount?: number;
+  additionalNotes?: string;
+  promotionValue?: number;
+  promotionCode?: string;
 }
 
 // Minimal BookingDto used by some UI components
@@ -136,7 +147,9 @@ export interface RoomMapItemDto {
   roomNumber: string;
   roomTypeId: string;
   roomTypeName: string;
+  floor: number;
   timeline: RoomTimelineSegmentDto[];
+  status: RoomStatus;
 }
 
 export interface RoomMapQueryDto {
@@ -144,10 +157,17 @@ export interface RoomMapQueryDto {
   hotelId?: string;
 }
 
+export interface AddRoomToBookingDto {
+  bookingRoomTypeId: string;
+  roomId: string;
+}
+
 export enum BookingRoomStatus {
-  Pending = "Pending",
-  Occupied = "Occupied",
-  Available = "Available",
+  Pending = 0,
+  Confirmed = 1,
+  CheckedIn = 2,
+  CheckedOut = 3,
+  Cancelled = 4,
 }
 
 export enum EBookingStatus {
@@ -158,7 +178,13 @@ export enum EBookingStatus {
 }
 
 export interface CheckInDto {
-  guests: { guestId: string; idCardImageUrl?: string }[];
+  roomBookingId: string;
+  persons: {
+    name: string;
+    phone: string;
+    idCardFrontImageUrl: string;
+    idCardBackImageUrl: string;
+  }[];
 }
 
 export interface ChangeRoomDto {
@@ -188,6 +214,26 @@ export interface ExtendStayResultDto {
   price: number;
 }
 
+export interface MinibarConsumptionItemDto {
+  minibarId: string;
+  quantity: number;
+}
+
+export interface MinibarConsumptionDto {
+  items: MinibarConsumptionItemDto[];
+}
+
+export interface AdditionalChargeLineDto {
+  description: string;
+  amount: number;
+  sourceType: number;
+}
+
+export interface AdditionalChargesDto {
+  lines: AdditionalChargeLineDto[];
+  total: number;
+}
+
 export interface BookingsQueryDto {
   hotelId?: string;
   status?: BookingStatus;
@@ -199,6 +245,10 @@ export interface BookingsQueryDto {
   pageSize?: number;
   sortBy?: string;
   sortDir?: "asc" | "desc";
+}
+
+export interface BookingsByHotelQueryDto {
+  hotelId?: string;
 }
 
 export interface ApiResponse<T> {
@@ -223,6 +273,17 @@ export interface BookingIntervalDto {
   end: string; // ISO
   status: BookingStatus;
   guestName?: string;
+}
+
+export interface RoomStayHistoryDto {
+  bookingId: string;
+  bookingRoomId: string;
+  start: string; // ISO
+  end: string; // ISO
+  status: BookingStatus;
+  primaryGuestName?: string;
+  primaryGuestPhone?: string;
+  guests: BookingGuestDto[];
 }
 
 // Summary row used for the table display
@@ -252,10 +313,18 @@ const bookingsApi = {
     qp.append("pageSize", String(query.pageSize ?? 10));
     if (query.sortBy) qp.append("sortBy", query.sortBy);
     if (query.sortDir) qp.append("sortDir", query.sortDir);
-    const res = await axios.get(`/admin/bookings?${qp.toString()}`);
+    const res = await axios.get(`/bookings?${qp.toString()}`);
     return res.data;
   },
+  async listActive(
+    query: BookingsByHotelQueryDto = {}
+  ): Promise<ApiResponse<BookingDetailsDto[]>> {
+    const qp = new URLSearchParams();
+    if (query.hotelId) qp.append("hotelId", query.hotelId);
 
+    const res = await axios.get(`/bookings/active?${qp.toString()}`);
+    return res.data;
+  },
   // Fetch all bookings in one call by using a large page size.
   async getAll(
     query: Partial<BookingsQueryDto> = {}
@@ -271,20 +340,20 @@ const bookingsApi = {
     qp.append("pageSize", "1000");
     if (query.sortBy) qp.append("sortBy", query.sortBy);
     if (query.sortDir) qp.append("sortDir", query.sortDir as any);
-    const res = await axios.get(`/admin/bookings?${qp.toString()}`);
+    const res = await axios.get(`/bookings?${qp.toString()}`);
     const body = res.data as any;
     return body?.data || body?.items || [];
   },
 
   async getById(id: string): Promise<ApiResponse<BookingDetailsDto>> {
-    const res = await axios.get(`/admin/bookings/${id}`);
+    const res = await axios.get(`/bookings/${id}`);
     return res.data;
   },
 
   async create(
     payload: CreateBookingDto
   ): Promise<ApiResponse<BookingDetailsDto>> {
-    const res = await axios.post(`/admin/bookings`, payload);
+    const res = await axios.post(`/bookings`, payload);
     return res.data;
   },
 
@@ -292,12 +361,17 @@ const bookingsApi = {
     id: string,
     payload: UpdateBookingDto
   ): Promise<ApiResponse<BookingDetailsDto>> {
-    const res = await axios.put(`/admin/bookings/${id}`, payload);
+    const res = await axios.put(`/bookings/${id}`, payload);
     return res.data;
   },
 
   async cancel(id: string): Promise<ApiResponse<BookingDetailsDto>> {
-    const res = await axios.delete(`/admin/bookings/${id}`);
+    const res = await axios.delete(`/bookings/${id}`);
+    return res.data;
+  },
+
+  async confirm(id: string): Promise<ApiResponse<BookingDetailsDto>> {
+    const res = await axios.put(`/bookings/confirm/${id}`, {});
     return res.data;
   },
 
@@ -305,7 +379,25 @@ const bookingsApi = {
     id: string,
     payload: CheckInDto
   ): Promise<ApiResponse<BookingDetailsDto>> {
-    const res = await axios.post(`/admin/bookings/${id}/check-in`, payload);
+    const res = await axios.post(`/bookings/${id}/check-in`, payload);
+    return res.data;
+  },
+
+  async additionalChargesPreview(
+    id: string
+  ): Promise<ApiResponse<AdditionalChargesDto>> {
+    const res = await axios.get(`/bookings/${id}/additional-charges/preview`);
+    return res.data;
+  },
+
+  async recordMinibarConsumption(
+    id: string,
+    payload: MinibarConsumptionDto
+  ): Promise<ApiResponse<any>> {
+    const res = await axios.post(
+      `/bookings/${id}/minibar-consumption`,
+      payload
+    );
     return res.data;
   },
 
@@ -313,7 +405,7 @@ const bookingsApi = {
     id: string,
     payload: CheckoutRequestDto
   ): Promise<ApiResponse<CheckoutResultDto>> {
-    const res = await axios.post(`/admin/bookings/${id}/check-out`, payload);
+    const res = await axios.post(`/bookings/${id}/check-out`, payload);
     return res.data;
   },
 
@@ -321,7 +413,52 @@ const bookingsApi = {
     id: string,
     payload: ChangeRoomDto
   ): Promise<ApiResponse<BookingDetailsDto>> {
-    const res = await axios.post(`/admin/bookings/${id}/change-room`, payload);
+    const res = await axios.post(`/bookings/${id}/change-room`, payload);
+    return res.data;
+  },
+
+  async updateGuestInRoom(
+    bookingRoomId: string,
+    guestId: string,
+    payload: {
+      fullname?: string;
+      phone?: string;
+      email?: string;
+      idCardFrontImageUrl?: string;
+      idCardBackImageUrl?: string;
+    }
+  ): Promise<ApiResponse<BookingDetailsDto>> {
+    const res = await axios.put(
+      `/bookings/rooms/${bookingRoomId}/guests/${guestId}`,
+      payload
+    );
+    return res.data;
+  },
+
+  async removeGuestFromRoom(
+    bookingRoomId: string,
+    guestId: string
+  ): Promise<ApiResponse<BookingDetailsDto>> {
+    const res = await axios.delete(
+      `/bookings/rooms/${bookingRoomId}/guests/${guestId}`
+    );
+    return res.data;
+  },
+
+  async addRoom(
+    payload: AddRoomToBookingDto
+  ): Promise<ApiResponse<BookingDetailsDto>> {
+    const res = await axios.post(`/bookings/add-room`, payload);
+    return res.data;
+  },
+
+  async getRoomMap(
+    query: RoomMapQueryDto
+  ): Promise<ApiResponse<RoomMapItemDto[]>> {
+    const qp = new URLSearchParams();
+    qp.append("date", query.date);
+    if (query.hotelId) qp.append("hotelId", query.hotelId);
+    const res = await axios.get(`/bookings/room-map?${qp.toString()}`);
     return res.data;
   },
 
@@ -329,7 +466,53 @@ const bookingsApi = {
     id: string,
     payload: ExtendStayDto
   ): Promise<ApiResponse<ExtendStayResultDto>> {
-    const res = await axios.post(`/admin/bookings/${id}/extend-stay`, payload);
+    const res = await axios.post(`/bookings/${id}/extend-stay`, payload);
+    return res.data;
+  },
+
+  async updateRoomDates(
+    bookingRoomId: string,
+    payload: { startDate: string; endDate: string }
+  ): Promise<ApiResponse<BookingDetailsDto>> {
+    const res = await axios.put(
+      `/bookings/rooms/${bookingRoomId}/dates`,
+      payload
+    );
+    return res.data;
+  },
+
+  async updateRoomActualTimes(
+    bookingRoomId: string,
+    payload: { actualCheckInAt?: string; actualCheckOutAt?: string }
+  ): Promise<ApiResponse<BookingDetailsDto>> {
+    const res = await axios.put(
+      `/bookings/rooms/${bookingRoomId}/actual-times`,
+      payload
+    );
+    return res.data;
+  },
+
+  async moveGuest(
+    bookingRoomId: string,
+    guestId: string,
+    payload: { targetBookingRoomId: string }
+  ): Promise<ApiResponse<BookingDetailsDto>> {
+    const res = await axios.post(
+      `/bookings/rooms/${bookingRoomId}/guests/${guestId}/move`,
+      payload
+    );
+    return res.data;
+  },
+
+  async swapGuests(
+    bookingRoomId: string,
+    guestId: string,
+    payload: { targetBookingRoomId: string; targetGuestId: string }
+  ): Promise<ApiResponse<BookingDetailsDto>> {
+    const res = await axios.post(
+      `/bookings/rooms/${bookingRoomId}/guests/${guestId}/swap`,
+      payload
+    );
     return res.data;
   },
 
@@ -337,12 +520,12 @@ const bookingsApi = {
     id: string,
     payload: { callTime?: string; result: CallResult; notes?: string }
   ): Promise<ApiResponse<CallLogDto>> {
-    const res = await axios.post(`/admin/bookings/${id}/call-logs`, payload);
+    const res = await axios.post(`/bookings/${id}/call-logs`, payload);
     return res.data;
   },
 
   async getCallLogs(id: string): Promise<ApiResponse<CallLogDto[]>> {
-    const res = await axios.get(`/admin/bookings/${id}/call-logs`);
+    const res = await axios.get(`/bookings/${id}/call-logs`);
     return res.data;
   },
 
@@ -357,9 +540,7 @@ const bookingsApi = {
     if (params.from) qp.append("from", params.from);
     if (params.to) qp.append("to", params.to);
     if (params.typeId) qp.append("typeId", params.typeId);
-    const res = await axios.get(
-      `/admin/bookings/room-availability?${qp.toString()}`
-    );
+    const res = await axios.get(`/bookings/room-availability?${qp.toString()}`);
     return res.data;
   },
 
@@ -369,10 +550,30 @@ const bookingsApi = {
     to: string
   ): Promise<ApiResponse<BookingIntervalDto[]>> {
     const res = await axios.get(
-      `/admin/bookings/rooms/${roomId}/schedule?from=${encodeURIComponent(
+      `/bookings/rooms/${roomId}/schedule?from=${encodeURIComponent(
         from
       )}&to=${encodeURIComponent(to)}`
     );
+    return res.data;
+  },
+
+  async roomHistory(
+    roomId: string,
+    from?: string,
+    to?: string
+  ): Promise<ApiResponse<RoomStayHistoryDto[]>> {
+    const qp = new URLSearchParams();
+    if (from) qp.append("from", from);
+    if (to) qp.append("to", to);
+    const url = qp.toString().length
+      ? `/bookings/rooms/${roomId}/history?${qp.toString()}`
+      : `/bookings/rooms/${roomId}/history`;
+    const res = await axios.get(url);
+    return res.data;
+  },
+
+  async getCurrentBookingId(roomId: string): Promise<ApiResponse<string>> {
+    const res = await axios.get(`/bookings/rooms/${roomId}/current-booking`);
     return res.data;
   },
 };

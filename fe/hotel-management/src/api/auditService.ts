@@ -56,7 +56,7 @@ const auditService = {
     if (hotelId) params.append("hotelId", hotelId);
     if (action) params.append("action", action);
 
-    const response = await axios.get(`/admin/audit/logs?${params.toString()}`);
+    const response = await axios.get(`/audit/logs?${params.toString()}`);
     return response.data;
   },
 };

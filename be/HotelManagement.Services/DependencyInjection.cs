@@ -1,14 +1,20 @@
-using HotelManagement.Services.Auth;
-using HotelManagement.Services.Admin.Users;
-using HotelManagement.Services.Admin.Hotels;
 using HotelManagement.Services.Admin.Audit;
-using HotelManagement.Services.Admin.RoomTypes;
-using HotelManagement.Services.Admin.Rooms;
-using HotelManagement.Services.Admin.Menu;
+using HotelManagement.Services.Admin.Bookings;
+using HotelManagement.Services.Admin.Dining;
+using HotelManagement.Services.Admin.Hotels;
+using HotelManagement.Services.Admin.Housekeeping;
+using HotelManagement.Services.Admin.Invoicing;
 using HotelManagement.Services.Admin.Kitchen;
+using HotelManagement.Services.Admin.Medias;
+using HotelManagement.Services.Admin.Menu;
+using HotelManagement.Services.Admin.Minibar;
+using HotelManagement.Services.Admin.Orders;
+using HotelManagement.Services.Admin.Rooms;
+using HotelManagement.Services.Admin.RoomTypes;
+using HotelManagement.Services.Admin.Users;
+using HotelManagement.Services.Auth;
 using HotelManagement.Services.Profile;
 using Microsoft.Extensions.DependencyInjection;
-using HotelManagement.Services.Admin.Bookings;
 
 namespace HotelManagement.Services;
 
@@ -17,16 +23,27 @@ public static class DependencyInjection
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
         services.AddScoped<ITokenService, TokenService>();
-            services.AddScoped<IAuthService, AuthService>();
-            services.AddScoped<IUsersAdminService, UsersAdminService>();
-            services.AddScoped<IHotelsAdminService, HotelsAdminService>();
-            services.AddScoped<IAuditService, AuditService>();
-            services.AddScoped<IRoomTypeService, RoomTypeService>();
-            services.AddScoped<IRoomsService, RoomsService>();
-            services.AddScoped<IMenuService, MenuService>();
-            services.AddScoped<IKitchenService, KitchenService>();
-            services.AddScoped<IProfileService, ProfileService>();
-            services.AddScoped<IBookingsService,BookingsService>();
+        services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IUsersAdminService, UsersAdminService>();
+        services.AddScoped<IHotelsAdminService, HotelsAdminService>();
+        services.AddScoped<IAuditService, AuditService>();
+        services.AddScoped<IRoomTypeService, RoomTypeService>();
+        services.AddScoped<IRoomsService, RoomsService>();
+        services.AddScoped<IMenuService, MenuService>();
+        services.AddScoped<IKitchenService, KitchenService>();
+        services.AddScoped<IProfileService, ProfileService>();
+        services.AddScoped<IBookingsService, BookingsService>();
+        services.AddScoped<IOrdersService, OrdersService>();
+        services.AddScoped<ITableService, TableService>();
+        services.AddScoped<IDiningSessionService, DiningSessionService>();
+        services.AddScoped<IServiceRequestService, ServiceRequestService>();
+        services.AddScoped<IOrderItemStatusService, OrderItemStatusService>();
+        services.AddScoped<IDiscountCodeService, DiscountCodeService>();
+        services.AddScoped<IMinibarService, MinibarService>();
+        services.AddScoped<IMediaService, MediaService>();
+        services.AddScoped<IRoomStatusService, RoomStatusService>();
+        services.AddScoped<IHousekeepingTaskService, HousekeepingTaskService>();
+        services.AddScoped<IInvoiceService, InvoiceService>();
         return services;
     }
 }

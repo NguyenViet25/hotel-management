@@ -12,4 +12,5 @@ public class HotelRoom
     public Hotel? Hotel { get; set; }
     public RoomType? RoomType { get; set; }
     public ICollection<RoomStatusLog> StatusLogs { get; set; } = new List<RoomStatusLog>();
+    public ICollection<BookingRoom> BookingRooms { get; set; } = new List<BookingRoom>();
 }

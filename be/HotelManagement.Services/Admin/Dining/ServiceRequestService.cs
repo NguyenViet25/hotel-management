@@ -15,6 +15,7 @@ public interface IServiceRequestService
     Task<ApiResponse<ServiceRequestDto>> GetRequestAsync(Guid id);
     Task<ApiResponse<ServiceRequestListResponse>> GetRequestsBySessionAsync(Guid sessionId, int page = 1, int pageSize = 10);
     Task<ApiResponse<bool>> CompleteRequestAsync(Guid id);
+    Task<ApiResponse<bool>> DeleteRequestAsync(Guid id);
 }
 
 public class ServiceRequestService : IServiceRequestService
@@ -42,12 +43,13 @@ public class ServiceRequestService : IServiceRequestService
             DiningSessionId = request.DiningSessionId,
             RequestType = request.RequestType,
             Description = request.Description,
+            Quantity = request.Quantity,
             Status = ServiceRequestStatus.Pending,
             CreatedAt = DateTime.UtcNow
         };
 
         await _serviceRequestRepository.AddAsync(serviceRequest);
-        await _unitOfWork.SaveChangesAsync();
+        await _serviceRequestRepository.SaveChangesAsync();
 
         return ApiResponse<ServiceRequestDto>.Success(await MapToDto(serviceRequest));
     }
@@ -79,8 +81,22 @@ public class ServiceRequestService : IServiceRequestService
             serviceRequest.AssignedToUserId = request.AssignedToUserId;
         }
 
+        if (!string.IsNullOrWhiteSpace(request.RequestType))
+        {
+            serviceRequest.RequestType = request.RequestType!;
+        }
+        if (request.Description != null)
+        {
+            serviceRequest.Description = request.Description!;
+        }
+
+        if (request.Quantity.HasValue && request.Quantity.Value > 0)
+        {
+            serviceRequest.Quantity = request.Quantity.Value;
+        }
+
         await _serviceRequestRepository.UpdateAsync(serviceRequest);
-        await _unitOfWork.SaveChangesAsync();
+        await _serviceRequestRepository.SaveChangesAsync();
 
         return ApiResponse<ServiceRequestDto>.Success(await MapToDto(serviceRequest));
     }
@@ -133,8 +149,24 @@ public class ServiceRequestService : IServiceRequestService
         serviceRequest.CompletedAt = DateTime.UtcNow;
 
         await _serviceRequestRepository.UpdateAsync(serviceRequest);
-        await _unitOfWork.SaveChangesAsync();
+        await _serviceRequestRepository.SaveChangesAsync();
 
+        return ApiResponse<bool>.Success(true);
+    }
+
+    public async Task<ApiResponse<bool>> DeleteRequestAsync(Guid id)
+    {
+        var serviceRequest = await _serviceRequestRepository.FindAsync(id);
+        if (serviceRequest == null)
+        {
+            return ApiResponse<bool>.Fail("Service request not found");
+        }
+        if (serviceRequest.Status == ServiceRequestStatus.Completed)
+        {
+            return ApiResponse<bool>.Fail("Cannot delete a completed service request");
+        }
+        await _serviceRequestRepository.RemoveAsync(serviceRequest);
+        await _serviceRequestRepository.SaveChangesAsync();
         return ApiResponse<bool>.Success(true);
     }
 
@@ -154,6 +186,7 @@ public class ServiceRequestService : IServiceRequestService
             DiningSessionId = serviceRequest.DiningSessionId,
             RequestType = serviceRequest.RequestType,
             Description = serviceRequest.Description,
+            Quantity = serviceRequest.Quantity,
             Status = serviceRequest.Status.ToString(),
             AssignedToUserId = serviceRequest.AssignedToUserId,
             AssignedToName = assignedToName,

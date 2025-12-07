@@ -11,5 +11,6 @@ public class RoomType
     public decimal BasePriceTo { get; set; }
     public Hotel? Hotel { get; set; }
     public string Prices { get; set; } = string.Empty;
+    public string ImageUrl { get; set; } = string.Empty;
     public ICollection<HotelRoom> Rooms { get; set; } = new List<HotelRoom>();
 }

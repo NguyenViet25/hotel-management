@@ -9,7 +9,7 @@ import React from "react";
 
 export interface Option {
   value: string | number;
-  label: string;
+  label: string | React.ReactNode;
 }
 
 interface CustomSelectProps {
@@ -20,6 +20,7 @@ interface CustomSelectProps {
   startIcon?: React.ReactNode;
   options?: Option[];
   placeholder?: string;
+  size?: "small" | "medium";
 }
 const CustomSelect: React.FC<CustomSelectProps> = ({
   name,
@@ -29,18 +30,17 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   startIcon,
   options = [],
   placeholder,
+  size = "medium",
 }) => {
   return (
-    <FormControl fullWidth variant="outlined">
+    <FormControl fullWidth variant="outlined" size={size}>
       <InputLabel>{label}</InputLabel>
       <Select
         name={name}
         value={value}
         onChange={onChange}
         startAdornment={
-          startIcon && (
-            <InputAdornment position="start">{startIcon}</InputAdornment>
-          )
+          startIcon && <InputAdornment>{startIcon}</InputAdornment>
         }
         label={label}
       >

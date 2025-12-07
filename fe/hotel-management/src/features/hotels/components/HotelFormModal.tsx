@@ -1,30 +1,31 @@
-import React from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import AddBusinessIcon from "@mui/icons-material/AddBusiness";
+import BadgeIcon from "@mui/icons-material/Badge";
+import CancelIcon from "@mui/icons-material/Cancel";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import EditLocationAltIcon from "@mui/icons-material/EditLocationAlt";
+import EmailIcon from "@mui/icons-material/Email";
+import HomeIcon from "@mui/icons-material/Home";
+import KeyIcon from "@mui/icons-material/Key";
+import PhoneIcon from "@mui/icons-material/Phone";
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Button,
-  FormControlLabel,
-  Switch,
   Box,
-  Typography,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  FormControlLabel,
   InputAdornment,
   Stack,
+  Switch,
+  TextField,
+  Typography,
 } from "@mui/material";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import React, { useEffect } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
-import { useHotels } from "../hooks/useHotels";
 import type { Hotel } from "../../../api/hotelService";
-import AddBusinessIcon from "@mui/icons-material/AddBusiness";
-import EditLocationAltIcon from "@mui/icons-material/EditLocationAlt";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import CancelIcon from "@mui/icons-material/Cancel";
-import KeyIcon from "@mui/icons-material/Key";
-import BadgeIcon from "@mui/icons-material/Badge";
-import HomeIcon from "@mui/icons-material/Home";
+import { useHotels } from "../hooks/useHotels";
 
 interface HotelFormModalProps {
   visible: boolean;
@@ -37,11 +38,21 @@ const createSchema = z.object({
   code: z.string().min(3, "Mã cơ sở phải có ít nhất 3 ký tự"),
   name: z.string().min(3, "Tên cơ sở phải có ít nhất 3 ký tự"),
   address: z.string().min(5, "Địa chỉ phải có ít nhất 5 ký tự"),
+  phone: z
+    .string()
+    .regex(/^[0-9+\-\s]{8,15}$/i, "Số điện thoại không hợp lệ")
+    .optional(),
+  email: z.string().email("Email không hợp lệ").optional(),
 });
 
 const updateSchema = z.object({
   name: z.string().min(3, "Tên cơ sở phải có ít nhất 3 ký tự"),
   address: z.string().min(5, "Địa chỉ phải có ít nhất 5 ký tự"),
+  phone: z
+    .string()
+    .regex(/^[0-9+\-\s]{8,15}$/i, "Số điện thoại không hợp lệ")
+    .optional(),
+  email: z.string().email("Email không hợp lệ").optional(),
   isActive: z.boolean().optional(),
 });
 
@@ -65,14 +76,30 @@ const HotelFormModal: React.FC<HotelFormModalProps> = ({
       ? {
           name: hotel?.name || "",
           address: hotel?.address || "",
+          phone: hotel?.phone || "",
+          email: hotel?.email || "",
           isActive: hotel?.isActive || false,
         }
       : {
           code: "",
           name: "",
           address: "",
+          phone: "",
+          email: "",
         },
   });
+
+  useEffect(() => {
+    if (isEditMode && hotel) {
+      reset({
+        name: hotel?.name || "",
+        address: hotel?.address || "",
+        phone: hotel?.phone || "",
+        email: hotel?.email || "",
+        isActive: hotel?.isActive || false,
+      });
+    }
+  }, [isEditMode, hotel, reset]);
 
   const onSubmit = async (data: any) => {
     try {
@@ -171,6 +198,52 @@ const HotelFormModal: React.FC<HotelFormModalProps> = ({
                     startAdornment: (
                       <InputAdornment position="start">
                         <HomeIcon />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              )}
+            />
+
+            <Controller
+              name="email"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Email"
+                  placeholder="Nhập email liên hệ"
+                  fullWidth
+                  size="medium"
+                  error={!!errors.email}
+                  helperText={errors.email?.message as string}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <EmailIcon />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              )}
+            />
+
+            <Controller
+              name="phone"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Số điện thoại"
+                  placeholder="Nhập số điện thoại"
+                  fullWidth
+                  size="medium"
+                  error={!!errors.phone}
+                  helperText={errors.phone?.message as string}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <PhoneIcon />
                       </InputAdornment>
                     ),
                   }}

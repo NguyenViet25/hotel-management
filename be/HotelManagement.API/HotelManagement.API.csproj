@@ -24,4 +24,8 @@
     <ProjectReference Include="..\HotelManagement.Repository\HotelManagement.Repository.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\uploads\media\" />
+  </ItemGroup>
+
 </Project>

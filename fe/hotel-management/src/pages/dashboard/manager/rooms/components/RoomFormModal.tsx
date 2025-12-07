@@ -85,7 +85,16 @@ const RoomFormModal: React.FC<RoomFormModalProps> = ({
           roomTypeId: typeId,
           status,
         };
-    await onSubmit(payload);
+    await onSubmit(payload).then(() => {
+      reset();
+    });
+  };
+
+  const reset = () => {
+    setNumber("");
+    setFloor("");
+    setTypeId("");
+    setStatus(0);
   };
 
   const handleTypeChange = (e: SelectChangeEvent<string>) =>

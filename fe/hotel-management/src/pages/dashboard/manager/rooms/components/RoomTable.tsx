@@ -25,23 +25,25 @@ type RoomTableProps = {
 
 const statusChip = (status: RoomStatus) => {
   const s = getRoomStatusString(status);
-
-  const map: Record<string, { color: string; label: string }> = {
-    Available: { color: "#4CAF50", label: "Sẵn sàng" }, // green
-    Occupied: { color: "#F44336", label: "Đang sử dụng" }, // red
-    Cleaning: { color: "#2196F3", label: "Đang dọn dẹp" }, // blue
-    OutOfService: { color: "#FF9800", label: "Ngừng phục vụ" }, // orange
-    Dirty: { color: "#795548", label: "Bẩn" }, // brown
-    Clean: { color: "#00BCD4", label: "Đã dọn sạch" }, // teal
-    Maintenance: { color: "#9C27B0", label: "Bảo trì" }, // purple
+  const map: Record<string, { bg: string; text: string; label: string }> = {
+    "Sẵn sàng": { bg: "#F2F4F7", text: "#344054", label: "Trống" },
+    "Đang sử dụng": { bg: "#E8ECF7", text: "#1F2A44", label: "Đang sử dụng" },
+    "Đang dọn dẹp": { bg: "#FEF3C7", text: "#92400E", label: "Đang Dọn Dẹp" },
+    "Ngừng phục vụ": { bg: "#EDEDED", text: "#555", label: "Ngừng phục vụ" },
+    Bẩn: { bg: "#FDECEC", text: "#C62828", label: "Bẩn" },
+    "Đã dọn sạch": { bg: "#DDF7E5", text: "#1B5E20", label: "Đã dọn sạch" },
+    "Bảo trì": { bg: "#ccc", text: "#344054", label: "Bảo Trì" },
   };
-  const cfg = map[s] || { color: "default", label: String(status) };
+  const cfg = map[s] || {
+    bg: "#F2F4F7",
+    text: "#344054",
+    label: String(status),
+  };
   return (
     <Chip
       size="small"
       label={cfg.label}
-      color="primary"
-      sx={{ backgroundColor: cfg.color }}
+      sx={{ bgcolor: cfg.bg, color: cfg.text, fontWeight: 700 }}
     />
   );
 };

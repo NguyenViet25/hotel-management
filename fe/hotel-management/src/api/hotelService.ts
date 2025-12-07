@@ -5,6 +5,8 @@ export interface Hotel {
   code: string;
   name: string;
   address: string;
+  phone?: string;
+  email?: string;
   isActive: boolean;
   createdAt: string;
 }
@@ -39,6 +41,8 @@ export interface CreateHotelRequest {
   code: string;
   name: string;
   address: string;
+  phone?: string;
+  email?: string;
   config?: Record<string, any>;
 }
 
@@ -46,12 +50,25 @@ export interface UpdateHotelRequest {
   name?: string;
   address?: string;
   isActive?: boolean;
+  phone?: string;
+  email?: string;
 }
 
 export interface ChangeHotelStatusRequest {
   action: "pause" | "close" | "resume";
   reason: string;
   until?: string;
+}
+
+export interface HotelDefaultTimesDto {
+  defaultCheckInTime?: string | null;
+  defaultCheckOutTime?: string | null;
+}
+
+export interface ItemResponse<T> {
+  isSuccess: boolean;
+  message: string | null;
+  data: T;
 }
 
 const hotelService = {
@@ -69,17 +86,17 @@ const hotelService = {
     if (params.sortBy) queryParams.append("sortBy", params.sortBy);
     if (params.sortDir) queryParams.append("sortDir", params.sortDir);
 
-    const response = await axios.get(`/admin/hotels?${queryParams.toString()}`);
+    const response = await axios.get(`/hotels?${queryParams.toString()}`);
     return response.data;
   },
 
   getHotelById: async (id: string): Promise<HotelResponse> => {
-    const response = await axios.get(`/admin/hotels/${id}`);
+    const response = await axios.get(`/hotels/${id}`);
     return response.data;
   },
 
   createHotel: async (hotel: CreateHotelRequest): Promise<HotelResponse> => {
-    const response = await axios.post("/admin/hotels", hotel);
+    const response = await axios.post("/hotels", hotel);
     return response.data;
   },
 
@@ -87,7 +104,7 @@ const hotelService = {
     id: string,
     hotel: UpdateHotelRequest
   ): Promise<HotelResponse> => {
-    const response = await axios.put(`/admin/hotels/${id}`, hotel);
+    const response = await axios.put(`/hotels/${id}`, hotel);
     return response.data;
   },
 
@@ -95,11 +112,33 @@ const hotelService = {
     id: string,
     statusRequest: ChangeHotelStatusRequest
   ): Promise<HotelResponse> => {
-    const response = await axios.post(
-      `/admin/hotels/${id}/status`,
-      statusRequest
-    );
+    const response = await axios.post(`/hotels/${id}/status`, statusRequest);
     return response.data;
+  },
+
+  getDefaultTimes: async (
+    id: string
+  ): Promise<ItemResponse<HotelDefaultTimesDto>> => {
+    const res = await axios.get(`/hotels/${id}/default-times`);
+    return res.data;
+  },
+
+  updateDefaultTimes: async (
+    id: string,
+    payload: HotelDefaultTimesDto
+  ): Promise<ItemResponse<HotelDefaultTimesDto>> => {
+    const res = await axios.put(`/hotels/${id}/default-times`, payload);
+    return res.data;
+  },
+
+  getVat: async (id: string): Promise<ItemResponse<number>> => {
+    const res = await axios.get(`/hotels/${id}/vat`);
+    return res.data;
+  },
+
+  updateVat: async (id: string, vat: number): Promise<ItemResponse<any>> => {
+    const res = await axios.put(`/hotels/${id}/vat`, { VAT: vat });
+    return res.data;
   },
 };
 
