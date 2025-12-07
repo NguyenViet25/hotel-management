@@ -219,3 +219,4 @@
 2025-12-06 - 4 - 01:43:47 UTC :: ci: UC-47 Dashboard: gioi han xem theo vai tro va co so. — cap nhat cau hinh va kiem tra bien (da review so bo)
 2025-12-06 - 5 - 01:43:48 UTC :: build: UC-12 Dat phong: tao booking, chon phong, thu coc, xac nhan. — dieu chinh UI & copy cho ro (da review so bo)
 2025-12-07 - 1 - 01:57:56 UTC :: build: UC-25 Nha hang: quan ly so do ban; chuyen/tach/gop ban. — tach chuc nang de de bao tri (chuan bi cho tinh nang tiep theo)
+2025-12-07 - 2 - 01:57:58 UTC :: fix: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — bo sung case canh bien & no-show (dam bao backward-compatible)
