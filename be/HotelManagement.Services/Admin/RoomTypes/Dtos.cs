@@ -10,6 +10,7 @@ public class CreateRoomTypeDto
     public decimal PriceFrom { get; set; }
     public decimal PriceTo { get; set; }
     public List<PriceByDate>? PriceByDates { get; set; } = [];
+    public string? ImageUrl { get; set; }
 }
 
 public class PriceByDate
@@ -38,7 +39,7 @@ public class RoomTypeDto
     public string HotelName { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
-    public List<string> Images { get; set; } = new();
+    public string? ImageUrl { get; set; }
     public int RoomCount { get; set; }
     public bool CanDelete { get; set; }
     public decimal PriceFrom { get; set; }

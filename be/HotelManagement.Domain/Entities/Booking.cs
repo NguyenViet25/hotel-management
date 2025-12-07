@@ -5,13 +5,17 @@ namespace HotelManagement.Domain;
 public class Booking
 {
     public Guid Id { get; set; }
-    public Guid HotelIdKey { get; set; }
+    public Guid HotelId { get; set; }
     public Guid? PrimaryGuestId { get; set; }
     public BookingStatus Status { get; set; } = BookingStatus.Pending;
     public decimal DepositAmount { get; set; }
     public decimal DiscountAmount { get; set; }
     public decimal TotalAmount { get; set; }
     public decimal LeftAmount { get; set; }
+    public decimal AdditionalAmount { get; set; }
+    public string? AdditionalNotes { get; set; }
+    public string? PromotionCode { get; set; }
+    public decimal PromotionValue { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public Hotel? Hotel { get; set; }
     public Guest? PrimaryGuest { get; set; }
@@ -24,7 +28,7 @@ public class BookingRoomType
 {
     [Key]
     public Guid BookingRoomTypeId { get; set; }
-    public Guid BookingIdKey { get; set; }
+    public Guid BookingId { get; set; }
     public Guid RoomTypeId { get; set; }
     public string? RoomTypeName { get; set; }
     public int Capacity { get; set; }
@@ -43,19 +47,23 @@ public class BookingRoom
     [Key]
     public Guid BookingRoomId { get; set; }
     public Guid RoomId { get; set; }
-    public Guid BookingRoomTypeIdKey { get; set; }
+    public Guid BookingRoomTypeId { get; set; }
     public string? RoomName { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
+    public DateTime? ExtendedDate { get; set; }
+    public DateTime? ActualCheckInAt { get; set; }
+    public DateTime? ActualCheckOutAt { get; set; }
     public BookingRoomStatus BookingStatus { get; set; } = BookingRoomStatus.Pending;
     public ICollection<BookingGuest>? Guests { get; set; } = new List<BookingGuest>();
-    public HotelRoom? HotelRoom { get; set; }
     public BookingRoomType? BookingRoomType { get; set; }
+    public HotelRoom? HotelRoom { get; set; }
 }
 
 
 public class BookingGuest
 {
+    public Guid BookingGuestId { get; set; }
     public Guid BookingRoomId { get; set; }
     public Guid GuestId { get; set; }
     public BookingRoom? BookingRoom { get; set; }

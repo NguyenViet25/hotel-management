@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import DataTable, {
   type Column,
 } from "../../../../../components/common/DataTable";
 import type { MenuItemDto } from "../../../../../api/menusApi";
-import { Chip, Avatar } from "@mui/material";
+import { Chip, Avatar, Typography } from "@mui/material";
 
 interface MenuTableProps {
   data: MenuItemDto[];
@@ -12,25 +12,13 @@ interface MenuTableProps {
   onEdit?: (record: MenuItemDto) => void;
   onDelete?: (record: MenuItemDto) => void;
   onSearch?: (e: string) => void;
+  isFood?: boolean;
 }
-
-const statusChip = (status: string) => {
-  const map: Record<
-    string,
-    { label: string; color: "success" | "warning" | "default" }
-  > = {
-    Available: { label: "Đang bán", color: "success" },
-    Unavailable: { label: "Tạm ngừng", color: "warning" },
-    SeasonallyUnavailable: { label: "Theo mùa", color: "default" },
-  };
-  const val = map[status] || { label: status, color: "default" };
-  return <Chip label={val.label} color={val.color} size="small" />;
-};
 
 const activeChip = (active?: boolean) => (
   <Chip
-    label={active ? "Kích hoạt" : "Đã tắt"}
-    color={active ? "success" : "default"}
+    label={active ? "Đang bán" : "Ngừng bán"}
+    color={active ? "primary" : "error"}
     size="small"
   />
 );
@@ -42,67 +30,102 @@ const MenuTable: React.FC<MenuTableProps> = ({
   onEdit,
   onDelete,
   onSearch,
+  isFood,
 }) => {
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+  const total = data.length;
+
+  useEffect(() => {
+    setPage(1);
+  }, [data]);
+
+  const pagedData = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize;
+    return data.slice(start, end);
+  }, [data, page]);
+
   const columns: Column<MenuItemDto>[] = [
+    // {
+    //   id: "imageUrl",
+    //   label: "Ảnh",
+    //   minWidth: 80,
+    //   format: (value) =>
+    //     value ? (
+    //       <Avatar
+    //         src={value as string}
+    //         variant="rounded"
+    //         sx={{ width: 40, height: 40 }}
+    //       />
+    //     ) : (
+    //       "-"
+    //     ),
+    // },
+    { id: "name", label: isFood ? "Tên món" : "Tên set", minWidth: 180 },
     {
-      id: "imageUrl",
-      label: "Ảnh",
-      minWidth: 80,
-      format: (value) =>
-        value ? (
-          <Avatar
-            src={value as string}
-            variant="rounded"
-            sx={{ width: 40, height: 40 }}
-          />
-        ) : (
-          "-"
-        ),
-    },
-    { id: "name", label: "Tên món", minWidth: 180 },
-    {
-      id: "group.name",
+      id: "category",
       label: "Nhóm",
       minWidth: 140,
-      format: (_, row?: any) => row?.group?.name ?? "-",
     },
     {
-      id: "group.shift",
-      label: "Ca",
-      minWidth: 120,
-      format: (_, row?: any) => row?.group?.shift ?? "-",
+      id: "description",
+      label: isFood ? "Mô tả" : "Danh sách món",
+      minWidth: 160,
+      render: (row) =>
+        isFood
+          ? row.description
+          : (row.description || "")
+              .split(/\n|,/)
+              .map((s) => s.trim())
+              .filter((s) => s.length > 0)
+              .map((food, idx) => (
+                <Typography key={idx} variant="body2" color="text.secondary">
+                  {`${idx + 1}. ${food}`}
+                </Typography>
+              )) || "-",
     },
     {
       id: "unitPrice",
       label: "Đơn giá",
       minWidth: 120,
-      align: "right",
-      format: (v) => `${Number(v).toLocaleString()} ₫`,
+      render: (row) =>
+        isFood
+          ? `${Number(row.unitPrice).toLocaleString()}₫`
+          : `${Number(row.unitPrice).toLocaleString()}₫/người`,
     },
+
     {
       id: "status",
       label: "Trạng thái",
       minWidth: 120,
-      format: (v) => statusChip(String(v)),
-    },
-    {
-      id: "isActive",
-      label: "Kích hoạt",
-      minWidth: 120,
-      format: (v) => activeChip(Boolean(v)),
+      render: (row) => activeChip(row.status == 0),
     },
   ];
+
+  const handleEdit = (row: MenuItemDto) => {
+    onEdit?.(row);
+  };
+  const handleDelete = (row: MenuItemDto) => {
+    onDelete?.(row);
+  };
 
   return (
     <DataTable
       columns={columns}
-      data={data}
+      data={pagedData}
       loading={loading}
       onAdd={onAdd}
-      onEdit={onEdit}
-      onDelete={onDelete}
+      onEdit={handleEdit}
+      onDelete={handleDelete}
       getRowId={(row) => row.id}
       onSearch={onSearch}
+      pagination={{
+        page,
+        pageSize,
+        total,
+        onPageChange: setPage,
+      }}
     />
   );
 };

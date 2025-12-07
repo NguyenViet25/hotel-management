@@ -1,58 +1,97 @@
-import React, { useEffect, useState } from "react";
 import {
+  Add,
+  Check,
+  Close,
+  Edit,
+  Event,
+  Info,
+  People,
+  Phone,
+  Restaurant,
+  ExpandMore,
+} from "@mui/icons-material";
+import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
+import {
+  Alert,
   Box,
+  Button,
+  Chip,
+  Divider,
+  Snackbar,
   Stack,
   Typography,
-  Snackbar,
-  Alert,
-  TextField,
-  Button,
-  Tabs,
-  Tab,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from "@mui/material";
-import PageTitle from "../../../../components/common/PageTitle";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs from "dayjs";
+import React, { useEffect, useLayoutEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import menusApi, { type MenuItemDto } from "../../../../api/menusApi";
 import ordersApi, {
-  type OrderSummaryDto,
+  EOrderStatus,
   type OrderDetailsDto,
-  type OrderStatus,
+  type OrderSummaryDto,
 } from "../../../../api/ordersApi";
-import OrdersFilters from "./components/OrdersFilters";
-import OrdersTable from "./components/OrdersTable";
-import WalkInOrderFormModal from "./components/WalkInOrderFormModal";
-import BookingOrderFormModal from "./components/BookingOrderFormModal";
-import EditOrderFormModal from "./components/EditOrderFormModal";
-import { People, Person, Person2, Person3 } from "@mui/icons-material";
+import ConfirmModal from "../../../../components/common/ConfirmModel";
+import PageTitle from "../../../../components/common/PageTitle";
+import { useStore, type StoreState } from "../../../../hooks/useStore";
+import OrderFormModal from "./components/OrderFormModal";
+import WalkInInvoiceDialog from "./components/WalkInInvoiceDialog";
 
-// Orders Management Page (UC-28, UC-29, UC-30)
-// - Lists orders with filters (status/search)
-// - Create walk-in orders and booking orders
-// - Edit order (status/notes/discount)
-// - Cancel order (set status to Cancelled)
+import PersonIcon from "@mui/icons-material/Person";
+import { toast } from "react-toastify";
+import CustomSelect from "../../../../components/common/CustomSelect";
+import EmptyState from "../../../../components/common/EmptyState";
+
+const getOrderPhase = (status: number): string => {
+  if (status === EOrderStatus.Draft) return "Mới";
+  if (status === EOrderStatus.NeedConfirmed) return "Chờ xác nhận";
+  if (status === EOrderStatus.Confirmed) return "Đã xác nhận";
+  if (status === EOrderStatus.InProgress) return "Đang nấu";
+  if (status === EOrderStatus.Ready) return "Sẵn sàng";
+  if (status === EOrderStatus.Completed) return "Đã phục vụ";
+  if (status === EOrderStatus.Cancelled) return "Đã hủy";
+  return "Mới";
+};
+
 const OrdersManagementPage: React.FC = () => {
   // Filters
-  const [status, setStatus] = useState<OrderStatus | undefined>("Serving");
-  const [search, setSearch] = useState<string>("");
-  const [hotelId, setHotelId] = useState<string>("");
+  const { hotelId, user } = useStore<StoreState>((state) => state);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // Table data
   const [orders, setOrders] = useState<OrderSummaryDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
-  const [pageSize] = useState(10);
-  const [total, setTotal] = useState(0);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmOrderOpen, setConfirmOrderOpen] = useState(false);
+
+  const [startDate, setStartDate] = useState(dayjs());
+  const [endDate, setEndDate] = useState(dayjs());
+
+  const filteredOrders = React.useMemo(() => {
+    return orders.filter((o) => {
+      const created = dayjs(o.createdAt);
+      return (
+        created.isAfter(startDate.startOf("day").subtract(1, "millisecond")) &&
+        created.isBefore(endDate.endOf("day").add(1, "millisecond"))
+      );
+    });
+  }, [orders, startDate, endDate]);
+
+  const walkInOrders = filteredOrders.filter((o) => o.isWalkIn);
+  const bookingOrders = filteredOrders.filter((o) => o.isWalkIn === false);
 
   // Modals
-  const [openWalkIn, setOpenWalkIn] = useState(false);
-  const [openBooking, setOpenBooking] = useState(false);
-  const [openEdit, setOpenEdit] = useState(false);
+  const [openOrder, setOpenOrder] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<OrderDetailsDto | null>(
     null
   );
   const [value, setValue] = React.useState(0);
 
-  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue);
-  };
   // Feedback
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -60,20 +99,41 @@ const OrdersManagementPage: React.FC = () => {
     severity: "success" | "error";
   }>({ open: false, message: "", severity: "success" });
 
+  const [selectedStatus, setSelectedStatus] = useState<number | " ">(
+    EOrderStatus.NeedConfirmed
+  );
+
+  const statusOptions = [
+    { value: " ", label: "Tất cả" },
+    { value: EOrderStatus.NeedConfirmed, label: "Chờ xác nhận" },
+    { value: EOrderStatus.Confirmed, label: "Đã xác nhận" },
+    { value: EOrderStatus.InProgress, label: "Đang nấu" },
+    { value: EOrderStatus.Ready, label: "Sẵn sàng" },
+    { value: EOrderStatus.Completed, label: "Đã phục vụ" },
+    { value: EOrderStatus.Cancelled, label: "Đã hủy" },
+  ];
+  const [invoiceOpen, setInvoiceOpen] = useState(false);
+  const [selectedForInvoice, setSelectedForInvoice] =
+    useState<OrderSummaryDto | null>(null);
+
+  const [menuItems, setMenuItems] = useState<MenuItemDto[]>([]);
+  const [orderItemsMap, setOrderItemsMap] = useState<
+    Record<string, OrderDetailsDto["items"]>
+  >({});
+
   // Fetch orders based on filters and pagination
   const fetchOrders = async (pageNum = 1) => {
     setLoading(true);
     try {
       const res = await ordersApi.listOrders({
         hotelId: hotelId || undefined,
-        status,
-        search: search || undefined,
+        status: selectedStatus === " " ? undefined : selectedStatus,
+        search: undefined,
         page: pageNum,
-        pageSize,
+        pageSize: 200,
       });
       if (res.isSuccess) {
         setOrders(res.data);
-        setTotal(res.meta?.total ?? res.data.length);
         setPage(res.meta?.page ?? pageNum);
       } else {
         setSnackbar({
@@ -96,21 +156,54 @@ const OrdersManagementPage: React.FC = () => {
   useEffect(() => {
     fetchOrders(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, search, hotelId]);
+  }, [selectedStatus, hotelId]);
 
-  const openEditModal = async (summary: OrderSummaryDto) => {
-    try {
-      const res = await ordersApi.getById(summary.id);
-      if (res.isSuccess) {
-        setSelectedOrder(res.data);
-        setOpenEdit(true);
+  useEffect(() => {
+    const loadMenu = async () => {
+      try {
+        const res = await menusApi.getMenuItems({
+          isActive: true,
+          page: 1,
+          pageSize: 200,
+        });
+        if (res.isSuccess) setMenuItems(res.data || []);
+      } catch {}
+    };
+    loadMenu();
+  }, []);
+
+  useEffect(() => {
+    const loadDetailsForPage = async () => {
+      if (!orders?.length) {
+        setOrderItemsMap({});
+        return;
       }
-    } catch {}
+      try {
+        const results = await Promise.all(
+          orders.map((o) => ordersApi.getById(o.id))
+        );
+        const map: Record<string, OrderDetailsDto["items"]> = {};
+        orders.forEach((o, idx) => {
+          const d = results[idx];
+          if (d?.isSuccess) map[o.id] = d.data.items || [];
+        });
+        setOrderItemsMap(map);
+      } catch {}
+    };
+    loadDetailsForPage();
+  }, [orders]);
+
+  const openEditModal = async (summary: OrderDetailsDto) => {
+    setSelectedOrder(summary);
+    setOpenOrder(true);
   };
 
   const cancelOrder = async (summary: OrderSummaryDto) => {
     try {
-      await ordersApi.update(summary.id, { status: "Cancelled" });
+      await ordersApi.updateStatus(summary.id, {
+        status: EOrderStatus.Cancelled as any,
+        notes: `Hủy yêu cầu đặt món bởi ${user?.fullname || "hệ thống."}`,
+      });
       setSnackbar({ open: true, severity: "success", message: "Đã hủy order" });
       fetchOrders(page);
     } catch {
@@ -122,111 +215,510 @@ const OrdersManagementPage: React.FC = () => {
     }
   };
 
+  const confirmOrder = async (summary: OrderSummaryDto) => {
+    try {
+      await ordersApi.updateStatus(summary.id, {
+        status: EOrderStatus.Confirmed as any,
+      });
+
+      fetchOrders(page);
+      toast.success("Đã xác nhận order");
+    } catch {
+      setSnackbar({
+        open: true,
+        severity: "error",
+        message: "Không thể xác nhận order",
+      });
+    }
+  };
+
+  useEffect(() => {
+    setSearchParams({ tabValue: value.toString() });
+  }, [value]);
+
+  useLayoutEffect(() => {
+    const tabValue = searchParams.get("tabValue");
+    if (tabValue !== null) {
+      setValue(Number(tabValue));
+    }
+  }, []);
+
   return (
     <Box>
       <PageTitle
         title="Quản lý yêu cầu đặt món"
         subtitle="Tạo yêu cầu đặt món khách vãng lai, khách đặt phòng, xem danh sách đang phục vụ/đã thanh toán"
       />
-      <Box
-        sx={{
-          backgroundColor: "#fff",
-          width: "100%",
-          borderRadius: 2,
-          borderEndEndRadius: 0,
-          borderEndStartRadius: 0,
-          border: "1px solid #e0e0e0",
-          borderBottom: "none",
-        }}
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        alignItems={{ xs: "flex-start", sm: "center" }}
+        sx={{ my: 1 }}
+        spacing={1}
+        justifyContent={"space-between"}
       >
-        <Tabs
-          value={value}
-          onChange={handleChange}
-          variant="fullWidth"
-          TabIndicatorProps={{
-            style: {
-              backgroundColor: "#1976d2",
-              height: 3,
-              borderRadius: 3,
-            },
-          }}
-          sx={{
-            "& .MuiTab-root": {
-              textTransform: "none",
-              fontWeight: 600,
-              fontSize: "1rem",
-              minHeight: 48,
-              color: "#555",
-              transition: "all 0.3s ease",
-            },
-            "& .MuiTab-root:hover": {
-              backgroundColor: "#f5f5f5",
-            },
-            "& .Mui-selected": {
-              color: "#1976d2",
-              backgroundColor: "#E3F2FD",
-            },
+        <Stack direction={{ xs: "column", lg: "row" }} spacing={1}>
+          <Box sx={{ width: { xs: "100%", lg: 200 } }}>
+            <CustomSelect
+              name="orderType"
+              value={String(value)}
+              onChange={(e) => setValue(Number(e.target.value))}
+              label="Loại yêu cầu"
+              options={[
+                { value: "0", label: "Khách vãng lai" },
+                { value: "1", label: "Khách đặt phòng" },
+              ]}
+              placeholder="Chọn loại"
+              size="small"
+            />
+          </Box>
+          <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="vi">
+            <Stack direction={{ xs: "column", lg: "row" }} spacing={1}>
+              <DatePicker
+                label="Từ ngày"
+                value={startDate}
+                slotProps={{
+                  textField: {
+                    size: "small",
+                  },
+                }}
+                onChange={(v) => setStartDate(v ?? dayjs())}
+              />
+              <DatePicker
+                label="Đến ngày"
+                value={endDate}
+                minDate={startDate}
+                slotProps={{
+                  textField: {
+                    size: "small",
+                  },
+                }}
+                onChange={(v) => setEndDate(v ?? dayjs())}
+              />
+            </Stack>
+          </LocalizationProvider>
+          <Box sx={{ width: { xs: "100%", lg: 200 }, minWidth: 200 }}>
+            <CustomSelect
+              name="orderStatus"
+              value={(selectedStatus as any) ?? "all"}
+              onChange={(e) => {
+                const v = e.target.value;
+                setSelectedStatus(v === " " ? v : (v as number));
+              }}
+              label="Lọc trạng thái"
+              options={statusOptions}
+              placeholder="Chọn trạng thái"
+              size="small"
+            />
+          </Box>
+        </Stack>
+        <Button
+          startIcon={<Add />}
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            setOpenOrder(true);
+            setSelectedOrder(null);
           }}
         >
-          <Tab
-            label="Khách vãng lai"
-            sx={{
-              borderRadius: 2,
-              borderEndEndRadius: 0,
-              borderEndStartRadius: 0,
-              borderStartEndRadius: 0,
-            }}
-          />
-          <Tab
-            label="Khách đặt phòng"
-            sx={{
-              borderRadius: 2,
-              borderEndEndRadius: 0,
-              borderEndStartRadius: 0,
-              borderStartStartRadius: 0,
-            }}
-          />
-        </Tabs>
-      </Box>
-      {/* Table listing */}
-      <OrdersTable
-        data={orders}
-        loading={loading}
-        page={page}
-        pageSize={pageSize}
-        total={total}
-        onPageChange={(p) => fetchOrders(p)}
-        onAddWalkIn={() => setOpenWalkIn(true)}
-        onAddBooking={() => setOpenBooking(true)}
-        onEdit={(o) => openEditModal(o)}
-        onCancel={(o) => cancelOrder(o)}
-        onSearch={(e) => setSearch(e)}
-      />
+          Thêm yêu cầu
+        </Button>
+      </Stack>
 
-      {/* Create walk-in */}
-      <WalkInOrderFormModal
-        open={openWalkIn}
-        onClose={() => setOpenWalkIn(false)}
+      <Stack spacing={2} sx={{ mt: 2 }}>
+        {(() => {
+          const listData = value === 1 ? bookingOrders : walkInOrders;
+          if (!loading && listData.length === 0) {
+            return (
+              <EmptyState
+                title="Không có yêu cầu"
+                description="Chưa có yêu cầu đặt món. Hãy thêm yêu cầu mới."
+                actions={
+                  <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
+                    <Button
+                      startIcon={<Add />}
+                      variant="contained"
+                      onClick={() => {
+                        setOpenOrder(true);
+                      }}
+                    >
+                      Thêm yêu cầu
+                    </Button>
+                  </Stack>
+                }
+              />
+            );
+          }
+          return listData.map((o, number) => {
+            const items = orderItemsMap[o.id] || [];
+            const foods = items.filter((it) => {
+              const mi = menuItems.find((m) => m.id === it.menuItemId);
+              return (mi?.category || "").trim() !== "Set";
+            });
+            const sets = items.filter((it) => {
+              const mi = menuItems.find((m) => m.id === it.menuItemId);
+              return (mi?.category || "").trim() === "Set";
+            });
+
+            const discount = (o.itemsTotal * (o.promotionValue || 0)) / 100;
+            const total = o.itemsTotal - discount;
+            const servingDateText = (() => {
+              if (o.servingDate) return dayjs(o.servingDate).format("D/M/YYYY");
+              const lines = (o.notes || "").split(/\n/);
+              const target = lines.find((ln) =>
+                ln.trim().toLowerCase().startsWith("ngày yêu cầu")
+              );
+              if (!target) return null;
+              const idx = target.indexOf(":");
+              const raw = idx >= 0 ? target.slice(idx + 1) : target;
+              const txt = raw.trim();
+              return txt.length ? txt : null;
+            })();
+            return (
+              <Accordion
+                key={o.id}
+                sx={{
+                  borderRadius: 2,
+                  boxShadow: 2,
+                  "&:not(.Mui-expanded)::before": { display: "none" },
+                }}
+              >
+                <AccordionSummary expandIcon={<ExpandMore />}>
+                  <Stack
+                    direction={{ xs: "column", sm: "row" }}
+                    justifyContent="space-between"
+                    alignItems={{ xs: "flex-start", sm: "center" }}
+                    sx={{ width: "100%" }}
+                  >
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Restaurant color="primary" />
+                      <Typography fontWeight={700}>
+                        Yêu cầu đặt món: #{String(number + 1).toUpperCase()}
+                      </Typography>
+                      <Chip
+                        label={o.isWalkIn ? "Vãng lai" : "Đặt phòng"}
+                        size="small"
+                      />
+                    </Stack>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Typography color="text.secondary">
+                        {new Date(o.createdAt).toLocaleString()}
+                      </Typography>
+                      <Chip
+                        sx={{ minWidth: 120 }}
+                        size="small"
+                        color={
+                          o.status === EOrderStatus.NeedConfirmed
+                            ? "default"
+                            : o.status === EOrderStatus.Confirmed
+                            ? "primary"
+                            : o.status === EOrderStatus.InProgress
+                            ? "primary"
+                            : o.status === EOrderStatus.Ready
+                            ? "primary"
+                            : o.status === EOrderStatus.Completed
+                            ? "success"
+                            : o.status === EOrderStatus.Cancelled
+                            ? "error"
+                            : "default"
+                        }
+                        label={getOrderPhase(o.status)}
+                      />
+                    </Stack>
+                  </Stack>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Stack spacing={1.5}>
+                    <Divider />
+                    <Stack
+                      direction={{ xs: "column", lg: "row" }}
+                      justifyContent="space-between"
+                      spacing={1}
+                      sx={{ width: "100%" }}
+                    >
+                      <Stack
+                        direction={{ xs: "column", lg: "row" }}
+                        spacing={2}
+                      >
+                        <Stack
+                          direction={{ xs: "row" }}
+                          spacing={1}
+                          alignItems="center"
+                        >
+                          <PersonIcon color="action" />
+                          <Typography>
+                            Họ và tên: {o.customerName || "—"}
+                          </Typography>
+                        </Stack>
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <Phone color="action" />
+                          <Typography>SĐT: {o.customerPhone || "—"}</Typography>
+                        </Stack>
+                        <Stack
+                          direction={{ xs: "row" }}
+                          spacing={1}
+                          alignItems="center"
+                        >
+                          <People color="action" />
+                          <Typography>
+                            Số lượng khách: {o.guests || 1}
+                          </Typography>
+                        </Stack>
+                        {servingDateText && (
+                          <Stack
+                            direction={{ xs: "row" }}
+                            spacing={1}
+                            alignItems="center"
+                          >
+                            <Event color="action" />
+                            <Typography>
+                              Ngày phục vụ: {servingDateText}
+                            </Typography>
+                          </Stack>
+                        )}
+                      </Stack>
+                      <Stack
+                        direction={{ xs: "column", lg: "row" }}
+                        spacing={1}
+                      >
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          startIcon={<Edit />}
+                          onClick={() => openEditModal(o as any)}
+                        >
+                          Sửa
+                        </Button>
+                        {Number(o.status) !== EOrderStatus.Cancelled && (
+                          <Button
+                            size="small"
+                            variant="contained"
+                            startIcon={<ReceiptLongIcon />}
+                            onClick={() => {
+                              setSelectedForInvoice(o);
+                              setInvoiceOpen(true);
+                            }}
+                          >
+                            Xuất hóa đơn
+                          </Button>
+                        )}
+                        {Number(o.status) === EOrderStatus.NeedConfirmed && (
+                          <Button
+                            size="small"
+                            variant="contained"
+                            color="success"
+                            startIcon={<Check />}
+                            onClick={() => {
+                              setSelectedOrder(o as any);
+                              setConfirmOrderOpen(true);
+                            }}
+                          >
+                            Xác nhận đơn
+                          </Button>
+                        )}
+                        {[
+                          EOrderStatus.Draft,
+                          EOrderStatus.NeedConfirmed,
+                        ].includes(Number(o.status)) && (
+                          <Button
+                            size="small"
+                            variant="contained"
+                            color="error"
+                            startIcon={<Close />}
+                            onClick={() => {
+                              setSelectedOrder(o as any);
+                              setConfirmOpen(true);
+                            }}
+                          >
+                            Hủy đơn
+                          </Button>
+                        )}
+                      </Stack>
+                    </Stack>
+                    <Stack
+                      direction={{ xs: "row" }}
+                      spacing={1}
+                      alignItems="center"
+                      sx={{
+                        border: "1px dashed",
+                        borderRadius: 3,
+                        p: 1,
+                        backgroundColor: "yellow",
+                      }}
+                    >
+                      <Info color="action" />
+                      <Typography>Ghi chú: {o.notes || "—"}</Typography>
+                    </Stack>
+                    <Stack spacing={1}>
+                      <Typography variant="subtitle2" fontWeight={700}>
+                        Món ăn
+                      </Typography>
+                      {foods.length === 0 ? (
+                        <Typography color="text.secondary">
+                          Không có món
+                        </Typography>
+                      ) : (
+                        foods.map((it) => {
+                          const mi = menuItems.find(
+                            (m) => m.id === it.menuItemId
+                          );
+                          return (
+                            <Stack
+                              key={it.id}
+                              direction="row"
+                              spacing={1}
+                              alignItems="center"
+                            >
+                              <img
+                                src={mi?.imageUrl || "/assets/logo.png"}
+                                alt={mi?.name || it.menuItemName}
+                                style={{
+                                  width: 36,
+                                  height: 36,
+                                  borderRadius: 6,
+                                  objectFit: "cover",
+                                  border: "1px solid #eee",
+                                }}
+                              />
+                              <Stack sx={{ flexGrow: 1 }}>
+                                <Typography>{it.menuItemName}</Typography>
+                                <Typography color="text.secondary">
+                                  {it.unitPrice.toLocaleString()} đ
+                                </Typography>
+                              </Stack>
+                              <Chip label={`x${it.quantity}`} />
+                              <Typography fontWeight={700}>
+                                {(it.quantity * it.unitPrice).toLocaleString()}{" "}
+                                đ
+                              </Typography>
+                            </Stack>
+                          );
+                        })
+                      )}
+                    </Stack>
+                    <Divider />
+                    {sets.length === 0
+                      ? null
+                      : sets.map((it) => {
+                          const mi = menuItems.find(
+                            (m) => m.id === it.menuItemId
+                          );
+                          return (
+                            <Stack spacing={1}>
+                              <Typography variant="subtitle2" fontWeight={700}>
+                                Set
+                              </Typography>
+                              <Stack
+                                key={it.id}
+                                direction="row"
+                                spacing={1}
+                                alignItems="center"
+                              >
+                                <img
+                                  src={mi?.imageUrl || "/assets/logo.png"}
+                                  alt={mi?.name || it.menuItemName}
+                                  style={{
+                                    width: 36,
+                                    height: 36,
+                                    borderRadius: 6,
+                                    objectFit: "contain",
+                                    border: "1px solid #eee",
+                                  }}
+                                />
+                                <Stack sx={{ flexGrow: 1 }}>
+                                  <Typography>{it.menuItemName}</Typography>
+                                  <Typography color="text.secondary">
+                                    {it.unitPrice.toLocaleString()} đ
+                                  </Typography>
+                                </Stack>
+                                <Chip label={`x${it.quantity}`} />
+                                <Typography fontWeight={700}>
+                                  {(
+                                    it.quantity * it.unitPrice
+                                  ).toLocaleString()}{" "}
+                                  đ
+                                </Typography>
+                              </Stack>
+                              <Divider />
+                            </Stack>
+                          );
+                        })}
+                    <Stack alignItems="flex-end">
+                      <Stack
+                        direction={{ xs: "column", lg: "row" }}
+                        spacing={2}
+                        alignItems={{ xs: "flex-end", sm: "flex-end" }}
+                      >
+                        <Stack alignItems="flex-end">
+                          <Typography color="text.secondary">
+                            Tổng cộng
+                          </Typography>
+                          <Typography fontWeight={700}>
+                            {(o.itemsTotal || 0).toLocaleString()} đ
+                          </Typography>
+                        </Stack>
+                        <Stack alignItems="flex-end">
+                          <Typography color="red">Giảm giá</Typography>
+                          <Typography color="red" fontWeight={"bold"}>
+                            - {(discount || 0).toLocaleString()} đ
+                          </Typography>
+                        </Stack>
+                        <Stack alignItems="flex-end">
+                          <Typography color="text.secondary">
+                            Còn lại
+                          </Typography>
+                          <Typography fontWeight={"bold"}>
+                            {(total || 0).toLocaleString()} đ
+                          </Typography>
+                        </Stack>
+                      </Stack>
+                    </Stack>
+                  </Stack>
+                </AccordionDetails>
+              </Accordion>
+            );
+          });
+        })()}
+      </Stack>
+      <OrderFormModal
+        open={openOrder}
+        onClose={() => {
+          setOpenOrder(false);
+          setSelectedOrder(null);
+        }}
         hotelId={hotelId}
         onSubmitted={() => fetchOrders(page)}
+        initialValues={selectedOrder}
+        isWalkIn={value === 0}
       />
-
-      {/* Create booking */}
-      <BookingOrderFormModal
-        open={openBooking}
-        onClose={() => setOpenBooking(false)}
-        hotelId={hotelId}
-        onSubmitted={() => fetchOrders(page)}
+      <ConfirmModal
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={() => {
+          if (selectedOrder) {
+            cancelOrder(selectedOrder);
+          }
+          setConfirmOpen(false);
+        }}
+        title="Xác nhận hủy order"
+        message={`Bạn có chắc chắn muốn hủy order được chọn không?`}
+        confirmIcon={<Check />}
+        cancelIcon={<Close />}
       />
-
-      {/* Edit order */}
-      <EditOrderFormModal
-        open={openEdit}
-        onClose={() => setOpenEdit(false)}
-        order={selectedOrder}
-        onSubmitted={() => fetchOrders(page)}
+      <ConfirmModal
+        open={confirmOrderOpen}
+        onClose={() => setConfirmOrderOpen(false)}
+        onConfirm={() => {
+          if (selectedOrder) {
+            confirmOrder(selectedOrder);
+          }
+          setConfirmOrderOpen(false);
+        }}
+        title="Xác nhận đơn"
+        message={`Bạn có muốn xác nhận đơn đã chọn?`}
+        confirmIcon={<Check />}
+        cancelIcon={<Close />}
+        confirmColor="primary"
       />
-
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}
@@ -234,6 +726,15 @@ const OrdersManagementPage: React.FC = () => {
       >
         <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
       </Snackbar>
+
+      <WalkInInvoiceDialog
+        open={invoiceOpen}
+        onClose={() => setInvoiceOpen(false)}
+        order={selectedForInvoice}
+        onInvoiceCreated={() => {
+          fetchOrders(page);
+        }}
+      />
     </Box>
   );
 };

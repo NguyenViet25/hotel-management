@@ -9,24 +9,17 @@ export interface MenuGroupDto {
 export interface MenuItemDto {
   id: string;
   hotelId?: string;
-  menuGroupId: string;
+  category: string;
   name: string;
   description?: string;
   unitPrice: number;
-  portionSize?: string;
   imageUrl?: string;
   isActive?: boolean;
-  status: string; // Available | Unavailable | SeasonallyUnavailable
-  group?: {
-    id: string;
-    name: string;
-    shift: string;
-  };
+  status: number;
 }
 
 export interface MenusQueryParams {
-  groupId?: string;
-  shift?: string;
+  searchTerm?: string;
   status?: string;
   isActive?: boolean;
   page?: number;
@@ -34,13 +27,13 @@ export interface MenusQueryParams {
 }
 
 export interface CreateMenuItemRequest {
-  menuGroupId: string;
+  hotelId?: string;
+  category: string;
   name: string;
   description?: string;
   unitPrice: number;
-  portionSize?: string;
   imageUrl?: string;
-  status?: string; // default Available
+  status?: number; // default 0 (Available)
   isActive?: boolean;
 }
 
@@ -51,7 +44,7 @@ export interface UpdateMenuItemRequest {
   unitPrice?: number;
   portionSize?: string;
   imageUrl?: string;
-  status?: string;
+  status?: number;
   isActive?: boolean;
 }
 
@@ -77,8 +70,7 @@ const menusApi = {
     params: MenusQueryParams = {}
   ): Promise<ListResponse<MenuItemDto>> {
     const qp = new URLSearchParams();
-    if (params.groupId) qp.append("groupId", params.groupId);
-    if (params.shift) qp.append("shift", params.shift);
+    if (params.searchTerm) qp.append("searchTerm", params.searchTerm);
     if (params.status) qp.append("status", params.status);
     if (params.isActive !== undefined)
       qp.append("isActive", String(params.isActive));
@@ -86,19 +78,19 @@ const menusApi = {
     if (params.pageSize !== undefined)
       qp.append("pageSize", String(params.pageSize));
 
-    const res = await axios.get(`/admin/menu?${qp.toString()}`);
+    const res = await axios.get(`/menu?${qp.toString()}`);
     return res.data;
   },
 
   async getMenuGroups(): Promise<ListResponse<MenuGroupDto>> {
-    const res = await axios.get(`/admin/menu/groups`);
+    const res = await axios.get(`/menu/groups`);
     return res.data;
   },
 
   async createMenuItem(
     payload: CreateMenuItemRequest
   ): Promise<ItemResponse<MenuItemDto>> {
-    const res = await axios.post(`/admin/menu`, payload);
+    const res = await axios.post(`/menu`, payload);
     return res.data;
   },
 
@@ -106,14 +98,14 @@ const menusApi = {
     id: string,
     payload: UpdateMenuItemRequest
   ): Promise<ItemResponse<MenuItemDto>> {
-    const res = await axios.put(`/admin/menu/${id}`, payload);
+    const res = await axios.put(`/menu/${id}`, payload);
     return res.data;
   },
 
   async deleteMenuItem(
     id: string
   ): Promise<{ isSuccess: boolean; message: string | null }> {
-    const res = await axios.delete(`/admin/menu/${id}`);
+    const res = await axios.delete(`/menu/${id}`);
     return res.data;
   },
 };

@@ -19,6 +19,8 @@ type ConfirmModalProps = {
   confirmColor?: "primary" | "error" | "success" | "warning";
   cancelText?: string;
   icon?: React.ReactNode;
+  confirmIcon?: React.ReactNode;
+  cancelIcon?: React.ReactNode;
   onConfirm: () => Promise<void> | void;
 };
 
@@ -30,7 +32,9 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
   confirmText = "Xác nhận",
   cancelText = "Đóng",
   confirmColor = "error",
+  confirmIcon,
   icon,
+  cancelIcon,
   onConfirm,
 }) => {
   const handleConfirm = async () => {
@@ -64,10 +68,16 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
           justifyContent="flex-end"
           sx={{ width: "100%" }}
         >
-          <Button variant="outlined" color="inherit" onClick={onClose}>
+          <Button
+            startIcon={cancelIcon}
+            variant="outlined"
+            color="inherit"
+            onClick={onClose}
+          >
             {cancelText}
           </Button>
           <Button
+            startIcon={confirmIcon}
             variant="contained"
             color={confirmColor}
             onClick={handleConfirm}

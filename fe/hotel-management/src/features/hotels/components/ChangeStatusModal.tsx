@@ -158,6 +158,7 @@ const ChangeStatusModal: React.FC<ChangeStatusModalProps> = ({
                       onChange={(value) => {
                         field.onChange(dayjs(value).toDate());
                       }}
+                      minDate={dayjs(new Date())}
                       slotProps={{
                         textField: {
                           fullWidth: true,

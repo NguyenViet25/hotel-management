@@ -1,7 +1,28 @@
+import React from "react";
 import type { Column } from "../../../../../components/common/DataTable";
 import type { RoomType } from "../../../../../api/roomTypesApi";
 
 export const roomTypeColumns: Column<RoomType>[] = [
+  {
+    id: "imageUrl",
+    label: "Ảnh",
+    minWidth: 80,
+    render: (row) => {
+      const src = row.imageUrl;
+      return src
+        ? React.createElement("img", {
+            src,
+            alt: row.name,
+            style: {
+              width: 48,
+              height: 48,
+              objectFit: "contain",
+              borderRadius: 6,
+            },
+          })
+        : "—";
+    },
+  },
   { id: "name", label: "Tên loại phòng", minWidth: 160 },
   {
     id: "roomCount",

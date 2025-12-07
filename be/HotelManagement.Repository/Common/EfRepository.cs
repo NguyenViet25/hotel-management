@@ -33,6 +33,13 @@ public class EfRepository<T> : IRepository<T> where T : class
         return Task.CompletedTask;
     }
 
+    public Task RemoveRangeAsync(List<T> entity)
+    {
+        Set.RemoveRange(entity);
+        return Task.CompletedTask;
+    }
+
+
     public Task<int> SaveChangesAsync(CancellationToken ct = default) => _db.SaveChangesAsync(ct);
 
     public async Task<bool> AnyAsync(params object[] keyValues)

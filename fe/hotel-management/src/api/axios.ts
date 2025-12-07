@@ -1,7 +1,7 @@
 import axios from "axios";
 import { toast } from "react-toastify";
 
-const API_URL = "http://localhost:5283/api";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5283/api";
 
 const axiosInstance = axios.create({
   baseURL: API_URL,
@@ -19,7 +19,7 @@ const navigateToCorrectPage = (user: any) => {
 
   switch (role) {
     case "admin":
-      redirectPath = "/admin/dashboard";
+      redirectPath = "/dashboard";
       break;
     case "facilitymanager":
       redirectPath = "/manager/dashboard";
@@ -64,7 +64,10 @@ axiosInstance.interceptors.request.use(
 
 // ✅ Response interceptor for handling errors
 axiosInstance.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log(response.data);
+    return response;
+  },
   (error) => {
     // if (error.response && error.response.status === 401) {
     //   toast.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");

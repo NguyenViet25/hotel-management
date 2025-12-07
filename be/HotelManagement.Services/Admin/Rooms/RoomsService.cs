@@ -61,11 +61,47 @@ public class RoomsService : IRoomsService
                 q = q.Where(r => r.Number.Contains(query.Search!));
             }
 
+            var total = await q.CountAsync();
+
             var items = await q
-                .OrderBy(r => r.Floor)
+                .OrderBy(r => r.Status == RoomStatus.Dirty ? 0 : (r.Status == RoomStatus.Cleaning ? 1 : (r.Status == RoomStatus.Maintenance ? 2 : 3)))
+                .ThenBy(r => r.Floor)
                 .ThenBy(r => r.Number)
                 .Skip((query.Page - 1) * query.PageSize)
                 .Take(query.PageSize)
+                .ToListAsync();
+
+            var dtos = items.Select(r => new RoomSummaryDto
+            {
+                Id = r.Id,
+                HotelId = r.HotelId,
+                RoomTypeId = r.RoomTypeId,
+                RoomTypeName = r.RoomType?.Name ?? string.Empty,
+                Number = r.Number,
+                Floor = r.Floor,
+                Status = r.Status
+            }).ToList();
+            var meta = new { total, page = query.Page, pageSize = query.PageSize };
+
+            return ApiResponse<List<RoomSummaryDto>>.Ok(dtos, meta: meta);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<List<RoomSummaryDto>>.Fail($"Error listing rooms: {ex.Message}");
+        }
+    }
+
+    public async Task<ApiResponse<List<RoomSummaryDto>>> ListByTypeAsync(Guid id)
+    {
+        try
+        {
+            var q = _roomRepository.Query()
+                .Include(r => r.RoomType)
+                .Where(x => x.RoomTypeId == id);
+
+            var items = await q
+                .OrderBy(r => r.Floor)
+                .ThenBy(r => r.Number)
                 .ToListAsync();
 
             var dtos = items.Select(r => new RoomSummaryDto
@@ -96,11 +132,11 @@ public class RoomsService : IRoomsService
 
             var roomType = await _roomTypeRepository.Query()
                 .FirstOrDefaultAsync(rt => rt.Id == dto.RoomTypeId && rt.HotelId == dto.HotelId);
-            if (roomType == null) return ApiResponse<RoomSummaryDto>.Fail("Room type not found in hotel");
+            if (roomType == null) return ApiResponse<RoomSummaryDto>.Fail("Kiểu phòng không tồn tại trong khách sạn");
 
             var existing = await _roomRepository.Query()
                 .AnyAsync(r => r.HotelId == dto.HotelId && r.Number == dto.Number);
-            if (existing) return ApiResponse<RoomSummaryDto>.Fail("Room number already exists in this hotel");
+            if (existing) return ApiResponse<RoomSummaryDto>.Fail("Số phòng đã tồn tại");
 
             var room = new HotelRoom
             {

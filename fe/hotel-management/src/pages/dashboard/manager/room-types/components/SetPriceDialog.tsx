@@ -7,6 +7,8 @@ import {
   TextField,
   Button,
   Box,
+  InputAdornment,
+  Typography,
 } from "@mui/material";
 
 export interface SetPriceDialogProps {
@@ -22,18 +24,17 @@ const SetPriceDialog: React.FC<SetPriceDialogProps> = ({
   onConfirm,
   defaultPrice,
 }) => {
-  const [price, setPrice] = useState<string>(
-    defaultPrice != null ? String(defaultPrice) : ""
+  const [price, setPrice] = useState<number | null>(
+    defaultPrice != null ? Number(defaultPrice) : null
   );
 
   useEffect(() => {
-    setPrice(defaultPrice != null ? String(defaultPrice) : "");
+    setPrice(defaultPrice != null ? Number(defaultPrice) : null);
   }, [defaultPrice, open]);
 
   const handleConfirm = () => {
-    const parsed = Number(price);
-    if (!Number.isFinite(parsed) || parsed < 0) return;
-    onConfirm(parsed);
+    if (price == null || !Number.isFinite(price) || price < 0) return;
+    onConfirm(price);
   };
 
   return (
@@ -43,12 +44,29 @@ const SetPriceDialog: React.FC<SetPriceDialogProps> = ({
         <Box sx={{ mt: 1 }}>
           <TextField
             label="Giá (VND)"
-            type="number"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
+            type="text"
+            value={
+              price !== null && price !== undefined
+                ? new Intl.NumberFormat("vi-VN").format(Number(price))
+                : ""
+            }
+            onChange={(e) => {
+              const raw = e.target.value.replace(/[^0-9]/g, "");
+              const num = raw ? Number(raw) : null;
+              setPrice(num);
+            }}
             fullWidth
             autoFocus
-            InputProps={{ inputProps: { min: 0 } }}
+            inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <Typography variant="body2" color="text.secondary">
+                    VND
+                  </Typography>
+                </InputAdornment>
+              ),
+            }}
           />
         </Box>
       </DialogContent>
@@ -57,7 +75,7 @@ const SetPriceDialog: React.FC<SetPriceDialogProps> = ({
         <Button
           variant="contained"
           onClick={handleConfirm}
-          disabled={price === "" || Number(price) < 0}
+          disabled={price == null || price < 0}
         >
           Áp dụng
         </Button>

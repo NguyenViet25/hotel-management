@@ -16,6 +16,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import React from "react";
 import { Controller } from "react-hook-form";
 import type { RoomType } from "../../../../../api/roomTypesApi";
+import { MonetizationOn } from "@mui/icons-material";
 
 type Props = {
   index: number;
@@ -23,6 +24,7 @@ type Props = {
   errors?: any;
   roomTypes: RoomType[];
   onRemove?: () => void;
+  setReloadCount: (func: (prev: number) => number) => void;
 };
 
 const RoomBookingSection: React.FC<Props> = ({
@@ -31,6 +33,7 @@ const RoomBookingSection: React.FC<Props> = ({
   errors,
   roomTypes,
   onRemove,
+  setReloadCount,
 }) => {
   return (
     <Stack spacing={2}>
@@ -70,6 +73,10 @@ const RoomBookingSection: React.FC<Props> = ({
               ),
             }}
             {...field}
+            onChange={(e) => {
+              field.onChange(e);
+              setReloadCount((prev) => prev + 1);
+            }}
           >
             {roomTypes.map((r) => (
               <MenuItem key={r.id} value={r.id}>
@@ -97,19 +104,37 @@ const RoomBookingSection: React.FC<Props> = ({
           control={control}
           render={({ field }) => (
             <TextField
-              label="Giá phòng (VND)"
-              type="number"
-              fullWidth
-              error={!!errors?.roomTypes?.[index]?.price}
-              helperText={errors?.roomTypes?.[index]?.price?.message}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="start">VND</InputAdornment>
-                ),
-                inputProps: { min: 1 },
-                sx: { height: "100%" },
-              }}
               {...field}
+              label="Đơn giá"
+              type="text"
+              fullWidth
+              value={
+                field.value !== undefined && field.value !== null
+                  ? new Intl.NumberFormat("vi-VN").format(Number(field.value))
+                  : ""
+              }
+              onChange={(e) => {
+                const raw = e.target.value.replace(/[^0-9]/g, "");
+                const num = raw ? Number(raw) : 0;
+                field.onChange(num);
+              }}
+              error={!!errors.unitPrice}
+              helperText={errors.unitPrice?.message}
+              inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <MonetizationOn />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <Typography variant="body2" color="text.secondary">
+                      VND
+                    </Typography>
+                  </InputAdornment>
+                ),
+              }}
             />
           )}
         />
@@ -134,6 +159,10 @@ const RoomBookingSection: React.FC<Props> = ({
                 sx: { height: "100%" },
               }}
               {...field}
+              onChange={(e) => {
+                field.onChange(e);
+                setReloadCount((prev) => prev + 1);
+              }}
             />
           )}
         />
@@ -148,7 +177,10 @@ const RoomBookingSection: React.FC<Props> = ({
               <DatePicker
                 label="Từ ngày"
                 value={field.value}
-                onChange={field.onChange}
+                onChange={(date) => {
+                  field.onChange(date);
+                  setReloadCount((prev) => prev + 1);
+                }}
                 slotProps={{
                   textField: {
                     fullWidth: true,
@@ -176,7 +208,10 @@ const RoomBookingSection: React.FC<Props> = ({
               <DatePicker
                 label="Đến ngày"
                 value={field.value}
-                onChange={field.onChange}
+                onChange={(date) => {
+                  field.onChange(date);
+                  setReloadCount((prev) => prev + 1);
+                }}
                 slotProps={{
                   textField: {
                     fullWidth: true,
