@@ -222,3 +222,4 @@
 2025-12-07 - 2 - 01:58:00 UTC :: docs: UC-29 Thanh toan nha hang: thu tien, in hoa don, dong giao dich. — kiem tra tuong thich mui gio/tien te (dam bao backward-compatible)
 2025-12-07 - 3 - 01:58:01 UTC :: perf: UC-18 Room Move/Extend: doi phong, gia han dem o. — bo sung unit test muc co ban (anh huong thap)
 2025-12-07 - 4 - 01:58:02 UTC :: chore: UC-47 Dashboard: gioi han xem theo vai tro va co so. — refactor luong xu ly cho ro rang (dat tieu chi toi thieu)
+2025-12-07 - 5 - 01:58:03 UTC :: docs: UC-17 Folio: gop/tach, post charge F&B/minibar, giam gia. — sua validate va bo sung thong bao loi (da smoke test)
