@@ -1,10 +1,10 @@
-# Hotel Management System
+# HỆ THỐNG QUẢN LÝ CHUỖI KHÁCH SẠN TÂN TRƯỜNG SƠN
 
-**Project Overview:**  
-This is a capstone project designed to manage hotel operations efficiently. It includes features for handling bookings, rooms, customers, and other hotel management tasks.
+**Tổng quan dự án:**  
+Đây là một dự án tốt nghiệp được xây dựng nhằm quản lý hoạt động khách sạn một cách hiệu quả. Hệ thống bao gồm các chức năng quản lý đặt phòng, phòng, khách hàng và nhiều nghiệp vụ khác trong quản lý khách sạn.
 
-**Access the APIs:**  
+**Truy cập API docs:**  
 https://hm-web-api.azurewebsites.net/swagger/index.html
 
-**Access the Client Application:**  
+**Truy cập ứng dụng:**  
 https://hotel-management-five-zeta.vercel.app
