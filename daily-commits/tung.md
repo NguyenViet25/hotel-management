@@ -224,3 +224,4 @@
 2025-12-06 - 4 - 01:43:43 UTC :: feat: UC-40 Thu/chi: doi soat tien mat/the/le phi PG. — chinh sua tai lieu & mo ta API (dat tieu chi toi thieu)
 2025-12-06 - 5 - 01:43:46 UTC :: refactor: UC-05 Co so: kich hoat/vo hieu hoa khi bao tri hoac tam dung. — cap nhat cau hinh va kiem tra bien (dam bao backward-compatible)
 2025-12-07 - 1 - 01:57:55 UTC :: build: UC-26 Order: tao/chinh sua order, ghi chu, void/discount. — them log chi tiet phuc vu audit (da smoke test)
+2025-12-07 - 2 - 01:57:57 UTC :: fix: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — tach chuc nang de de bao tri (da smoke test)
