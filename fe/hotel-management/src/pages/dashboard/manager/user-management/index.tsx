@@ -46,7 +46,7 @@ const ManagerUserManagement: React.FC = () => {
     fullName: "",
     phoneNumber: "",
     roles: [],
-    propertyRoles: [],
+    propertyRoles: hotelId ? [{ hotelId }] : [],
   });
 
   // State for form validation
@@ -215,6 +215,7 @@ const ManagerUserManagement: React.FC = () => {
     try {
       const response = await userService.createUser({
         ...formData,
+        propertyRoles: hotelId ? [{ hotelId }] : [],
         roles: formData.roles,
       });
 
@@ -243,6 +244,7 @@ const ManagerUserManagement: React.FC = () => {
       const response = await userService.updateUser(selectedUser.id, {
         ...formData,
         roles: formData.roles,
+        propertyRoles: hotelId ? [{ hotelId }] : [],
       });
       if (response.isSuccess) {
         showSnackbar("Cập nhật người dùng thành công", "success");

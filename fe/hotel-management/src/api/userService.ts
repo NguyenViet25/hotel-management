@@ -14,10 +14,10 @@ export interface User {
 }
 
 export interface PropertyRole {
-  id: string;
+  id?: string;
   hotelId: string;
-  role: string;
-  name: string;
+  role?: string;
+  name?: string;
 }
 
 export interface UserListResponse {
@@ -48,7 +48,7 @@ export interface CreateUserRequest {
 
 export interface AssignPropertyRoleDto {
   hotelId: string;
-  role: number;
+  role?: number;
 }
 
 export interface UpdateUserRequest {
@@ -141,7 +141,9 @@ const userService = {
   resetPassword: async (
     id: string
   ): Promise<{ isSuccess: boolean; message: string }> => {
-    const response = await axios.post(`/users/${id}/reset-password`);
+    const response = await axios.post(`/users/${id}/reset-password`, {
+      newPassword: "Password1@",
+    });
     return response.data;
   },
 

@@ -15,6 +15,7 @@ import React from "react";
 import type { CreateUserRequest } from "../../../../../api/userService";
 import RoleSelect from "../components/RoleSelect";
 import HotelSelect from "../components/HotelSelect";
+import { useStore, type StoreState } from "../../../../../hooks/useStore";
 
 interface CreateUserDialogProps {
   open: boolean;

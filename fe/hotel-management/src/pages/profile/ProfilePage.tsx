@@ -1,29 +1,30 @@
-import { useEffect, useState } from "react";
 import {
-  Box,
-  Paper,
-  Stack,
-  Typography,
-  TextField,
-  Button,
-  Divider,
-} from "@mui/material";
-import profileApi, {
-  type ProfileDto,
-  type UpdateProfileRequest,
-  type ChangePasswordRequest,
-} from "../../api/profileApi";
-import { toast } from "react-toastify";
-import PageTitle from "../../components/common/PageTitle";
-import {
-  Save as SaveIcon,
+  Email as EmailIcon,
   Lock as LockIcon,
   Person as PersonIcon,
-  Email as EmailIcon,
   Phone as PhoneIcon,
+  Save as SaveIcon,
+  Visibility,
+  VisibilityOff,
 } from "@mui/icons-material";
+import {
+  Box,
+  Button,
+  Divider,
+  IconButton,
+  InputAdornment,
+  Paper,
+  Stack,
+  TextField,
+} from "@mui/material";
+import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import profileApi, {
+  type ChangePasswordRequest,
+  type UpdateProfileRequest,
+} from "../../api/profileApi";
+import PageTitle from "../../components/common/PageTitle";
 import { useStore, type StoreState } from "../../hooks/useStore";
-import type { User } from "../../api/userService";
 
 const ProfilePage = () => {
   const { user, setUser } = useStore<StoreState>((state) => state);
@@ -32,6 +33,8 @@ const ProfilePage = () => {
     currentPassword: "",
     newPassword: "",
   });
+  const [showCurrentPwd, setShowCurrentPwd] = useState(false);
+  const [showNewPwd, setShowNewPwd] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -155,7 +158,7 @@ const ProfilePage = () => {
       <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
         <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
           <TextField
-            type="password"
+            type={showCurrentPwd ? "text" : "password"}
             label="Mật khẩu hiện tại"
             value={pwd.currentPassword}
             onChange={(e) =>
@@ -164,11 +167,21 @@ const ProfilePage = () => {
             fullWidth
             InputProps={{
               startAdornment: <LockIcon sx={{ mr: 1 }} />,
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="toggle current password visibility"
+                    onClick={() => setShowCurrentPwd((prev) => !prev)}
+                  >
+                    {showCurrentPwd ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
             }}
             placeholder="Nhập mật khẩu hiện tại"
           />
           <TextField
-            type="password"
+            type={showNewPwd ? "text" : "password"}
             label="Mật khẩu mới"
             value={pwd.newPassword}
             onChange={(e) =>
@@ -177,6 +190,16 @@ const ProfilePage = () => {
             fullWidth
             InputProps={{
               startAdornment: <LockIcon sx={{ mr: 1 }} />,
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="toggle new password visibility"
+                    onClick={() => setShowNewPwd((prev) => !prev)}
+                  >
+                    {showNewPwd ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
             }}
             placeholder="Nhập mật khẩu mới"
           />

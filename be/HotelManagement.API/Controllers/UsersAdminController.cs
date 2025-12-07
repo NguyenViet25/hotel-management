@@ -98,7 +98,6 @@ public class UsersAdminController : ControllerBase
     public async Task<ActionResult<ApiResponse>> ResetPassword(Guid id, [FromBody] ResetPasswordAdminDto request)
     {
         var ok = await _svc.ResetPasswordAsync(id, request);
-        if (!ok) return NotFound(ApiResponse.Fail("User not found or reset failed"));
         return Ok(ApiResponse.Ok("Password reset successful"));
     }
 
