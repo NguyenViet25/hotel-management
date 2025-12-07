@@ -17,6 +17,9 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
 import PageTitle from "../../../../components/common/PageTitle";
+import DataTable, {
+  type Column,
+} from "../../../../components/common/DataTable";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
 import revenueApi, {
   type RevenueStatsDto,
@@ -258,82 +261,82 @@ const RevenuePage: React.FC = () => {
             }
           />
           <CardContent>
-            <Stack spacing={1}>
-              {(pagedDetails || []).map((d, idx) => (
-                <Stack
-                  key={idx}
-                  direction={{ xs: "column", sm: "row" }}
-                  spacing={1}
-                  alignItems={{ xs: "flex-start", sm: "center" }}
-                >
-                  <Typography sx={{ minWidth: 120 }}>
-                    {dayjs(d.createdAt).format("DD/MM/YYYY")}
-                  </Typography>
-                  <Typography sx={{ flexGrow: 1 }}>{d.description}</Typography>
-                  <Typography>{currency(d.amount)}</Typography>
-                  {d.bookingId && (
-                    <Button
-                      size="small"
-                      variant="text"
-                      onClick={() => {
-                        window.location.href = `/frontdesk/bookings/${d.bookingId}`;
-                      }}
-                    >
-                      Xem booking
-                    </Button>
-                  )}
-                </Stack>
-              ))}
-              <Divider sx={{ my: 1 }} />
-              <Stack
-                direction={{ xs: "column", sm: "row" }}
-                spacing={1}
-                alignItems={{ xs: "flex-start", sm: "center" }}
-                justifyContent="space-between"
-              >
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    disabled={detailPage <= 1}
-                    onClick={() => setDetailPage((p) => Math.max(1, p - 1))}
-                  >
-                    Trước
-                  </Button>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    disabled={detailPage >= totalPages}
-                    onClick={() =>
-                      setDetailPage((p) => Math.min(totalPages, p + 1))
-                    }
-                  >
-                    Sau
-                  </Button>
-                </Stack>
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Typography>
-                    Trang {detailPage}/{totalPages}
-                  </Typography>
-                  <TextField
-                    select
-                    size="small"
-                    label="Mỗi trang"
-                    value={detailPageSize}
-                    onChange={(e) => {
-                      const v = Number(e.target.value);
-                      setDetailPageSize(v);
-                      setDetailPage(1);
-                    }}
-                    sx={{ width: 120 }}
-                  >
-                    <MenuItem value={10}>10</MenuItem>
-                    <MenuItem value={20}>20</MenuItem>
-                    <MenuItem value={50}>50</MenuItem>
-                  </TextField>
-                </Stack>
-              </Stack>
-            </Stack>
+            {(() => {
+              const columns: Column<RevenueDetailItemDto>[] = [
+                {
+                  id: "createdAt",
+                  label: "Ngày",
+                  minWidth: 120,
+                  format: (v: string) => dayjs(v).format("DD/MM/YYYY"),
+                },
+                { id: "description", label: "Mô tả", minWidth: 200 },
+                {
+                  id: "amount",
+                  label: "Số tiền",
+                  align: "right",
+                  minWidth: 120,
+                  format: (v: number) => currency(Number(v)),
+                },
+                {
+                  id: "sourceType",
+                  label: "Danh mục",
+                  minWidth: 120,
+                  format: (v: number) =>
+                    v === 0
+                      ? "Phòng"
+                      : v === 1
+                      ? "F&B"
+                      : v === 2
+                      ? "Khác"
+                      : "Giảm giá",
+                },
+                {
+                  id: "invoiceId",
+                  label: "Liên kết",
+                  minWidth: 140,
+                  render: (row) =>
+                    row.bookingId ? (
+                      <Button
+                        size="small"
+                        variant="text"
+                        onClick={() =>
+                          (window.location.href = `/frontdesk/bookings/${row.bookingId}`)
+                        }
+                      >
+                        Xem booking
+                      </Button>
+                    ) : row.orderId ? (
+                      <Button
+                        size="small"
+                        variant="text"
+                        onClick={() =>
+                          (window.location.href = `/frontdesk/orders?orderId=${row.orderId}`)
+                        }
+                      >
+                        Xem order
+                      </Button>
+                    ) : (
+                      <Typography color="text.secondary">—</Typography>
+                    ),
+                },
+              ];
+
+              return (
+                <DataTable<RevenueDetailItemDto>
+                  columns={columns}
+                  data={pagedDetails}
+                  loading={loading}
+                  pagination={{
+                    page: detailPage,
+                    pageSize: detailPageSize,
+                    total: details.length,
+                    onPageChange: (p) => setDetailPage(p),
+                  }}
+                  actionColumn={false}
+                  getRowId={(row) => `${row.invoiceId}-${row.createdAt}`}
+                />
+              );
+            })()}
           </CardContent>
         </Card>
       )}

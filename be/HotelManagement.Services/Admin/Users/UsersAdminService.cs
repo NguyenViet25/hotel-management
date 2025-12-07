@@ -363,10 +363,12 @@ public class UsersAdminService : IUsersAdminService
         var user = await _users.FindByIdAsync(id.ToString());
         if (user == null) return false;
         var token = await _users.GeneratePasswordResetTokenAsync(user);
-        var newPass = token.Substring(token.Length - 8);
-        var res = await _users.ResetPasswordAsync(user, token, newPass);
+        var options = new IdentityOptions();
+        string password = GeneratePassword(options);
+        var res = await _users.ResetPasswordAsync(user, token, password);
+        var unlockUser = await _users.SetLockoutEndDateAsync(user, DateTime.Now.AddMonths(-1));
 
-        var sent = await _emailService.SendResetPasswordEmailAsync(user.Email!, user.UserName, newPass);
+        var sent = await _emailService.SendResetPasswordEmailAsync(user.Email!, user.UserName, password);
         return res.Succeeded;
     }
 
@@ -398,4 +400,51 @@ public class UsersAdminService : IUsersAdminService
         await _db.SaveChangesAsync();
         return true;
     }
+
+    public static string GeneratePassword(IdentityOptions options)
+    {
+        var passwordOptions = options.Password;
+
+        int length = passwordOptions.RequiredLength;
+        int uniqueChars = passwordOptions.RequiredUniqueChars;
+
+        var random = new Random();
+
+        string upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        string lower = "abcdefghijklmnopqrstuvwxyz";
+        string digit = "0123456789";
+        string nonAlphanumeric = "!@$?_-";
+
+        var requiredChars = new List<char>();
+
+        if (passwordOptions.RequireUppercase)
+            requiredChars.Add(upper[random.Next(upper.Length)]);
+
+        if (passwordOptions.RequireLowercase)
+            requiredChars.Add(lower[random.Next(lower.Length)]);
+
+        if (passwordOptions.RequireDigit)
+            requiredChars.Add(digit[random.Next(digit.Length)]);
+
+        if (passwordOptions.RequireNonAlphanumeric)
+            requiredChars.Add(nonAlphanumeric[random.Next(nonAlphanumeric.Length)]);
+
+        var allChars = upper + lower + digit + nonAlphanumeric;
+
+        // Fill remaining chars
+        while (requiredChars.Count < length)
+        {
+            requiredChars.Add(allChars[random.Next(allChars.Length)]);
+        }
+
+        // Ensure required unique characters
+        while (requiredChars.Distinct().Count() < uniqueChars)
+        {
+            requiredChars.Add(allChars[random.Next(allChars.Length)]);
+        }
+
+        // Shuffle the characters
+        return new string(requiredChars.OrderBy(x => random.Next()).ToArray());
+    }
+
 }
