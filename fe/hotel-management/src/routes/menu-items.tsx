@@ -52,11 +52,11 @@ export const menuItems = {
       icon: <Discount />,
     },
     { title: "Thực đơn", path: "/manager/menus", icon: <DiningIcon /> },
-    {
-      title: "Báo cáo doanh thu",
-      path: "/manager/revenue",
-      icon: <AttachMoney />,
-    },
+    // {
+    //   title: "Báo cáo doanh thu",
+    //   path: "/manager/revenue",
+    //   icon: <AttachMoney />,
+    // },
     {
       title: "Lịch trình món ăn",
       path: "/manager/timeline",

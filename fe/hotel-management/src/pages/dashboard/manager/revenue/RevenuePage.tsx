@@ -1,41 +1,39 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { InfoOutline } from "@mui/icons-material";
 import {
   Box,
+  Button,
   Card,
   CardContent,
-  CardHeader,
   Divider,
-  Grid,
   MenuItem,
   Stack,
   TextField,
   Typography,
 } from "@mui/material";
-import { Button } from "@mui/material";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import dayjs, { Dayjs } from "dayjs";
-import PageTitle from "../../../../components/common/PageTitle";
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import revenueApi, {
+  type RevenueBreakdownDto,
+  type RevenueDetailItemDto,
+  type RevenueStatsDto,
+} from "../../../../api/revenueApi";
 import DataTable, {
   type Column,
 } from "../../../../components/common/DataTable";
+import EmptyState from "../../../../components/common/EmptyState";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
-import revenueApi, {
-  type RevenueStatsDto,
-  type RevenueBreakdownDto,
-  type RevenueDetailItemDto,
-} from "../../../../api/revenueApi";
-import {
-  LineChart,
-  Line,
-  CartesianGrid,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
-import { Info, InfoOutline } from "@mui/icons-material";
 
 const currency = (v: number) => `${Math.round(Number(v)).toLocaleString()} đ`;
 
@@ -53,6 +51,9 @@ const RevenuePage: React.FC = () => {
   const [detailPageSize, setDetailPageSize] = useState(10);
   const [catFrom, setCatFrom] = useState<Dayjs>(from);
   const [catTo, setCatTo] = useState<Dayjs>(to);
+  const [catBreakdown, setCatBreakdown] = useState<RevenueBreakdownDto | null>(
+    null
+  );
 
   const chartData = useMemo(
     () =>
@@ -89,12 +90,31 @@ const RevenuePage: React.FC = () => {
     }
   };
 
-  const totalDetails = details.length;
-  const totalPages = Math.max(1, Math.ceil(totalDetails / detailPageSize));
   const pagedDetails = useMemo(() => {
     const start = (detailPage - 1) * detailPageSize;
     return details.slice(start, start + detailPageSize);
   }, [details, detailPage, detailPageSize]);
+
+  useEffect(() => {
+    setDetailOpen(false);
+    setDetailPage(1);
+    setDetails([]);
+  }, [catFrom, catTo]);
+
+  useEffect(() => {
+    const loadCategoryBreakdown = async () => {
+      if (!hotelId || !catFrom || !catTo) return;
+      const res = await revenueApi.getBreakdown({
+        hotelId,
+        fromDate: catFrom.startOf("day").toISOString(),
+        toDate: catTo.endOf("day").toISOString(),
+        granularity,
+      });
+      if (res.isSuccess) setCatBreakdown(res.data);
+    };
+    loadCategoryBreakdown();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hotelId, catFrom, catTo, granularity]);
 
   useEffect(() => {
     load();
@@ -162,30 +182,39 @@ const RevenuePage: React.FC = () => {
             />
           </Stack>
         </LocalizationProvider>
-        <Box sx={{ height: 320 }} mt={2}>
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={chartData}
-              margin={{ left: 8, right: 16, top: 12, bottom: 12 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis
-                tickFormatter={(v) =>
-                  Math.round(Number(v) / 1000).toLocaleString() + "k"
-                }
-              />
-              <Tooltip formatter={(v: any) => currency(Number(v))} />
-              <Line
-                type="monotone"
-                dataKey="total"
-                stroke="#5563DE"
-                strokeWidth={2}
-                dot={false}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </Box>
+        {chartData.length > 0 ? (
+          <Box sx={{ height: 320 }} mt={2}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart
+                data={chartData}
+                margin={{ left: 8, right: 16, top: 12, bottom: 12 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis
+                  tickFormatter={(v) =>
+                    Math.round(Number(v) / 1000).toLocaleString() + "k"
+                  }
+                />
+                <Tooltip formatter={(v: any) => currency(Number(v))} />
+                <Line
+                  type="monotone"
+                  dataKey="total"
+                  stroke="#5563DE"
+                  strokeWidth={2}
+                  dot={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </Box>
+        ) : (
+          <Box mt={2}>
+            <EmptyState
+              message="Không có dữ liệu"
+              description="Vui lòng chọn khoảng thời gian khác."
+            />
+          </Box>
+        )}
       </Card>
 
       <Card variant="outlined" sx={{ mt: 2, p: 2 }}>
@@ -227,11 +256,8 @@ const RevenuePage: React.FC = () => {
               justifyContent="space-between"
               alignItems="center"
             >
-              <Typography>Đặt phòng</Typography>
               <Stack direction="row" spacing={1} alignItems="center">
-                <Typography fontWeight={700}>
-                  {currency(breakdown?.roomTotal || 0)}
-                </Typography>
+                <Typography>Đặt phòng</Typography>
                 <Button
                   size="small"
                   variant="outlined"
@@ -253,17 +279,17 @@ const RevenuePage: React.FC = () => {
                   Chi tiết
                 </Button>
               </Stack>
+              <Typography fontWeight={700}>
+                {currency(catBreakdown?.roomTotal ?? 0)}
+              </Typography>
             </Stack>
             <Stack
               direction="row"
               justifyContent="space-between"
               alignItems="center"
             >
-              <Typography>Đặt đồ ăn</Typography>
-              <Stack direction="row" spacing={1} alignItems="center">
-                <Typography fontWeight={700}>
-                  {currency(breakdown?.fnbTotal || 0)}
-                </Typography>
+              <Stack direction="row" spacing={1.8} alignItems="center">
+                <Typography>Đặt đồ ăn</Typography>
                 <Button
                   size="small"
                   variant="outlined"
@@ -285,7 +311,23 @@ const RevenuePage: React.FC = () => {
                   Chi tiết
                 </Button>
               </Stack>
+              <Typography fontWeight={700}>
+                {currency(catBreakdown?.fnbTotal ?? 0)}
+              </Typography>
             </Stack>
+          </Stack>
+          <Divider sx={{ my: 1 }} />
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <Typography>Tổng </Typography>
+            <Typography fontWeight={700}>
+              {currency(
+                (catBreakdown?.roomTotal ?? 0) + (catBreakdown?.fnbTotal ?? 0)
+              )}
+            </Typography>
           </Stack>
         </Box>
 
