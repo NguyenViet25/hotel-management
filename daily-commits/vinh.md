@@ -218,3 +218,4 @@
 2025-12-06 - 3 - 01:43:44 UTC :: fix: UC-37 Night Audit: kiem tra folio chua chot, khoa giao dich. — cai thien hieu nang render/list (da kiem tra lint)
 2025-12-06 - 4 - 01:43:46 UTC :: refactor: UC-20 Keo-tha: gan/doi phong truc quan, tranh trung. — bo sung unit test muc co ban (can theo doi them)
 2025-12-06 - 5 - 01:43:49 UTC :: docs: UC-39 Xuat Audit Log: xuat CSV/PDF kiem tra tuan thu. — cap nhat cau hinh va kiem tra bien (dong bo voi BE/FE)
+2025-12-07 - 1 - 01:57:56 UTC :: perf: UC-10 Goi gia: tao rate plan, thoi gian ap dung linh hoat. — chinh sua tai lieu & mo ta API (da smoke test)
