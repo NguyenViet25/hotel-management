@@ -227,3 +227,4 @@
 2025-12-07 - 2 - 01:57:57 UTC :: fix: UC-16 Check-out: tong hop folio, tru coc, xuat hoa don. — tach chuc nang de de bao tri (da smoke test)
 2025-12-07 - 3 - 01:57:58 UTC :: ci: UC-32 Ca lam: tao mau va lich ca sang/chieu/dem. — sua validate va bo sung thong bao loi (da kiem tra lint)
 2025-12-07 - 4 - 01:58:01 UTC :: docs: UC-47 Dashboard: gioi han xem theo vai tro va co so. — chinh sua tai lieu & mo ta API (chuan bi cho tinh nang tiep theo)
+2025-12-07 - 5 - 01:58:02 UTC :: test: UC-34 Cham cong: ghi nhan diem danh, ban giao ca. — tach chuc nang de de bao tri (chuan bi cho tinh nang tiep theo)
