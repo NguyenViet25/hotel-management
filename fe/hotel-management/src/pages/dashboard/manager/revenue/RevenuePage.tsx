@@ -11,6 +11,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { Button } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -31,6 +32,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { Info, InfoOutline } from "@mui/icons-material";
 
 const currency = (v: number) => `${Math.round(Number(v)).toLocaleString()} đ`;
 
@@ -44,6 +46,8 @@ const RevenuePage: React.FC = () => {
   const [breakdown, setBreakdown] = useState<RevenueBreakdownDto | null>(null);
   const [details, setDetails] = useState<RevenueDetailItemDto[]>([]);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [detailPage, setDetailPage] = useState(1);
+  const [detailPageSize, setDetailPageSize] = useState(10);
 
   const chartData = useMemo(
     () =>
@@ -80,6 +84,13 @@ const RevenuePage: React.FC = () => {
     }
   };
 
+  const totalDetails = details.length;
+  const totalPages = Math.max(1, Math.ceil(totalDetails / detailPageSize));
+  const pagedDetails = useMemo(() => {
+    const start = (detailPage - 1) * detailPageSize;
+    return details.slice(start, start + detailPageSize);
+  }, [details, detailPage, detailPageSize]);
+
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -106,250 +117,149 @@ const RevenuePage: React.FC = () => {
           </Stack>
         </CardContent>
       </Card>
-      <Grid container spacing={2}>
-        <Grid size={{ xs: 12, md: 4 }}>
-          <Card variant="outlined" sx={{ mb: 2 }}>
-            <CardContent>
-              <LocalizationProvider
-                dateAdapter={AdapterDayjs}
-                adapterLocale="vi"
-              >
-                <Stack spacing={2}>
-                  <TextField
-                    select
-                    label="Phân nhóm"
-                    value={granularity}
-                    onChange={(e) => setGranularity(e.target.value as any)}
-                    fullWidth
-                  >
-                    <MenuItem value="day">Theo ngày</MenuItem>
-                    <MenuItem value="month">Theo tháng</MenuItem>
-                  </TextField>
-                  <DatePicker
-                    label="Từ ngày"
-                    value={from}
-                    onChange={(v) => v && setFrom(v)}
-                  />
-                  <DatePicker
-                    label="Đến ngày"
-                    value={to}
-                    onChange={(v) => v && setTo(v)}
-                  />
-                </Stack>
-              </LocalizationProvider>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid size={{ xs: 12, md: 8 }}>
-          <Card variant="outlined">
-            <CardHeader title="Biểu đồ doanh thu" />
-            <CardContent sx={{ height: 320 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={chartData}
-                  margin={{ left: 8, right: 16, top: 12, bottom: 12 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis
-                    tickFormatter={(v) =>
-                      Math.round(Number(v) / 1000).toLocaleString() + "k"
-                    }
-                  />
-                  <Tooltip formatter={(v: any) => currency(Number(v))} />
-                  <Line
-                    type="monotone"
-                    dataKey="total"
-                    stroke="#5563DE"
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
 
-      <Grid container spacing={2} sx={{ mt: 2 }}>
-        <Grid size={{ xs: 12, md: 6 }}>
-          <Card variant="outlined">
-            <CardHeader title="Theo danh mục" />
-            <CardContent>
-              <Stack spacing={1}>
-                <Stack
-                  direction="row"
-                  justifyContent="space-between"
-                  alignItems="center"
-                >
-                  <Typography>Phòng</Typography>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Typography fontWeight={700}>
-                      {currency(breakdown?.roomTotal || 0)}
-                    </Typography>
-                    <TextField
-                      size="small"
-                      value={"Chi tiết"}
-                      onClick={async () => {
-                        const res = await revenueApi.getDetails({
-                          hotelId,
-                          fromDate: from.startOf("day").toISOString(),
-                          toDate: to.endOf("day").toISOString(),
-                          sourceType: 0,
-                        });
-                        if (res.isSuccess) {
-                          setDetails(res.data);
-                          setDetailOpen(true);
-                        }
-                      }}
-                      sx={{ width: 100 }}
-                      inputProps={{
-                        readOnly: true,
-                        style: { cursor: "pointer" },
-                      }}
-                    />
-                  </Stack>
-                </Stack>
-                <Stack
-                  direction="row"
-                  justifyContent="space-between"
-                  alignItems="center"
-                >
-                  <Typography>F&B</Typography>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Typography fontWeight={700}>
-                      {currency(breakdown?.fnbTotal || 0)}
-                    </Typography>
-                    <TextField
-                      size="small"
-                      value={"Chi tiết"}
-                      onClick={async () => {
-                        const res = await revenueApi.getDetails({
-                          hotelId,
-                          fromDate: from.startOf("day").toISOString(),
-                          toDate: to.endOf("day").toISOString(),
-                          sourceType: 1,
-                        });
-                        if (res.isSuccess) {
-                          setDetails(res.data);
-                          setDetailOpen(true);
-                        }
-                      }}
-                      sx={{ width: 100 }}
-                      inputProps={{
-                        readOnly: true,
-                        style: { cursor: "pointer" },
-                      }}
-                    />
-                  </Stack>
-                </Stack>
-                <Stack
-                  direction="row"
-                  justifyContent="space-between"
-                  alignItems="center"
-                >
-                  <Typography>Khác</Typography>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Typography fontWeight={700}>
-                      {currency(breakdown?.otherTotal || 0)}
-                    </Typography>
-                    <TextField
-                      size="small"
-                      value={"Chi tiết"}
-                      onClick={async () => {
-                        const res = await revenueApi.getDetails({
-                          hotelId,
-                          fromDate: from.startOf("day").toISOString(),
-                          toDate: to.endOf("day").toISOString(),
-                          sourceType: 2,
-                        });
-                        if (res.isSuccess) {
-                          setDetails(res.data);
-                          setDetailOpen(true);
-                        }
-                      }}
-                      sx={{ width: 100 }}
-                      inputProps={{
-                        readOnly: true,
-                        style: { cursor: "pointer" },
-                      }}
-                    />
-                  </Stack>
-                </Stack>
-                <Stack
-                  direction="row"
-                  justifyContent="space-between"
-                  alignItems="center"
-                >
-                  <Typography>Giảm giá</Typography>
-                  <Typography fontWeight={700}>
-                    {currency(breakdown?.discountTotal || 0)}
-                  </Typography>
-                </Stack>
-              </Stack>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid size={{ xs: 12, md: 6 }}>
-          <Card variant="outlined">
-            <CardHeader title="Diễn biến theo thời gian" />
-            <CardContent sx={{ height: 320 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={(breakdown?.points || []).map((p) => ({
-                    date:
-                      granularity === "month"
-                        ? dayjs(p.date).format("MM/YYYY")
-                        : dayjs(p.date).format("DD/MM"),
-                    room: p.roomTotal,
-                    fnb: p.fnbTotal,
-                    other: p.otherTotal,
-                    discount: p.discountTotal,
-                  }))}
-                  margin={{ left: 8, right: 16, top: 12, bottom: 12 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis
-                    tickFormatter={(v) =>
-                      Math.round(Number(v) / 1000).toLocaleString() + "k"
+      <Card variant="outlined" sx={{ mb: 2 }}>
+        <CardContent>
+          <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="vi">
+            <Stack spacing={2} direction={{ xs: "column", lg: "row" }}>
+              <TextField
+                select
+                label="Phân nhóm"
+                value={granularity}
+                onChange={(e) => setGranularity(e.target.value as any)}
+                fullWidth
+                sx={{ width: { xs: "100%", lg: 180 } }}
+              >
+                <MenuItem value="day">Theo ngày</MenuItem>
+                <MenuItem value="month">Theo tháng</MenuItem>
+              </TextField>
+              <DatePicker
+                label="Từ ngày"
+                value={from}
+                onChange={(v) => v && setFrom(v)}
+              />
+              <DatePicker
+                label="Đến ngày"
+                value={to}
+                onChange={(v) => v && setTo(v)}
+              />
+            </Stack>
+          </LocalizationProvider>
+        </CardContent>
+      </Card>
+      <Card variant="outlined">
+        <CardHeader title="Biểu đồ doanh thu" />
+        <CardContent sx={{ height: 320 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              data={chartData}
+              margin={{ left: 8, right: 16, top: 12, bottom: 12 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" />
+              <YAxis
+                tickFormatter={(v) =>
+                  Math.round(Number(v) / 1000).toLocaleString() + "k"
+                }
+              />
+              <Tooltip formatter={(v: any) => currency(Number(v))} />
+              <Line
+                type="monotone"
+                dataKey="total"
+                stroke="#5563DE"
+                strokeWidth={2}
+                dot={false}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      <Card variant="outlined" sx={{ mt: 2 }}>
+        <CardHeader title="Doanh thu theo danh mục" />
+        <CardContent>
+          <Stack spacing={1}>
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+            >
+              <Typography>Đặt phòng</Typography>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Typography fontWeight={700}>
+                  {currency(breakdown?.roomTotal || 0)}
+                </Typography>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  startIcon={<InfoOutline />}
+                  onClick={async () => {
+                    const res = await revenueApi.getDetails({
+                      hotelId: hotelId || "",
+                      fromDate: from.startOf("day").toISOString(),
+                      toDate: to.endOf("day").toISOString(),
+                      sourceType: 0,
+                    });
+                    if (res.isSuccess) {
+                      setDetails(res.data);
+                      setDetailPage(1);
+                      setDetailOpen(true);
                     }
-                  />
-                  <Tooltip formatter={(v: any) => currency(Number(v))} />
-                  <Line
-                    type="monotone"
-                    dataKey="room"
-                    stroke="#5563DE"
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="fnb"
-                    stroke="#2ca02c"
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="other"
-                    stroke="#ff7f0e"
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+                  }}
+                >
+                  Chi tiết
+                </Button>
+              </Stack>
+            </Stack>
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+            >
+              <Typography>Đặt đồ ăn</Typography>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Typography fontWeight={700}>
+                  {currency(breakdown?.fnbTotal || 0)}
+                </Typography>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  startIcon={<InfoOutline />}
+                  onClick={async () => {
+                    const res = await revenueApi.getDetails({
+                      hotelId: hotelId || "",
+                      fromDate: from.startOf("day").toISOString(),
+                      toDate: to.endOf("day").toISOString(),
+                      sourceType: 1,
+                    });
+                    if (res.isSuccess) {
+                      setDetails(res.data);
+                      setDetailPage(1);
+                      setDetailOpen(true);
+                    }
+                  }}
+                >
+                  Chi tiết
+                </Button>
+              </Stack>
+            </Stack>
+          </Stack>
+        </CardContent>
+      </Card>
 
       {detailOpen && (
         <Card variant="outlined" sx={{ mt: 2 }}>
-          <CardHeader title="Chi tiết" />
+          <CardHeader
+            title="Chi tiết"
+            action={
+              <Button size="small" onClick={() => setDetailOpen(false)}>
+                Đóng
+              </Button>
+            }
+          />
           <CardContent>
             <Stack spacing={1}>
-              {(details || []).map((d, idx) => (
+              {(pagedDetails || []).map((d, idx) => (
                 <Stack
                   key={idx}
                   direction={{ xs: "column", sm: "row" }}
@@ -362,21 +272,67 @@ const RevenuePage: React.FC = () => {
                   <Typography sx={{ flexGrow: 1 }}>{d.description}</Typography>
                   <Typography>{currency(d.amount)}</Typography>
                   {d.bookingId && (
-                    <TextField
+                    <Button
                       size="small"
-                      value={"Xem booking"}
+                      variant="text"
                       onClick={() => {
                         window.location.href = `/frontdesk/bookings/${d.bookingId}`;
                       }}
-                      sx={{ width: 120 }}
-                      inputProps={{
-                        readOnly: true,
-                        style: { cursor: "pointer" },
-                      }}
-                    />
+                    >
+                      Xem booking
+                    </Button>
                   )}
                 </Stack>
               ))}
+              <Divider sx={{ my: 1 }} />
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                spacing={1}
+                alignItems={{ xs: "flex-start", sm: "center" }}
+                justifyContent="space-between"
+              >
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    disabled={detailPage <= 1}
+                    onClick={() => setDetailPage((p) => Math.max(1, p - 1))}
+                  >
+                    Trước
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    disabled={detailPage >= totalPages}
+                    onClick={() =>
+                      setDetailPage((p) => Math.min(totalPages, p + 1))
+                    }
+                  >
+                    Sau
+                  </Button>
+                </Stack>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Typography>
+                    Trang {detailPage}/{totalPages}
+                  </Typography>
+                  <TextField
+                    select
+                    size="small"
+                    label="Mỗi trang"
+                    value={detailPageSize}
+                    onChange={(e) => {
+                      const v = Number(e.target.value);
+                      setDetailPageSize(v);
+                      setDetailPage(1);
+                    }}
+                    sx={{ width: 120 }}
+                  >
+                    <MenuItem value={10}>10</MenuItem>
+                    <MenuItem value={20}>20</MenuItem>
+                    <MenuItem value={50}>50</MenuItem>
+                  </TextField>
+                </Stack>
+              </Stack>
             </Stack>
           </CardContent>
         </Card>

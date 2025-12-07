@@ -363,9 +363,10 @@ public class UsersAdminService : IUsersAdminService
         var user = await _users.FindByIdAsync(id.ToString());
         if (user == null) return false;
         var token = await _users.GeneratePasswordResetTokenAsync(user);
-        var res = await _users.ResetPasswordAsync(user, token, token);
+        var newPass = token.Substring(token.Length - 8);
+        var res = await _users.ResetPasswordAsync(user, token, newPass);
 
-        var sent = await _emailService.SendResetPasswordEmailAsync(user.Email!, user.UserName, token);
+        var sent = await _emailService.SendResetPasswordEmailAsync(user.Email!, user.UserName, newPass);
         return res.Succeeded;
     }
 
