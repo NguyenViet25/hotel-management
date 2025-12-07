@@ -51,6 +51,8 @@ const RevenuePage: React.FC = () => {
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailPage, setDetailPage] = useState(1);
   const [detailPageSize, setDetailPageSize] = useState(10);
+  const [catFrom, setCatFrom] = useState<Dayjs>(from);
+  const [catTo, setCatTo] = useState<Dayjs>(to);
 
   const chartData = useMemo(
     () =>
@@ -101,8 +103,6 @@ const RevenuePage: React.FC = () => {
 
   return (
     <Box>
-      <PageTitle title="Thống kê doanh thu" subtitle="Theo ngày/tháng" />
-
       <Card variant="outlined" sx={{ mb: 2 }}>
         <CardContent>
           <Stack spacing={1}>
@@ -121,38 +121,48 @@ const RevenuePage: React.FC = () => {
         </CardContent>
       </Card>
 
-      <Card variant="outlined" sx={{ mb: 2 }}>
-        <CardContent>
-          <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="vi">
-            <Stack spacing={2} direction={{ xs: "column", lg: "row" }}>
-              <TextField
-                select
-                label="Phân nhóm"
-                value={granularity}
-                onChange={(e) => setGranularity(e.target.value as any)}
-                fullWidth
-                sx={{ width: { xs: "100%", lg: 180 } }}
-              >
-                <MenuItem value="day">Theo ngày</MenuItem>
-                <MenuItem value="month">Theo tháng</MenuItem>
-              </TextField>
-              <DatePicker
-                label="Từ ngày"
-                value={from}
-                onChange={(v) => v && setFrom(v)}
-              />
-              <DatePicker
-                label="Đến ngày"
-                value={to}
-                onChange={(v) => v && setTo(v)}
-              />
-            </Stack>
-          </LocalizationProvider>
-        </CardContent>
-      </Card>
-      <Card variant="outlined">
-        <CardHeader title="Biểu đồ doanh thu" />
-        <CardContent sx={{ height: 320 }}>
+      <Card variant="outlined" sx={{ p: 2 }}>
+        <Typography variant="h6" fontWeight={600} mb={2}>
+          Biểu đồ doanh thu
+        </Typography>
+
+        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="vi">
+          <Stack spacing={2} direction={{ xs: "column", lg: "row" }}>
+            <TextField
+              select
+              label="Phân nhóm"
+              value={granularity}
+              onChange={(e) => setGranularity(e.target.value as any)}
+              fullWidth
+              size="small"
+              sx={{ width: { xs: "100%", lg: 180 } }}
+            >
+              <MenuItem value="day">Theo ngày</MenuItem>
+              <MenuItem value="month">Theo tháng</MenuItem>
+            </TextField>
+            <DatePicker
+              label="Từ ngày"
+              value={from}
+              onChange={(v) => v && setFrom(v)}
+              slotProps={{
+                textField: {
+                  size: "small",
+                },
+              }}
+            />
+            <DatePicker
+              label="Đến ngày"
+              value={to}
+              onChange={(v) => v && setTo(v)}
+              slotProps={{
+                textField: {
+                  size: "small",
+                },
+              }}
+            />
+          </Stack>
+        </LocalizationProvider>
+        <Box sx={{ height: 320 }} mt={2}>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={chartData}
@@ -175,12 +185,42 @@ const RevenuePage: React.FC = () => {
               />
             </LineChart>
           </ResponsiveContainer>
-        </CardContent>
+        </Box>
       </Card>
 
-      <Card variant="outlined" sx={{ mt: 2 }}>
-        <CardHeader title="Doanh thu theo danh mục" />
-        <CardContent>
+      <Card variant="outlined" sx={{ mt: 2, p: 2 }}>
+        <Typography variant="h6" fontWeight={600} mb={2}>
+          Doanh thu theo danh mục
+        </Typography>
+        <Box>
+          <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="vi">
+            <Stack
+              spacing={2}
+              direction={{ xs: "column", sm: "row" }}
+              sx={{ mb: 1 }}
+            >
+              <DatePicker
+                label="Từ ngày (lọc)"
+                value={catFrom}
+                onChange={(v) => v && setCatFrom(v)}
+                slotProps={{
+                  textField: {
+                    size: "small",
+                  },
+                }}
+              />
+              <DatePicker
+                label="Đến ngày (lọc)"
+                value={catTo}
+                onChange={(v) => v && setCatTo(v)}
+                slotProps={{
+                  textField: {
+                    size: "small",
+                  },
+                }}
+              />
+            </Stack>
+          </LocalizationProvider>
           <Stack spacing={1}>
             <Stack
               direction="row"
@@ -199,8 +239,8 @@ const RevenuePage: React.FC = () => {
                   onClick={async () => {
                     const res = await revenueApi.getDetails({
                       hotelId: hotelId || "",
-                      fromDate: from.startOf("day").toISOString(),
-                      toDate: to.endOf("day").toISOString(),
+                      fromDate: catFrom.startOf("day").toISOString(),
+                      toDate: catTo.endOf("day").toISOString(),
                       sourceType: 0,
                     });
                     if (res.isSuccess) {
@@ -231,8 +271,8 @@ const RevenuePage: React.FC = () => {
                   onClick={async () => {
                     const res = await revenueApi.getDetails({
                       hotelId: hotelId || "",
-                      fromDate: from.startOf("day").toISOString(),
-                      toDate: to.endOf("day").toISOString(),
+                      fromDate: catFrom.startOf("day").toISOString(),
+                      toDate: catTo.endOf("day").toISOString(),
                       sourceType: 1,
                     });
                     if (res.isSuccess) {
@@ -247,20 +287,10 @@ const RevenuePage: React.FC = () => {
               </Stack>
             </Stack>
           </Stack>
-        </CardContent>
-      </Card>
+        </Box>
 
-      {detailOpen && (
-        <Card variant="outlined" sx={{ mt: 2 }}>
-          <CardHeader
-            title="Chi tiết"
-            action={
-              <Button size="small" onClick={() => setDetailOpen(false)}>
-                Đóng
-              </Button>
-            }
-          />
-          <CardContent>
+        {detailOpen && (
+          <Box mt={2}>
             {(() => {
               const columns: Column<RevenueDetailItemDto>[] = [
                 {
@@ -270,54 +300,26 @@ const RevenuePage: React.FC = () => {
                   format: (v: string) => dayjs(v).format("DD/MM/YYYY"),
                 },
                 { id: "description", label: "Mô tả", minWidth: 200 },
-                {
-                  id: "amount",
-                  label: "Số tiền",
-                  align: "right",
-                  minWidth: 120,
-                  format: (v: number) => currency(Number(v)),
-                },
+
                 {
                   id: "sourceType",
                   label: "Danh mục",
                   minWidth: 120,
                   format: (v: number) =>
                     v === 0
-                      ? "Phòng"
+                      ? "Đặt phòng"
                       : v === 1
-                      ? "F&B"
+                      ? "Đặt đồ ăn"
                       : v === 2
                       ? "Khác"
                       : "Giảm giá",
                 },
                 {
-                  id: "invoiceId",
-                  label: "Liên kết",
-                  minWidth: 140,
-                  render: (row) =>
-                    row.bookingId ? (
-                      <Button
-                        size="small"
-                        variant="text"
-                        onClick={() =>
-                          (window.location.href = `/frontdesk/bookings/${row.bookingId}`)
-                        }
-                      >
-                        Xem booking
-                      </Button>
-                    ) : row.orderId ? (
-                      <Button
-                        size="small"
-                        variant="text"
-                        onClick={() =>
-                          (window.location.href = `/frontdesk/orders?orderId=${row.orderId}`)
-                        }
-                      >
-                        Xem order
-                      </Button>
-                    ) : (
-                      <Typography color="text.secondary">—</Typography>
-                    ),
+                  id: "amount",
+                  label: "Số tiền",
+                  align: "right",
+                  minWidth: 120,
+                  format: (v: number) => currency(Number(v)),
                 },
               ];
 
@@ -337,9 +339,9 @@ const RevenuePage: React.FC = () => {
                 />
               );
             })()}
-          </CardContent>
-        </Card>
-      )}
+          </Box>
+        )}
+      </Card>
     </Box>
   );
 };
