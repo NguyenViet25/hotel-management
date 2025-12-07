@@ -22,9 +22,11 @@ import {
   Email as EmailIcon,
   Phone as PhoneIcon,
 } from "@mui/icons-material";
+import { useStore, type StoreState } from "../../hooks/useStore";
+import type { User } from "../../api/userService";
 
 const ProfilePage = () => {
-  const [profile, setProfile] = useState<ProfileDto | null>(null);
+  const { user, setUser } = useStore<StoreState>((state) => state);
   const [form, setForm] = useState<UpdateProfileRequest>({});
   const [pwd, setPwd] = useState<ChangePasswordRequest>({
     currentPassword: "",
@@ -35,13 +37,15 @@ const ProfilePage = () => {
     const load = async () => {
       try {
         const res = await profileApi.getMe();
-        if (res.success) {
-          setProfile(res.data);
+        console.log("res", res);
+        if (res.isSuccess) {
           setForm({
             email: res.data.email ?? "",
             fullname: res.data.fullname ?? "",
             phoneNumber: res.data.phoneNumber ?? "",
           });
+        } else {
+          toast.error(res.message ?? "Không thể tải thông tin hồ sơ");
         }
       } catch (e) {
         toast.error("Không thể tải thông tin hồ sơ", {
@@ -55,9 +59,17 @@ const ProfilePage = () => {
   const onSave = async () => {
     try {
       const res = await profileApi.update(form);
-      if (res.success) {
-        setProfile(res.data);
+      if (res.isSuccess) {
+        const newUser: any = {
+          ...user,
+          email: res.data.email ?? "",
+          fullname: res.data.fullname ?? "",
+          phoneNumber: res.data.phoneNumber ?? "",
+        };
+        setUser(newUser);
         toast.success(res.message ?? "Cập nhật hồ sơ thành công");
+      } else {
+        toast.error(res.message ?? "Cập nhật thất bại");
       }
     } catch (e) {
       toast.error("Cập nhật thất bại");
@@ -71,7 +83,12 @@ const ProfilePage = () => {
     }
     try {
       const res = await profileApi.changePassword(pwd);
-      if (res.success) toast.success("Đổi mật khẩu thành công");
+      if (res.isSuccess) {
+        toast.success("Đổi mật khẩu thành công");
+        setPwd({ currentPassword: "", newPassword: "" });
+      } else {
+        toast.error(res.message ?? "Đổi mật khẩu thất bại");
+      }
     } catch (e) {
       toast.error("Đổi mật khẩu thất bại");
     }

@@ -26,6 +26,7 @@ interface CreateUserDialogProps {
   ) => void;
   handleSubmit: () => void;
   isSubmitting: boolean;
+  enableHotelSelect?: boolean;
 }
 
 const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
@@ -36,6 +37,7 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
   handleInputChange,
   handleSubmit,
   isSubmitting,
+  enableHotelSelect,
 }) => {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -101,6 +103,8 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
             fullWidth
             value={formData.phoneNumber}
             onChange={handleInputChange}
+            error={!!formErrors.phoneNumber}
+            helperText={formErrors.phoneNumber}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -114,11 +118,13 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
             value={formData?.roles?.[0] || ""}
             onChange={(e) => handleInputChange(e)}
           />
-          <HotelSelect
-            name="propertyRoles"
-            value={formData?.propertyRoles?.[0]?.hotelId || ""}
-            onChange={(e) => handleInputChange(e)}
-          />
+          {enableHotelSelect === true && (
+            <HotelSelect
+              name="propertyRoles"
+              value={formData?.propertyRoles?.[0]?.hotelId || ""}
+              onChange={(e) => handleInputChange(e)}
+            />
+          )}
 
           <Stack direction={"row"} justifyContent={"right"} gap={1}>
             <Button onClick={onClose}>Hủy</Button>

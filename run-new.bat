@@ -41,7 +41,7 @@ if %ERRORLEVEL% NEQ 0 (
 
 echo.
 echo Services are starting. Access them here:
-echo - API:       http://localhost:5283
+echo - API:       http://localhost:5283/swagger
 echo - Frontend:  http://localhost:8080
 echo - SQLServer: localhost,11433 (user: sa, pass: Password1@)
 
@@ -52,5 +52,8 @@ echo To stop and remove volumes: docker compose down --volumes
 
 echo.
 echo All services started successfully!
+echo Opening URLs in your default browser...
+start "" http://localhost:5283/swagger
+start "" http://localhost:8080
 echo Press any key to exit...
 pause >nul

@@ -12,10 +12,8 @@ public interface ITableService
     Task<ApiResponse<TableDto>> CreateTableAsync(CreateTableRequest request);
     Task<ApiResponse<TableDto>> UpdateTableAsync(Guid id, UpdateTableRequest request);
     Task<ApiResponse<TableDto>> GetTableAsync(Guid id);
-    Task<ApiResponse<TableListResponse>> GetTablesAsync(Guid hotelId, int page = 1, int pageSize = 50);
-    Task<ApiResponse<TableDto>> MergeTablesAsync(MergeTablesRequest request);
-    Task<ApiResponse<List<TableDto>>> SplitTableAsync(SplitTableRequest request);
-    Task<ApiResponse<bool>> MoveSessionAsync(MoveSessionRequest request);
+    Task<ApiResponse<TableListResponse>> GetTablesAsync(Guid hotelId, string? search = null, bool? isActive = null, int? status = null, int page = 1, int pageSize = 50);
+    Task<ApiResponse<bool>> DeleteTableAsync(Guid id);
 }
 
 public class TableService : ITableService
@@ -46,7 +44,7 @@ public class TableService : ITableService
         };
 
         await _tableRepository.AddAsync(table);
-        await _unitOfWork.SaveChangesAsync();
+        await _tableRepository.SaveChangesAsync();
 
         return ApiResponse<TableDto>.Success(await MapToDto(table));
     }
@@ -61,10 +59,10 @@ public class TableService : ITableService
 
         table.Name = request.Name;
         table.Capacity = request.Capacity;
-        table.IsActive = request.IsActive;
+        table.TableStatus =  request.TableStatus;
 
         await _tableRepository.UpdateAsync(table);
-        await _unitOfWork.SaveChangesAsync();
+        await _tableRepository.SaveChangesAsync();
 
         return ApiResponse<TableDto>.Success(await MapToDto(table));
     }
@@ -80,10 +78,20 @@ public class TableService : ITableService
         return ApiResponse<TableDto>.Success(await MapToDto(table));
     }
 
-    public async Task<ApiResponse<TableListResponse>> GetTablesAsync(Guid hotelId, int page = 1, int pageSize = 50)
+    public async Task<ApiResponse<TableListResponse>> GetTablesAsync(Guid hotelId, string? search = null, bool? isActive = null, int? status = null, int page = 1, int pageSize = 50)
     {
         var query = _tableRepository.Query()
             .Where(t => t.HotelId == hotelId);
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            query = query.Where(t => t.Name.Contains(search));
+        }
+
+        if (isActive.HasValue)
+        {
+            query = query.Where(t => t.IsActive == isActive.Value);
+        }
 
         var totalCount = await query.CountAsync();
         var tables = await query
@@ -98,6 +106,11 @@ public class TableService : ITableService
             dtos.Add(await MapToDto(table));
         }
 
+        if (status.HasValue)
+        {
+            dtos = dtos.Where(d => d.Status == status.Value).ToList();
+        }
+
         return ApiResponse<TableListResponse>.Success(new TableListResponse
         {
             Tables = dtos,
@@ -105,151 +118,38 @@ public class TableService : ITableService
         });
     }
 
-    public async Task<ApiResponse<TableDto>> MergeTablesAsync(MergeTablesRequest request)
-    {
-        if (request.TableIds.Count < 2)
-        {
-            return ApiResponse<TableDto>.Fail("At least two tables are required for merging");
-        }
-
-        // Check if all tables exist and are not occupied
-        var tables = new List<Table>();
-        foreach (var tableId in request.TableIds)
-        {
-            var table = await _tableRepository.FindAsync(tableId);
-            if (table == null)
-            {
-                return ApiResponse<TableDto>.Fail($"Table with ID {tableId} not found");
-            }
-
-            var isOccupied = await _diningSessionRepository.Query()
-                .AnyAsync(s => s.TableId == tableId && s.Status == DiningSessionStatus.Open);
-
-            if (isOccupied)
-            {
-                return ApiResponse<TableDto>.Fail($"Table {table.Name} is currently occupied");
-            }
-
-            tables.Add(table);
-        }
-
-        // Create a new merged table
-        var totalCapacity = tables.Sum(t => t.Capacity);
-        var newTable = new Table
-        {
-            Id = Guid.NewGuid(),
-            HotelId = request.HotelId,
-            Name = request.NewTableName,
-            Capacity = totalCapacity,
-            IsActive = true
-        };
-
-        await _tableRepository.AddAsync(newTable);
-
-        // Deactivate the merged tables
-        foreach (var table in tables)
-        {
-            table.IsActive = false;
-            await _tableRepository.UpdateAsync(table);
-        }
-
-        await _unitOfWork.SaveChangesAsync();
-
-        return ApiResponse<TableDto>.Success(await MapToDto(newTable));
-    }
-
-    public async Task<ApiResponse<List<TableDto>>> SplitTableAsync(SplitTableRequest request)
-    {
-        var table = await _tableRepository.FindAsync(request.TableId);
-        if (table == null)
-        {
-            return ApiResponse<List<TableDto>>.Fail("Table not found");
-        }
-
-        var isOccupied = await _diningSessionRepository.Query()
-            .AnyAsync(s => s.TableId == request.TableId && s.Status == DiningSessionStatus.Open);
-
-        if (isOccupied)
-        {
-            return ApiResponse<List<TableDto>>.Fail("Cannot split an occupied table");
-        }
-
-        // Create new tables
-        var newTables = new List<Table>();
-        foreach (var newTableRequest in request.NewTables)
-        {
-            var newTable = new Table
-            {
-                Id = Guid.NewGuid(),
-                HotelId = request.HotelId,
-                Name = newTableRequest.Name,
-                Capacity = newTableRequest.Capacity,
-                IsActive = true
-            };
-
-            await _tableRepository.AddAsync(newTable);
-            newTables.Add(newTable);
-        }
-
-        // Deactivate the original table
-        table.IsActive = false;
-        await _tableRepository.UpdateAsync(table);
-
-        await _unitOfWork.SaveChangesAsync();
-
-        var dtos = new List<TableDto>();
-        foreach (var newTable in newTables)
-        {
-            dtos.Add(await MapToDto(newTable));
-        }
-
-        return ApiResponse<List<TableDto>>.Success(dtos);
-    }
-
-    public async Task<ApiResponse<bool>> MoveSessionAsync(MoveSessionRequest request)
-    {
-        var session = await _diningSessionRepository.FindAsync(request.SessionId);
-        if (session == null)
-        {
-            return ApiResponse<bool>.Fail("Dining session not found");
-        }
-
-        var newTable = await _tableRepository.FindAsync(request.NewTableId);
-        if (newTable == null)
-        {
-            return ApiResponse<bool>.Fail("Target table not found");
-        }
-
-        // Check if target table is already occupied
-        var isOccupied = await _diningSessionRepository.Query()
-            .AnyAsync(s => s.TableId == request.NewTableId && s.Status == DiningSessionStatus.Open);
-
-        if (isOccupied)
-        {
-            return ApiResponse<bool>.Fail("Target table is already occupied");
-        }
-
-        // Move the session to the new table
-        session.TableId = request.NewTableId;
-        await _diningSessionRepository.UpdateAsync(session);
-        await _unitOfWork.SaveChangesAsync();
-
-        return ApiResponse<bool>.Success(true);
-    }
-
     private async Task<TableDto> MapToDto(Table table)
     {
-        var isOccupied = await _diningSessionRepository.Query()
-            .AnyAsync(s => s.TableId == table.Id && s.Status == DiningSessionStatus.Open);
-
+    
         return new TableDto
         {
             Id = table.Id,
             HotelId = table.HotelId,
             Name = table.Name,
             Capacity = table.Capacity,
-            IsActive = table.IsActive,
-            IsOccupied = isOccupied
+            Status = table.TableStatus,
+
         };
+    }
+
+    public async Task<ApiResponse<bool>> DeleteTableAsync(Guid id)
+    {
+        var table = await _tableRepository.FindAsync(id);
+        if (table is null)
+        {
+            return ApiResponse<bool>.Fail("Table not found");
+        }
+
+        var isOccupied = await _diningSessionRepository.Query()
+            .AnyAsync(s => s.TableId == id && s.Status == DiningSessionStatus.Open);
+
+        if (isOccupied)
+        {
+            return ApiResponse<bool>.Fail("Cannot delete an occupied table");
+        }
+
+        await _tableRepository.RemoveAsync(table);
+        await _tableRepository.SaveChangesAsync();
+        return ApiResponse<bool>.Success(true);
     }
 }

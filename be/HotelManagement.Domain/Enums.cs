@@ -5,7 +5,7 @@ public enum UserRole
     Admin = 1,
     Manager = 2,
     FrontDesk = 3,
-    Housekeeping = 4,
+    Housekeeper = 4,
     Kitchen = 5,
     Waiter = 6,
     Guest = 7
@@ -35,16 +35,19 @@ public enum BookingStatus
 {
     Pending = 0,
     Confirmed = 1,
-    Completed = 2,
+    Completed = 3,
     Cancelled = 4
 }
 
 public enum OrderStatus
 {
     Draft = 0,
-    InProgress = 1,
-    Completed = 2,
-    Cancelled = 3
+    NeedConfirmed = 1,
+    Confirmed = 2,
+    InProgress = 3,
+    Ready = 4,
+    Completed = 5,
+    Cancelled = 6,
 }
 
 public enum OrderItemStatus
@@ -52,7 +55,8 @@ public enum OrderItemStatus
     Pending = 0,
     Cooking = 1,
     Served = 2,
-    Voided = 3
+    Voided = 3,
+    Ready = 4
 }
 
 public enum InvoiceStatus
@@ -80,12 +84,7 @@ public enum PaymentMethod
     MobilePayment = 4
 }
 
-public enum PromotionType
-{
-    PercentageDiscount = 0,
-    FixedAmountDiscount = 1,
-    FreeService = 2
-}
+
 
 public enum PaymentType
 {

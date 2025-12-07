@@ -1,3 +1,4 @@
+import { Recycling, RestartAlt } from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -32,6 +33,7 @@ export interface Column<T> {
   align?: "right" | "left" | "center";
   format?: (value: any) => string | React.ReactNode;
   sortable?: boolean;
+  render?: (row: T) => React.ReactNode;
 }
 
 export interface DataTableProps<T> {
@@ -214,7 +216,9 @@ const DataTable = <T extends object>({
                       const value = row[column.id as keyof T];
                       return (
                         <TableCell key={column.id} align={column.align}>
-                          {column.format
+                          {column.render
+                            ? column.render(row)
+                            : column.format
                             ? column.format(value)
                             : (value as React.ReactNode)}
                         </TableCell>
@@ -255,11 +259,7 @@ const DataTable = <T extends object>({
                                 onClick={() => onLock(row)}
                                 aria-label="lock"
                               >
-                                {(row as any).status === "Locked" ? (
-                                  <LockOpenIcon fontSize="small" />
-                                ) : (
-                                  <LockIcon fontSize="small" />
-                                )}
+                                <RestartAlt fontSize="small" />
                               </IconButton>
                             )}
                             {onResetPassword && (

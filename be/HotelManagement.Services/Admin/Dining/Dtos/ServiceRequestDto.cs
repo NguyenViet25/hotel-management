@@ -9,6 +9,7 @@ public class ServiceRequestDto
     public Guid DiningSessionId { get; set; }
     public string RequestType { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
+    public int Quantity { get; set; }
     public string Status { get; set; } = string.Empty;
     public Guid? AssignedToUserId { get; set; }
     public string? AssignedToName { get; set; }
@@ -22,12 +23,16 @@ public class CreateServiceRequestRequest
     public Guid DiningSessionId { get; set; }
     public string RequestType { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
+    public int Quantity { get; set; } = 1;
 }
 
 public class UpdateServiceRequestRequest
 {
     public string Status { get; set; } = string.Empty;
     public Guid? AssignedToUserId { get; set; }
+    public string? RequestType { get; set; }
+    public string? Description { get; set; }
+    public int? Quantity { get; set; }
 }
 
 public class ServiceRequestListResponse

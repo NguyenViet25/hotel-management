@@ -59,7 +59,7 @@ public class InvoiceService : IInvoiceService
         CalculateInvoiceTotals(invoice);
 
         await _invoiceRepository.AddAsync(invoice);
-        await _unitOfWork.SaveChangesAsync();
+        await _invoiceRepository.SaveChangesAsync();
 
         return MapToDto(invoice);
     }

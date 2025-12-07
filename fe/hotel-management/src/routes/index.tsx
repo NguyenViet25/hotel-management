@@ -9,6 +9,17 @@ import { menuItems } from "./menu-items";
 import ManagerDashboardPage from "../pages/dashboard/manager";
 import { useStore, type StoreState } from "../hooks/useStore";
 import OrdersManagementPage from "../pages/dashboard/waiter/orders/OrdersManagementPage";
+import SessionBoardPage from "../pages/dashboard/waiter/sessions/SessionBoardPage";
+import SessionDetailsPage from "../pages/dashboard/waiter/sessions/SessionDetailsPage";
+import KitchenTimelinePage from "../pages/dashboard/manager/kitchen/KitchenTimelinePage";
+import DiscountCodesPage from "../pages/dashboard/manager/discounts/DiscountCodesPage";
+import MinibarManagementPage from "../pages/dashboard/manager/minibars/MinibarManagementPage";
+import MyTask from "../pages/dashboard/housekeeper/MyTask";
+import RoomNeedCleaningPage from "../pages/dashboard/housekeeper/RoomNeedCleaningPage";
+import InvoiceManagementPage from "../pages/dashboard/frontdesk/invoices/InvoiceManagementPage";
+import FrontDeskTableManagementPage from "../pages/dashboard/frontdesk/tables/FrontDeskTableManagementPage";
+import HotelSettingsPage from "../pages/dashboard/manager/hotels/HotelSettingsPage";
+import FrontDeskTimelinePage from "../pages/dashboard/frontdesk/orders/FrontDeskTimelinePage";
 
 // Role-aware layout wrapper for standalone pages like /profile
 const RoleAwareLayout = () => {
@@ -31,12 +42,7 @@ const RoleAwareLayout = () => {
     case "Waiter":
       items = menuItems.waiter;
       break;
-    case "Cashier":
-      items = menuItems.cashier;
-      break;
-    case "Accountant":
-      items = menuItems.accountant;
-      break;
+
     case "Housekeeper":
       items = menuItems.housekeeper;
       break;
@@ -59,10 +65,16 @@ const ManagerRoomTypesPage = lazy(
   () => import("../pages/dashboard/manager/room-types")
 );
 const ManagerRoomsPage = lazy(
-  () => import("../pages/dashboard/manager/rooms/RoomManagementPage")
+  () => import("../pages/dashboard/manager/rooms/RoomPage")
 );
 const ManagerMenusPage = lazy(
   () => import("../pages/dashboard/manager/menus/MenuManagementPage")
+);
+const ManagerTablesPage = lazy(
+  () => import("../pages/dashboard/manager/tables/TableManagementPage")
+);
+const ManagerMediaPage = lazy(
+  () => import("../pages/dashboard/manager/media/MediaManagementPage")
 );
 const KitchenManagementPage = lazy(
   () => import("../pages/dashboard/manager/kitchen/KitchenManagementPage")
@@ -89,11 +101,29 @@ const LoadingFallback = () => (
 
 const AdminDashboard = () => <AdminDashboardPage />;
 const ManagerDashboard = () => <ManagerDashboardPage />;
-const FrontDeskDashboard = () => <div>Front Desk Dashboard</div>;
-const KitchenDashboard = () => <div>Kitchen Dashboard</div>;
-const WaiterDashboard = () => <div>Waiter Dashboard</div>;
-const AccountantDashboard = () => <div>Accountant Dashboard</div>;
-const HousekeeperDashboard = () => <div>Housekeeper Dashboard</div>;
+const FrontDeskDashboardPage = lazy(
+  () => import("../pages/dashboard/frontdesk")
+);
+const FrontDeskDashboard = () => (
+  <Suspense fallback={<LoadingFallback />}>
+    <FrontDeskDashboardPage />
+  </Suspense>
+);
+const KitchenDashboardPage = lazy(() => import("../pages/dashboard/kitchen"));
+const KitchenDashboard = () => (
+  <Suspense fallback={<LoadingFallback />}>
+    <KitchenDashboardPage />
+  </Suspense>
+);
+const WaiterDashboardPage = lazy(() => import("../pages/dashboard/waiter"));
+const WaiterDashboard = () => (
+  <Suspense fallback={<LoadingFallback />}>
+    <WaiterDashboardPage />
+  </Suspense>
+);
+const HousekeeperPage = lazy(
+  () => import("../pages/dashboard/housekeeper/HousekeepingPage")
+);
 
 // Auth guard component
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
@@ -147,7 +177,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: "",
-        element: <Navigate to="/admin/dashboard" replace />,
+        element: <Navigate to="/dashboard" replace />,
       },
       {
         path: "dashboard",
@@ -185,10 +215,7 @@ const router = createBrowserRouter([
     path: "/manager",
     element: (
       <RequireAuth>
-        <MainLayout
-          title="Facility Manager"
-          menuItems={menuItems.facilityManager}
-        />
+        <MainLayout title="Manager" menuItems={menuItems.facilityManager} />
       </RequireAuth>
     ),
     children: [
@@ -199,6 +226,14 @@ const router = createBrowserRouter([
       {
         path: "dashboard",
         element: <ManagerDashboard />,
+      },
+      {
+        path: "user-management",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <UserManagementPage />
+          </Suspense>
+        ),
       },
       {
         path: "room-types",
@@ -217,12 +252,56 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: "discount-codes",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <DiscountCodesPage />
+          </Suspense>
+        ),
+      },
+      {
         path: "menus",
         element: (
           <Suspense fallback={<div>Loading...</div>}>
             <ManagerMenusPage />
           </Suspense>
         ),
+      },
+      {
+        path: "timeline",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <FrontDeskTimelinePage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "minibars",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <MinibarManagementPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "tables",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <ManagerTablesPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "media",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <ManagerMediaPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "hotel-settings",
+        element: <HotelSettingsPage />,
       },
       // Add other manager routes here
     ],
@@ -249,6 +328,38 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<div>Loading...</div>}>
             <OrdersManagementPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "timeline",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <FrontDeskTimelinePage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "sessions",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <SessionBoardPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "sessions/:id",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <SessionDetailsPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "table-map",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <FrontDeskTableManagementPage />
           </Suspense>
         ),
       },
@@ -289,7 +400,15 @@ const router = createBrowserRouter([
         element: <KitchenDashboard />,
       },
       {
-        path: "management",
+        path: "timeline",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <KitchenTimelinePage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "orders",
         element: (
           <Suspense fallback={<div>Loading...</div>}>
             <KitchenManagementPage />
@@ -310,34 +429,33 @@ const router = createBrowserRouter([
     children: [
       {
         path: "",
-        element: <Navigate to="/waiter/dashboard" replace />,
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <WaiterDashboard />
+          </Suspense>
+        ),
       },
       {
         path: "dashboard",
         element: <WaiterDashboard />,
       },
+      {
+        path: "sessions",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <SessionBoardPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "sessions/:id",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <SessionDetailsPage />
+          </Suspense>
+        ),
+      },
       // Add other waiter routes here
-    ],
-  },
-
-  // Accountant routes
-  {
-    path: "/accountant",
-    element: (
-      <RequireAuth>
-        <MainLayout title="Accountant" menuItems={menuItems.accountant} />
-      </RequireAuth>
-    ),
-    children: [
-      {
-        path: "",
-        element: <Navigate to="/accountant/dashboard" replace />,
-      },
-      {
-        path: "dashboard",
-        element: <AccountantDashboard />,
-      },
-      // Add other accountant routes here
     ],
   },
   // Housekeeper routes
@@ -351,13 +469,36 @@ const router = createBrowserRouter([
     children: [
       {
         path: "",
-        element: <Navigate to="/housekeeper/dashboard" replace />,
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <HousekeeperPage />
+          </Suspense>
+        ),
       },
       {
         path: "dashboard",
-        element: <HousekeeperDashboard />,
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <HousekeeperPage />
+          </Suspense>
+        ),
       },
-      // Add other housekeeper routes here
+      {
+        path: "rooms",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <RoomNeedCleaningPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "my-tasks",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <MyTask />
+          </Suspense>
+        ),
+      },
     ],
   },
   // 404 route

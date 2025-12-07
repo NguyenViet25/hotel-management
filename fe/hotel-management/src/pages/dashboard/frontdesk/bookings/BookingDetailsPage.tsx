@@ -1,41 +1,32 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import {
-  Container,
-  Card,
-  CardContent,
-  CardHeader,
-  Grid,
-  Stack,
-  Typography,
-  Divider,
-  Button,
-  Chip,
-  Paper,
-} from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
+import { Check, Edit, Print } from "@mui/icons-material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import CancelIcon from "@mui/icons-material/Cancel";
 import PhoneIcon from "@mui/icons-material/Phone";
-import SupportAgentIcon from "@mui/icons-material/SupportAgent";
+import {
+  Button,
+  Card,
+  CardHeader,
+  Chip,
+  Stack,
+  Typography,
+} from "@mui/material";
+import dayjs from "dayjs";
+import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import bookingsApi, {
-  BookingRoomStatus,
   EBookingStatus,
   type BookingDetailsDto,
   type UpdateBookingDto,
 } from "../../../../api/bookingsApi";
-import BookingFormModal from "./components/BookingFormModal";
-import CancelBookingModal from "./components/CancelBookingModal";
-import CallLogModal from "./components/CallLogModal";
-import dayjs from "dayjs";
 import PageTitle from "../../../../components/common/PageTitle";
+import BookingFormModal from "./components/BookingFormModal";
+import BookingInvoiceDialog from "./components/BookingInvoiceDialog";
 import { BookingSummary } from "./components/BookingSummary";
-import type { IBookingSummary } from "./components/types";
-import theme from "../../../../theme";
-import RoomTypeCard from "./components/RoomTypeCard";
 import CallLogsDisplay from "./components/CallLogDIsplay";
-import { Camera, CameraEnhance, Check, Edit } from "@mui/icons-material";
-import { toast } from "react-toastify";
+import CallLogModal from "./components/CallLogModal";
+import CancelBookingModal from "./components/CancelBookingModal";
+import RoomTypeAssignCheckIn from "./components/RoomTypeAssignCheckIn";
+import type { IBookingSummary } from "./components/types";
 
 const BookingDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -44,6 +35,7 @@ const BookingDetailsPage: React.FC = () => {
   const [openEdit, setOpenEdit] = useState(false);
   const [openCancel, setOpenCancel] = useState(false);
   const [openCall, setOpenCall] = useState(false);
+  const [openCheckout, setOpenCheckout] = useState(false);
 
   const fetch = async () => {
     if (!id) return;
@@ -68,6 +60,16 @@ const BookingDetailsPage: React.FC = () => {
     } catch {}
   };
 
+  const handleConfirm = async () => {
+    if (!data?.id) return;
+    try {
+      const res = await bookingsApi.confirm(data?.id);
+      if (res.isSuccess) {
+        await fetch();
+      }
+    } catch {}
+  };
+
   const statusChip = useMemo(() => {
     const s = data?.status as number | undefined;
     const mapping: Record<
@@ -79,8 +81,8 @@ const BookingDetailsPage: React.FC = () => {
     > = {
       0: { label: "Chờ duyệt", color: "default" },
       1: { label: "Đã xác nhận", color: "primary" },
-      2: { label: "Đã nhận phòng", color: "success" },
-      3: { label: "Hoàn tất", color: "success" },
+      2: { label: "Đã hoàn thành", color: "success" },
+      3: { label: "Đã hoàn thành", color: "success" },
       4: { label: "Đã hủy", color: "error" },
     };
     if (s === undefined) return null;
@@ -140,23 +142,11 @@ const BookingDetailsPage: React.FC = () => {
       >
         <Stack direction="row" spacing={1.5} alignItems="center">
           <Typography variant="h5" fontWeight={700}>
-            Booking {data?.id || "—"}
+            Booking #{data?.id?.substring(0, 8) || "—"}
           </Typography>
           {statusChip}
         </Stack>
         <Stack direction="row" spacing={1}>
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<CameraEnhance />}
-            onClick={() => {
-              toast.warning("Tính năng đang trong quá trình hoàn thành");
-            }}
-            aria-label="Check-in booking"
-          >
-            Check in/out
-          </Button>
-
           <Button
             variant="outlined"
             color="primary"
@@ -166,7 +156,7 @@ const BookingDetailsPage: React.FC = () => {
           >
             Chỉnh sửa
           </Button>
-          {data?.status === EBookingStatus.Pending && (
+          {data?.status != EBookingStatus.Cancelled && (
             <Button
               variant="outlined"
               color="error"
@@ -184,14 +174,23 @@ const BookingDetailsPage: React.FC = () => {
               variant="outlined"
               color="success"
               startIcon={<Check />}
-              onClick={() => {
-                toast.warning("Tính năng đang trong quá trình hoàn thành");
-              }}
+              onClick={handleConfirm}
               aria-label="Xác nhận booking"
             >
               Xác nhận
             </Button>
           )}
+          {data?.status !== EBookingStatus.Pending &&
+            data?.status !== EBookingStatus.Cancelled && (
+              <Button
+                variant="contained"
+                color="success"
+                startIcon={<Print />}
+                onClick={() => setOpenCheckout(true)}
+              >
+                xuất hóa đơn
+              </Button>
+            )}
         </Stack>
       </Stack>
 
@@ -205,28 +204,6 @@ const BookingDetailsPage: React.FC = () => {
             nights: dateRange.nights,
           }}
           formatCurrency={formatCurrency}
-        />
-      </Stack>
-
-      {/* Room Details: one card per room type */}
-      <Stack spacing={1}>
-        <Typography
-          variant="subtitle1"
-          fontWeight={600}
-          color="primary"
-          gutterBottom
-        >
-          Chi tiết phòng
-        </Typography>
-
-        <RoomTypeCard
-          bookingRoomTypes={data?.bookingRoomTypes || []}
-          formatCurrency={(amount) =>
-            amount.toLocaleString("vi-VN", {
-              style: "currency",
-              currency: "VND",
-            })
-          }
         />
       </Stack>
 
@@ -262,6 +239,15 @@ const BookingDetailsPage: React.FC = () => {
         <CallLogsDisplay data={data?.callLogs || []} />
       </Card>
 
+      {/* Chi tiết phòng: gán phòng & check-in theo từng phòng của loại */}
+      <Stack spacing={1}>
+        <Typography variant="h6" fontWeight={800}>
+          Gán Phòng & Check-in, Check-out
+        </Typography>
+
+        <RoomTypeAssignCheckIn booking={data as any} onRefresh={fetch} />
+      </Stack>
+
       {/* Update Booking Modal */}
       <BookingFormModal
         open={openEdit}
@@ -285,6 +271,13 @@ const BookingDetailsPage: React.FC = () => {
         onClose={() => setOpenCall(false)}
         booking={data as any}
         onSubmitted={fetch}
+      />
+
+      <BookingInvoiceDialog
+        open={openCheckout}
+        onClose={() => setOpenCheckout(false)}
+        booking={data as any}
+        onRefreshBooking={fetch}
       />
     </Stack>
   );

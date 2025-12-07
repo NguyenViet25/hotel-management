@@ -25,6 +25,7 @@ import {
   useTheme,
 } from "@mui/material";
 import { useEffect, useState } from "react";
+import hotelService, { type Hotel } from "../../api/hotelService";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useStore, type StoreState } from "../../hooks/useStore";
 import theme from "../../theme";
@@ -47,15 +48,26 @@ const MainLayout = ({ menuItems }: MainLayoutProps) => {
   const location = useLocation();
   const muiTheme = useTheme();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down("sm"));
-  const { user, removeUser } = useStore<StoreState>((state) => state);
-  console.log(user);
+  const { user, removeUser, hotelId } = useStore<StoreState>((state) => state);
   const [open, setOpen] = useState(!isMobile);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [hotel, setHotel] = useState<Hotel | null>(null);
 
   // Update drawer state when screen size changes
   useEffect(() => {
     setOpen(!isMobile);
   }, [isMobile]);
+
+  useEffect(() => {
+    const load = async () => {
+      if (!hotelId) return;
+      try {
+        const res = await hotelService.getHotelById(hotelId);
+        if (res.isSuccess) setHotel(res.data);
+      } catch {}
+    };
+    load();
+  }, [hotelId]);
 
   const handleDrawerOpen = () => {
     setOpen(!open);
@@ -190,16 +202,16 @@ const MainLayout = ({ menuItems }: MainLayoutProps) => {
           },
         }}
       >
-        <Toolbar
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "flex-start",
-            pt: 1,
-            width: "100%",
-          }}
-        >
-          {user && (
+        {user && !user.roles?.includes("Admin") && (
+          <Toolbar
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-start",
+              pt: 1,
+              width: "100%",
+            }}
+          >
             <Stack direction="row" alignItems="center" spacing={1}>
               <Logo />
               <Stack>
@@ -209,12 +221,12 @@ const MainLayout = ({ menuItems }: MainLayoutProps) => {
                   noWrap
                   component="div"
                 >
-                  Tân Trường Sơn Legacy
+                  {hotel?.name || ""}
                 </Typography>
               </Stack>
             </Stack>
-          )}
-        </Toolbar>
+          </Toolbar>
+        )}
 
         <List sx={{ overflowY: "auto", mt: 2 }}>
           {menuItems.map((item) => {

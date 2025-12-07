@@ -10,4 +10,8 @@ public interface IHotelsAdminService
     Task<HotelDetailsDto> CreateAsync(CreateHotelDto dto, Guid actorUserId);
     Task<HotelDetailsDto?> UpdateAsync(Guid id, UpdateHotelDto dto, Guid actorUserId);
     Task<HotelDetailsDto?> ChangeStatusAsync(Guid id, ChangeHotelStatusDto dto, Guid actorUserId);
+    Task<HotelDefaultTimesDto?> GetDefaultTimesAsync(Guid id, Guid actorUserId, bool isAdmin);
+    Task<HotelDefaultTimesDto?> UpdateDefaultTimesAsync(Guid id, UpdateHotelDefaultTimesDto dto, Guid actorUserId);
+    Task<bool> UpdateVATAsync(Guid id, decimal vat);
+    Task<decimal> GetVATAsync(Guid id);
 }

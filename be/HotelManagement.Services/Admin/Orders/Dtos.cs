@@ -7,6 +7,8 @@ public class OrdersQueryDto
 {
     public Guid? HotelId { get; set; }
     public OrderStatus? Status { get; set; }
+    public DateTime? StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
     public Guid? BookingId { get; set; }
     public bool? IsWalkIn { get; set; }
     public string? Search { get; set; } // name/phone
@@ -31,6 +33,9 @@ public class CreateWalkInOrderDto
     public string CustomerName { get; set; } = string.Empty;
     [StringLength(20)]
     public string? CustomerPhone { get; set; }
+    public string? Notes { get; set; }
+    public DateTime? ServingDate { get; set; }
+    public int Guests { get; set; }
     public List<OrderItemInputDto>? Items { get; set; }
 }
 
@@ -41,13 +46,34 @@ public class CreateBookingOrderDto
     [Required]
     public Guid BookingId { get; set; }
     public string? Notes { get; set; }
+    public DateTime? ServingDate { get; set; }
+    public int Guests { get; set; }
     public List<OrderItemInputDto>? Items { get; set; }
 }
 
-public class UpdateOrderDto
+public class UpdateOrderForBookingDto : CreateBookingOrderDto
 {
-    public string? Notes { get; set; }
+    public Guid Id { get; set; }
     public OrderStatus? Status { get; set; }
+}
+public class UpdateWalkInOrderDto : CreateWalkInOrderDto
+{
+    public Guid Id { get; set; }
+    public OrderStatus? Status { get; set; }
+}
+
+public class UpdateOrderStatusDto
+{
+    [Required]
+    public OrderStatus Status { get; set; }
+    public string? Notes { get; set; }
+}
+
+public class UpdateWalkInPromotionDto
+{
+    public Guid Id { get; set; }
+    public decimal? PromotionValue { get; set; }
+    public string? PromotionCode { get; set; }
 }
 
 public class AddOrderItemDto
@@ -64,6 +90,13 @@ public class UpdateOrderItemDto
     public OrderItemStatus? Status { get; set; }
     public Guid? ProposedReplacementMenuItemId { get; set; }
     public bool? ReplacementConfirmedByGuest { get; set; }
+}
+
+public class ReplaceOrderItemDto
+{
+    public Guid NewMenuItemId { get; set; }
+    public int? Quantity { get; set; }
+    public string? Reason { get; set; }
 }
 
 public class ApplyDiscountDto
@@ -84,6 +117,22 @@ public class OrderItemDto
     public OrderItemStatus Status { get; set; }
 }
 
+public class OrderItemHistoryDto
+{
+    public Guid Id { get; set; }
+    public Guid OldOrderItemId { get; set; }
+    public Guid NewOrderItemId { get; set; }
+    public Guid OldMenuItemId { get; set; }
+    public Guid NewMenuItemId { get; set; }
+    public string OldMenuItemName { get; set; } = string.Empty;
+    public string NewMenuItemName { get; set; } = string.Empty;
+    public DateTime ChangedAt { get; set; }
+    public Guid? UserId { get; set; }
+    public string? Reason { get; set; }
+}
+
+
+
 public class OrderSummaryDto
 {
     public Guid Id { get; set; }
@@ -97,9 +146,14 @@ public class OrderSummaryDto
     public DateTime CreatedAt { get; set; }
     public int ItemsCount { get; set; }
     public decimal ItemsTotal { get; set; }
+    public DateTime? ServingDate { get; set; }
+    public decimal PromotionValue { get; set; }
+    public string? PromotionCode { get; set; }
+    public int Guests { get; set; }
+    public List<OrderItemDto> Items { get; set; } = new();
 }
 
 public class OrderDetailsDto : OrderSummaryDto
 {
-    public List<OrderItemDto> Items { get; set; } = new();
+    public List<OrderItemHistoryDto> ItemHistories { get; set; } = new();
 }

@@ -1,5 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup";
 import DescriptionIcon from "@mui/icons-material/Description";
+import ImageIcon from "@mui/icons-material/Image";
 import HomeWorkIcon from "@mui/icons-material/HomeWork";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import SaveIcon from "@mui/icons-material/Save";
@@ -45,6 +46,7 @@ const schema = yup.object({
   hotelId: yup.string().optional(),
   name: yup.string().required("Vui lòng nhập tên loại phòng"),
   description: yup.string().optional(),
+  imageUrl: yup.string().optional(),
   capacity: yup
     .number()
     .transform((val) => (isNaN(val as any) ? 0 : Number(val)))
@@ -59,10 +61,18 @@ const schema = yup.object({
     .number()
     .transform((val) => (isNaN(val as any) ? 0 : Number(val)))
     .min(0, "Giá base phải >= 0")
-    .required("Nhập giá base"),
+    .required("Nhập giá base")
+    .test(
+      "gt-from",
+      "Giá đến phải lớn hơn Giá từ",
+      function (value) {
+        const from = this.parent?.basePriceFrom ?? 0;
+        return typeof value === "number" && value > from;
+      }
+    ),
   prices: yup.array().of(
     yup.object({
-      date: yup.number().min(0).max(6).required(),
+      date: yup.date().required(),
       price: yup.number().min(0).required(),
     })
   ),
@@ -95,6 +105,7 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
       hotelId: user?.hotelId || "",
       name: initialData?.name ?? "",
       description: initialData?.description ?? "",
+      imageUrl: initialData?.imageUrl ?? "",
       capacity: initialData?.roomCount ?? 2,
       basePriceFrom: initialData?.priceFrom ?? 0,
       basePriceTo: initialData?.priceTo ?? 0,
@@ -105,13 +116,16 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
   useEffect(() => {
     if (isEdit && initialData) {
       reset({
-        ...initialData,
+        hotelId: user?.hotelId || "",
+        name: initialData?.name ?? "",
+        description: initialData?.description ?? "",
+        imageUrl: initialData?.imageUrl ?? "",
         capacity: initialData?.roomCount ?? 2,
         basePriceFrom: initialData?.priceFrom ?? 0,
         basePriceTo: initialData?.priceTo ?? 0,
         prices:
           initialData.priceByDates?.map((p) => ({
-            date: p.date.getDay(),
+            date: new Date((p as any).date),
             price: p.price,
           })) || [],
       });
@@ -128,12 +142,11 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
           capacity: values.capacity,
           priceFrom: values.basePriceFrom,
           priceTo: values.basePriceTo,
-          priceByDates: values.prices?.map((p) => ({
-            date: new Date(p.date),
-            price: p.price,
-          })),
+          priceByDates: values.prices || [],
+          imageUrl: values.imageUrl || undefined,
         };
         onSubmit(payload);
+        return;
       }
 
       const createPayload: CreateRoomTypeRequest = {
@@ -143,10 +156,8 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
         capacity: values.capacity,
         priceFrom: values.basePriceFrom,
         priceTo: values.basePriceTo,
-        priceByDates: values.prices?.map((p) => ({
-          date: new Date(p.date),
-          price: p.price,
-        })),
+        priceByDates: values.prices || [],
+        imageUrl: values.imageUrl || undefined,
       };
 
       onSubmit(createPayload);
@@ -248,6 +259,24 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
             </Tooltip>
           )}
         />
+        <Tooltip title="Nhập URL ảnh đại diện của loại phòng">
+          <TextField
+            label="Image URL"
+            fullWidth
+            margin="normal"
+            {...register("imageUrl")}
+            placeholder="https://..."
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <ImageIcon fontSize="small" />
+                </InputAdornment>
+              ),
+            }}
+            error={!!errors.imageUrl}
+            helperText={errors.imageUrl?.message}
+          />
+        </Tooltip>
         {/* Tabs for pricing sections */}
         <Paper
           variant="outlined"

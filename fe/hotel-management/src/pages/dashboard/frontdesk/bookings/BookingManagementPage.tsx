@@ -1,34 +1,41 @@
 import {
   Alert,
   Box,
+  Button,
+  Card,
+  CardContent,
   Chip,
-  IconButton,
+  Divider,
   Snackbar,
   Stack,
-  Tooltip,
   Typography,
 } from "@mui/material";
-import { Dayjs } from "dayjs";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import dayjs, { Dayjs } from "dayjs";
+import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import bookingsApi, {
   type BookingDetailsDto,
-  type BookingRoomTypeDto,
   type BookingsQueryDto,
   type BookingStatus,
-  type BookingSummaryDto,
 } from "../../../../api/bookingsApi";
 import roomTypesApi, { type RoomType } from "../../../../api/roomTypesApi";
-import DataTable, {
-  type Column,
-} from "../../../../components/common/DataTable";
+import EmptyState from "../../../../components/common/EmptyState";
 import PageTitle from "../../../../components/common/PageTitle";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
 import BookingFormModal from "./components/BookingFormModal";
 import CallLogModal from "./components/CallLogModal";
 import CancelBookingModal from "./components/CancelBookingModal";
 
-import { Edit, RemoveRedEye } from "@mui/icons-material";
+import {
+  AddCircle,
+  Edit,
+  Hotel,
+  Phone,
+  ReceiptLong,
+  RemoveRedEye,
+} from "@mui/icons-material";
+import PersonIcon from "@mui/icons-material/Person";
+import BookingInvoiceDialog from "./components/BookingInvoiceDialog";
 import FiltersBar, {
   type StatusOption as FiltersStatusOption,
 } from "./components/FiltersBar";
@@ -38,11 +45,10 @@ import TopBarControls from "./components/TopBarControls";
 type StatusOption = { value: BookingStatus | ""; label: string };
 
 const STATUS_OPTIONS: StatusOption[] = [
-  { value: "", label: "Tất cả" },
+  { value: " " as any, label: "Tất cả" },
   { value: 0 as BookingStatus, label: "Chờ duyệt" },
   { value: 1 as BookingStatus, label: "Đã xác nhận" },
-  { value: 2 as BookingStatus, label: "Đã nhận phòng" },
-  { value: 3 as BookingStatus, label: "Hoàn tất" },
+  { value: 3 as BookingStatus, label: "Đã hoàn thành" },
   { value: 4 as BookingStatus, label: "Đã hủy" },
 ];
 
@@ -58,16 +64,20 @@ const BookingManagementPage: React.FC = () => {
   // Filters
   const { user } = useStore<StoreState>((state) => state);
   const hotelId = user?.hotelId || "";
-  const [status, setStatus] = useState<BookingStatus | "">("");
-  const [fromDate, setFromDate] = useState<Dayjs | null>(null);
-  const [toDate, setToDate] = useState<Dayjs | null>(null);
+  const [status, setStatus] = useState<BookingStatus | " ">(0);
+  const [fromDate, setFromDate] = useState<Dayjs | null>(
+    dayjs().startOf("month")
+  );
+  const [toDate, setToDate] = useState<Dayjs | null>(dayjs().endOf("month"));
   const [guestName, setGuestName] = useState<string>("");
   const [roomNumber, setRoomNumber] = useState<string>("");
-  const [roomTypeId, setRoomTypeId] = useState<string>("");
 
-  // Reference data for selects
   const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
-  const [refLoading, setRefLoading] = useState(false);
+  const roomTypeImgMap = React.useMemo(() => {
+    const map: Record<string, string | undefined> = {};
+    for (const rt of roomTypes) map[rt.id] = rt.imageUrl;
+    return map;
+  }, [roomTypes]);
 
   // Modals
   const [openCreate, setOpenCreate] = useState(false);
@@ -77,6 +87,9 @@ const BookingManagementPage: React.FC = () => {
   const [openRoomMap, setOpenRoomMap] = useState(false);
   const [selectedBooking, setSelectedBooking] =
     useState<BookingDetailsDto | null>(null);
+  const [openBookingInvoice, setOpenBookingInvoice] = useState(false);
+  const [invoiceBooking, setInvoiceBooking] =
+    useState<BookingDetailsDto | null>(null);
 
   // Notifications
   const [snackbar, setSnackbar] = useState<{
@@ -85,35 +98,13 @@ const BookingManagementPage: React.FC = () => {
     severity: "success" | "error" | "info" | "warning";
   }>({ open: false, message: "", severity: "success" });
 
-  const fetchRefs = useCallback(async () => {
-    setRefLoading(true);
-    try {
-      const rtRes = await roomTypesApi.getRoomTypes({
-        hotelId: hotelId || undefined,
-        page: 1,
-        pageSize: 100,
-      });
-      console.log("rtRes", rtRes);
-      const rtItems = (rtRes as any).items || rtRes.data || [];
-      setRoomTypes(rtItems);
-    } catch (err) {
-      setSnackbar({
-        open: true,
-        message: "Không thể tải dữ liệu tham chiếu",
-        severity: "error",
-      });
-    } finally {
-      setRefLoading(false);
-    }
-  }, [hotelId]);
-
   const fetchList = useCallback(
     async (pageToLoad?: number) => {
       setLoading(true);
       try {
         const baseQuery: BookingsQueryDto = {
           hotelId: hotelId || undefined,
-          status: status === "" ? undefined : (status as BookingStatus),
+          status: status === " " ? undefined : (status as BookingStatus),
           startDate: fromDate ? fromDate.toDate().toISOString() : undefined,
           endDate: toDate ? toDate.toDate().toISOString() : undefined,
           guestName: guestName || undefined,
@@ -152,6 +143,7 @@ const BookingManagementPage: React.FC = () => {
           if (pageToLoad) setPage(pageToLoad);
         }
       } catch (err) {
+        console.log("err", err);
         setSnackbar({
           open: true,
           message: "Không thể tải danh sách booking",
@@ -165,14 +157,23 @@ const BookingManagementPage: React.FC = () => {
   );
 
   useEffect(() => {
-    fetchRefs();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hotelId]);
-
-  useEffect(() => {
     fetchList(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, fromDate, toDate, guestName, roomNumber, hotelId]);
+
+  useEffect(() => {
+    const loadRoomTypes = async () => {
+      try {
+        const res = await roomTypesApi.getRoomTypes({
+          hotelId: hotelId || undefined,
+          page: 1,
+          pageSize: 100,
+        });
+        setRoomTypes((res as any).data || (res as any).items || []);
+      } catch {}
+    };
+    loadRoomTypes();
+  }, [hotelId]);
 
   const openEditModal = async (summary: BookingDetailsDto) => {
     try {
@@ -189,111 +190,6 @@ const BookingManagementPage: React.FC = () => {
       });
     }
   };
-
-  const columns: Column<BookingDetailsDto & { actions?: React.ReactNode }>[] = [
-    {
-      id: "createdAt",
-      label: "Ngày đặt",
-      minWidth: 120,
-      format: (s) => {
-        return s ? new Date(s).toLocaleDateString() : "";
-      },
-    },
-    { id: "primaryGuestName", label: "Khách", minWidth: 120 },
-    { id: "phoneNumber", label: "Số điện thoại", minWidth: 120 },
-    {
-      id: "bookingRoomTypes",
-      label: "Loại phòng ",
-      format: (s) => {
-        return s?.map((t: BookingRoomTypeDto) => (
-          <Stack key={t.roomTypeId} gap={1}>
-            <Typography variant="body2">
-              {t.totalRoom} {t.roomTypeName}
-            </Typography>
-          </Stack>
-        ));
-      },
-      minWidth: 160,
-    },
-    {
-      id: "totalAmount",
-      label: "Tổng cộng",
-      minWidth: 120,
-      format: (v) => (typeof v === "number" ? `${v.toLocaleString()} đ` : ""),
-    },
-    {
-      id: "discountAmount",
-      label: "Giảm giá",
-      minWidth: 120,
-      format: (v) => (typeof v === "number" ? `${v.toLocaleString()} đ` : ""),
-    },
-    {
-      id: "depositAmount",
-      label: "Cọc",
-      minWidth: 120,
-      format: (v) => (typeof v === "number" ? `${v.toLocaleString()} đ` : ""),
-    },
-    {
-      id: "leftAmount",
-      label: "Còn lại",
-      minWidth: 120,
-      format: (v) => (typeof v === "number" ? `${v.toLocaleString()} đ` : ""),
-    },
-
-    {
-      id: "status",
-      label: "Trạng thái",
-      minWidth: 120,
-      format: (s) => {
-        const mapping: Record<
-          number,
-          {
-            label: string;
-            color: "default" | "primary" | "success" | "warning" | "error";
-          }
-        > = {
-          0: { label: "Chờ duyệt", color: "default" },
-          1: { label: "Đã xác nhận", color: "primary" },
-          2: { label: "Đã nhận phòng", color: "success" },
-          3: { label: "Hoàn tất", color: "success" },
-          4: { label: "Đã hủy", color: "error" },
-        };
-        const m = mapping[s as number] || {
-          label: String(s),
-          color: "default",
-        };
-        return <Chip label={m.label} color={m.color} size="small" />;
-      },
-    },
-
-    { id: "actions", label: "Tác vụ", minWidth: 100, align: "center" },
-  ];
-
-  const tableData = useMemo(() => {
-    return rows.map((r) => ({
-      ...r,
-      actions: (
-        <Stack
-          direction="row"
-          spacing={1}
-          justifyContent="center"
-          sx={{ flexWrap: "wrap" }}
-        >
-          <Tooltip title="Xem chi tiết">
-            <IconButton onClick={() => navigate(`/frontdesk/bookings/${r.id}`)}>
-              <RemoveRedEye />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Chỉnh sửa">
-            <IconButton onClick={() => openEditModal(r)}>
-              <Edit />
-            </IconButton>
-          </Tooltip>
-        </Stack>
-      ),
-    }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rows]);
 
   return (
     <Box>
@@ -317,8 +213,8 @@ const BookingManagementPage: React.FC = () => {
 
       {/* Filters */}
       <FiltersBar
-        status={status}
-        onStatusChange={setStatus}
+        status={status as any}
+        onStatusChange={setStatus as any}
         fromDate={fromDate}
         toDate={toDate}
         onFromDateChange={setFromDate}
@@ -327,26 +223,313 @@ const BookingManagementPage: React.FC = () => {
         roomNumber={roomNumber}
         onGuestNameChange={setGuestName}
         onRoomNumberChange={setRoomNumber}
-        roomTypeId={roomTypeId}
-        onRoomTypeIdChange={setRoomTypeId}
-        roomTypes={roomTypes}
         statusOptions={STATUS_OPTIONS as FiltersStatusOption[]}
       />
 
-      {/* Table */}
-      <DataTable
-        title="Danh sách booking"
-        columns={columns}
-        data={tableData}
-        loading={loading}
-        pagination={{
-          page,
-          pageSize,
-          total,
-          onPageChange: (p) => fetchList(p),
-        }}
-        getRowId={(r: any) => r.id}
-      />
+      <Stack spacing={2} sx={{ mt: 2 }}>
+        {(() => {
+          const listData = rows;
+          if (!loading && listData.length === 0) {
+            return (
+              <EmptyState
+                title="Không có yêu cầu đặt phòng"
+                description="Chưa có yêu cầu đặt phòng. Hãy thêm yêu cầu mới."
+                actions={
+                  <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
+                    <Button
+                      variant="contained"
+                      onClick={() => {
+                        setOpenCreate(true);
+                      }}
+                      startIcon={<AddCircle />}
+                    >
+                      Thêm yêu cầu
+                    </Button>
+                  </Stack>
+                }
+              />
+            );
+          }
+          return listData.map((b, idx) => {
+            const totalRooms = (b.bookingRoomTypes || []).reduce(
+              (sum, rt) => sum + (rt.totalRoom || rt.bookingRooms?.length || 0),
+              0
+            );
+
+            const total = b.totalAmount + (b.additionalAmount ?? 0);
+            const discountAmount = ((b.promotionValue || 0) / 100) * total;
+
+            const leftAmount =
+              b.leftAmount - discountAmount + (b.additionalAmount ?? 0);
+
+            const statusColor =
+              b.status === 3
+                ? "success"
+                : b.status === 4
+                ? "error"
+                : b.status === 1
+                ? "primary"
+                : "default";
+            const statusLabel =
+              b.status === 0
+                ? "Chờ duyệt"
+                : b.status === 1
+                ? "Đã xác nhận"
+                : b.status === 2
+                ? "Đã hoàn thành"
+                : b.status === 3
+                ? "Đã hoàn thành"
+                : b.status === 4
+                ? "Đã hủy"
+                : String(b.status);
+            return (
+              <Card key={b.id} sx={{ borderRadius: 2, boxShadow: 2 }}>
+                <CardContent>
+                  <Stack spacing={1.5}>
+                    <Stack
+                      direction={{ xs: "column", sm: "row" }}
+                      justifyContent="space-between"
+                      alignItems={{ xs: "flex-start", sm: "center" }}
+                    >
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <Hotel color="primary" />
+                        <Typography
+                          fontWeight={700}
+                        >{`Yêu cầu đặt phòng: #${String(
+                          idx + 1
+                        ).toUpperCase()}`}</Typography>
+                        <Chip
+                          label={`Tổng số phòng: ${totalRooms}`}
+                          size="small"
+                        />
+                      </Stack>
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <Typography color="text.secondary">
+                          {new Date(b.createdAt).toLocaleString()}
+                        </Typography>
+                        <Chip color={statusColor as any} label={statusLabel} />
+                      </Stack>
+                    </Stack>
+
+                    <Divider />
+
+                    <Stack
+                      direction={{ xs: "column", lg: "row" }}
+                      justifyContent="space-between"
+                      spacing={1}
+                      sx={{ width: "100%" }}
+                    >
+                      <Stack
+                        direction={{ xs: "column", lg: "row" }}
+                        spacing={2}
+                      >
+                        <Stack
+                          direction={{ xs: "row" }}
+                          spacing={1}
+                          alignItems="center"
+                        >
+                          <PersonIcon color="action" />
+                          <Typography>
+                            Họ và tên: {b.primaryGuestName || "—"}
+                          </Typography>
+                        </Stack>
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <Phone color="action" />
+                          <Typography>SĐT: {b.phoneNumber || "—"}</Typography>
+                        </Stack>
+                      </Stack>
+                      <Stack
+                        direction={{ xs: "column", lg: "row" }}
+                        spacing={1}
+                      >
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          startIcon={<Edit />}
+                          onClick={() => openEditModal(b as any)}
+                        >
+                          Sửa
+                        </Button>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          startIcon={<RemoveRedEye />}
+                          onClick={() =>
+                            navigate(`/frontdesk/bookings/${b.id}`)
+                          }
+                        >
+                          Xem
+                        </Button>
+                        <Button
+                          size="small"
+                          variant="contained"
+                          startIcon={<ReceiptLong />}
+                          onClick={() => {
+                            setInvoiceBooking(b as any);
+                            setOpenBookingInvoice(true);
+                          }}
+                        >
+                          In hóa đơn
+                        </Button>
+                      </Stack>
+                    </Stack>
+
+                    <Stack spacing={1.5}>
+                      <Typography variant="subtitle2" fontWeight={700}>
+                        Danh sách phòng
+                      </Typography>
+                      {b.bookingRoomTypes?.length ? (
+                        b.bookingRoomTypes.map((rt) => (
+                          <Stack
+                            key={rt.bookingRoomTypeId}
+                            spacing={1}
+                            sx={{
+                              p: 1,
+                              borderRadius: 1,
+                              border: "1px solid #eee",
+                            }}
+                          >
+                            {(() => {
+                              const nights = Math.max(
+                                1,
+                                dayjs(rt.endDate).diff(
+                                  dayjs(rt.startDate),
+                                  "day"
+                                )
+                              );
+                              const rooms =
+                                rt.totalRoom || rt.bookingRooms?.length || 0;
+                              const perNight = rt.price || 0;
+                              const subtotal = perNight * nights * rooms;
+                              return (
+                                <Stack
+                                  direction={{ xs: "column", sm: "row" }}
+                                  justifyContent="space-between"
+                                  alignItems={{
+                                    xs: "flex-start",
+                                    sm: "center",
+                                  }}
+                                  spacing={1}
+                                >
+                                  <Stack
+                                    direction="row"
+                                    spacing={1}
+                                    alignItems="center"
+                                    sx={{ minWidth: 260 }}
+                                  >
+                                    <img
+                                      src={
+                                        roomTypeImgMap[rt.roomTypeId] ||
+                                        "/assets/logo.png"
+                                      }
+                                      alt={rt.roomTypeName || "Loại phòng"}
+                                      style={{
+                                        width: 56,
+                                        height: 56,
+                                        borderRadius: 8,
+                                        objectFit: "cover",
+                                        border: "1px solid #eee",
+                                      }}
+                                    />
+                                    <Stack>
+                                      <Typography fontWeight={700}>
+                                        {rt.roomTypeName || "—"}
+                                      </Typography>
+                                      <Typography color="text.secondary">
+                                        {new Date(
+                                          rt.startDate
+                                        ).toLocaleDateString()}{" "}
+                                        -{" "}
+                                        {new Date(
+                                          rt.endDate
+                                        ).toLocaleDateString()}{" "}
+                                        ({nights} đêm)
+                                      </Typography>
+                                      <Typography>Số phòng: {rooms}</Typography>
+                                    </Stack>
+                                  </Stack>
+                                  <Stack
+                                    sx={{
+                                      ml: "auto",
+                                      minWidth: 220,
+                                      textAlign: "right",
+                                    }}
+                                  >
+                                    <Typography color="text.secondary">
+                                      Giá/đêm
+                                    </Typography>
+                                    <Typography fontWeight={700}>
+                                      {perNight.toLocaleString()} đ
+                                    </Typography>
+                                    <Typography color="text.secondary">
+                                      Thành tiền
+                                    </Typography>
+                                    <Typography fontWeight={700}>
+                                      {subtotal.toLocaleString()} đ
+                                    </Typography>
+                                  </Stack>
+                                </Stack>
+                              );
+                            })()}
+                          </Stack>
+                        ))
+                      ) : (
+                        <Typography color="text.secondary">
+                          Không có loại phòng
+                        </Typography>
+                      )}
+                    </Stack>
+                    <Stack alignItems="flex-end">
+                      <Stack
+                        direction={{ xs: "column", lg: "row" }}
+                        spacing={3}
+                        alignItems={{ xs: "flex-end", sm: "flex-end" }}
+                      >
+                        <Stack alignItems="flex-end">
+                          <Typography color="text.secondary">
+                            Tổng cộng
+                          </Typography>
+                          <Typography fontWeight={700}>
+                            {(b.totalAmount || 0).toLocaleString()} đ
+                          </Typography>
+                        </Stack>
+                        <Stack alignItems="flex-end">
+                          <Typography color="text.secondary">
+                            Phụ thu
+                          </Typography>
+                          <Typography fontWeight={700}>
+                            {(b.additionalAmount || 0).toLocaleString()} đ
+                          </Typography>
+                        </Stack>
+                        <Stack alignItems="flex-end">
+                          <Typography color="red">Cọc</Typography>
+                          <Typography color="red" fontWeight={700}>
+                            - {(b.depositAmount || 0).toLocaleString()} đ
+                          </Typography>
+                        </Stack>
+                        <Stack alignItems="flex-end">
+                          <Typography color="red">Giảm giá</Typography>
+                          <Typography color="red" fontWeight={700}>
+                            - {(discountAmount || 0).toLocaleString()} đ
+                          </Typography>
+                        </Stack>
+                        <Stack alignItems="flex-end">
+                          <Typography color="text.secondary">
+                            Còn lại
+                          </Typography>
+                          <Typography fontWeight={"bold"}>
+                            {(leftAmount || 0).toLocaleString()} đ
+                          </Typography>
+                        </Stack>
+                      </Stack>
+                    </Stack>
+                  </Stack>
+                </CardContent>
+              </Card>
+            );
+          });
+        })()}
+      </Stack>
 
       {/* Create */}
       <BookingFormModal
@@ -428,25 +611,13 @@ const BookingManagementPage: React.FC = () => {
       />
 
       {/* Room map timeline dialog */}
-      <RoomMapDialog
-        open={openRoomMap}
-        onClose={() => setOpenRoomMap(false)}
-        from={fromDate}
-        to={toDate}
-        onFromChange={setFromDate}
-        onToChange={setToDate}
-        roomTypeId={roomTypeId}
-        onRoomTypeIdChange={setRoomTypeId}
-        roomTypes={roomTypes}
-        onSelectBooking={(bid) => {
-          setOpenRoomMap(false);
-          bookingsApi.getById(bid).then((res: any) => {
-            if (res?.isSuccess && res.data) {
-              setSelectedBooking(res.data);
-              setOpenEdit(true);
-            }
-          });
-        }}
+      <RoomMapDialog open={openRoomMap} onClose={() => setOpenRoomMap(false)} />
+
+      <BookingInvoiceDialog
+        open={openBookingInvoice}
+        onClose={() => setOpenBookingInvoice(false)}
+        booking={invoiceBooking as any}
+        onRefreshBooking={() => fetchList(page)}
       />
 
       {/* Snackbar */}

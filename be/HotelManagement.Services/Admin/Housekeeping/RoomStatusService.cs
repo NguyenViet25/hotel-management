@@ -46,6 +46,7 @@ public class RoomStatusService : IRoomStatusService
         var statusLog = new RoomStatusLog
         {
             Id = Guid.NewGuid(),
+            HotelId = room.HotelId,
             RoomId = room.Id,
             Status = request.Status,
             Timestamp = DateTime.UtcNow,
@@ -57,7 +58,7 @@ public class RoomStatusService : IRoomStatusService
 
         await _roomStatusLogRepository.AddAsync(statusLog);
         await _roomRepository.UpdateAsync(room);
-        await _unitOfWork.SaveChangesAsync();
+        await _roomRepository.SaveChangesAsync();
 
         return ApiResponse<RoomStatusDto>.Success(new RoomStatusDto
         {

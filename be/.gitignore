@@ -6,6 +6,7 @@ Debug/
 Release/
 TestResults/
 
+out/
 ## IDE settings
 .idea/
 .vscode/
@@ -37,3 +38,5 @@ coverage/
 
 ## Environment files (if any)
 .env
+
+\tempbin\
