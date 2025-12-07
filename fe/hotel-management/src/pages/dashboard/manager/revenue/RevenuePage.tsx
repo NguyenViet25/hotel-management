@@ -17,7 +17,11 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
 import PageTitle from "../../../../components/common/PageTitle";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
-import revenueApi, { type RevenueStatsDto } from "../../../../api/revenueApi";
+import revenueApi, {
+  type RevenueStatsDto,
+  type RevenueBreakdownDto,
+  type RevenueDetailItemDto,
+} from "../../../../api/revenueApi";
 import {
   LineChart,
   Line,
@@ -37,6 +41,9 @@ const RevenuePage: React.FC = () => {
   const [granularity, setGranularity] = useState<"day" | "month">("day");
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState<RevenueStatsDto | null>(null);
+  const [breakdown, setBreakdown] = useState<RevenueBreakdownDto | null>(null);
+  const [details, setDetails] = useState<RevenueDetailItemDto[]>([]);
+  const [detailOpen, setDetailOpen] = useState(false);
 
   const chartData = useMemo(
     () =>
@@ -61,6 +68,13 @@ const RevenuePage: React.FC = () => {
         granularity,
       });
       if (res.isSuccess) setStats(res.data);
+      const br = await revenueApi.getBreakdown({
+        hotelId,
+        fromDate: from.startOf("day").toISOString(),
+        toDate: to.endOf("day").toISOString(),
+        granularity,
+      });
+      if (br.isSuccess) setBreakdown(br.data);
     } finally {
       setLoading(false);
     }
@@ -156,6 +170,217 @@ const RevenuePage: React.FC = () => {
           </Card>
         </Grid>
       </Grid>
+
+      <Grid container spacing={2} sx={{ mt: 2 }}>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Card variant="outlined">
+            <CardHeader title="Theo danh mục" />
+            <CardContent>
+              <Stack spacing={1}>
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
+                  <Typography>Phòng</Typography>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Typography fontWeight={700}>
+                      {currency(breakdown?.roomTotal || 0)}
+                    </Typography>
+                    <TextField
+                      size="small"
+                      value={"Chi tiết"}
+                      onClick={async () => {
+                        const res = await revenueApi.getDetails({
+                          hotelId,
+                          fromDate: from.startOf("day").toISOString(),
+                          toDate: to.endOf("day").toISOString(),
+                          sourceType: 0,
+                        });
+                        if (res.isSuccess) {
+                          setDetails(res.data);
+                          setDetailOpen(true);
+                        }
+                      }}
+                      sx={{ width: 100 }}
+                      inputProps={{
+                        readOnly: true,
+                        style: { cursor: "pointer" },
+                      }}
+                    />
+                  </Stack>
+                </Stack>
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
+                  <Typography>F&B</Typography>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Typography fontWeight={700}>
+                      {currency(breakdown?.fnbTotal || 0)}
+                    </Typography>
+                    <TextField
+                      size="small"
+                      value={"Chi tiết"}
+                      onClick={async () => {
+                        const res = await revenueApi.getDetails({
+                          hotelId,
+                          fromDate: from.startOf("day").toISOString(),
+                          toDate: to.endOf("day").toISOString(),
+                          sourceType: 1,
+                        });
+                        if (res.isSuccess) {
+                          setDetails(res.data);
+                          setDetailOpen(true);
+                        }
+                      }}
+                      sx={{ width: 100 }}
+                      inputProps={{
+                        readOnly: true,
+                        style: { cursor: "pointer" },
+                      }}
+                    />
+                  </Stack>
+                </Stack>
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
+                  <Typography>Khác</Typography>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Typography fontWeight={700}>
+                      {currency(breakdown?.otherTotal || 0)}
+                    </Typography>
+                    <TextField
+                      size="small"
+                      value={"Chi tiết"}
+                      onClick={async () => {
+                        const res = await revenueApi.getDetails({
+                          hotelId,
+                          fromDate: from.startOf("day").toISOString(),
+                          toDate: to.endOf("day").toISOString(),
+                          sourceType: 2,
+                        });
+                        if (res.isSuccess) {
+                          setDetails(res.data);
+                          setDetailOpen(true);
+                        }
+                      }}
+                      sx={{ width: 100 }}
+                      inputProps={{
+                        readOnly: true,
+                        style: { cursor: "pointer" },
+                      }}
+                    />
+                  </Stack>
+                </Stack>
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
+                  <Typography>Giảm giá</Typography>
+                  <Typography fontWeight={700}>
+                    {currency(breakdown?.discountTotal || 0)}
+                  </Typography>
+                </Stack>
+              </Stack>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Card variant="outlined">
+            <CardHeader title="Diễn biến theo thời gian" />
+            <CardContent sx={{ height: 320 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                  data={(breakdown?.points || []).map((p) => ({
+                    date:
+                      granularity === "month"
+                        ? dayjs(p.date).format("MM/YYYY")
+                        : dayjs(p.date).format("DD/MM"),
+                    room: p.roomTotal,
+                    fnb: p.fnbTotal,
+                    other: p.otherTotal,
+                    discount: p.discountTotal,
+                  }))}
+                  margin={{ left: 8, right: 16, top: 12, bottom: 12 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis
+                    tickFormatter={(v) =>
+                      Math.round(Number(v) / 1000).toLocaleString() + "k"
+                    }
+                  />
+                  <Tooltip formatter={(v: any) => currency(Number(v))} />
+                  <Line
+                    type="monotone"
+                    dataKey="room"
+                    stroke="#5563DE"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="fnb"
+                    stroke="#2ca02c"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="other"
+                    stroke="#ff7f0e"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+      {detailOpen && (
+        <Card variant="outlined" sx={{ mt: 2 }}>
+          <CardHeader title="Chi tiết" />
+          <CardContent>
+            <Stack spacing={1}>
+              {(details || []).map((d, idx) => (
+                <Stack
+                  key={idx}
+                  direction={{ xs: "column", sm: "row" }}
+                  spacing={1}
+                  alignItems={{ xs: "flex-start", sm: "center" }}
+                >
+                  <Typography sx={{ minWidth: 120 }}>
+                    {dayjs(d.createdAt).format("DD/MM/YYYY")}
+                  </Typography>
+                  <Typography sx={{ flexGrow: 1 }}>{d.description}</Typography>
+                  <Typography>{currency(d.amount)}</Typography>
+                  {d.bookingId && (
+                    <TextField
+                      size="small"
+                      value={"Xem booking"}
+                      onClick={() => {
+                        window.location.href = `/frontdesk/bookings/${d.bookingId}`;
+                      }}
+                      sx={{ width: 120 }}
+                      inputProps={{
+                        readOnly: true,
+                        style: { cursor: "pointer" },
+                      }}
+                    />
+                  )}
+                </Stack>
+              ))}
+            </Stack>
+          </CardContent>
+        </Card>
+      )}
     </Box>
   );
 };

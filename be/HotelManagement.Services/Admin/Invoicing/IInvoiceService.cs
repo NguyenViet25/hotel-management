@@ -1,3 +1,4 @@
+using HotelManagement.Domain;
 using HotelManagement.Services.Admin.Invoicing.Dtos;
 
 namespace HotelManagement.Services.Admin.Invoicing;
@@ -11,4 +12,6 @@ public interface IInvoiceService
     Task<InvoiceDto> CancelInvoiceAsync(Guid id);
     Task<PagedResult<InvoiceDto>> GetInvoicesAsync(InvoiceFilterDto filter);
     Task<RevenueStatsDto> GetRevenueAsync(RevenueQueryDto query);
+    Task<RevenueBreakdownDto> GetRevenueBreakdownAsync(RevenueQueryDto query);
+    Task<List<RevenueDetailItemDto>> GetRevenueDetailsAsync(RevenueQueryDto query, InvoiceLineSourceType? sourceType = null);
 }

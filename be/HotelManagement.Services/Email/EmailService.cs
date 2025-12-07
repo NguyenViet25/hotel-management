@@ -27,8 +27,7 @@ public class EmailService : IEmailService
 
     public Task<bool> SendResetPasswordEmailAsync(string toEmail, string? displayName, string token, CancellationToken ct = default)
     {
-        var link = BuildResetUrl(_options.ResetBaseUrl, token);
-        var tpl = EmailTemplates.ResetPassword(displayName, link);
+        var tpl = EmailTemplates.ResetPassword(displayName, token);
         return Send(toEmail, tpl.subject, tpl.html, tpl.text, ct);
     }
 

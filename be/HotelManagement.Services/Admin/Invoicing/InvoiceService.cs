@@ -286,6 +286,88 @@ public class InvoiceService : IInvoiceService
         return new RevenueStatsDto { Total = total, Count = count, Points = points };
     }
 
+    public async Task<RevenueBreakdownDto> GetRevenueBreakdownAsync(RevenueQueryDto query)
+    {
+        var q = _invoiceRepository.Query().Include(i => i.Lines).AsQueryable();
+
+        q = q.Where(i => i.HotelId == query.HotelId);
+        q = q.Where(i => i.Status != InvoiceStatus.Cancelled);
+
+        if (query.FromDate.HasValue)
+        {
+            q = q.Where(i => i.CreatedAt >= query.FromDate);
+        }
+        if (query.ToDate.HasValue)
+        {
+            q = q.Where(i => i.CreatedAt <= query.ToDate);
+        }
+
+        var invoices = await q.ToListAsync();
+
+        var roomTotal = invoices.Sum(i => i.Lines.Where(l => l.SourceType == InvoiceLineSourceType.RoomCharge).Sum(l => l.Amount));
+        var fnbTotal = invoices.Sum(i => i.Lines.Where(l => l.SourceType == InvoiceLineSourceType.Fnb).Sum(l => l.Amount));
+        var otherTotal = invoices.Sum(i => i.Lines.Where(l => l.SourceType == InvoiceLineSourceType.Surcharge).Sum(l => l.Amount));
+        var discountTotal = invoices.Sum(i => i.Lines.Where(l => l.SourceType == InvoiceLineSourceType.Discount).Sum(l => l.Amount));
+
+        var gran = (query.Granularity ?? "day").ToLowerInvariant();
+        Func<DateTime, DateTime> bucket = gran == "month"
+            ? (d => new DateTime(d.Year, d.Month, 1))
+            : (d => d.Date);
+
+        var points = invoices
+            .GroupBy(i => bucket(i.CreatedAt))
+            .OrderBy(g => g.Key)
+            .Select(g => new RevenueCategoryPointDto
+            {
+                Date = g.Key,
+                RoomTotal = g.Sum(i => i.Lines.Where(l => l.SourceType == InvoiceLineSourceType.RoomCharge).Sum(l => l.Amount)),
+                FnbTotal = g.Sum(i => i.Lines.Where(l => l.SourceType == InvoiceLineSourceType.Fnb).Sum(l => l.Amount)),
+                OtherTotal = g.Sum(i => i.Lines.Where(l => l.SourceType == InvoiceLineSourceType.Surcharge).Sum(l => l.Amount)),
+                DiscountTotal = g.Sum(i => i.Lines.Where(l => l.SourceType == InvoiceLineSourceType.Discount).Sum(l => l.Amount)),
+            })
+            .ToList();
+
+        return new RevenueBreakdownDto
+        {
+            RoomTotal = roomTotal,
+            FnbTotal = fnbTotal,
+            OtherTotal = otherTotal,
+            DiscountTotal = discountTotal,
+            Points = points
+        };
+    }
+
+    public async Task<List<RevenueDetailItemDto>> GetRevenueDetailsAsync(RevenueQueryDto query, InvoiceLineSourceType? sourceType = null)
+    {
+        var q = _invoiceRepository.Query().Include(i => i.Lines).AsQueryable();
+        q = q.Where(i => i.HotelId == query.HotelId);
+        q = q.Where(i => i.Status != InvoiceStatus.Cancelled);
+        if (query.FromDate.HasValue) q = q.Where(i => i.CreatedAt >= query.FromDate);
+        if (query.ToDate.HasValue) q = q.Where(i => i.CreatedAt <= query.ToDate);
+
+        var invoices = await q.OrderByDescending(i => i.CreatedAt).ToListAsync();
+
+        var list = new List<RevenueDetailItemDto>();
+        foreach (var inv in invoices)
+        {
+            foreach (var l in inv.Lines)
+            {
+                if (sourceType.HasValue && l.SourceType != sourceType.Value) continue;
+                list.Add(new RevenueDetailItemDto
+                {
+                    InvoiceId = inv.Id,
+                    BookingId = inv.BookingId,
+                    OrderId = inv.OrderId,
+                    CreatedAt = inv.CreatedAt,
+                    Description = l.Description,
+                    Amount = l.Amount,
+                    SourceType = l.SourceType
+                });
+            }
+        }
+        return list;
+    }
+
     private void CalculateInvoiceTotals(Invoice invoice)
     {
         // Calculate subtotal (sum of all positive line amounts)

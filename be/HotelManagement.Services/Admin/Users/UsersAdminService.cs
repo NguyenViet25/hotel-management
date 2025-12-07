@@ -365,7 +365,7 @@ public class UsersAdminService : IUsersAdminService
         var token = await _users.GeneratePasswordResetTokenAsync(user);
         var res = await _users.ResetPasswordAsync(user, token, token);
 
-        await _emailService.SendResetPasswordEmailAsync(user.Email!, user.UserName, token);
+        var sent = await _emailService.SendResetPasswordEmailAsync(user.Email!, user.UserName, token);
         return res.Succeeded;
     }
 

@@ -48,6 +48,20 @@ public class InvoicesController : ControllerBase
         return Ok(ApiResponse<RevenueStatsDto>.Ok(stats));
     }
 
+    [HttpGet("revenue/breakdown")]
+    public async Task<ActionResult<ApiResponse<RevenueBreakdownDto>>> GetRevenueBreakdown([FromQuery] RevenueQueryDto query)
+    {
+        var stats = await _invoiceService.GetRevenueBreakdownAsync(query);
+        return Ok(ApiResponse<RevenueBreakdownDto>.Ok(stats));
+    }
+
+    [HttpGet("revenue/details")]
+    public async Task<ActionResult<ApiResponse<List<RevenueDetailItemDto>>>> GetRevenueDetails([FromQuery] RevenueQueryDto query, [FromQuery] InvoiceLineSourceType? sourceType)
+    {
+        var list = await _invoiceService.GetRevenueDetailsAsync(query, sourceType);
+        return Ok(ApiResponse<List<RevenueDetailItemDto>>.Ok(list));
+    }
+
     [HttpGet]
     public async Task<ActionResult<ApiResponse<PagedResult<InvoiceDto>>>> List([FromQuery] InvoiceFilterDto filter)
     {
