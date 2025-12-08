@@ -372,10 +372,7 @@ public class DiningSessionService : IDiningSessionService
         {
             return ApiResponse<bool>.Fail("Hotel mismatch");
         }
-        if (order.Status != OrderStatus.Ready)
-        {
-            return ApiResponse<bool>.Fail("Order not ready");
-        }
+      
         order.DiningSessionId = sessionId;
 
         await _orderRepository.UpdateAsync(order);

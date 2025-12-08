@@ -65,12 +65,18 @@ export default function AssignOrderDialog({
       hotelId: hotelId || undefined,
       search: value,
       page: 1,
-      pageSize: 10,
-      status: EOrderStatus.Ready,
+      pageSize: 9999,
     };
     const res = await ordersApi.listOrders(params);
     setLoading(false);
-    setResults(res.data || []);
+
+    const data = res.data.map((o) => {
+      return o.status !== EOrderStatus.Completed &&
+        o.status !== EOrderStatus.NeedConfirmed
+        ? o
+        : null;
+    });
+    setResults(data.filter((o) => o !== null) || []);
   };
 
   const handleAssign = async (orderId: string) => {
@@ -256,12 +262,7 @@ export default function AssignOrderDialog({
                       startIcon={<Assignment />}
                       variant="contained"
                       onClick={() => handleAssign(o.id)}
-                      disabled={isWaiter || o.status !== EOrderStatus.Ready}
-                      title={
-                        o.status !== EOrderStatus.Ready
-                          ? "Chỉ có đơn Sẵn sàng (Ready) mới được gắn"
-                          : undefined
-                      }
+                      disabled={isWaiter}
                     >
                       Gắn vào phiên
                     </Button>
