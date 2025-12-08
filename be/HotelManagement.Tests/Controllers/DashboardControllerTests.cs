@@ -36,9 +36,10 @@ public class DashboardControllerTests
         Mock<IOrdersService> orders,
         Mock<IDiningSessionService> sessions,
         Mock<IOrderItemStatusService> orderItems,
+        Mock<HotelManagement.Services.Admin.Invoicing.IInvoiceService> invoiceService,
         ClaimsPrincipal? user = null)
     {
-        var controller = new DashboardController(hotels.Object, users.Object, audit.Object, roomStatus.Object, housekeeping.Object, bookings.Object, orders.Object, sessions.Object, orderItems.Object);
+        var controller = new DashboardController(hotels.Object, users.Object, audit.Object, roomStatus.Object, housekeeping.Object, bookings.Object, orders.Object, sessions.Object, orderItems.Object, invoiceService.Object);
         var ctx = new DefaultHttpContext();
         if (user != null) ctx.User = user;
         controller.ControllerContext = new ControllerContext { HttpContext = ctx };
@@ -57,7 +58,7 @@ public class DashboardControllerTests
         var orders = new Mock<IOrdersService>();
         var sessions = new Mock<IDiningSessionService>();
         var orderItems = new Mock<IOrderItemStatusService>();
-        var controller = CreateController(hotels, users, audit, roomStatus, housekeeping, bookings, orders, sessions, orderItems);
+        var controller = CreateController(hotels, users, audit, roomStatus, housekeeping, bookings, orders, sessions, orderItems, new Mock<HotelManagement.Services.Admin.Invoicing.IInvoiceService>());
         var result = await controller.GetAdminSummary();
         Assert.IsType<ForbidResult>(result.Result);
     }
@@ -78,7 +79,7 @@ public class DashboardControllerTests
         var sessions = new Mock<IDiningSessionService>();
         var orderItems = new Mock<IOrderItemStatusService>();
         var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString()), new Claim(ClaimTypes.Role, "Admin") }, "TestAuth"));
-        var controller = CreateController(hotels, users, audit, roomStatus, housekeeping, bookings, orders, sessions, orderItems, user);
+        var controller = CreateController(hotels, users, audit, roomStatus, housekeeping, bookings, orders, sessions, orderItems, new Mock<HotelManagement.Services.Admin.Invoicing.IInvoiceService>(), user);
         var result = await controller.GetAdminSummary();
         var ok = Assert.IsType<OkObjectResult>(result.Result);
         var payload = Assert.IsType<ApiResponse<DashboardController.AdminDashboardSummaryDto>>(ok.Value);
@@ -88,7 +89,7 @@ public class DashboardControllerTests
     [Fact]
     public async Task ManagerSummary_BadRequest_WhenNoHotelId()
     {
-        var c = CreateController(new Mock<IHotelsAdminService>(), new Mock<IUsersAdminService>(), new Mock<IAuditService>(), new Mock<IRoomStatusService>(), new Mock<IHousekeepingTaskService>(), new Mock<IBookingsService>(), new Mock<IOrdersService>(), new Mock<IDiningSessionService>(), new Mock<IOrderItemStatusService>(), new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Role, "Manager") }, "TestAuth")));
+        var c = CreateController(new Mock<IHotelsAdminService>(), new Mock<IUsersAdminService>(), new Mock<IAuditService>(), new Mock<IRoomStatusService>(), new Mock<IHousekeepingTaskService>(), new Mock<IBookingsService>(), new Mock<IOrdersService>(), new Mock<IDiningSessionService>(), new Mock<IOrderItemStatusService>(), new Mock<HotelManagement.Services.Admin.Invoicing.IInvoiceService>(), new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Role, "Manager") }, "TestAuth")));
         var result = await c.GetManagerSummary(null);
         Assert.IsType<BadRequestObjectResult>(result.Result);
     }
@@ -102,7 +103,7 @@ public class DashboardControllerTests
 ;
         var housekeeping = new Mock<IHousekeepingTaskService>();
         housekeeping.Setup(h => h.ListAsync(It.IsAny<ListHousekeepingTasksQuery>())).ReturnsAsync(ApiResponse<List<HousekeepingTaskDto>>.Ok(new List<HousekeepingTaskDto>()));
-        var controller = CreateController(new Mock<IHotelsAdminService>(), new Mock<IUsersAdminService>(), new Mock<IAuditService>(), roomStatus, housekeeping, new Mock<IBookingsService>(), new Mock<IOrdersService>(), new Mock<IDiningSessionService>(), new Mock<IOrderItemStatusService>(), new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Role, "Manager") }, "TestAuth")));
+        var controller = CreateController(new Mock<IHotelsAdminService>(), new Mock<IUsersAdminService>(), new Mock<IAuditService>(), roomStatus, housekeeping, new Mock<IBookingsService>(), new Mock<IOrdersService>(), new Mock<IDiningSessionService>(), new Mock<IOrderItemStatusService>(), new Mock<HotelManagement.Services.Admin.Invoicing.IInvoiceService>(), new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Role, "Manager") }, "TestAuth")));
         var result = await controller.GetManagerSummary(Guid.NewGuid());
         Assert.IsType<OkObjectResult>(result.Result);
     }
@@ -110,7 +111,7 @@ public class DashboardControllerTests
     [Fact]
     public async Task FrontDeskSummary_BadRequest_WhenNoHotelId()
     {
-        var controller = CreateController(new Mock<IHotelsAdminService>(), new Mock<IUsersAdminService>(), new Mock<IAuditService>(), new Mock<IRoomStatusService>(), new Mock<IHousekeepingTaskService>(), new Mock<IBookingsService>(), new Mock<IOrdersService>(), new Mock<IDiningSessionService>(), new Mock<IOrderItemStatusService>(), new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Role, "FrontDesk") }, "TestAuth")));
+        var controller = CreateController(new Mock<IHotelsAdminService>(), new Mock<IUsersAdminService>(), new Mock<IAuditService>(), new Mock<IRoomStatusService>(), new Mock<IHousekeepingTaskService>(), new Mock<IBookingsService>(), new Mock<IOrdersService>(), new Mock<IDiningSessionService>(), new Mock<IOrderItemStatusService>(), new Mock<HotelManagement.Services.Admin.Invoicing.IInvoiceService>(), new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Role, "FrontDesk") }, "TestAuth")));
         var result = await controller.GetFrontDeskSummary(null);
         Assert.IsType<BadRequestObjectResult>(result.Result);
     }
@@ -120,7 +121,7 @@ public class DashboardControllerTests
     {
         var bookings = new Mock<IBookingsService>();
         bookings.Setup(b => b.ListAsync(It.IsAny<BookingsQueryDto>())).ReturnsAsync(ApiResponse<List<BookingDetailsDto>>.Ok(new List<BookingDetailsDto>()));
-        var controller = CreateController(new Mock<IHotelsAdminService>(), new Mock<IUsersAdminService>(), new Mock<IAuditService>(), new Mock<IRoomStatusService>(), new Mock<IHousekeepingTaskService>(), bookings, new Mock<IOrdersService>(), new Mock<IDiningSessionService>(), new Mock<IOrderItemStatusService>(), new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Role, "FrontDesk") }, "TestAuth")));
+        var controller = CreateController(new Mock<IHotelsAdminService>(), new Mock<IUsersAdminService>(), new Mock<IAuditService>(), new Mock<IRoomStatusService>(), new Mock<IHousekeepingTaskService>(), bookings, new Mock<IOrdersService>(), new Mock<IDiningSessionService>(), new Mock<IOrderItemStatusService>(), new Mock<HotelManagement.Services.Admin.Invoicing.IInvoiceService>(), new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Role, "FrontDesk") }, "TestAuth")));
         var result = await controller.GetFrontDeskSummary(Guid.NewGuid());
         Assert.IsType<OkObjectResult>(result.Result);
     }
@@ -128,7 +129,7 @@ public class DashboardControllerTests
     [Fact]
     public async Task WaiterSummary_BadRequest_WhenNoHotelId()
     {
-        var controller = CreateController(new Mock<IHotelsAdminService>(), new Mock<IUsersAdminService>(), new Mock<IAuditService>(), new Mock<IRoomStatusService>(), new Mock<IHousekeepingTaskService>(), new Mock<IBookingsService>(), new Mock<IOrdersService>(), new Mock<IDiningSessionService>(), new Mock<IOrderItemStatusService>(), new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Role, "Waiter") }, "TestAuth")));
+        var controller = CreateController(new Mock<IHotelsAdminService>(), new Mock<IUsersAdminService>(), new Mock<IAuditService>(), new Mock<IRoomStatusService>(), new Mock<IHousekeepingTaskService>(), new Mock<IBookingsService>(), new Mock<IOrdersService>(), new Mock<IDiningSessionService>(), new Mock<IOrderItemStatusService>(), new Mock<HotelManagement.Services.Admin.Invoicing.IInvoiceService>(), new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Role, "Waiter") }, "TestAuth")));
         var result = await controller.GetWaiterSummary(null);
         Assert.IsType<BadRequestObjectResult>(result.Result);
     }
@@ -140,7 +141,7 @@ public class DashboardControllerTests
         sessions.Setup(s => s.GetSessionsAsync(It.IsAny<Guid>(), 1, 1, HotelManagement.Domain.DiningSessionStatus.Open.ToString())).ReturnsAsync(ApiResponse<DiningSessionListResponse>.Ok(new DiningSessionListResponse { TotalCount = 2 }));
         var orders = new Mock<IOrdersService>();
         orders.Setup(o => o.ListAsync(It.IsAny<OrdersQueryDto>())).ReturnsAsync(ApiResponse<List<OrderSummaryDto>>.Ok(new List<OrderSummaryDto> { new OrderSummaryDto() }));
-        var controller = CreateController(new Mock<IHotelsAdminService>(), new Mock<IUsersAdminService>(), new Mock<IAuditService>(), new Mock<IRoomStatusService>(), new Mock<IHousekeepingTaskService>(), new Mock<IBookingsService>(), orders, sessions, new Mock<IOrderItemStatusService>(), new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Role, "Waiter") }, "TestAuth")));
+        var controller = CreateController(new Mock<IHotelsAdminService>(), new Mock<IUsersAdminService>(), new Mock<IAuditService>(), new Mock<IRoomStatusService>(), new Mock<IHousekeepingTaskService>(), new Mock<IBookingsService>(), orders, sessions, new Mock<IOrderItemStatusService>(), new Mock<HotelManagement.Services.Admin.Invoicing.IInvoiceService>(), new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Role, "Waiter") }, "TestAuth")));
         var result = await controller.GetWaiterSummary(Guid.NewGuid());
         Assert.IsType<OkObjectResult>(result.Result);
     }
@@ -148,7 +149,7 @@ public class DashboardControllerTests
     [Fact]
     public async Task KitchenSummary_BadRequest_WhenNoHotelId()
     {
-        var controller = CreateController(new Mock<IHotelsAdminService>(), new Mock<IUsersAdminService>(), new Mock<IAuditService>(), new Mock<IRoomStatusService>(), new Mock<IHousekeepingTaskService>(), new Mock<IBookingsService>(), new Mock<IOrdersService>(), new Mock<IDiningSessionService>(), new Mock<IOrderItemStatusService>(), new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Role, "Kitchen") }, "TestAuth")));
+        var controller = CreateController(new Mock<IHotelsAdminService>(), new Mock<IUsersAdminService>(), new Mock<IAuditService>(), new Mock<IRoomStatusService>(), new Mock<IHousekeepingTaskService>(), new Mock<IBookingsService>(), new Mock<IOrdersService>(), new Mock<IDiningSessionService>(), new Mock<IOrderItemStatusService>(), new Mock<HotelManagement.Services.Admin.Invoicing.IInvoiceService>(), new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Role, "Kitchen") }, "TestAuth")));
         var result = await controller.GetKitchenSummary(null);
         Assert.IsType<BadRequestObjectResult>(result.Result);
     }
@@ -160,7 +161,7 @@ public class DashboardControllerTests
         orderItems.Setup(oi => oi.GetPendingOrderItemsAsync(It.IsAny<Guid>(), 1, 1)).ReturnsAsync(ApiResponse<OrderItemStatusListResponse>.Ok(new OrderItemStatusListResponse { TotalCount = 3 }));
         var orders = new Mock<IOrdersService>();
         orders.Setup(o => o.ListAsync(It.IsAny<OrdersQueryDto>())).ReturnsAsync(ApiResponse<List<OrderSummaryDto>>.Ok(new List<OrderSummaryDto> { new OrderSummaryDto() }));
-        var controller = CreateController(new Mock<IHotelsAdminService>(), new Mock<IUsersAdminService>(), new Mock<IAuditService>(), new Mock<IRoomStatusService>(), new Mock<IHousekeepingTaskService>(), new Mock<IBookingsService>(), orders, new Mock<IDiningSessionService>(), orderItems, new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Role, "Kitchen") }, "TestAuth")));
+        var controller = CreateController(new Mock<IHotelsAdminService>(), new Mock<IUsersAdminService>(), new Mock<IAuditService>(), new Mock<IRoomStatusService>(), new Mock<IHousekeepingTaskService>(), new Mock<IBookingsService>(), orders, new Mock<IDiningSessionService>(), orderItems, new Mock<HotelManagement.Services.Admin.Invoicing.IInvoiceService>(), new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Role, "Kitchen") }, "TestAuth")));
         var result = await controller.GetKitchenSummary(Guid.NewGuid());
         Assert.IsType<OkObjectResult>(result.Result);
     }
@@ -168,7 +169,7 @@ public class DashboardControllerTests
     [Fact]
     public async Task HousekeeperSummary_Forbid_WhenNoUser()
     {
-        var controller = CreateController(new Mock<IHotelsAdminService>(), new Mock<IUsersAdminService>(), new Mock<IAuditService>(), new Mock<IRoomStatusService>(), new Mock<IHousekeepingTaskService>(), new Mock<IBookingsService>(), new Mock<IOrdersService>(), new Mock<IDiningSessionService>(), new Mock<IOrderItemStatusService>());
+        var controller = CreateController(new Mock<IHotelsAdminService>(), new Mock<IUsersAdminService>(), new Mock<IAuditService>(), new Mock<IRoomStatusService>(), new Mock<IHousekeepingTaskService>(), new Mock<IBookingsService>(), new Mock<IOrdersService>(), new Mock<IDiningSessionService>(), new Mock<IOrderItemStatusService>(), new Mock<HotelManagement.Services.Admin.Invoicing.IInvoiceService>());
         var result = await controller.GetHousekeeperSummary(Guid.NewGuid());
         Assert.IsType<ForbidResult>(result.Result);
     }
@@ -177,7 +178,7 @@ public class DashboardControllerTests
     public async Task HousekeeperSummary_BadRequest_WhenNoHotelId()
     {
         var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString()), new Claim(ClaimTypes.Role, "Housekeeper") }, "TestAuth"));
-        var controller = CreateController(new Mock<IHotelsAdminService>(), new Mock<IUsersAdminService>(), new Mock<IAuditService>(), new Mock<IRoomStatusService>(), new Mock<IHousekeepingTaskService>(), new Mock<IBookingsService>(), new Mock<IOrdersService>(), new Mock<IDiningSessionService>(), new Mock<IOrderItemStatusService>(), user);
+        var controller = CreateController(new Mock<IHotelsAdminService>(), new Mock<IUsersAdminService>(), new Mock<IAuditService>(), new Mock<IRoomStatusService>(), new Mock<IHousekeepingTaskService>(), new Mock<IBookingsService>(), new Mock<IOrdersService>(), new Mock<IDiningSessionService>(), new Mock<IOrderItemStatusService>(), new Mock<HotelManagement.Services.Admin.Invoicing.IInvoiceService>(), user);
         var result = await controller.GetHousekeeperSummary(null);
         Assert.IsType<BadRequestObjectResult>(result.Result);
     }
@@ -190,7 +191,7 @@ public class DashboardControllerTests
         var roomStatus = new Mock<IRoomStatusService>();
         roomStatus.Setup(r => r.GetRoomsByStatusAsync(It.IsAny<Guid>(), HotelManagement.Domain.RoomStatus.Dirty)).ReturnsAsync(ApiResponse<List<RoomWithStatusDto>>.Ok(new List<RoomWithStatusDto>()));
         var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString()), new Claim(ClaimTypes.Role, "Housekeeper") }, "TestAuth"));
-        var controller = CreateController(new Mock<IHotelsAdminService>(), new Mock<IUsersAdminService>(), new Mock<IAuditService>(), roomStatus, housekeeping, new Mock<IBookingsService>(), new Mock<IOrdersService>(), new Mock<IDiningSessionService>(), new Mock<IOrderItemStatusService>(), user);
+        var controller = CreateController(new Mock<IHotelsAdminService>(), new Mock<IUsersAdminService>(), new Mock<IAuditService>(), roomStatus, housekeeping, new Mock<IBookingsService>(), new Mock<IOrdersService>(), new Mock<IDiningSessionService>(), new Mock<IOrderItemStatusService>(), new Mock<HotelManagement.Services.Admin.Invoicing.IInvoiceService>(), user);
         var result = await controller.GetHousekeeperSummary(Guid.NewGuid());
         Assert.IsType<OkObjectResult>(result.Result);
     }

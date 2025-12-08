@@ -11,6 +11,8 @@ using HotelManagement.Services.Admin.Orders;
 using HotelManagement.Services.Admin.Orders.Dtos;
 using HotelManagement.Services.Admin.Users;
 using HotelManagement.Services.Common;
+using HotelManagement.Services.Admin.Invoicing;
+using HotelManagement.Services.Admin.Invoicing.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -30,6 +32,7 @@ public class DashboardController : ControllerBase
     private readonly IOrdersService _orders;
     private readonly IDiningSessionService _diningSessions;
     private readonly IOrderItemStatusService _orderItems;
+    private readonly IInvoiceService _invoiceService;
 
     public DashboardController(
         IHotelsAdminService hotels,
@@ -40,7 +43,8 @@ public class DashboardController : ControllerBase
         IBookingsService bookings,
         IOrdersService orders,
         IDiningSessionService diningSessions,
-        IOrderItemStatusService orderItems)
+        IOrderItemStatusService orderItems,
+        IInvoiceService invoiceService)
     {
         _hotels = hotels;
         _users = users;
@@ -51,12 +55,64 @@ public class DashboardController : ControllerBase
         _orders = orders;
         _diningSessions = diningSessions;
         _orderItems = orderItems;
+        _invoiceService = invoiceService;
     }
 
     private Guid? CurrentUserId()
     {
         var val = User.FindFirstValue(ClaimTypes.NameIdentifier);
         return Guid.TryParse(val, out var id) ? id : null;
+    }
+
+    [HttpGet("admin/revenue")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult<ApiResponse<RevenueStatsDto>>> GetAdminTotalRevenue([FromQuery] Guid? hotelId, [FromQuery] DateTime? fromDate, [FromQuery] DateTime? toDate, [FromQuery] string? granularity = "day", [FromQuery] bool includeIssued = true, [FromQuery] bool includePaid = true)
+    {
+        var uid = CurrentUserId();
+        if (uid == null) return Forbid();
+        if (hotelId.HasValue && hotelId.Value != Guid.Empty)
+        {
+            var stats = await _invoiceService.GetRevenueAsync(new RevenueQueryDto
+            {
+                HotelId = hotelId.Value,
+                FromDate = fromDate,
+                ToDate = toDate,
+                Granularity = granularity,
+                IncludeIssued = includeIssued,
+                IncludePaid = includePaid
+            });
+            return Ok(ApiResponse<RevenueStatsDto>.Ok(stats));
+        }
+        else
+        {
+            var hotels = await _hotels.ListAllAsync();
+            var dict = new Dictionary<DateTime, decimal>();
+            decimal total = 0m;
+            int count = 0;
+            foreach (var h in hotels)
+            {
+                var stats = await _invoiceService.GetRevenueAsync(new RevenueQueryDto
+                {
+                    HotelId = h.Id,
+                    FromDate = fromDate,
+                    ToDate = toDate,
+                    Granularity = granularity,
+                    IncludeIssued = includeIssued,
+                    IncludePaid = includePaid
+                });
+                total += stats.Total;
+                count += stats.Count;
+                foreach (var p in stats.Points)
+                {
+                    var key = p.Date;
+                    if (dict.ContainsKey(key)) dict[key] += p.Total;
+                    else dict[key] = p.Total;
+                }
+            }
+            var points = dict.OrderBy(kv => kv.Key).Select(kv => new RevenuePointDto { Date = kv.Key, Total = kv.Value }).ToList();
+            var res = new RevenueStatsDto { Total = total, Count = count, Points = points };
+            return Ok(ApiResponse<RevenueStatsDto>.Ok(res));
+        }
     }
 
     public record AdminDashboardSummaryDto(int TotalHotels, int TotalUsers, int AuditCountLast24Hours);
