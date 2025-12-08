@@ -7,7 +7,7 @@ export interface ApiResponse<T> {
   message: string | null;
   data: T;
   errors?: string[] | null;
-  meta?: any;
+  meta?: unknown;
 }
 
 export interface AdminDashboardSummary {

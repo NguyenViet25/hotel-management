@@ -33,6 +33,7 @@ import dashboardApi, {
 import hotelService, { type Hotel } from "../../../api/hotelService";
 import type { RevenueStatsDto } from "../../../api/revenueApi";
 import PageTitle from "../../../components/common/PageTitle";
+import EmptyState from "../../../components/common/EmptyState";
 const currency = (v: number) => `${Math.round(Number(v)).toLocaleString()} đ`;
 
 const AdminDashboardPage: React.FC = () => {
@@ -47,7 +48,7 @@ const AdminDashboardPage: React.FC = () => {
   const [to, setTo] = useState(dayjs().endOf("month"));
   const [granularity, setGranularity] = useState<"day" | "month">("day");
   const [hotels, setHotels] = useState<Hotel[]>([]);
-  const [hotelId, setHotelId] = useState<string>("");
+  const [hotelId, setHotelId] = useState<string>(" ");
 
   useEffect(() => {
     const run = async () => {
@@ -83,11 +84,9 @@ const AdminDashboardPage: React.FC = () => {
         else setRevError(res.message || "Không thể tải doanh thu");
       } catch {
         setRevError("Không thể tải doanh thu");
-      } finally {
       }
     };
     run();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [from, to, granularity, hotelId]);
 
   useEffect(() => {
@@ -228,7 +227,7 @@ const AdminDashboardPage: React.FC = () => {
               value={hotelId}
               onChange={(e) => setHotelId(e.target.value)}
             >
-              <MenuItem value="">Toàn hệ thống</MenuItem>
+              <MenuItem value=" ">Toàn hệ thống</MenuItem>
               {hotels.map((h) => (
                 <MenuItem key={h.id} value={h.id}>
                   {h.name}
@@ -253,7 +252,9 @@ const AdminDashboardPage: React.FC = () => {
               size="small"
               sx={{ minWidth: 180 }}
               value={granularity}
-              onChange={(e) => setGranularity(e.target.value as any)}
+              onChange={(e) =>
+                setGranularity(e.target.value as "day" | "month")
+              }
             >
               <MenuItem value="day">Theo ngày</MenuItem>
               <MenuItem value="month">Theo tháng</MenuItem>
@@ -286,15 +287,20 @@ const AdminDashboardPage: React.FC = () => {
           <Box sx={{ flex: 3, height: 300 }}>
             {revError ? (
               <Alert severity="error">{revError}</Alert>
+            ) : (revStats?.points?.length ?? 0) === 0 ? (
+              <EmptyState
+                title="Không có dữ liệu doanh thu"
+                description="Hãy điều chỉnh khoảng thời gian hoặc chọn cơ sở khác"
+              />
             ) : (
-              <Box sx={{ height: 320 }} mt={2}>
+              <Box sx={{ height: 320 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart
                     data={(revStats?.points || []).map((p) => ({
-                      x: dayjs(p.date).format(
+                      date: dayjs(p.date).format(
                         granularity === "month" ? "MM/YYYY" : "DD/MM"
                       ),
-                      y: Number(p.total || 0),
+                      total: Number(p.total || 0),
                     }))}
                     margin={{ left: 8, right: 16, top: 12, bottom: 12 }}
                   >
@@ -305,7 +311,7 @@ const AdminDashboardPage: React.FC = () => {
                         Math.round(Number(v) / 1000).toLocaleString() + "k"
                       }
                     />
-                    <Tooltip formatter={(v: any) => currency(Number(v))} />
+                    <Tooltip formatter={(v) => currency(Number(v as number))} />
                     <Line
                       type="monotone"
                       dataKey="total"
