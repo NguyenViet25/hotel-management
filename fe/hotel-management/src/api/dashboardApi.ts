@@ -1,5 +1,6 @@
 import axios from "./axios";
 import type { RoomStatusSummaryDto } from "./housekeepingApi";
+import type { RevenueStatsDto } from "./revenueApi";
 
 export interface ApiResponse<T> {
   isSuccess: boolean;
@@ -46,6 +47,28 @@ export interface HousekeeperDashboardSummary {
 const dashboardApi = {
   async getAdminSummary(): Promise<ApiResponse<AdminDashboardSummary>> {
     const res = await axios.get(`/dashboard/admin/summary`);
+    return res.data;
+  },
+  async getAdminRevenue(
+    params: {
+      hotelId?: string;
+      fromDate?: string;
+      toDate?: string;
+      granularity?: "day" | "month";
+      includeIssued?: boolean;
+      includePaid?: boolean;
+    }
+  ): Promise<ApiResponse<RevenueStatsDto>> {
+    const qp = new URLSearchParams();
+    if (params.hotelId) qp.append("hotelId", params.hotelId);
+    if (params.fromDate) qp.append("fromDate", params.fromDate);
+    if (params.toDate) qp.append("toDate", params.toDate);
+    if (params.granularity) qp.append("granularity", params.granularity);
+    if (params.includeIssued !== undefined)
+      qp.append("includeIssued", String(params.includeIssued));
+    if (params.includePaid !== undefined)
+      qp.append("includePaid", String(params.includePaid));
+    const res = await axios.get(`/dashboard/admin/revenue?${qp.toString()}`);
     return res.data;
   },
   async getManagerSummary(

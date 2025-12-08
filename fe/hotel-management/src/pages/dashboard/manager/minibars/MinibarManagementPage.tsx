@@ -205,7 +205,7 @@ const MinibarManagementPage: React.FC = () => {
 
   return (
     <Box>
-      <PageTitle title="Quản lý minibar" subtitle="Thêm, sửa, xóa minibar" />
+      <PageTitle title="Quản lý minibar" subtitle="Thêm, sửa minibar" />
 
       <Stack spacing={2} sx={{ mb: 2 }}>
         <Button

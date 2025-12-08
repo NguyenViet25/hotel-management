@@ -6,31 +6,48 @@ import {
   Box,
   Card,
   CardContent,
+  Divider,
   Grid,
+  MenuItem,
   Stack,
+  TextField,
   Typography,
 } from "@mui/material";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import dayjs from "dayjs";
-import React, { useEffect, useMemo, useState } from "react";
-import auditService, { type AuditLogDto } from "../../../api/auditService";
+import React, { useEffect, useState } from "react";
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import dashboardApi, {
   type AdminDashboardSummary,
 } from "../../../api/dashboardApi";
-import DataTable, { type Column } from "../../../components/common/DataTable";
+import hotelService, { type Hotel } from "../../../api/hotelService";
+import type { RevenueStatsDto } from "../../../api/revenueApi";
 import PageTitle from "../../../components/common/PageTitle";
+const currency = (v: number) => `${Math.round(Number(v)).toLocaleString()} đ`;
 
 const AdminDashboardPage: React.FC = () => {
-  const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [summary, setSummary] = useState<AdminDashboardSummary | null>(null);
+  const [revStats, setRevStats] = useState<RevenueStatsDto | null>(null);
 
   const [summaryLoading, setSummaryLoading] = useState(false);
-  const [tableLoading, setTableLoading] = useState(false);
   const [summaryError, setSummaryError] = useState<string | null>(null);
-  const [tableError, setTableError] = useState<string | null>(null);
+  const [revError, setRevError] = useState<string | null>(null);
 
-  const [page, setPage] = useState(1);
-  const [pageSize] = useState(10);
-  const [total, setTotal] = useState(0);
+  const [from, setFrom] = useState(dayjs().startOf("month"));
+  const [to, setTo] = useState(dayjs().endOf("month"));
+  const [granularity, setGranularity] = useState<"day" | "month">("day");
+  const [hotels, setHotels] = useState<Hotel[]>([]);
+  const [hotelId, setHotelId] = useState<string>("");
 
   useEffect(() => {
     const run = async () => {
@@ -54,73 +71,41 @@ const AdminDashboardPage: React.FC = () => {
 
   useEffect(() => {
     const run = async () => {
-      setTableLoading(true);
-      setTableError(null);
+      setRevError(null);
       try {
-        const from = dayjs().subtract(24, "hour").toISOString();
-        const res = await auditService.getLogs({ page, pageSize, from });
-        if ((res as any).isSuccess) {
-          const rows = res.data;
-          setAuditLogs(rows);
-          setTotal((res as any).meta?.total ?? rows.length);
-        } else {
-          setTableError((res as any).message || "Không thể tải nhật ký");
-        }
+        const res = await dashboardApi.getAdminRevenue({
+          hotelId: hotelId || undefined,
+          fromDate: from.startOf("day").toISOString(),
+          toDate: to.endOf("day").toISOString(),
+          granularity,
+        });
+        if (res.isSuccess) setRevStats(res.data);
+        else setRevError(res.message || "Không thể tải doanh thu");
       } catch {
-        setTableError("Không thể tải nhật ký");
+        setRevError("Không thể tải doanh thu");
       } finally {
-        setTableLoading(false);
       }
     };
     run();
-  }, [page, pageSize]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [from, to, granularity, hotelId]);
 
-  const columns: Column<AuditLogDto>[] = [
-    {
-      id: "action",
-      label: "Hành động",
-      minWidth: 150,
-      sortable: true,
-    },
-    {
-      id: "userId",
-      label: "Người dùng",
-      minWidth: 150,
-      format: (value) => value || "Hệ thống",
-    },
-    {
-      id: "hotelId",
-      label: "Cơ sở",
-      minWidth: 150,
-      format: (value) => value || "N/A",
-    },
-    {
-      id: "timestamp",
-      label: "Thời gian",
-      minWidth: 180,
-      sortable: true,
-      format: (value) => dayjs(value).format("DD/MM/YYYY HH:mm:ss"),
-    },
-    {
-      id: "metadata",
-      label: "Chi tiết",
-      minWidth: 200,
-      format: (value) => {
-        if (!value) return "Không có chi tiết";
-        try {
-          return (
-            <Box sx={{ maxWidth: 300, maxHeight: 100, overflow: "auto" }}>
-              <pre style={{ margin: 0, fontSize: "0.75rem" }}>
-                {JSON.stringify(value, null, 2)}
-              </pre>
-            </Box>
-          );
-        } catch (e) {
-          return "Định dạng chi tiết không hợp lệ";
-        }
-      },
-    },
-  ];
+  useEffect(() => {
+    const run = async () => {
+      try {
+        const res = await hotelService.getHotels({
+          page: 1,
+          pageSize: 1000,
+          sortBy: "name",
+          sortDir: "asc",
+        });
+        if (res.isSuccess) setHotels(res.data);
+      } catch {
+        setHotels([]);
+      }
+    };
+    run();
+  }, []);
 
   return (
     <Box>
@@ -229,26 +214,112 @@ const AdminDashboardPage: React.FC = () => {
         </Grid>
       </Grid>
 
-      {tableError && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {tableError}
-        </Alert>
-      )}
-      <PageTitle subtitle="Hoạt động gần đây" />
-      <DataTable
-        columns={columns}
-        data={auditLogs}
-        loading={tableLoading}
-        title="Nhật ký hoạt động"
-        pagination={{
-          page,
-          pageSize,
-          total,
-          onPageChange: (p) => setPage(p),
-        }}
-        getRowId={(row) => row.id}
-        borderRadius={2}
-      />
+      <Card variant="outlined" sx={{ p: 2, mb: 2 }}>
+        <Typography variant="h6" fontWeight={700} mb={2}>
+          Biểu đồ doanh thu toàn hệ thống
+        </Typography>
+        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="vi">
+          <Stack spacing={2} direction={{ xs: "column", lg: "row" }}>
+            <TextField
+              select
+              label="Cơ sở"
+              size="small"
+              sx={{ minWidth: 220 }}
+              value={hotelId}
+              onChange={(e) => setHotelId(e.target.value)}
+            >
+              <MenuItem value="">Toàn hệ thống</MenuItem>
+              {hotels.map((h) => (
+                <MenuItem key={h.id} value={h.id}>
+                  {h.name}
+                </MenuItem>
+              ))}
+            </TextField>
+            <DatePicker
+              label="Từ ngày"
+              value={from}
+              onChange={(v) => v && setFrom(v)}
+              slotProps={{ textField: { size: "small" } }}
+            />
+            <DatePicker
+              label="Đến ngày"
+              value={to}
+              onChange={(v) => v && setTo(v)}
+              slotProps={{ textField: { size: "small" } }}
+            />
+            <TextField
+              select
+              label="Phân tách"
+              size="small"
+              sx={{ minWidth: 180 }}
+              value={granularity}
+              onChange={(e) => setGranularity(e.target.value as any)}
+            >
+              <MenuItem value="day">Theo ngày</MenuItem>
+              <MenuItem value="month">Theo tháng</MenuItem>
+            </TextField>
+          </Stack>
+        </LocalizationProvider>
+
+        <Stack
+          direction={{ xs: "column", lg: "row" }}
+          spacing={2}
+          sx={{ mt: 2 }}
+        >
+          <Card variant="outlined" sx={{ flex: 1 }}>
+            <CardContent>
+              <Stack spacing={1}>
+                <Typography variant="body2" color="text.secondary">
+                  Tổng doanh thu
+                </Typography>
+                <Typography variant="h5" fontWeight={800}>
+                  {Math.round(Number(revStats?.total || 0)).toLocaleString()} đ
+                </Typography>
+                <Divider sx={{ my: 1 }} />
+                <Typography variant="body2" color="text.secondary">
+                  Số hóa đơn
+                </Typography>
+                <Typography variant="h6">{revStats?.count || 0}</Typography>
+              </Stack>
+            </CardContent>
+          </Card>
+          <Box sx={{ flex: 3, height: 300 }}>
+            {revError ? (
+              <Alert severity="error">{revError}</Alert>
+            ) : (
+              <Box sx={{ height: 320 }} mt={2}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={(revStats?.points || []).map((p) => ({
+                      x: dayjs(p.date).format(
+                        granularity === "month" ? "MM/YYYY" : "DD/MM"
+                      ),
+                      y: Number(p.total || 0),
+                    }))}
+                    margin={{ left: 8, right: 16, top: 12, bottom: 12 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis
+                      tickFormatter={(v) =>
+                        Math.round(Number(v) / 1000).toLocaleString() + "k"
+                      }
+                    />
+                    <Tooltip formatter={(v: any) => currency(Number(v))} />
+                    <Line
+                      type="monotone"
+                      dataKey="total"
+                      stroke="#5563DE"
+                      strokeWidth={2}
+                      dot={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </Box>
+            )}
+          </Box>
+        </Stack>
+      </Card>
     </Box>
   );
 };

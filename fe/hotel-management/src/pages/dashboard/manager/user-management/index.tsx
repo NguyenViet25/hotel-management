@@ -393,7 +393,7 @@ const ManagerUserManagement: React.FC = () => {
     <Box>
       <PageTitle
         title="Quản lý người dùng"
-        subtitle="Thêm, sửa, xóa và quản lý quyền truy cập của người dùng"
+        subtitle="Thêm, sửa và quản lý quyền truy cập của người dùng"
       />
 
       <DataTable<User>

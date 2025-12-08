@@ -178,7 +178,7 @@ const TableManagementPage: React.FC = () => {
 
   return (
     <Box>
-      <PageTitle title="Quản lý bàn ăn" subtitle="Thêm, sửa, xóa bàn ăn" />
+      <PageTitle title="Quản lý bàn ăn" subtitle="Thêm, sửa bàn ăn" />
 
       <TablesTable
         data={items}
