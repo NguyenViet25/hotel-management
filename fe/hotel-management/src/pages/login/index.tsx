@@ -14,6 +14,7 @@ import {
   InputAdornment,
   Stack,
   TextField,
+  Tooltip,
   Typography,
   useMediaQuery,
   useTheme,
@@ -27,6 +28,8 @@ import type { User } from "../../api/userService";
 import { useStore, type StoreState } from "../../hooks/useStore";
 import { localStorageHelper } from "../../utils/local-storage-helper";
 import { uppercase } from "zod";
+
+import bg from "../../assets/bg.png";
 
 export interface LoginResponseDto {
   data: {
@@ -131,213 +134,241 @@ const LoginPage = () => {
   };
 
   return (
-    <>
-      <Box
-        sx={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: "#f5f5f5",
-        }}
-      >
-        <Container maxWidth="sm">
-          <Typography
-            component="h1"
-            variant="h5"
-            sx={{ fontWeight: 800, mb: 1, textAlign: "center" }}
-          >
-            {"Hệ thống quản lý chuỗi khách sạn Tân Trường Sơn".toUpperCase()}
-          </Typography>
-          <Box
-            sx={{
-              backgroundColor: "#fff",
-              borderRadius: 3,
-              boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
-              p: isMobile ? 2 : 4,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "space-between",
-              textAlign: isMobile ? "center" : "left",
-            }}
-          >
-            {/* Left: Icon + Description */}
-            <Box sx={{ flex: 1, px: 6 }}>
-              <Typography
-                component="h1"
-                variant="h5"
-                sx={{ fontWeight: 800, mb: 1, textAlign: "center" }}
-              >
-                Đăng nhập
-              </Typography>
-              <Typography
-                variant="body1"
-                color="text.secondary"
-                textAlign={"center"}
-              >
-                Chào mừng trở lại! Vui lòng đăng nhập để quản lý đặt phòng,
-                phòng và khách hàng hiệu quả.
-              </Typography>
-            </Box>
-
-            {/* Right: Form */}
-            <Box sx={{ flex: 1 }}>
-              <Box component="form" onSubmit={handleSubmit} sx={{ mb: 2 }}>
-                <TextField
-                  fullWidth
-                  label="Tên đăng nhập"
-                  name="username"
-                  value={formData.username}
-                  onChange={handleChange}
-                  margin="normal"
-                  variant="outlined"
-                  autoFocus
-                  placeholder="Nhập tên đăng nhập"
-                  slotProps={{
-                    input: {
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Person />
-                        </InputAdornment>
-                      ),
-                    },
-                  }}
-                />
-                <TextField
-                  fullWidth
-                  label="Mật khẩu"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  value={formData.password}
-                  onChange={handleChange}
-                  margin="normal"
-                  variant="outlined"
-                  placeholder="Nhập mật khẩu"
-                  slotProps={{
-                    input: {
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Lock />
-                        </InputAdornment>
-                      ),
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton
-                            aria-label="toggle password visibility"
-                            onClick={() => setShowPassword((prev) => !prev)}
-                            edge="end"
-                          >
-                            {showPassword ? <VisibilityOff /> : <Visibility />}
-                          </IconButton>
-                        </InputAdornment>
-                      ),
-                    },
-                  }}
-                />
-                <Button
-                  type="submit"
-                  fullWidth
-                  variant="contained"
-                  sx={{
-                    mt: 2,
-                    py: 1.5,
-                    fontWeight: 600,
-                    borderRadius: 3,
-                    backgroundColor: "#5563DE",
-                    "&:hover": { backgroundColor: "#3b4ac0" },
-                  }}
-                  disabled={loading}
+    <Box sx={{ position: "relative" }}>
+      <Box sx={{ position: "absolute", width: "100%", height: "100%" }}>
+        <img
+          src={bg}
+          alt="bg"
+          style={{
+            zIndex: -99,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            opacity: 0.5,
+          }}
+        />
+      </Box>
+      <Box>
+        <Box
+          sx={{
+            minHeight: "100vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "#f5f5f5",
+          }}
+        >
+          <Container maxWidth="sm" sx={{ zIndex: 99 }}>
+            <Typography
+              component="h1"
+              variant="h5"
+              sx={{ fontWeight: 800, mb: 1, textAlign: "center" }}
+            >
+              {"Hệ thống quản lý chuỗi khách sạn Tân Trường Sơn".toUpperCase()}
+            </Typography>
+            <Box
+              sx={{
+                backgroundColor: "#fff",
+                borderRadius: 3,
+                boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
+                p: isMobile ? 2 : 4,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "space-between",
+                textAlign: isMobile ? "center" : "left",
+                zIndex: 99,
+              }}
+            >
+              {/* Left: Icon + Description */}
+              <Box sx={{ flex: 1, px: 6 }}>
+                <Typography
+                  component="h1"
+                  variant="h5"
+                  sx={{ fontWeight: 800, mb: 1, textAlign: "center" }}
                 >
-                  {loading ? "Đang đăng nhập..." : "Đăng nhập"}
-                </Button>
+                  Đăng nhập
+                </Typography>
+              </Box>
+
+              {/* Right: Form */}
+              <Box sx={{ flex: 1 }}>
+                <Box component="form" onSubmit={handleSubmit} sx={{ mb: 2 }}>
+                  <TextField
+                    fullWidth
+                    label="Tên đăng nhập"
+                    name="username"
+                    value={formData.username}
+                    onChange={handleChange}
+                    margin="normal"
+                    variant="outlined"
+                    autoFocus
+                    placeholder="Nhập tên đăng nhập"
+                    slotProps={{
+                      input: {
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Person />
+                          </InputAdornment>
+                        ),
+                      },
+                    }}
+                  />
+                  <TextField
+                    fullWidth
+                    label="Mật khẩu"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    value={formData.password}
+                    onChange={handleChange}
+                    margin="normal"
+                    variant="outlined"
+                    placeholder="Nhập mật khẩu"
+                    slotProps={{
+                      input: {
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Lock />
+                          </InputAdornment>
+                        ),
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              aria-label="toggle password visibility"
+                              onClick={() => setShowPassword((prev) => !prev)}
+                              edge="end"
+                            >
+                              {showPassword ? (
+                                <VisibilityOff />
+                              ) : (
+                                <Visibility />
+                              )}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      },
+                    }}
+                  />
+                  <Button
+                    type="submit"
+                    fullWidth
+                    variant="contained"
+                    sx={{
+                      mt: 2,
+                      py: 1.5,
+                      fontWeight: 600,
+                      borderRadius: 3,
+                      backgroundColor: "#5563DE",
+                      "&:hover": { backgroundColor: "#3b4ac0" },
+                    }}
+                    disabled={loading}
+                  >
+                    {loading ? "Đang đăng nhập..." : "Đăng nhập"}
+                  </Button>
+                </Box>
               </Box>
             </Box>
-          </Box>
-        </Container>
+          </Container>
+        </Box>
+        <Card sx={{ pb: 2, px: 2, opacity: 1 }}>
+          <Stack gap={1}>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              textAlign={"center"}
+              sx={{ mt: 2, color: "red", fontWeight: "bold" }}
+            >
+              For development only
+            </Typography>
+            <Tooltip title="Admin">
+              <Button
+                fullWidth
+                variant="contained"
+                color="success"
+                size="small"
+                startIcon={<Login />}
+                onClick={() => superLogin("admin", "Password1@")}
+                sx={{ borderRadius: 3, textTransform: "none" }}
+              >
+                Admin
+              </Button>
+            </Tooltip>
+
+            <Tooltip title="Manager">
+              <Button
+                fullWidth
+                variant="contained"
+                color="success"
+                size="small"
+                startIcon={<Login />}
+                onClick={() => superLogin("manager", "Password1@")}
+                sx={{
+                  borderRadius: 3,
+                  textTransform: "none",
+                }}
+              >
+                Manager
+              </Button>
+            </Tooltip>
+
+            <Tooltip title="Frontdesk">
+              <Button
+                fullWidth
+                variant="contained"
+                color="success"
+                size="small"
+                startIcon={<Login />}
+                onClick={() => superLogin("frontdesk", "Password1@")}
+                sx={{ borderRadius: 3, textTransform: "none" }}
+              >
+                Frontdesk
+              </Button>
+            </Tooltip>
+
+            <Tooltip title="Kitchen">
+              <Button
+                fullWidth
+                variant="contained"
+                color="success"
+                size="small"
+                startIcon={<Login />}
+                onClick={() => superLogin("kitchen", "Password1@")}
+                sx={{ borderRadius: 3, textTransform: "none" }}
+              >
+                Kitchen
+              </Button>
+            </Tooltip>
+
+            <Tooltip title="Waiter">
+              <Button
+                fullWidth
+                variant="contained"
+                color="success"
+                size="small"
+                startIcon={<Login />}
+                onClick={() => superLogin("waiter", "Password1@")}
+                sx={{ borderRadius: 3, textTransform: "none" }}
+              >
+                Waiter
+              </Button>
+            </Tooltip>
+            <Tooltip title="Housekeeper">
+              <Button
+                fullWidth
+                variant="contained"
+                color="success"
+                size="small"
+                startIcon={<Login />}
+                onClick={() => superLogin("housekeeping", "Password1@")}
+                sx={{ borderRadius: 3, textTransform: "none" }}
+              >
+                Housekeeper
+              </Button>
+            </Tooltip>
+          </Stack>
+        </Card>
       </Box>
-      <Card sx={{ pb: 2, px: 2 }}>
-        <Stack gap={1}>
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            textAlign={"center"}
-            sx={{ mt: 2, color: "red", fontWeight: "bold" }}
-          >
-            For development only
-          </Typography>
-          <Button
-            fullWidth
-            variant="contained"
-            color="success"
-            size="small"
-            startIcon={<Login />}
-            onClick={() => superLogin("admin", "Password1@")}
-            sx={{ borderRadius: 3, textTransform: "none" }}
-          >
-            Admin
-          </Button>
-          <Button
-            fullWidth
-            variant="contained"
-            color="success"
-            size="small"
-            startIcon={<Login />}
-            onClick={() => superLogin("manager", "Password1@")}
-            sx={{
-              borderRadius: 3,
-              textTransform: "none",
-            }}
-          >
-            Manager
-          </Button>
-          <Button
-            fullWidth
-            variant="contained"
-            color="success"
-            size="small"
-            startIcon={<Login />}
-            onClick={() => superLogin("frontdesk", "Password1@")}
-            sx={{ borderRadius: 3, textTransform: "none" }}
-          >
-            Frontdesk
-          </Button>
-          <Button
-            fullWidth
-            variant="contained"
-            color="success"
-            size="small"
-            startIcon={<Login />}
-            onClick={() => superLogin("kitchen", "Password1@")}
-            sx={{ borderRadius: 3, textTransform: "none" }}
-          >
-            Kitchen
-          </Button>
-          <Button
-            fullWidth
-            variant="contained"
-            color="success"
-            size="small"
-            startIcon={<Login />}
-            onClick={() => superLogin("waiter", "Password1@")}
-            sx={{ borderRadius: 3, textTransform: "none" }}
-          >
-            Waiter
-          </Button>
-          <Button
-            fullWidth
-            variant="contained"
-            color="success"
-            size="small"
-            startIcon={<Login />}
-            onClick={() => superLogin("housekeeping", "Password1@")}
-            sx={{ borderRadius: 3, textTransform: "none" }}
-          >
-            Housekeeper
-          </Button>
-        </Stack>
-      </Card>
-    </>
+    </Box>
   );
 };
 

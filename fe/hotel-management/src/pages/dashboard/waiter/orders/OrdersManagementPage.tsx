@@ -99,9 +99,7 @@ const OrdersManagementPage: React.FC = () => {
     severity: "success" | "error";
   }>({ open: false, message: "", severity: "success" });
 
-  const [selectedStatus, setSelectedStatus] = useState<number | " ">(
-    EOrderStatus.NeedConfirmed
-  );
+  const [selectedStatus, setSelectedStatus] = useState<number | " ">(" ");
 
   const statusOptions = [
     { value: " ", label: "Tất cả" },

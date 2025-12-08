@@ -30,6 +30,17 @@ const theme = createTheme({
     borderRadius: 8,
   },
   components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        main: {
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
+        },
+        "main::-webkit-scrollbar": {
+          display: "none",
+        },
+      },
+    },
     MuiButton: {
       styleOverrides: {
         root: {
