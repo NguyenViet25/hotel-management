@@ -180,17 +180,6 @@ const BookingDetailsPage: React.FC = () => {
               Xác nhận
             </Button>
           )}
-          {data?.status !== EBookingStatus.Pending &&
-            data?.status !== EBookingStatus.Cancelled && (
-              <Button
-                variant="contained"
-                color="success"
-                startIcon={<Print />}
-                onClick={() => setOpenCheckout(true)}
-              >
-                xuất hóa đơn
-              </Button>
-            )}
         </Stack>
       </Stack>
 

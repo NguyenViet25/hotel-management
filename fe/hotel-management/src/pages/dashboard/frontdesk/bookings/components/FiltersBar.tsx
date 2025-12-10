@@ -1,7 +1,5 @@
 import { Box, MenuItem, Stack, TextField } from "@mui/material";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import type { Dayjs } from "dayjs";
 import React from "react";
 import type { BookingStatus } from "../../../../../api/bookingsApi";
@@ -48,23 +46,19 @@ const FiltersBar: React.FC<FiltersBarProps> = ({
           sx={{ minWidth: 160 }}
         />
 
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <DatePicker
-            label="Từ ngày"
-            value={fromDate}
-            onChange={onFromDateChange}
-            slotProps={{ textField: { size: "small", sx: { minWidth: 160 } } }}
-          />
-        </LocalizationProvider>
+        <DatePicker
+          label="Từ ngày"
+          value={fromDate}
+          onChange={onFromDateChange}
+          slotProps={{ textField: { size: "small", sx: { minWidth: 160 } } }}
+        />
 
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <DatePicker
-            label="Đến ngày"
-            value={toDate}
-            onChange={onToDateChange}
-            slotProps={{ textField: { size: "small", sx: { minWidth: 160 } } }}
-          />
-        </LocalizationProvider>
+        <DatePicker
+          label="Đến ngày"
+          value={toDate}
+          onChange={onToDateChange}
+          slotProps={{ textField: { size: "small", sx: { minWidth: 160 } } }}
+        />
 
         <TextField
           select

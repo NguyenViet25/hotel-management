@@ -13,9 +13,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 import {
@@ -32,8 +30,8 @@ import dashboardApi, {
 } from "../../../api/dashboardApi";
 import hotelService, { type Hotel } from "../../../api/hotelService";
 import type { RevenueStatsDto } from "../../../api/revenueApi";
-import PageTitle from "../../../components/common/PageTitle";
 import EmptyState from "../../../components/common/EmptyState";
+import PageTitle from "../../../components/common/PageTitle";
 const currency = (v: number) => `${Math.round(Number(v)).toLocaleString()} đ`;
 
 const AdminDashboardPage: React.FC = () => {
@@ -217,50 +215,46 @@ const AdminDashboardPage: React.FC = () => {
         <Typography variant="h6" fontWeight={700} mb={2}>
           Biểu đồ doanh thu toàn hệ thống
         </Typography>
-        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="vi">
-          <Stack spacing={2} direction={{ xs: "column", lg: "row" }}>
-            <TextField
-              select
-              label="Cơ sở"
-              size="small"
-              sx={{ minWidth: 220 }}
-              value={hotelId}
-              onChange={(e) => setHotelId(e.target.value)}
-            >
-              <MenuItem value=" ">Toàn hệ thống</MenuItem>
-              {hotels.map((h) => (
-                <MenuItem key={h.id} value={h.id}>
-                  {h.name}
-                </MenuItem>
-              ))}
-            </TextField>
-            <DatePicker
-              label="Từ ngày"
-              value={from}
-              onChange={(v) => v && setFrom(v)}
-              slotProps={{ textField: { size: "small" } }}
-            />
-            <DatePicker
-              label="Đến ngày"
-              value={to}
-              onChange={(v) => v && setTo(v)}
-              slotProps={{ textField: { size: "small" } }}
-            />
-            <TextField
-              select
-              label="Phân tách"
-              size="small"
-              sx={{ minWidth: 180 }}
-              value={granularity}
-              onChange={(e) =>
-                setGranularity(e.target.value as "day" | "month")
-              }
-            >
-              <MenuItem value="day">Theo ngày</MenuItem>
-              <MenuItem value="month">Theo tháng</MenuItem>
-            </TextField>
-          </Stack>
-        </LocalizationProvider>
+        <Stack spacing={2} direction={{ xs: "column", lg: "row" }}>
+          <TextField
+            select
+            label="Cơ sở"
+            size="small"
+            sx={{ minWidth: 220 }}
+            value={hotelId}
+            onChange={(e) => setHotelId(e.target.value)}
+          >
+            <MenuItem value=" ">Toàn hệ thống</MenuItem>
+            {hotels.map((h) => (
+              <MenuItem key={h.id} value={h.id}>
+                {h.name}
+              </MenuItem>
+            ))}
+          </TextField>
+          <DatePicker
+            label="Từ ngày"
+            value={from}
+            onChange={(v) => v && setFrom(v)}
+            slotProps={{ textField: { size: "small" } }}
+          />
+          <DatePicker
+            label="Đến ngày"
+            value={to}
+            onChange={(v) => v && setTo(v)}
+            slotProps={{ textField: { size: "small" } }}
+          />
+          <TextField
+            select
+            label="Phân tách"
+            size="small"
+            sx={{ minWidth: 180 }}
+            value={granularity}
+            onChange={(e) => setGranularity(e.target.value as "day" | "month")}
+          >
+            <MenuItem value="day">Theo ngày</MenuItem>
+            <MenuItem value="month">Theo tháng</MenuItem>
+          </TextField>
+        </Stack>
 
         <Stack
           direction={{ xs: "column", lg: "row" }}

@@ -32,9 +32,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import dayjs, { Dayjs } from "dayjs";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
@@ -695,35 +693,33 @@ export default function KitchenManagementPage() {
       />
 
       <Box sx={{ my: 1 }}>
-        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="vi">
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            spacing={1}
-            alignItems={{ xs: "flex-start", sm: "center" }}
-          >
-            <DatePicker
-              label="Từ ngày"
-              value={startDate}
-              slotProps={{
-                textField: {
-                  size: "small",
-                },
-              }}
-              onChange={(v) => setStartDate(v ?? dayjs())}
-            />
-            <DatePicker
-              label="Đến ngày"
-              value={endDate}
-              minDate={startDate}
-              slotProps={{
-                textField: {
-                  size: "small",
-                },
-              }}
-              onChange={(v) => setEndDate(v ?? dayjs())}
-            />
-          </Stack>
-        </LocalizationProvider>
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={1}
+          alignItems={{ xs: "flex-start", sm: "center" }}
+        >
+          <DatePicker
+            label="Từ ngày"
+            value={startDate}
+            slotProps={{
+              textField: {
+                size: "small",
+              },
+            }}
+            onChange={(v) => setStartDate(v ?? dayjs())}
+          />
+          <DatePicker
+            label="Đến ngày"
+            value={endDate}
+            minDate={startDate}
+            slotProps={{
+              textField: {
+                size: "small",
+              },
+            }}
+            onChange={(v) => setEndDate(v ?? dayjs())}
+          />
+        </Stack>
       </Box>
 
       {loading && <Alert severity="info">Đang tải...</Alert>}

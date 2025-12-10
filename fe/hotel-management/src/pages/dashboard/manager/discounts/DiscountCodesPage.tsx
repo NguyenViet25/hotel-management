@@ -1,28 +1,26 @@
+import { CardMembership, TableChart } from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/Add";
-import SearchIcon from "@mui/icons-material/Search";
 import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import LocalDiningIcon from "@mui/icons-material/LocalDining";
 import HotelIcon from "@mui/icons-material/Hotel";
+import LocalDiningIcon from "@mui/icons-material/LocalDining";
+import SearchIcon from "@mui/icons-material/Search";
 import {
+  Box,
   Button,
+  Chip,
   Dialog,
   DialogContent,
   DialogTitle,
+  Grid,
+  IconButton,
   InputAdornment,
   MenuItem,
-  Chip,
-  Grid,
-  Box,
-  IconButton,
   Stack,
   TextField,
-  Typography,
-  ToggleButtonGroup,
   ToggleButton,
+  ToggleButtonGroup,
+  Typography,
 } from "@mui/material";
-import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
@@ -35,13 +33,6 @@ import { useStore, type StoreState } from "../../../../hooks/useStore";
 import type { DiscountFormValues } from "./components/DiscountForm";
 import DiscountForm from "./components/DiscountForm";
 import DiscountList from "./components/DiscountList";
-import {
-  CardGiftcard,
-  CardMembership,
-  CardTravel,
-  TableChart,
-  Tag,
-} from "@mui/icons-material";
 
 const DiscountCodesPage = () => {
   const [rows, setRows] = useState<DiscountCode[]>([]);
@@ -186,320 +177,318 @@ const DiscountCodesPage = () => {
   };
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <Stack spacing={2}>
-        <PageTitle
-          title="Mã giảm giá"
-          subtitle="Quản lý mã giảm giá của khách sạn"
-        />
+    <Stack spacing={2}>
+      <PageTitle
+        title="Mã giảm giá"
+        subtitle="Quản lý mã giảm giá của khách sạn"
+      />
 
+      <Stack
+        direction={{ xs: "column", md: "row" }}
+        spacing={2}
+        alignItems="left"
+        justifyContent={"space-between"}
+      >
         <Stack
           direction={{ xs: "column", md: "row" }}
           spacing={2}
           alignItems="left"
-          justifyContent={"space-between"}
         >
-          <Stack
-            direction={{ xs: "column", md: "row" }}
-            spacing={2}
-            alignItems="left"
+          <ToggleButtonGroup
+            size="small"
+            value={viewMode}
+            exclusive
+            onChange={(_, v) => setViewMode(v ?? viewMode)}
           >
-            <ToggleButtonGroup
-              size="small"
-              value={viewMode}
-              exclusive
-              onChange={(_, v) => setViewMode(v ?? viewMode)}
-            >
-              <ToggleButton value="table">
-                <TableChart sx={{ mr: 1 }} fontSize="small" />
-                Bảng
-              </ToggleButton>
-              <ToggleButton value="cards">
-                <CardMembership sx={{ mr: 1 }} fontSize="small" />
-                Thẻ
-              </ToggleButton>
-            </ToggleButtonGroup>
+            <ToggleButton value="table">
+              <TableChart sx={{ mr: 1 }} fontSize="small" />
+              Bảng
+            </ToggleButton>
+            <ToggleButton value="cards">
+              <CardMembership sx={{ mr: 1 }} fontSize="small" />
+              Thẻ
+            </ToggleButton>
+          </ToggleButtonGroup>
 
-            <TextField
-              select
-              label="Trạng thái"
-              size="small"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as any)}
-              sx={{ minWidth: 180 }}
-            >
-              <MenuItem value="all">Tất cả</MenuItem>
-              <MenuItem value="active">Đang hoạt động</MenuItem>
-              <MenuItem value="inactive">Ngưng hoạt động</MenuItem>
-              <MenuItem value="expired">Đã hết hạn</MenuItem>
-            </TextField>
+          <TextField
+            select
+            label="Trạng thái"
+            size="small"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as any)}
+            sx={{ minWidth: 180 }}
+          >
+            <MenuItem value="all">Tất cả</MenuItem>
+            <MenuItem value="active">Đang hoạt động</MenuItem>
+            <MenuItem value="inactive">Ngưng hoạt động</MenuItem>
+            <MenuItem value="expired">Đã hết hạn</MenuItem>
+          </TextField>
 
-            <TextField
-              placeholder="Tìm kiếm mã/điều kiện"
-              size="small"
-              value={searchTxt}
-              onChange={(e) => onSearch(e.target.value)}
-              sx={{ width: { md: 280, xs: "100%" } }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon fontSize="small" />
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </Stack>
-          <Stack direction="row" spacing={2} alignItems="center">
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<AddIcon />}
-              onClick={onAdd}
-            >
-              Thêm mới
-            </Button>
-          </Stack>
-        </Stack>
-
-        {viewMode === "table" ? (
-          <DiscountList
-            rows={filteredRows}
-            loading={loading}
-            onEdit={onEdit}
-            onDelete={onDelete}
+          <TextField
+            placeholder="Tìm kiếm mã/điều kiện"
+            size="small"
+            value={searchTxt}
+            onChange={(e) => onSearch(e.target.value)}
+            sx={{ width: { md: 280, xs: "100%" } }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon fontSize="small" />
+                </InputAdornment>
+              ),
+            }}
           />
-        ) : (
-          <Grid container spacing={3}>
-            {(["booking", "food"] as const).map((scope) => {
-              const items = filteredRows.filter((r) => r.scope === scope);
-              const color = scope === "food" ? "success" : "primary";
-              const borderColor =
-                scope === "food" ? "success.main" : "primary.main";
-              const bg =
-                scope === "food"
-                  ? "linear-gradient(135deg, #E8F5E9 0%, #F1FFF4 100%)"
-                  : "linear-gradient(135deg, #E3F2FD 0%, #F5FAFF 100%)";
-              return (
-                <Grid size={{ xs: 12, md: 6 }} key={scope}>
-                  <Stack spacing={2}>
-                    <Stack direction="row" alignItems="center" spacing={1}>
-                      {scope === "food" ? (
-                        <LocalDiningIcon color={color as any} />
-                      ) : (
-                        <HotelIcon color={color as any} />
-                      )}
-                      <Typography variant="h6">
-                        {scope === "food" ? "Ăn uống" : "Đặt phòng"}
-                      </Typography>
-                      <Chip
-                        label={`${items.length}`}
-                        color={color as any}
-                        size="small"
-                      />
-                    </Stack>
+        </Stack>
+        <Stack direction="row" spacing={2} alignItems="center">
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<AddIcon />}
+            onClick={onAdd}
+          >
+            Thêm mới
+          </Button>
+        </Stack>
+      </Stack>
 
-                    {items.length === 0 ? (
-                      <Typography variant="body2" color="text.secondary">
-                        Không có mã
-                      </Typography>
+      {viewMode === "table" ? (
+        <DiscountList
+          rows={filteredRows}
+          loading={loading}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
+      ) : (
+        <Grid container spacing={3}>
+          {(["booking", "food"] as const).map((scope) => {
+            const items = filteredRows.filter((r) => r.scope === scope);
+            const color = scope === "food" ? "success" : "primary";
+            const borderColor =
+              scope === "food" ? "success.main" : "primary.main";
+            const bg =
+              scope === "food"
+                ? "linear-gradient(135deg, #E8F5E9 0%, #F1FFF4 100%)"
+                : "linear-gradient(135deg, #E3F2FD 0%, #F5FAFF 100%)";
+            return (
+              <Grid size={{ xs: 12, md: 6 }} key={scope}>
+                <Stack spacing={2}>
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    {scope === "food" ? (
+                      <LocalDiningIcon color={color as any} />
                     ) : (
-                      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5 }}>
-                        {items.map((c) => (
-                          <Box
-                            key={c.id || c.code}
-                            sx={{
-                              position: "relative",
-                              p: 1.5,
-                              width: 220,
-                              border: "2px dashed",
+                      <HotelIcon color={color as any} />
+                    )}
+                    <Typography variant="h6">
+                      {scope === "food" ? "Ăn uống" : "Đặt phòng"}
+                    </Typography>
+                    <Chip
+                      label={`${items.length}`}
+                      color={color as any}
+                      size="small"
+                    />
+                  </Stack>
+
+                  {items.length === 0 ? (
+                    <Typography variant="body2" color="text.secondary">
+                      Không có mã
+                    </Typography>
+                  ) : (
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5 }}>
+                      {items.map((c) => (
+                        <Box
+                          key={c.id || c.code}
+                          sx={{
+                            position: "relative",
+                            p: 1.5,
+                            width: 220,
+                            border: "2px dashed",
+                            borderColor:
+                              new Date(c.endDate) < new Date()
+                                ? "error.main"
+                                : borderColor,
+                            borderRadius: "14px",
+                            background: bg,
+                            boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+                            transition: "transform 120ms ease",
+                            "&:hover": { transform: "translateY(-2px)" },
+                            "&:before": {
+                              content: '""',
+                              position: "absolute",
+                              top: "50%",
+                              left: -8,
+                              transform: "translateY(-50%)",
+                              width: 16,
+                              height: 16,
+                              borderRadius: "50%",
+                              backgroundColor: "background.paper",
+                              border: "2px solid",
                               borderColor:
                                 new Date(c.endDate) < new Date()
                                   ? "error.main"
                                   : borderColor,
-                              borderRadius: "14px",
-                              background: bg,
-                              boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-                              transition: "transform 120ms ease",
-                              "&:hover": { transform: "translateY(-2px)" },
-                              "&:before": {
-                                content: '""',
+                            },
+                            "&:after": {
+                              content: '""',
+                              position: "absolute",
+                              top: "50%",
+                              right: -8,
+                              transform: "translateY(-50%)",
+                              width: 16,
+                              height: 16,
+                              borderRadius: "50%",
+                              backgroundColor: "background.paper",
+                              border: "2px solid",
+                              borderColor:
+                                new Date(c.endDate) < new Date()
+                                  ? "error.main"
+                                  : borderColor,
+                            },
+                            opacity: c.isActive ? 1 : 0.55,
+                          }}
+                        >
+                          {new Date(c.endDate) < new Date() && (
+                            <Chip
+                              label="Hết hạn"
+                              color="error"
+                              size="small"
+                              sx={{
                                 position: "absolute",
-                                top: "50%",
-                                left: -8,
-                                transform: "translateY(-50%)",
-                                width: 16,
-                                height: 16,
-                                borderRadius: "50%",
-                                backgroundColor: "background.paper",
-                                border: "2px solid",
-                                borderColor:
-                                  new Date(c.endDate) < new Date()
-                                    ? "error.main"
-                                    : borderColor,
-                              },
-                              "&:after": {
-                                content: '""',
-                                position: "absolute",
-                                top: "50%",
-                                right: -8,
-                                transform: "translateY(-50%)",
-                                width: 16,
-                                height: 16,
-                                borderRadius: "50%",
-                                backgroundColor: "background.paper",
-                                border: "2px solid",
-                                borderColor:
-                                  new Date(c.endDate) < new Date()
-                                    ? "error.main"
-                                    : borderColor,
-                              },
-                              opacity: c.isActive ? 1 : 0.55,
-                            }}
-                          >
-                            {new Date(c.endDate) < new Date() && (
-                              <Chip
-                                label="Hết hạn"
-                                color="error"
-                                size="small"
+                                bottom: 6,
+                                left: 6,
+                              }}
+                            />
+                          )}
+                          <Stack spacing={1}>
+                            <Stack
+                              direction="row"
+                              alignItems="center"
+                              justifyContent="space-between"
+                            >
+                              <Typography
+                                variant="h4"
                                 sx={{
-                                  position: "absolute",
-                                  bottom: 6,
-                                  left: 6,
+                                  fontWeight: 800,
+                                  color:
+                                    new Date(c.endDate) < new Date()
+                                      ? "error.main"
+                                      : borderColor,
+                                  letterSpacing: 1,
+                                  lineHeight: 1,
                                 }}
+                              >
+                                {c.value}%
+                              </Typography>
+                              <Chip
+                                label={
+                                  c.scope === "food" ? "Ăn uống" : "Đặt phòng"
+                                }
+                                color={color as any}
+                                size="small"
                               />
-                            )}
-                            <Stack spacing={1}>
-                              <Stack
-                                direction="row"
-                                alignItems="center"
-                                justifyContent="space-between"
-                              >
-                                <Typography
-                                  variant="h4"
-                                  sx={{
-                                    fontWeight: 800,
-                                    color:
-                                      new Date(c.endDate) < new Date()
-                                        ? "error.main"
-                                        : borderColor,
-                                    letterSpacing: 1,
-                                    lineHeight: 1,
-                                  }}
-                                >
-                                  {c.value}%
-                                </Typography>
-                                <Chip
-                                  label={
-                                    c.scope === "food" ? "Ăn uống" : "Đặt phòng"
-                                  }
-                                  color={color as any}
-                                  size="small"
-                                />
-                              </Stack>
+                            </Stack>
 
-                              <Typography
-                                variant="subtitle2"
-                                sx={{ fontWeight: 700 }}
-                              >
-                                {c.code}
-                              </Typography>
-                              <Typography
-                                variant="caption"
-                                color="text.secondary"
-                              >
-                                {new Date(c.startDate).toLocaleDateString()} -{" "}
-                                {new Date(c.endDate).toLocaleDateString()}
-                              </Typography>
-                              <Typography
-                                variant="body2"
-                                color="text.primary"
-                                noWrap
-                              >
-                                {c.description || ""}
-                              </Typography>
+                            <Typography
+                              variant="subtitle2"
+                              sx={{ fontWeight: 700 }}
+                            >
+                              {c.code}
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
+                              {new Date(c.startDate).toLocaleDateString()} -{" "}
+                              {new Date(c.endDate).toLocaleDateString()}
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              color="text.primary"
+                              noWrap
+                            >
+                              {c.description || ""}
+                            </Typography>
 
-                              <Stack
-                                direction="row"
-                                spacing={0.5}
-                                justifyContent="flex-end"
+                            <Stack
+                              direction="row"
+                              spacing={0.5}
+                              justifyContent="flex-end"
+                            >
+                              <IconButton
+                                size="small"
+                                color="primary"
+                                onClick={() => onEdit(c)}
                               >
-                                <IconButton
-                                  size="small"
-                                  color="primary"
-                                  onClick={() => onEdit(c)}
-                                >
-                                  <EditIcon fontSize="small" />
-                                </IconButton>
-                                {/* <IconButton
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                              {/* <IconButton
                                   size="small"
                                   color="error"
                                   onClick={() => onDelete(c)}
                                 >
                                   <DeleteIcon fontSize="small" />
                                 </IconButton> */}
-                              </Stack>
                             </Stack>
-                          </Box>
-                        ))}
-                      </Box>
-                    )}
-                  </Stack>
-                </Grid>
-              );
-            })}
-          </Grid>
-        )}
+                          </Stack>
+                        </Box>
+                      ))}
+                    </Box>
+                  )}
+                </Stack>
+              </Grid>
+            );
+          })}
+        </Grid>
+      )}
 
-        <Dialog
-          open={openForm}
-          onClose={() => setOpenForm(false)}
-          maxWidth="md"
-          fullWidth
-        >
-          <DialogTitle>
-            {editing ? "Sửa mã giảm giá" : "Thêm mã giảm giá"}
-          </DialogTitle>
-          <DialogContent>
-            <DiscountForm
-              initialValues={
-                editing
-                  ? {
-                      code: editing.code,
-                      name: editing.name,
-                      description: editing.description || "",
-                      scope: (editing as any)?.scope || "booking",
-                      conditions: editing.conditions || "",
-                      value: editing.value,
-                      isActive: editing.isActive,
-                      startDate: dayjs(editing.startDate),
-                      endDate: dayjs(editing.endDate),
-                    }
-                  : undefined
-              }
-              onSubmit={submitForm}
-              onCancel={() => setOpenForm(false)}
-              submitting={submitting}
-            />
-          </DialogContent>
-        </Dialog>
+      <Dialog
+        open={openForm}
+        onClose={() => setOpenForm(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>
+          {editing ? "Sửa mã giảm giá" : "Thêm mã giảm giá"}
+        </DialogTitle>
+        <DialogContent>
+          <DiscountForm
+            initialValues={
+              editing
+                ? {
+                    code: editing.code,
+                    name: editing.name,
+                    description: editing.description || "",
+                    scope: (editing as any)?.scope || "booking",
+                    conditions: editing.conditions || "",
+                    value: editing.value,
+                    isActive: editing.isActive,
+                    startDate: dayjs(editing.startDate),
+                    endDate: dayjs(editing.endDate),
+                  }
+                : undefined
+            }
+            onSubmit={submitForm}
+            onCancel={() => setOpenForm(false)}
+            submitting={submitting}
+          />
+        </DialogContent>
+      </Dialog>
 
-        <ConfirmModal
-          open={openDelete}
-          onClose={() => setOpenDelete(false)}
-          title="Xóa mã giảm giá"
-          message={
-            <span>
-              Bạn có chắc muốn xóa mã <b>{deleting?.code}</b>?
-            </span>
-          }
-          confirmText="Xóa"
-          confirmColor="error"
-          onConfirm={confirmDelete}
-        />
+      <ConfirmModal
+        open={openDelete}
+        onClose={() => setOpenDelete(false)}
+        title="Xóa mã giảm giá"
+        message={
+          <span>
+            Bạn có chắc muốn xóa mã <b>{deleting?.code}</b>?
+          </span>
+        }
+        confirmText="Xóa"
+        confirmColor="error"
+        onConfirm={confirmDelete}
+      />
 
-        <ToastContainer position="top-right" autoClose={2500} />
-      </Stack>
-    </LocalizationProvider>
+      <ToastContainer position="top-right" autoClose={2500} />
+    </Stack>
   );
 };
 

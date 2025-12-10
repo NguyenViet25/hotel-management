@@ -1,38 +1,36 @@
-import React, { useEffect } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  TextField,
-  Stack,
-  IconButton,
-  InputAdornment,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
-} from "@mui/material";
-import {
-  Close,
-  Save,
   AddCircle,
-  RemoveCircle,
+  Close,
   EventNote,
+  RemoveCircle,
+  Save,
   ShoppingCart,
 } from "@mui/icons-material";
-import { useForm, Controller, useFieldArray } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  IconButton,
+  InputAdornment,
+  InputLabel,
+  MenuItem,
+  Select,
+  Stack,
+  TextField,
+} from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
+import React, { useEffect } from "react";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { z } from "zod";
 import type {
-  ShoppingListRequestDto,
-  ShoppingItemDto,
   ShoppingDto,
+  ShoppingItemDto,
+  ShoppingListRequestDto,
 } from "../../../../../api/kitchenApi";
 import { getExactVNDate } from "../../../../../utils/date-helper";
 
@@ -168,134 +166,130 @@ const ShoppingFormModal: React.FC<ShoppingFormModalProps> = ({
           : "Chỉnh sửa yêu cầu mua nguyên liệu"}
       </DialogTitle>
       <DialogContent>
-        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="vi">
-          <Stack spacing={2} sx={{ mt: 1 }}>
-            {/* Order date */}
-            <Controller
-              control={control}
-              name="orderDate"
-              render={({ field }) => (
-                <DatePicker
-                  label="Ngày mua"
-                  readOnly
-                  value={field.value}
-                  onChange={(v) => field.onChange(v ?? dayjs())}
-                />
-              )}
-            />
-            {/* Notes */}
-            <Controller
-              control={control}
-              name="notes"
-              render={({ field }) => (
-                <TextField
-                  label="Ghi chú"
-                  fullWidth
-                  placeholder="Nhập ghi chú"
-                  value={field.value}
-                  onChange={field.onChange}
-                  error={!!errors.notes}
-                  helperText={errors.notes?.message}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <EventNote />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              )}
-            />
+        <Stack spacing={2} sx={{ mt: 1 }}>
+          {/* Order date */}
+          <Controller
+            control={control}
+            name="orderDate"
+            render={({ field }) => (
+              <DatePicker
+                label="Ngày mua"
+                readOnly
+                value={field.value}
+                onChange={(v) => field.onChange(v ?? dayjs())}
+              />
+            )}
+          />
+          {/* Notes */}
+          <Controller
+            control={control}
+            name="notes"
+            render={({ field }) => (
+              <TextField
+                label="Ghi chú"
+                fullWidth
+                placeholder="Nhập ghi chú"
+                value={field.value}
+                onChange={field.onChange}
+                error={!!errors.notes}
+                helperText={errors.notes?.message}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <EventNote />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            )}
+          />
 
-            {/* Shopping items list */}
-            <Stack spacing={1}>
-              {fields.map((item, index) => (
-                <Stack
-                  key={item.id}
-                  direction={{ xs: "column", sm: "row" }}
-                  spacing={2}
-                  alignItems="flex-start"
-                >
-                  <Controller
-                    control={control}
-                    name={`shoppingItems.${index}.name` as const}
-                    render={({ field }) => (
-                      <TextField
-                        label="Tên nguyên liệu"
-                        fullWidth
-                        placeholder="Nhập tên nguyên liệu"
-                        value={field.value}
-                        onChange={field.onChange}
-                        error={!!errors.shoppingItems?.[index]?.name}
-                        helperText={
-                          errors.shoppingItems?.[index]?.name?.message
-                        }
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <ShoppingCart />
-                            </InputAdornment>
-                          ),
-                        }}
-                      />
-                    )}
-                  />
-                  <Controller
-                    control={control}
-                    name={`shoppingItems.${index}.quantity` as const}
-                    render={({ field }) => (
-                      <TextField
-                        label="Số lượng"
-                        fullWidth
-                        value={field.value}
-                        onChange={field.onChange}
-                        error={!!errors.shoppingItems?.[index]?.quantity}
-                        helperText={
-                          errors.shoppingItems?.[index]?.quantity?.message
-                        }
-                      />
-                    )}
-                  />
-                  <FormControl fullWidth>
-                    <InputLabel id={`unit-label-${index}`}>Đơn vị</InputLabel>
-                    <Controller
-                      control={control}
-                      name={`shoppingItems.${index}.unit` as const}
-                      render={({ field }) => (
-                        <Select
-                          labelId={`unit-label-${index}`}
-                          label="Đơn vị"
-                          value={field.value}
-                          onChange={(e) => field.onChange(e.target.value)}
-                          error={!!errors.shoppingItems?.[index]?.unit}
-                        >
-                          {unitOptions.map((u) => (
-                            <MenuItem key={u.value} value={u.value}>
-                              {u.label}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      )}
-                    />
-                  </FormControl>
-                  <IconButton
-                    color="error"
-                    onClick={() => remove(index)}
-                    aria-label="Xóa dòng"
-                  >
-                    <RemoveCircle />
-                  </IconButton>
-                </Stack>
-              ))}
-              <Button
-                startIcon={<AddCircle />}
-                onClick={() => append({ name: "", quantity: "", unit: "kg" })}
+          {/* Shopping items list */}
+          <Stack spacing={1}>
+            {fields.map((item, index) => (
+              <Stack
+                key={item.id}
+                direction={{ xs: "column", sm: "row" }}
+                spacing={2}
+                alignItems="flex-start"
               >
-                Thêm nguyên liệu
-              </Button>
-            </Stack>
+                <Controller
+                  control={control}
+                  name={`shoppingItems.${index}.name` as const}
+                  render={({ field }) => (
+                    <TextField
+                      label="Tên nguyên liệu"
+                      fullWidth
+                      placeholder="Nhập tên nguyên liệu"
+                      value={field.value}
+                      onChange={field.onChange}
+                      error={!!errors.shoppingItems?.[index]?.name}
+                      helperText={errors.shoppingItems?.[index]?.name?.message}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <ShoppingCart />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  )}
+                />
+                <Controller
+                  control={control}
+                  name={`shoppingItems.${index}.quantity` as const}
+                  render={({ field }) => (
+                    <TextField
+                      label="Số lượng"
+                      fullWidth
+                      value={field.value}
+                      onChange={field.onChange}
+                      error={!!errors.shoppingItems?.[index]?.quantity}
+                      helperText={
+                        errors.shoppingItems?.[index]?.quantity?.message
+                      }
+                    />
+                  )}
+                />
+                <FormControl fullWidth>
+                  <InputLabel id={`unit-label-${index}`}>Đơn vị</InputLabel>
+                  <Controller
+                    control={control}
+                    name={`shoppingItems.${index}.unit` as const}
+                    render={({ field }) => (
+                      <Select
+                        labelId={`unit-label-${index}`}
+                        label="Đơn vị"
+                        value={field.value}
+                        onChange={(e) => field.onChange(e.target.value)}
+                        error={!!errors.shoppingItems?.[index]?.unit}
+                      >
+                        {unitOptions.map((u) => (
+                          <MenuItem key={u.value} value={u.value}>
+                            {u.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    )}
+                  />
+                </FormControl>
+                <IconButton
+                  color="error"
+                  onClick={() => remove(index)}
+                  aria-label="Xóa dòng"
+                >
+                  <RemoveCircle />
+                </IconButton>
+              </Stack>
+            ))}
+            <Button
+              startIcon={<AddCircle />}
+              onClick={() => append({ name: "", quantity: "", unit: "kg" })}
+            >
+              Thêm nguyên liệu
+            </Button>
           </Stack>
-        </LocalizationProvider>
+        </Stack>
       </DialogContent>
       <DialogActions>
         <Stack

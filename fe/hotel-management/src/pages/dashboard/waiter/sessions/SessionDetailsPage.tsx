@@ -6,7 +6,6 @@ import {
   CheckCircle,
   CleanHands,
   CleaningServices,
-  Delete,
   DryCleaning,
   Edit,
   EmojiFoodBeverage,
@@ -57,8 +56,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DateTimePicker } from "@mui/x-date-pickers";
 import dayjs, { Dayjs } from "dayjs";
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
@@ -1057,14 +1055,12 @@ export default function SessionDetailsPage() {
         <DialogTitle>Sửa phiên</DialogTitle>
         <DialogContent>
           <Stack spacing={1.5} sx={{ mt: 1 }}>
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DateTimePicker
-                label="Thời gian bắt đầu"
-                value={editStartedAt}
-                onChange={(v) => setEditStartedAt(v)}
-                slotProps={{ textField: { size: "small" } }}
-              />
-            </LocalizationProvider>
+            <DateTimePicker
+              label="Thời gian bắt đầu"
+              value={editStartedAt}
+              onChange={(v) => setEditStartedAt(v)}
+              slotProps={{ textField: { size: "small" } }}
+            />
             <TextField
               label="Ghi chú"
               value={editNotes}

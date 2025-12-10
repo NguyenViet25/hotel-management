@@ -71,7 +71,6 @@ const FoodTimeline: React.FC = () => {
     severity: "success" | "error";
   }>({ open: false, message: "", severity: "success" });
   const [reviewOpen, setReviewOpen] = useState<boolean>(false);
-  const [reviewLoading, setReviewLoading] = useState<boolean>(false);
   const [reviewItems, setReviewItems] = useState<ShoppingItemDto[]>([]);
   const [statusDialogOpen, setStatusDialogOpen] = useState<boolean>(false);
   const [statusAction, setStatusAction] = useState<"confirm" | "cancel" | null>(
@@ -81,14 +80,9 @@ const FoodTimeline: React.FC = () => {
     undefined
   );
 
-  const { start, end } = useMemo(
-    () => getWeekRange(currentDate),
-    [currentDate]
-  );
-  const weekDays = useMemo(
-    () => Array.from({ length: 7 }, (_, i) => start.add(i, "day")),
-    [start]
-  );
+  const { start, end } = getWeekRange(currentDate);
+  const weekDays = Array.from({ length: 7 }, (_, i) => start.add(i, "day"));
+
   const fetchWeekFoods = async () => {
     if (!hotelId) {
       setError("Không tìm thấy khách sạn để tải dữ liệu");
@@ -146,7 +140,6 @@ const FoodTimeline: React.FC = () => {
       return;
     }
     try {
-      setReviewLoading(true);
       const res = await kitchenApi.getShoppingOrderDetails(shoppingId);
       if (res.isSuccess) {
         const items: ShoppingItemDto[] = (res.data.shoppingItems ?? []).map(
@@ -175,7 +168,6 @@ const FoodTimeline: React.FC = () => {
         severity: "error",
       });
     } finally {
-      setReviewLoading(false);
     }
   };
 

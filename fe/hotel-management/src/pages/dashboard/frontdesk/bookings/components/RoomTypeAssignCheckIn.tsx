@@ -25,12 +25,15 @@ import {
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import bookingsApi, {
+  EBookingStatus,
   type BookingDetailsDto,
   type BookingGuestDto,
   type BookingRoomDto,
   type BookingRoomTypeDto,
 } from "../../../../../api/bookingsApi";
+import hotelService from "../../../../../api/hotelService";
 import StripedLabelWrapper from "../../../../../components/LabelStripedWrapper";
+import { useStore, type StoreState } from "../../../../../hooks/useStore";
 import {
   formatDate,
   formatDateTime,
@@ -45,10 +48,6 @@ import GuestDialog from "./GuestDialog";
 import GuestList from "./GuestList";
 import MoveGuestDialog from "./MoveGuestDialog";
 import PlannedDatesDialog from "./PlannedDatesDialog";
-import type { Dayjs } from "dayjs";
-import hotelService from "../../../../../api/hotelService";
-import { useStore, type StoreState } from "../../../../../hooks/useStore";
-import dayjs from "dayjs";
 
 type Props = {
   booking: BookingDetailsDto | null;
@@ -60,6 +59,7 @@ type GuestForm = {
   phone: string;
   idCardFrontImageUrl?: string;
   idCardBackImageUrl?: string;
+  idCard?: string;
 };
 
 const RoomTypeAssignCheckIn: React.FC<Props> = ({ booking, onRefresh }) => {
@@ -138,6 +138,7 @@ const RoomTypeBlock: React.FC<{
             phone: initial.phone,
             idCardFrontImageUrl: initial.idCardFrontImageUrl,
             idCardBackImageUrl: initial.idCardBackImageUrl,
+            idCard: initial.idCard,
           }
         : null
     );
@@ -155,6 +156,7 @@ const RoomTypeBlock: React.FC<{
             phone: g.phone,
             idCardFrontImageUrl: g.idCardFrontImageUrl,
             idCardBackImageUrl: g.idCardBackImageUrl,
+            idCard: g.idCard,
           }
         );
         if (res.isSuccess) {
@@ -273,7 +275,9 @@ const RoomTypeBlock: React.FC<{
               <Button
                 variant="outlined"
                 onClick={() => setAssignOpen(true)}
-                disabled={remaining === 0}
+                disabled={
+                  remaining === 0 || booking.status !== EBookingStatus.Confirmed
+                }
               >
                 Chọn phòng
               </Button>
@@ -429,9 +433,11 @@ const RoomTypeBlock: React.FC<{
                                 new Date(br.endDate) >
                                   new Date(rt.endDate))) && (
                               <Chip
-                                label={`Gia hạn đến: ${formatDateTime(
-                                  (br as any).extendedDate ?? br.endDate
-                                )}`}
+                                label={`Gia hạn đến: ${
+                                  br.extendedDate
+                                    ? formatDate(br.extendedDate)
+                                    : "—"
+                                } ${checkOut ? formatTime(checkOut) : "-"}`}
                                 size="small"
                                 color="warning"
                                 sx={{
@@ -527,7 +533,9 @@ const RoomTypeBlock: React.FC<{
                           onEdit={(idx, gi) =>
                             openEditGuest(br.bookingRoomId, idx, {
                               ...gi,
+                              id: gi.guestId || "",
                               name: gi.fullname || "",
+                              idCard: gi.idCard || "",
                             } as any)
                           }
                           onDelete={async (_idx, gi) => {
@@ -681,6 +689,7 @@ const RoomTypeBlock: React.FC<{
           scheduledStart={activeRoom?.startDate || undefined}
           defaultCheckInTime={checkIn ?? undefined}
           defaultCheckOutTime={checkOut ?? undefined}
+          extendedDate={activeRoom?.extendedDate}
           onClose={() => setCheckOutOpen(false)}
           onConfirm={async (iso, info) => {
             try {

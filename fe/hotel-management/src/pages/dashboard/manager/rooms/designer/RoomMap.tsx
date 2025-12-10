@@ -16,7 +16,6 @@ import ChangeCircleIcon from "@mui/icons-material/ChangeCircle";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CleaningServicesIcon from "@mui/icons-material/CleaningServices";
 import ConstructionIcon from "@mui/icons-material/Construction";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
 import EditIcon from "@mui/icons-material/Edit";
 import GroupsIcon from "@mui/icons-material/Groups";
@@ -51,8 +50,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DatePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 import "dayjs/locale/vi";
 import React, { useEffect, useMemo, useState } from "react";
@@ -77,8 +75,6 @@ import { useStore, type StoreState } from "../../../../../hooks/useStore";
 import ChangeRoomStatusModal from "../components/ChangeRoomStatusModal";
 import RoomFormModal from "../components/RoomFormModal";
 import { ROOM_STATUS_OPTIONS } from "../components/roomsConstants";
-dayjs.locale("vi");
-
 interface IProps {
   allowAddNew?: boolean;
 }
@@ -1094,28 +1090,26 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                   <ChevronRight />
                 </IconButton>
               </Stack>
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <Stack
-                  direction={{ xs: "column", sm: "row" }}
-                  spacing={1}
-                  alignItems={{ xs: "stretch", sm: "center" }}
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                spacing={1}
+                alignItems={{ xs: "stretch", sm: "center" }}
+              >
+                <DatePicker
+                  label="Tuần"
+                  value={occCurrentDate}
+                  onChange={(v) => v && loadHistoryForWeek(v)}
+                  slotProps={{ textField: { size: "small" } }}
+                />
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<CalendarMonth />}
+                  onClick={() => loadHistoryForWeek(dayjs())}
                 >
-                  <DatePicker
-                    label="Tuần"
-                    value={occCurrentDate}
-                    onChange={(v) => v && loadHistoryForWeek(v)}
-                    slotProps={{ textField: { size: "small" } }}
-                  />
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    startIcon={<CalendarMonth />}
-                    onClick={() => loadHistoryForWeek(dayjs())}
-                  >
-                    Tuần hiện tại
-                  </Button>
-                </Stack>
-              </LocalizationProvider>
+                  Tuần hiện tại
+                </Button>
+              </Stack>
               {occupancyScheduleLoading ? (
                 <Loading />
               ) : (

@@ -426,6 +426,7 @@ const bookingsApi = {
       email?: string;
       idCardFrontImageUrl?: string;
       idCardBackImageUrl?: string;
+      idCard?: string;
     }
   ): Promise<ApiResponse<BookingDetailsDto>> {
     const res = await axios.put(

@@ -1,11 +1,9 @@
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { Box, Divider, Tooltip, Typography } from "@mui/material";
-import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs from "dayjs";
 import React from "react";
 import { Controller, type Control } from "react-hook-form";
 import CalendarPriceSetup from "./CalendarPriceSetup";
-import dayjs from "dayjs";
 
 export interface DateRangeSectionProps {
   control: Control<any>;
@@ -32,41 +30,30 @@ const RoomTypeFormSectionDateRange: React.FC<DateRangeSectionProps> = ({
       </Typography>
       <Divider sx={{ mb: 2 }} />
       <Box sx={{ mb: 2 }}>
-        <LocalizationProvider
-          dateAdapter={AdapterDayjs}
-          adapterLocale="vi"
-          localeText={{
-            okButtonLabel: "Đồng ý",
-            cancelButtonLabel: "Hủy",
-            clearButtonLabel: "Xóa",
-            todayButtonLabel: "Hôm nay",
+        <Controller
+          name="prices"
+          control={control}
+          render={({ field: { value, onChange } }) => {
+            const map = Object.fromEntries(
+              (value || []).map((p: any) => [
+                dayjs(p.date).format("YYYY-MM-DD"),
+                p.price,
+              ])
+            );
+            return (
+              <CalendarPriceSetup
+                value={map}
+                onChangePriceMap={(m) => {
+                  const list = Object.entries(m).map(([d, price]) => ({
+                    date: new Date(d),
+                    price,
+                  }));
+                  onChange(list);
+                }}
+              />
+            );
           }}
-        >
-          <Controller
-            name="prices"
-            control={control}
-            render={({ field: { value, onChange } }) => {
-              const map = Object.fromEntries(
-                (value || []).map((p: any) => [
-                  dayjs(p.date).format("YYYY-MM-DD"),
-                  p.price,
-                ])
-              );
-              return (
-                <CalendarPriceSetup
-                  value={map}
-                  onChangePriceMap={(m) => {
-                    const list = Object.entries(m).map(([d, price]) => ({
-                      date: new Date(d),
-                      price,
-                    }));
-                    onChange(list);
-                  }}
-                />
-              );
-            }}
-          />
-        </LocalizationProvider>
+        />
       </Box>
     </Box>
   );

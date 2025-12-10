@@ -1,4 +1,3 @@
-import { useEffect, useMemo, useState } from "react";
 import {
   Button,
   Dialog,
@@ -6,12 +5,11 @@ import {
   DialogContent,
   DialogTitle,
   Stack,
-  TextField,
   Typography,
 } from "@mui/material";
-import { LocalizationProvider, DateTimePicker } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DateTimePicker } from "@mui/x-date-pickers";
 import dayjs, { Dayjs } from "dayjs";
+import { useEffect, useMemo, useState } from "react";
 
 type Props = {
   open: boolean;
@@ -65,25 +63,23 @@ export default function PlannedDatesDialog({
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle>Cập nhật thời gian dự kiến</DialogTitle>
       <DialogContent>
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <Stack spacing={2} sx={{ mt: 1 }}>
-            <DateTimePicker
-              label="Thời gian nhận phòng (dự kiến)"
-              value={start}
-              onChange={(v) => v && setStart(v)}
-            />
-            <DateTimePicker
-              label="Thời gian trả phòng (dự kiến)"
-              value={end}
-              onChange={(v) => v && setEnd(v)}
-            />
-            {error && (
-              <Typography variant="caption" color="error">
-                {error}
-              </Typography>
-            )}
-          </Stack>
-        </LocalizationProvider>
+        <Stack spacing={2} sx={{ mt: 1 }}>
+          <DateTimePicker
+            label="Thời gian nhận phòng (dự kiến)"
+            value={start}
+            onChange={(v) => v && setStart(v)}
+          />
+          <DateTimePicker
+            label="Thời gian trả phòng (dự kiến)"
+            value={end}
+            onChange={(v) => v && setEnd(v)}
+          />
+          {error && (
+            <Typography variant="caption" color="error">
+              {error}
+            </Typography>
+          )}
+        </Stack>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Hủy</Button>

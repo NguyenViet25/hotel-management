@@ -30,12 +30,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import {
-  DatePicker,
-  DateTimePicker,
-  LocalizationProvider,
-} from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DatePicker, DateTimePicker } from "@mui/x-date-pickers";
 import dayjs, { Dayjs } from "dayjs";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -391,28 +386,26 @@ export default function SessionBoardPage() {
               <MenuItem value="Ended">Đã kết thúc</MenuItem>
             </Select>
           </FormControl>
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DatePicker
-              label="Từ ngày"
-              value={fromDate}
-              onChange={(v) => setFromDate(v)}
-              slotProps={{
-                textField: {
-                  size: "small",
-                },
-              }}
-            />
-            <DatePicker
-              label="Đến ngày"
-              value={toDate}
-              onChange={(v) => setToDate(v)}
-              slotProps={{
-                textField: {
-                  size: "small",
-                },
-              }}
-            />
-          </LocalizationProvider>
+          <DatePicker
+            label="Từ ngày"
+            value={fromDate}
+            onChange={(v) => setFromDate(v)}
+            slotProps={{
+              textField: {
+                size: "small",
+              },
+            }}
+          />
+          <DatePicker
+            label="Đến ngày"
+            value={toDate}
+            onChange={(v) => setToDate(v)}
+            slotProps={{
+              textField: {
+                size: "small",
+              },
+            }}
+          />
         </Stack>
         {!isWaiter && (
           <Button
@@ -826,14 +819,12 @@ export default function SessionBoardPage() {
         <DialogTitle>Sửa phiên</DialogTitle>
         <DialogContent>
           <Stack spacing={1.5} sx={{ mt: 1 }}>
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DateTimePicker
-                label="Thời gian bắt đầu"
-                value={editStartedAt}
-                onChange={(v) => setEditStartedAt(v)}
-                slotProps={{ textField: { size: "small" } }}
-              />
-            </LocalizationProvider>
+            <DateTimePicker
+              label="Thời gian bắt đầu"
+              value={editStartedAt}
+              onChange={(v) => setEditStartedAt(v)}
+              slotProps={{ textField: { size: "small" } }}
+            />
             <TextField
               label="Ghi chú"
               value={editNotes}

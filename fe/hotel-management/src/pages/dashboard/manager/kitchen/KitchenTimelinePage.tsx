@@ -79,14 +79,9 @@ const FoodTimeline: React.FC = () => {
     Record<string, ShoppingOrderStatus>
   >({});
 
-  const { start, end } = useMemo(
-    () => getWeekRange(currentDate),
-    [currentDate]
-  );
-  const weekDays = useMemo(
-    () => Array.from({ length: 7 }, (_, i) => start.add(i, "day")),
-    [start]
-  );
+  const { start, end } = getWeekRange(currentDate);
+  const weekDays = Array.from({ length: 7 }, (_, i) => start.add(i, "day"));
+
   const fetchWeekFoods = async () => {
     if (!hotelId) {
       setError("Không tìm thấy khách sạn để tải dữ liệu");

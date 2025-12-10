@@ -1,7 +1,5 @@
 import { Alert, Box, Button, Grid, Snackbar, TextField } from "@mui/material";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 
@@ -191,27 +189,23 @@ const AuditLogs: React.FC = () => {
       {/* Bộ lọc */}
       <Box sx={{ mb: 2 }}>
         <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} md={3}>
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DatePicker
-                label="Từ ngày"
-                value={fromDate}
-                onChange={(newValue) => setFromDate(newValue)}
-                slotProps={{ textField: { fullWidth: true, size: "small" } }}
-              />
-            </LocalizationProvider>
+          <Grid size={{ xs: 12, md: 3 }}>
+            <DatePicker
+              label="Từ ngày"
+              value={fromDate}
+              onChange={(newValue) => setFromDate(newValue)}
+              slotProps={{ textField: { fullWidth: true, size: "small" } }}
+            />
           </Grid>
-          <Grid item xs={12} md={3}>
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DatePicker
-                label="Đến ngày"
-                value={toDate}
-                onChange={(newValue) => setToDate(newValue)}
-                slotProps={{ textField: { fullWidth: true, size: "small" } }}
-              />
-            </LocalizationProvider>
+          <Grid size={{ xs: 12, md: 3 }}>
+            <DatePicker
+              label="Đến ngày"
+              value={toDate}
+              onChange={(newValue) => setToDate(newValue)}
+              slotProps={{ textField: { fullWidth: true, size: "small" } }}
+            />
           </Grid>
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <TextField
               fullWidth
               label="Loại hành động"
@@ -220,7 +214,7 @@ const AuditLogs: React.FC = () => {
               onChange={(e) => setActionFilter(e.target.value)}
             />
           </Grid>
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <Box sx={{ display: "flex", gap: 1 }}>
               <Button variant="contained" onClick={handleFilterChange}>
                 Áp dụng

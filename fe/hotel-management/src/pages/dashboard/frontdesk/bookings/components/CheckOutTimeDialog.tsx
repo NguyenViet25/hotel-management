@@ -1,4 +1,3 @@
-import { useEffect, useMemo, useState } from "react";
 import {
   Button,
   Chip,
@@ -9,14 +8,15 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DateTimePicker } from "@mui/x-date-pickers";
 import dayjs, { Dayjs } from "dayjs";
+import { useEffect, useMemo, useState } from "react";
 
 type Props = {
   open: boolean;
   scheduledEnd: string;
   scheduledStart?: string;
+  extendedDate?: string | null;
   defaultCheckInTime?: string | null;
   defaultCheckOutTime?: string | null;
   onClose: () => void;
@@ -28,6 +28,7 @@ type Props = {
 
 export default function CheckOutTimeDialog({
   open,
+  extendedDate,
   scheduledEnd,
   scheduledStart,
   defaultCheckInTime,
@@ -54,7 +55,8 @@ export default function CheckOutTimeDialog({
   }, [scheduledStart, defaultCheckInTime]);
 
   const displayScheduledEnd = useMemo(() => {
-    const base = dayjs(scheduledEnd);
+    const endDate = extendedDate ?? scheduledEnd;
+    const base = dayjs(endDate);
     const def = defaultCheckOutTime ? dayjs(defaultCheckOutTime) : null;
     if (def && base.isValid() && def.isValid()) {
       return base
@@ -102,14 +104,12 @@ export default function CheckOutTimeDialog({
             </Typography>
             <Chip label={displayScheduledEnd.format("DD/MM/YYYY HH:mm")} />
           </Stack>
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateTimePicker
-              label="Thời gian check-out"
-              value={value}
-              minDate={dayjs(scheduledStart)}
-              onChange={(v) => v && setValue(v)}
-            />
-          </LocalizationProvider>
+          <DateTimePicker
+            label="Thời gian check-out"
+            value={value}
+            minDate={dayjs(scheduledStart)}
+            onChange={(v) => v && setValue(v)}
+          />
           <Stack direction="row" spacing={1} alignItems="center">
             <Chip
               color={isLate ? "warning" : "success"}

@@ -4,14 +4,17 @@ import {
   Close,
   Edit,
   Event,
+  ExpandMore,
   Info,
   People,
   Phone,
   Restaurant,
-  ExpandMore,
 } from "@mui/icons-material";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Alert,
   Box,
   Button,
@@ -20,12 +23,8 @@ import {
   Snackbar,
   Stack,
   Typography,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
 } from "@mui/material";
-import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DatePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 import React, { useEffect, useLayoutEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -269,31 +268,29 @@ const OrdersManagementPage: React.FC = () => {
               size="small"
             />
           </Box>
-          <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="vi">
-            <Stack direction={{ xs: "column", lg: "row" }} spacing={1}>
-              <DatePicker
-                label="Từ ngày"
-                value={startDate}
-                slotProps={{
-                  textField: {
-                    size: "small",
-                  },
-                }}
-                onChange={(v) => setStartDate(v ?? dayjs())}
-              />
-              <DatePicker
-                label="Đến ngày"
-                value={endDate}
-                minDate={startDate}
-                slotProps={{
-                  textField: {
-                    size: "small",
-                  },
-                }}
-                onChange={(v) => setEndDate(v ?? dayjs())}
-              />
-            </Stack>
-          </LocalizationProvider>
+          <Stack direction={{ xs: "column", lg: "row" }} spacing={1}>
+            <DatePicker
+              label="Từ ngày"
+              value={startDate}
+              slotProps={{
+                textField: {
+                  size: "small",
+                },
+              }}
+              onChange={(v) => setStartDate(v ?? dayjs())}
+            />
+            <DatePicker
+              label="Đến ngày"
+              value={endDate}
+              minDate={startDate}
+              slotProps={{
+                textField: {
+                  size: "small",
+                },
+              }}
+              onChange={(v) => setEndDate(v ?? dayjs())}
+            />
+          </Stack>
           <Box sx={{ width: { xs: "100%", lg: 200 }, minWidth: 200 }}>
             <CustomSelect
               name="orderStatus"

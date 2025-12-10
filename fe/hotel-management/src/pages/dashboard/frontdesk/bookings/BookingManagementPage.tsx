@@ -15,6 +15,7 @@ import dayjs, { Dayjs } from "dayjs";
 import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import bookingsApi, {
+  EBookingStatus,
   type BookingDetailsDto,
   type BookingsQueryDto,
   type BookingStatus,
@@ -302,10 +303,15 @@ const BookingManagementPage: React.FC = () => {
                   >
                     <Stack direction="row" spacing={1} alignItems="center">
                       <Hotel color="primary" />
-                      <Typography fontWeight={700}>{`Yêu cầu đặt phòng: #${String(
+                      <Typography
+                        fontWeight={700}
+                      >{`Yêu cầu đặt phòng: #${String(
                         idx + 1
                       ).toUpperCase()}`}</Typography>
-                      <Chip label={`Tổng số phòng: ${totalRooms}`} size="small" />
+                      <Chip
+                        label={`Tổng số phòng: ${totalRooms}`}
+                        size="small"
+                      />
                     </Stack>
                     <Stack direction="row" spacing={1} alignItems="center">
                       <Typography color="text.secondary">
@@ -324,8 +330,15 @@ const BookingManagementPage: React.FC = () => {
                       spacing={1}
                       sx={{ width: "100%" }}
                     >
-                      <Stack direction={{ xs: "column", lg: "row" }} spacing={2}>
-                        <Stack direction={{ xs: "row" }} spacing={1} alignItems="center">
+                      <Stack
+                        direction={{ xs: "column", lg: "row" }}
+                        spacing={2}
+                      >
+                        <Stack
+                          direction={{ xs: "row" }}
+                          spacing={1}
+                          alignItems="center"
+                        >
                           <PersonIcon color="action" />
                           <Typography>
                             Họ và tên: {b.primaryGuestName || "—"}
@@ -336,7 +349,10 @@ const BookingManagementPage: React.FC = () => {
                           <Typography>SĐT: {b.phoneNumber || "—"}</Typography>
                         </Stack>
                       </Stack>
-                      <Stack direction={{ xs: "column", lg: "row" }} spacing={1}>
+                      <Stack
+                        direction={{ xs: "column", lg: "row" }}
+                        spacing={1}
+                      >
                         <Button
                           size="small"
                           variant="outlined"
@@ -349,7 +365,9 @@ const BookingManagementPage: React.FC = () => {
                           size="small"
                           variant="outlined"
                           startIcon={<RemoveRedEye />}
-                          onClick={() => navigate(`/frontdesk/bookings/${b.id}`)}
+                          onClick={() =>
+                            navigate(`/frontdesk/bookings/${b.id}`)
+                          }
                         >
                           Xem
                         </Button>
@@ -357,6 +375,10 @@ const BookingManagementPage: React.FC = () => {
                           size="small"
                           variant="contained"
                           startIcon={<ReceiptLong />}
+                          disabled={
+                            b.status === EBookingStatus.Pending ||
+                            b.status === EBookingStatus.Cancelled
+                          }
                           onClick={() => {
                             setInvoiceBooking(b as any);
                             setOpenBookingInvoice(true);
@@ -375,21 +397,32 @@ const BookingManagementPage: React.FC = () => {
                           <Stack
                             key={rt.bookingRoomTypeId}
                             spacing={1}
-                            sx={{ p: 1, borderRadius: 1, border: "1px solid #eee" }}
+                            sx={{
+                              p: 1,
+                              borderRadius: 1,
+                              border: "1px solid #eee",
+                            }}
                           >
                             {(() => {
                               const nights = Math.max(
                                 1,
-                                dayjs(rt.endDate).diff(dayjs(rt.startDate), "day")
+                                dayjs(rt.endDate).diff(
+                                  dayjs(rt.startDate),
+                                  "day"
+                                )
                               );
-                              const rooms = rt.totalRoom || rt.bookingRooms?.length || 0;
+                              const rooms =
+                                rt.totalRoom || rt.bookingRooms?.length || 0;
                               const perNight = rt.price || 0;
                               const subtotal = perNight * nights * rooms;
                               return (
                                 <Stack
                                   direction={{ xs: "column", sm: "row" }}
                                   justifyContent="space-between"
-                                  alignItems={{ xs: "flex-start", sm: "center" }}
+                                  alignItems={{
+                                    xs: "flex-start",
+                                    sm: "center",
+                                  }}
                                   spacing={1}
                                 >
                                   <Stack
@@ -399,7 +432,10 @@ const BookingManagementPage: React.FC = () => {
                                     sx={{ minWidth: 260 }}
                                   >
                                     <img
-                                      src={roomTypeImgMap[rt.roomTypeId] || "/assets/logo.png"}
+                                      src={
+                                        roomTypeImgMap[rt.roomTypeId] ||
+                                        "/assets/logo.png"
+                                      }
                                       alt={rt.roomTypeName || "Loại phòng"}
                                       style={{
                                         width: 56,
@@ -414,19 +450,34 @@ const BookingManagementPage: React.FC = () => {
                                         {rt.roomTypeName || "—"}
                                       </Typography>
                                       <Typography color="text.secondary">
-                                        {new Date(rt.startDate).toLocaleDateString()} - {new Date(
+                                        {new Date(
+                                          rt.startDate
+                                        ).toLocaleDateString()}{" "}
+                                        -{" "}
+                                        {new Date(
                                           rt.endDate
-                                        ).toLocaleDateString()} ({nights} đêm)
+                                        ).toLocaleDateString()}{" "}
+                                        ({nights} đêm)
                                       </Typography>
                                       <Typography>Số phòng: {rooms}</Typography>
                                     </Stack>
                                   </Stack>
-                                  <Stack sx={{ ml: "auto", minWidth: 220, textAlign: "right" }}>
-                                    <Typography color="text.secondary">Giá/đêm</Typography>
+                                  <Stack
+                                    sx={{
+                                      ml: "auto",
+                                      minWidth: 220,
+                                      textAlign: "right",
+                                    }}
+                                  >
+                                    <Typography color="text.secondary">
+                                      Giá/đêm
+                                    </Typography>
                                     <Typography fontWeight={700}>
                                       {perNight.toLocaleString()} đ
                                     </Typography>
-                                    <Typography color="text.secondary">Thành tiền</Typography>
+                                    <Typography color="text.secondary">
+                                      Thành tiền
+                                    </Typography>
                                     <Typography fontWeight={700}>
                                       {subtotal.toLocaleString()} đ
                                     </Typography>
@@ -437,7 +488,9 @@ const BookingManagementPage: React.FC = () => {
                           </Stack>
                         ))
                       ) : (
-                        <Typography color="text.secondary">Không có loại phòng</Typography>
+                        <Typography color="text.secondary">
+                          Không có loại phòng
+                        </Typography>
                       )}
                     </Stack>
                     <Stack alignItems="flex-end">
@@ -447,13 +500,17 @@ const BookingManagementPage: React.FC = () => {
                         alignItems={{ xs: "flex-end", sm: "flex-end" }}
                       >
                         <Stack alignItems="flex-end">
-                          <Typography color="text.secondary">Tổng cộng</Typography>
+                          <Typography color="text.secondary">
+                            Tổng cộng
+                          </Typography>
                           <Typography fontWeight={700}>
                             {(b.totalAmount || 0).toLocaleString()} đ
                           </Typography>
                         </Stack>
                         <Stack alignItems="flex-end">
-                          <Typography color="text.secondary">Phụ thu</Typography>
+                          <Typography color="text.secondary">
+                            Phụ thu
+                          </Typography>
                           <Typography fontWeight={700}>
                             {(b.additionalAmount || 0).toLocaleString()} đ
                           </Typography>
@@ -471,7 +528,9 @@ const BookingManagementPage: React.FC = () => {
                           </Typography>
                         </Stack>
                         <Stack alignItems="flex-end">
-                          <Typography color="text.secondary">Còn lại</Typography>
+                          <Typography color="text.secondary">
+                            Còn lại
+                          </Typography>
                           <Typography fontWeight={"bold"}>
                             {(leftAmount || 0).toLocaleString()} đ
                           </Typography>

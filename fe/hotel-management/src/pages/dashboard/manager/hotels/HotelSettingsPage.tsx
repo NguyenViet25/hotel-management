@@ -1,3 +1,4 @@
+import { Save } from "@mui/icons-material";
 import {
   Alert,
   Box,
@@ -9,18 +10,15 @@ import {
   Stack,
   TextField,
 } from "@mui/material";
-import { LocalizationProvider, TimePicker } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { TimePicker } from "@mui/x-date-pickers";
 import dayjs, { Dayjs } from "dayjs";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import hotelService, {
   type HotelDefaultTimesDto,
-  type ItemResponse,
 } from "../../../../api/hotelService";
 import PageTitle from "../../../../components/common/PageTitle";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
-import { Save } from "@mui/icons-material";
 
 const HotelSettingsPage: React.FC = () => {
   const { hotelId } = useStore<StoreState>((s) => s);
@@ -118,22 +116,18 @@ const HotelSettingsPage: React.FC = () => {
           <Card variant="outlined" sx={{ borderRadius: 2 }}>
             <CardContent>
               <Stack spacing={2}>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <TimePicker
-                    label="Giờ check-in mặc định"
-                    value={checkIn}
-                    onChange={(v) => setCheckIn(v)}
-                    slotProps={{ textField: { size: "small" } }}
-                  />
-                </LocalizationProvider>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <TimePicker
-                    label="Giờ check-out mặc định"
-                    value={checkOut}
-                    onChange={(v) => setCheckOut(v)}
-                    slotProps={{ textField: { size: "small" } }}
-                  />
-                </LocalizationProvider>
+                <TimePicker
+                  label="Giờ check-in mặc định"
+                  value={checkIn}
+                  onChange={(v) => setCheckIn(v)}
+                  slotProps={{ textField: { size: "small" } }}
+                />
+                <TimePicker
+                  label="Giờ check-out mặc định"
+                  value={checkOut}
+                  onChange={(v) => setCheckOut(v)}
+                  slotProps={{ textField: { size: "small" } }}
+                />
 
                 <TextField
                   label="Thuế VAT (%)"

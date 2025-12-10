@@ -1,3 +1,4 @@
+import { MonetizationOn } from "@mui/icons-material";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
@@ -10,13 +11,10 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import React from "react";
 import { Controller } from "react-hook-form";
 import type { RoomType } from "../../../../../api/roomTypesApi";
-import { MonetizationOn } from "@mui/icons-material";
 
 type Props = {
   index: number;
@@ -168,68 +166,64 @@ const RoomBookingSection: React.FC<Props> = ({
         />
       </Stack>
       <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <Controller
-            name={`roomTypes.${index}.startDate`}
-            control={control}
-            rules={{ required: true }}
-            render={({ field }) => (
-              <DatePicker
-                label="Từ ngày"
-                value={field.value}
-                onChange={(date) => {
-                  field.onChange(date);
-                  setReloadCount((prev) => prev + 1);
-                }}
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                    error: !!errors?.roomTypes?.[index]?.startDate,
-                    helperText: errors?.roomTypes?.[index]?.startDate?.message,
-                    InputProps: {
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <CalendarTodayIcon fontSize="small" />
-                        </InputAdornment>
-                      ),
-                    },
+        <Controller
+          name={`roomTypes.${index}.startDate`}
+          control={control}
+          rules={{ required: true }}
+          render={({ field }) => (
+            <DatePicker
+              label="Từ ngày"
+              value={field.value}
+              onChange={(date) => {
+                field.onChange(date);
+                setReloadCount((prev) => prev + 1);
+              }}
+              slotProps={{
+                textField: {
+                  fullWidth: true,
+                  error: !!errors?.roomTypes?.[index]?.startDate,
+                  helperText: errors?.roomTypes?.[index]?.startDate?.message,
+                  InputProps: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <CalendarTodayIcon fontSize="small" />
+                      </InputAdornment>
+                    ),
                   },
-                }}
-              />
-            )}
-          />
-        </LocalizationProvider>
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <Controller
-            name={`roomTypes.${index}.endDate`}
-            control={control}
-            rules={{ required: true }}
-            render={({ field }) => (
-              <DatePicker
-                label="Đến ngày"
-                value={field.value}
-                onChange={(date) => {
-                  field.onChange(date);
-                  setReloadCount((prev) => prev + 1);
-                }}
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                    error: !!errors?.roomTypes?.[index]?.endDate,
-                    helperText: errors?.roomTypes?.[index]?.endDate?.message,
-                    InputProps: {
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <CalendarTodayIcon fontSize="small" />
-                        </InputAdornment>
-                      ),
-                    },
+                },
+              }}
+            />
+          )}
+        />
+        <Controller
+          name={`roomTypes.${index}.endDate`}
+          control={control}
+          rules={{ required: true }}
+          render={({ field }) => (
+            <DatePicker
+              label="Đến ngày"
+              value={field.value}
+              onChange={(date) => {
+                field.onChange(date);
+                setReloadCount((prev) => prev + 1);
+              }}
+              slotProps={{
+                textField: {
+                  fullWidth: true,
+                  error: !!errors?.roomTypes?.[index]?.endDate,
+                  helperText: errors?.roomTypes?.[index]?.endDate?.message,
+                  InputProps: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <CalendarTodayIcon fontSize="small" />
+                      </InputAdornment>
+                    ),
                   },
-                }}
-              />
-            )}
-          />
-        </LocalizationProvider>
+                },
+              }}
+            />
+          )}
+        />
       </Stack>
     </Stack>
   );

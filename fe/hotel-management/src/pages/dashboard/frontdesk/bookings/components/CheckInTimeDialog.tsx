@@ -1,4 +1,3 @@
-import { useEffect, useMemo, useState } from "react";
 import {
   Button,
   Chip,
@@ -9,9 +8,9 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DateTimePicker } from "@mui/x-date-pickers";
 import dayjs, { Dayjs } from "dayjs";
+import { useEffect, useMemo, useState } from "react";
 
 type Props = {
   open: boolean;
@@ -103,17 +102,15 @@ export default function CheckInTimeDialog({
               />
             </Stack>
           ) : null}
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateTimePicker
-              label="Thời gian check-in"
-              value={value}
-              maxDate={
-                displayScheduledEnd ||
-                (scheduledEnd ? dayjs(scheduledEnd) : undefined)
-              }
-              onChange={(v) => v && setValue(v)}
-            />
-          </LocalizationProvider>
+          <DateTimePicker
+            label="Thời gian check-in"
+            value={value}
+            maxDate={
+              displayScheduledEnd ||
+              (scheduledEnd ? dayjs(scheduledEnd) : undefined)
+            }
+            onChange={(v) => v && setValue(v)}
+          />
           <Stack direction="row" spacing={1} alignItems="center">
             <Chip
               color={isEarly ? "warning" : "success"}

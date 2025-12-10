@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import {
   Button,
   Dialog,
@@ -6,12 +5,11 @@ import {
   DialogContent,
   DialogTitle,
   Stack,
-  TextField,
   Typography,
 } from "@mui/material";
-import { LocalizationProvider, DateTimePicker } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DateTimePicker } from "@mui/x-date-pickers";
 import dayjs, { Dayjs } from "dayjs";
+import { useEffect, useState } from "react";
 
 type Props = {
   open: boolean;
@@ -49,20 +47,18 @@ export default function ExtendStayDialog({
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle>Gia hạn thời gian ở</DialogTitle>
       <DialogContent>
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <Stack spacing={2} sx={{ mt: 1 }}>
-            <DateTimePicker
-              label="Kết thúc mới"
-              value={value}
-              onChange={(v) => v && setValue(v)}
-            />
-            {error && (
-              <Typography variant="caption" color="error">
-                * {error}
-              </Typography>
-            )}
-          </Stack>
-        </LocalizationProvider>
+        <Stack spacing={2} sx={{ mt: 1 }}>
+          <DateTimePicker
+            label="Kết thúc mới"
+            value={value}
+            onChange={(v) => v && setValue(v)}
+          />
+          {error && (
+            <Typography variant="caption" color="error">
+              * {error}
+            </Typography>
+          )}
+        </Stack>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Hủy</Button>

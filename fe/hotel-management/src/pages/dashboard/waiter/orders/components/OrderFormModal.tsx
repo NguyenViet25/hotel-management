@@ -24,11 +24,11 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DateTimePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 import React, { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { toast } from "react-toastify";
 import { z } from "zod";
 import type { BookingDetailsDto } from "../../../../../api/bookingsApi";
 import bookingsApi from "../../../../../api/bookingsApi";
@@ -38,7 +38,6 @@ import ordersApi, {
   type OrderDetailsDto,
 } from "../../../../../api/ordersApi";
 import CustomSelect from "../../../../../components/common/CustomSelect";
-import { toast } from "react-toastify";
 
 interface IProps {
   open: boolean;
@@ -323,31 +322,29 @@ const OrderFormModal: React.FC<IProps> = ({
             />
           )}
           <Stack spacing={2}>
-            <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="vi">
-              <Controller
-                name="orderDate"
-                control={control}
-                render={({ field }) => (
-                  <DateTimePicker
-                    label="Thời gian phục vụ"
-                    value={field.value ? dayjs(field.value) : null}
-                    onChange={(v) =>
-                      field.onChange(v ? v.toISOString() : undefined)
-                    }
-                    slotProps={{
-                      textField: {
-                        fullWidth: true,
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <AccessTime color="primary" />
-                          </InputAdornment>
-                        ),
-                      },
-                    }}
-                  />
-                )}
-              />
-            </LocalizationProvider>
+            <Controller
+              name="orderDate"
+              control={control}
+              render={({ field }) => (
+                <DateTimePicker
+                  label="Thời gian phục vụ"
+                  value={field.value ? dayjs(field.value) : null}
+                  onChange={(v) =>
+                    field.onChange(v ? v.toISOString() : undefined)
+                  }
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <AccessTime color="primary" />
+                        </InputAdornment>
+                      ),
+                    },
+                  }}
+                />
+              )}
+            />
             {isWalkIn && (
               <>
                 <Controller

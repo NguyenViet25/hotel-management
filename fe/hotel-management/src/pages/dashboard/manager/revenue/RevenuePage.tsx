@@ -10,9 +10,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import dayjs, { Dayjs } from "dayjs";
 import React, { useEffect, useMemo, useState } from "react";
 import {
@@ -146,42 +144,40 @@ const RevenuePage: React.FC = () => {
           Biểu đồ doanh thu
         </Typography>
 
-        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="vi">
-          <Stack spacing={2} direction={{ xs: "column", lg: "row" }}>
-            <TextField
-              select
-              label="Phân nhóm"
-              value={granularity}
-              onChange={(e) => setGranularity(e.target.value as any)}
-              fullWidth
-              size="small"
-              sx={{ width: { xs: "100%", lg: 180 } }}
-            >
-              <MenuItem value="day">Theo ngày</MenuItem>
-              <MenuItem value="month">Theo tháng</MenuItem>
-            </TextField>
-            <DatePicker
-              label="Từ ngày"
-              value={from}
-              onChange={(v) => v && setFrom(v)}
-              slotProps={{
-                textField: {
-                  size: "small",
-                },
-              }}
-            />
-            <DatePicker
-              label="Đến ngày"
-              value={to}
-              onChange={(v) => v && setTo(v)}
-              slotProps={{
-                textField: {
-                  size: "small",
-                },
-              }}
-            />
-          </Stack>
-        </LocalizationProvider>
+        <Stack spacing={2} direction={{ xs: "column", lg: "row" }}>
+          <TextField
+            select
+            label="Phân nhóm"
+            value={granularity}
+            onChange={(e) => setGranularity(e.target.value as any)}
+            fullWidth
+            size="small"
+            sx={{ width: { xs: "100%", lg: 180 } }}
+          >
+            <MenuItem value="day">Theo ngày</MenuItem>
+            <MenuItem value="month">Theo tháng</MenuItem>
+          </TextField>
+          <DatePicker
+            label="Từ ngày"
+            value={from}
+            onChange={(v) => v && setFrom(v)}
+            slotProps={{
+              textField: {
+                size: "small",
+              },
+            }}
+          />
+          <DatePicker
+            label="Đến ngày"
+            value={to}
+            onChange={(v) => v && setTo(v)}
+            slotProps={{
+              textField: {
+                size: "small",
+              },
+            }}
+          />
+        </Stack>
         {chartData.length > 0 ? (
           <Box sx={{ height: 320 }} mt={2}>
             <ResponsiveContainer width="100%" height="100%">
@@ -222,34 +218,32 @@ const RevenuePage: React.FC = () => {
           Doanh thu theo danh mục
         </Typography>
         <Box>
-          <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="vi">
-            <Stack
-              spacing={2}
-              direction={{ xs: "column", sm: "row" }}
-              sx={{ mb: 1 }}
-            >
-              <DatePicker
-                label="Từ ngày (lọc)"
-                value={catFrom}
-                onChange={(v) => v && setCatFrom(v)}
-                slotProps={{
-                  textField: {
-                    size: "small",
-                  },
-                }}
-              />
-              <DatePicker
-                label="Đến ngày (lọc)"
-                value={catTo}
-                onChange={(v) => v && setCatTo(v)}
-                slotProps={{
-                  textField: {
-                    size: "small",
-                  },
-                }}
-              />
-            </Stack>
-          </LocalizationProvider>
+          <Stack
+            spacing={2}
+            direction={{ xs: "column", sm: "row" }}
+            sx={{ mb: 1 }}
+          >
+            <DatePicker
+              label="Từ ngày (lọc)"
+              value={catFrom}
+              onChange={(v) => v && setCatFrom(v)}
+              slotProps={{
+                textField: {
+                  size: "small",
+                },
+              }}
+            />
+            <DatePicker
+              label="Đến ngày (lọc)"
+              value={catTo}
+              onChange={(v) => v && setCatTo(v)}
+              slotProps={{
+                textField: {
+                  size: "small",
+                },
+              }}
+            />
+          </Stack>
           <Stack spacing={1}>
             <Stack
               direction="row"
