@@ -19,7 +19,7 @@ public static class EmailTemplates
         var name = WebUtility.HtmlEncode(displayName ?? "");
         var subject = "Đặt lại mật khẩu";
         var html = $"<p>Xin chào {name},</p>";
-        var text = $"Mật khẩu mới của bạn là: {newPassword}";
+        var text = $"Chúng tôi đã tạo mới mật khẩu cho tài khoản của bạn.\nMật khẩu của bạn là: {newPassword}.\nVui lòng đổi mật khẩu ngay sau khi đăng nhập.";
 
         return (subject, html, text);
     }

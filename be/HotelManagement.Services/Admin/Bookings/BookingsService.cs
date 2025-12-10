@@ -1176,6 +1176,7 @@ public class BookingsService(
             guest.Email = dto.Email ?? guest.Email;
             guest.IdCardFrontImageUrl = dto.IdCardFrontImageUrl ?? guest.IdCardFrontImageUrl;
             guest.IdCardBackImageUrl = dto.IdCardBackImageUrl ?? guest.IdCardBackImageUrl;
+            guest.IdCard = dto.IdCard ?? "";
 
             await _guestRepo.UpdateAsync(guest);
             await _guestRepo.SaveChangesAsync();

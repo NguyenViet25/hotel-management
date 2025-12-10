@@ -120,10 +120,7 @@ public class DiningSessionController : ControllerBase
     public async Task<IActionResult> AssignOrder(Guid id, Guid orderId)
     {
         var response = await _diningSessionService.AssignOrderAsync(id, orderId);
-        if (!response.IsSuccess)
-        {
-            return BadRequest(response);
-        }
+     
         return Ok(response);
     }
 
