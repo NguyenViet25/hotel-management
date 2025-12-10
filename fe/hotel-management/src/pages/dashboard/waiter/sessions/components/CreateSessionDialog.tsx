@@ -13,6 +13,7 @@ import diningSessionsApi, {
   type DiningSessionDto,
 } from "../../../../../api/diningSessionsApi";
 import { useStore, type StoreState } from "../../../../../hooks/useStore";
+import dayjs from "dayjs";
 // no table selection at creation time
 
 interface Props {
@@ -55,7 +56,7 @@ export default function CreateSessionDialog({
       hotelId,
       // no tableId at creation
       waiterUserId: user?.id,
-      startedAt: new Date(startedAt).toISOString(),
+      startedAt: dayjs(startedAt).format("YYYY-MM-DDTHH:mm:ss"),
       notes: notes || undefined,
       totalGuests: totalGuests || undefined,
     };

@@ -4,6 +4,15 @@ export const getExactVNDate = (date: string) => {
   return dayjs(date.split("T")[0]).format("YYYY-MM-DD");
 };
 
+export function toLocalIso(
+  date?: Date | dayjs.Dayjs | null
+): string | undefined {
+  if (!date) return undefined;
+  const d = dayjs(date);
+  if (!d.isValid()) return undefined;
+  return d.format("YYYY-MM-DDTHH:mm:ss");
+}
+
 export function formatDateTime(dateString: string | undefined): string {
   if (dateString === undefined) return "";
   const date = new Date(dateString!);

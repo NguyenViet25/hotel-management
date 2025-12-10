@@ -120,13 +120,13 @@ const AuditLogs: React.FC = () => {
     };
 
     if (fromDate) {
-      newFilters.from = fromDate.toISOString();
+      newFilters.from = fromDate.format("YYYY-MM-DDTHH:mm:ss");
     } else {
       delete newFilters.from;
     }
 
     if (toDate) {
-      newFilters.to = toDate.toISOString();
+      newFilters.to = toDate.format("YYYY-MM-DDTHH:mm:ss");
     } else {
       delete newFilters.to;
     }

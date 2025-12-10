@@ -71,15 +71,15 @@ const RevenuePage: React.FC = () => {
     try {
       const res = await revenueApi.getRevenue({
         hotelId,
-        fromDate: from.startOf("day").toISOString(),
-        toDate: to.endOf("day").toISOString(),
+        fromDate: from.startOf("day").format("YYYY-MM-DDTHH:mm:ss"),
+        toDate: to.endOf("day").format("YYYY-MM-DDTHH:mm:ss"),
         granularity,
       });
       if (res.isSuccess) setStats(res.data);
       const br = await revenueApi.getBreakdown({
         hotelId,
-        fromDate: from.startOf("day").toISOString(),
-        toDate: to.endOf("day").toISOString(),
+        fromDate: from.startOf("day").format("YYYY-MM-DDTHH:mm:ss"),
+        toDate: to.endOf("day").format("YYYY-MM-DDTHH:mm:ss"),
         granularity,
       });
       if (br.isSuccess) setBreakdown(br.data);
@@ -104,8 +104,8 @@ const RevenuePage: React.FC = () => {
       if (!hotelId || !catFrom || !catTo) return;
       const res = await revenueApi.getBreakdown({
         hotelId,
-        fromDate: catFrom.startOf("day").toISOString(),
-        toDate: catTo.endOf("day").toISOString(),
+        fromDate: catFrom.startOf("day").format("YYYY-MM-DDTHH:mm:ss"),
+        toDate: catTo.endOf("day").format("YYYY-MM-DDTHH:mm:ss"),
         granularity,
       });
       if (res.isSuccess) setCatBreakdown(res.data);
@@ -259,8 +259,10 @@ const RevenuePage: React.FC = () => {
                   onClick={async () => {
                     const res = await revenueApi.getDetails({
                       hotelId: hotelId || "",
-                      fromDate: catFrom.startOf("day").toISOString(),
-                      toDate: catTo.endOf("day").toISOString(),
+                      fromDate: catFrom
+                        .startOf("day")
+                        .format("YYYY-MM-DDTHH:mm:ss"),
+                      toDate: catTo.endOf("day").format("YYYY-MM-DDTHH:mm:ss"),
                       sourceType: 0,
                     });
                     if (res.isSuccess) {
@@ -291,8 +293,10 @@ const RevenuePage: React.FC = () => {
                   onClick={async () => {
                     const res = await revenueApi.getDetails({
                       hotelId: hotelId || "",
-                      fromDate: catFrom.startOf("day").toISOString(),
-                      toDate: catTo.endOf("day").toISOString(),
+                      fromDate: catFrom
+                        .startOf("day")
+                        .format("YYYY-MM-DDTHH:mm:ss"),
+                      toDate: catTo.endOf("day").format("YYYY-MM-DDTHH:mm:ss"),
                       sourceType: 1,
                     });
                     if (res.isSuccess) {

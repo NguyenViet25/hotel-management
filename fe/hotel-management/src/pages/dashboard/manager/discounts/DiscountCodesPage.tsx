@@ -140,8 +140,8 @@ const DiscountCodesPage = () => {
       scope: values.scope,
       value: Number(values.value),
       isActive: values.isActive,
-      startDate: values.startDate!.toISOString(),
-      endDate: values.endDate!.toISOString(),
+      startDate: values.startDate!.format("YYYY-MM-DDTHH:mm:ss"),
+      endDate: values.endDate!.format("YYYY-MM-DDTHH:mm:ss"),
     };
 
     try {

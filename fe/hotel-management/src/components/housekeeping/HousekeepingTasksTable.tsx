@@ -15,6 +15,7 @@ import { type HousekeepingTaskDto } from "../../api/housekeepingTasksApi";
 import bookingsApi, { type BookingIntervalDto } from "../../api/bookingsApi";
 import React, { useState } from "react";
 import { Info } from "@mui/icons-material";
+import dayjs from "dayjs";
 
 type Props = {
   title?: string;
@@ -41,8 +42,8 @@ export default function HousekeepingTasksTable({
       to.setHours(23, 59, 59, 999);
       const schedRes = await bookingsApi.roomSchedule(
         t.roomId,
-        from.toISOString(),
-        to.toISOString()
+        dayjs(from).format("YYYY-MM-DDTHH:mm:ss"),
+        dayjs(to).format("YYYY-MM-DDTHH:mm:ss")
       );
       const intervals = (schedRes.data || []) as BookingIntervalDto[];
       setMinibarBookingId(intervals[0]?.bookingId || "");

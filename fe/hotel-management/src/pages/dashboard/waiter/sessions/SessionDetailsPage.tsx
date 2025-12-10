@@ -262,7 +262,9 @@ export default function SessionDetailsPage() {
       const res = await diningSessionsApi.updateSession(id, {
         notes: editNotes,
         totalGuests: editGuests,
-        startedAt: editStartedAt ? editStartedAt.toISOString() : undefined,
+        startedAt: editStartedAt
+          ? editStartedAt.format("YYYY-MM-DDTHH:mm:ss")
+          : undefined,
       });
       if (res.isSuccess) {
         toast.success("Đã cập nhật phiên");

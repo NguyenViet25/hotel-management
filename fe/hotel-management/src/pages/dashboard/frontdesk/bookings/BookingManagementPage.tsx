@@ -108,8 +108,12 @@ const BookingManagementPage: React.FC = () => {
         const baseQuery: BookingsQueryDto = {
           hotelId: hotelId || undefined,
           status: status === " " ? undefined : (status as BookingStatus),
-          startDate: fromDate ? fromDate.toDate().toISOString() : undefined,
-          endDate: toDate ? toDate.toDate().toISOString() : undefined,
+          startDate: fromDate
+            ? fromDate.format("YYYY-MM-DDTHH:mm:ss")
+            : undefined,
+          endDate: toDate
+            ? toDate.format("YYYY-MM-DDTHH:mm:ss")
+            : undefined,
           guestName: guestName || undefined,
           roomNumber: roomNumber || undefined,
           sortBy: "createdAt",

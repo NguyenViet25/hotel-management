@@ -65,7 +65,7 @@ export default function ExtendStayDialog({
         <Button
           variant="contained"
           onClick={async () => {
-            await onConfirm(value.toISOString());
+            await onConfirm(value.format("YYYY-MM-DDTHH:mm:ss"));
           }}
           disabled={!!error}
         >

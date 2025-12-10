@@ -22,6 +22,7 @@ import {
   Typography,
 } from "@mui/material";
 import React, { useEffect, useMemo, useState } from "react";
+import dayjs from "dayjs";
 import bookingsApi, { type BookingIntervalDto } from "../../../api/bookingsApi";
 import housekeepingApi from "../../../api/housekeepingApi";
 import housekeepingTasksApi, {
@@ -206,8 +207,8 @@ export default function RoomNeedCleaningPage() {
       todayEnd.setHours(23, 59, 59, 999);
       const schedRes = await bookingsApi.roomSchedule(
         room.id,
-        todayStart.toISOString(),
-        todayEnd.toISOString()
+        dayjs(todayStart).format("YYYY-MM-DDTHH:mm:ss"),
+        dayjs(todayEnd).format("YYYY-MM-DDTHH:mm:ss")
       );
       const intervals = (schedRes.data || []) as BookingIntervalDto[];
       return intervals[0]?.bookingId || "";

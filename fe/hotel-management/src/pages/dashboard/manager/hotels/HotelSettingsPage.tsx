@@ -19,6 +19,7 @@ import hotelService, {
 } from "../../../../api/hotelService";
 import PageTitle from "../../../../components/common/PageTitle";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
+import { toLocalIso } from "../../../../utils/date-helper";
 
 const HotelSettingsPage: React.FC = () => {
   const { hotelId } = useStore<StoreState>((s) => s);
@@ -77,8 +78,8 @@ const HotelSettingsPage: React.FC = () => {
     try {
       if (!hotelId) return;
       const payload: HotelDefaultTimesDto = {
-        defaultCheckInTime: checkIn ? checkIn.toISOString() : null,
-        defaultCheckOutTime: checkOut ? checkOut.toISOString() : null,
+        defaultCheckInTime: toLocalIso(checkIn) || null,
+        defaultCheckOutTime: toLocalIso(checkOut) || null,
       };
       const res = await hotelService.updateDefaultTimes(hotelId, payload);
       if (!res.isSuccess) {

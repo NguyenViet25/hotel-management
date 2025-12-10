@@ -74,8 +74,8 @@ const AdminDashboardPage: React.FC = () => {
       try {
         const res = await dashboardApi.getAdminRevenue({
           hotelId: hotelId || undefined,
-          fromDate: from.startOf("day").toISOString(),
-          toDate: to.endOf("day").toISOString(),
+          fromDate: from.startOf("day").format("YYYY-MM-DDTHH:mm:ss"),
+          toDate: to.endOf("day").format("YYYY-MM-DDTHH:mm:ss"),
           granularity,
         });
         if (res.isSuccess) setRevStats(res.data);

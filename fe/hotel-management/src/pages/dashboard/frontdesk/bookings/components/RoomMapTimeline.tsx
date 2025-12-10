@@ -54,8 +54,8 @@ const RoomMapTimeline: React.FC<Props> = ({
         for (const r of roomList) {
           const res = await bookingsApi.roomSchedule(
             r.id,
-            from.toISOString(),
-            to.toISOString()
+            from.format("YYYY-MM-DDTHH:mm:ss"),
+            to.format("YYYY-MM-DDTHH:mm:ss")
           );
           sched[r.id] = (res as any).data || [];
         }
@@ -115,14 +115,14 @@ const RoomMapTimeline: React.FC<Props> = ({
                 if (intervals.length === 0) {
                   return (
                     <Box
-                      key={`${room.id}-${d.toISOString()}`}
+                      key={`${room.id}-${d.format("YYYY-MM-DDTHH:mm:ss")}`}
                       sx={{ width: 120, height: 36 }}
                     />
                   );
                 }
                 return (
                   <Box
-                    key={`${room.id}-${d.toISOString()}`}
+                    key={`${room.id}-${d.format("YYYY-MM-DDTHH:mm:ss")}`}
                     sx={{ width: 120, height: 36, position: "relative" }}
                   >
                     {intervals.map((i) => (

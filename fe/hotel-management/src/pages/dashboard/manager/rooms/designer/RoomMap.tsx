@@ -272,8 +272,8 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
   };
 
   const loadOccupancyCounts = async (targetRooms: RoomDto[]) => {
-    const todayStart = dayjs().startOf("day").toISOString();
-    const todayEnd = dayjs().endOf("day").toISOString();
+    const todayStart = dayjs().startOf("day").format("YYYY-MM-DDTHH:mm:ss");
+    const todayEnd = dayjs().endOf("day").format("YYYY-MM-DDTHH:mm:ss");
     const updates: Record<string, number> = {};
     const loadingMap: Record<string, boolean> = {};
     for (const r of targetRooms) {
@@ -326,8 +326,8 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
     try {
       const histRes = await bookingsApi.roomHistory(
         room.id,
-        defaultFrom.toISOString(),
-        defaultTo.toISOString()
+        defaultFrom.format("YYYY-MM-DDTHH:mm:ss"),
+        defaultTo.format("YYYY-MM-DDTHH:mm:ss")
       );
       const hist = (histRes.data || []) as RoomStayHistoryDto[];
       setOccupancyHistory(hist);
@@ -357,8 +357,8 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
       const { start, end } = getWeekRange(date);
       const res = await bookingsApi.roomHistory(
         occupancyRoom.id,
-        start.startOf("day").toISOString(),
-        end.endOf("day").toISOString()
+        start.startOf("day").format("YYYY-MM-DDTHH:mm:ss"),
+        end.endOf("day").format("YYYY-MM-DDTHH:mm:ss")
       );
       const hist = (res.data || []) as RoomStayHistoryDto[];
       setOccupancyHistory(hist);

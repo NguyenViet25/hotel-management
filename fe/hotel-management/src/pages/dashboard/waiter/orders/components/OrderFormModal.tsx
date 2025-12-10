@@ -98,7 +98,8 @@ const OrderFormModal: React.FC<IProps> = ({
       items: initialValues?.items || [],
       status: initialValues?.status || 1,
       guests: initialValues?.guests || 1,
-      orderDate: initialValues?.servingDate || dayjs().toISOString(),
+      orderDate:
+        initialValues?.servingDate || dayjs().format("YYYY-MM-DDTHH:mm:ss"),
     },
   });
 
@@ -181,7 +182,8 @@ const OrderFormModal: React.FC<IProps> = ({
       bookingId: values.bookingId || undefined,
       notes: values.notes,
       guests: values.guests || 1,
-      servingDate: values.orderDate || dayjs().toISOString(),
+      servingDate:
+        values.orderDate || dayjs().format("YYYY-MM-DDTHH:mm:ss"),
       status: Number(values.status || "1"),
     };
     try {
@@ -233,7 +235,10 @@ const OrderFormModal: React.FC<IProps> = ({
       setValue("status", initialValues.status || 1);
       setValue("guests", initialValues.guests || 1);
       setValue("items", initialValues.items || []);
-      setValue("orderDate", initialValues.createdAt || dayjs().toISOString());
+      setValue(
+        "orderDate",
+        initialValues.createdAt || dayjs().format("YYYY-MM-DDTHH:mm:ss")
+      );
     }
   }, [initialValues, setValue]);
 
@@ -330,7 +335,9 @@ const OrderFormModal: React.FC<IProps> = ({
                   label="Thời gian phục vụ"
                   value={field.value ? dayjs(field.value) : null}
                   onChange={(v) =>
-                    field.onChange(v ? v.toISOString() : undefined)
+                    field.onChange(
+                      v ? v.format("YYYY-MM-DDTHH:mm:ss") : undefined
+                    )
                   }
                   slotProps={{
                     textField: {

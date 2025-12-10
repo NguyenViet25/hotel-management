@@ -68,7 +68,7 @@ const ChangeStatusModal: React.FC<ChangeStatusModalProps> = ({
       const statusRequest = {
         action: data.action,
         reason: data.reason,
-        until: data.until ? data.until.toISOString() : undefined,
+        until: data.until ? dayjs(data.until).format("YYYY-MM-DDTHH:mm:ss") : undefined,
       };
 
       const result = await changeHotelStatus(hotel.id, statusRequest);

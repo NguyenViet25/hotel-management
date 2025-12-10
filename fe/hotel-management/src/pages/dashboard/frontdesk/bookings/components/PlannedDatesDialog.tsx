@@ -85,7 +85,12 @@ export default function PlannedDatesDialog({
         <Button onClick={onClose}>Hủy</Button>
         <Button
           variant="contained"
-          onClick={() => onConfirm(start.toISOString(), end.toISOString())}
+          onClick={() =>
+            onConfirm(
+              start.format("YYYY-MM-DDTHH:mm:ss"),
+              end.format("YYYY-MM-DDTHH:mm:ss")
+            )
+          }
           disabled={!!error}
         >
           Xác nhận
