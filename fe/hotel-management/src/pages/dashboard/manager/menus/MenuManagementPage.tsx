@@ -242,7 +242,8 @@ const MenuManagementPage: React.FC = () => {
       foodItems.filter(
         (it) =>
           !categoryFilter.trim() ||
-          (it.category || "") === categoryFilter.trim()
+          (it.category || "").toUpperCase() ===
+            categoryFilter.trim().toUpperCase()
       ),
     [foodItems, categoryFilter]
   );
@@ -309,12 +310,11 @@ const MenuManagementPage: React.FC = () => {
             sx={{ minWidth: 200 }}
           >
             <MenuItem value=" ">Tất cả</MenuItem>
-            <MenuItem value="Món khai vị">Món khai vị</MenuItem>
-            <MenuItem value="Món chính">Món chính</MenuItem>
-            <MenuItem value="Món lẩu">Món lẩu</MenuItem>
-            <MenuItem value="Món nướng">Món nướng</MenuItem>
-            <MenuItem value="Món tráng miệng">Món tráng miệng</MenuItem>
-            <MenuItem value="Thức uống">Thức uống</MenuItem>
+            {FOOD_CATEGORY_VALUES.map((val) => (
+              <MenuItem key={val} value={val}>
+                {capitalizeWords(val)}
+              </MenuItem>
+            ))}
           </TextField>
         )}
         <TextField
@@ -333,7 +333,7 @@ const MenuManagementPage: React.FC = () => {
           size="small"
           value={searchTerm}
           placeholder="Tìm kiếm món"
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) => setSearchTerm(e.target.value.toUpperCase())}
           fullWidth
           InputProps={{
             startAdornment: (
@@ -705,3 +705,41 @@ const MenuManagementPage: React.FC = () => {
 };
 
 export default MenuManagementPage;
+const FOOD_CATEGORY_VALUES: string[] = [
+  "NGAO",
+  "HÀU",
+  "SÒ LÔNG",
+  "BỀ BỀ",
+  "SAM",
+  "MÓNG TAY",
+  "TRAI",
+  "TÔM HÙM",
+  "TÔM",
+  "CUA GẠCH - CUA THỊT",
+  "RẮN BIỂN",
+  "NEM",
+  "SÚP KHAI VỊ",
+  "GÀ",
+  "THỊT LỢN",
+  "THỊT BÒ",
+  "LƯƠN",
+  "CÁ GIÒ",
+  "RAU",
+  "CANH - CƠM",
+  "GHẸ",
+  "CÁ THU",
+  "CÁ NỤC",
+  "MỰC TƯƠI",
+  "ỐC HƯƠNG",
+  "TU HÀI",
+  "SỨA",
+  "CÁ MÚ",
+  "CÁ SỦ",
+];
+
+const capitalizeWords = (s: string) =>
+  s
+    .toLowerCase()
+    .split(" ")
+    .map((w) => (w ? w[0].toUpperCase() + w.slice(1) : w))
+    .join(" ");
