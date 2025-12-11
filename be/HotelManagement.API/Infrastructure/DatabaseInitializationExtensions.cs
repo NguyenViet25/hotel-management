@@ -547,73 +547,69 @@ public static class DatabaseInitializationExtensions
 
     public static async Task SeedMenuSetsAsync(DbContext dbContext)
     {
-        var hotelId = DEFAULT_HOTEL_ID;
-        bool setsExist = await dbContext.Set<MenuItem>()
-            .AnyAsync(mi => mi.HotelId == hotelId && mi.Category == "Set");
-        if (setsExist) return;
+        var hotels = await dbContext.Set<Hotel>().ToListAsync();
 
-        var set1 = string.Join("\n", new[]
+        var s200_1 = string.Join("\n", new[] { "Tôm chao dầu", "Mực xào cần tỏi", "Cá biển sốt cà chua", "Hàu nướng mỡ hành", "Ngô chiên", "Rau theo mùa", "Canh theo ngày", "Cơm trắng", "Cà pháo" });
+        var s200_2 = string.Join("\n", new[] { "Tôm nướng mọi", "Mực nhảy hấp", "Cá rim tiêu", "Sò xào măng", "Khoai chiên", "Rau theo mùa", "Canh theo ngày", "Cơm trắng", "Cà pháo" });
+        var s200_3 = string.Join("\n", new[] { "Tôm rang muối", "Mực chiên bơ", "Gà rang gừng", "Móng tay xào răm", "Trứng rán", "Rau theo mùa", "Canh theo ngày", "Cơm trắng", "Cà pháo" });
+        var s200_4 = string.Join("\n", new[] { "Móng tay rang me", "Mực chiên lá lốt", "Nộm sứa", "Ngao nướng mỡ hành", "Thịt chưng mắm tép", "Rau theo mùa", "Canh theo ngày", "Cơm trắng", "Cà pháo" });
+
+        var s250_1 = string.Join("\n", new[] { "Ngô chiên bơ", "Mực ống xào thập cẩm", "Tôm rang muối", "Hàu nướng mỡ hành", "Cá thu sốt", "Sò xào măng", "Rau muống xào tỏi", "Canh ngao", "Cơm trắng, Cà pháo", "Tráng miệng" });
+        var s250_2 = string.Join("\n", new[] { "Khoai lang chiên", "Gà hấp lá chanh", "Cá nướng giấy bạc", "Tôm hấp sả", "Lươn xào rua ngố", "Thịt chưng mắm tép", "Bắp cải luộc chấm trứng", "Canh ngao chua", "Cơm trắng, Cà pháo", "Tráng miệng" });
+        var s250_3 = string.Join("\n", new[] { "Khoai lang kén", "Mực nhảy", "Tôm chiên giòn", "Móng tay sốt me", "Cá chim rim tiêu", "Trứng đúc thịt", "Rau cải canh xào", "Canh cua đồng", "Cơm trắng, Cà pháo", "Tráng miệng" });
+        var s250_4 = string.Join("\n", new[] { "Ngô chiên bơ", "Bề bề chiên chanh", "Nem hải sản", "Mực nhảy hấp lá lốt", "Cá biển kho tộ", "Vịt rang sả", "Rau muống luộc", "Canh cà chua dọc mùng", "Cơm trắng, Cà pháo", "Tráng miệng" });
+
+        var s300_1 = string.Join("\n", new[] { "Mực hấp lá ổi", "Tôm nướng mọi", "Hàu nướng mỡ hành", "Cá song hấp xì dầu", "Bề bề rang muối", "Lặc lày luộc chấm muối vừng", "Canh ngao chua", "Cơm trắng + cà pháo", "Tráng miệng" });
+        var s300_2 = string.Join("\n", new[] { "Ghẹ hấp", "Tôm chao dầu", "Mực chiên bơ", "Sò nướng mỡ hành", "Cá thu sốt cà chua", "Thịt ba chỉ rang cháy cạnh", "Rau muống xào tỏi", "Canh cua + cà", "Cơm tám", "Tráng miệng" });
+        var s300_3 = string.Join("\n", new[] { "Tôm chiên giòn", "Mực trứng hấp", "Bề bề rang me", "Cá nục kho tộ", "Sò lông nướng mỡ hành", "Gà luộc lá chanh", "Ngọn su su xào tỏi", "Canh chua thịt nạc", "Cơm tám + cà pháo", "Tráng miệng" });
+        var s300_4 = string.Join("\n", new[] { "Nộm sứa", "Mực tươi xào cần tỏi", "Tôm hấp sả", "Hàu gỏi chanh", "Cá biển rán giòn", "Thịt chân giò luộc", "Rau cải luộc", "Canh ngao chua", "Cơm tám + cà pháo", "Tráng miệng" });
+
+        var s350_1 = string.Join("\n", new[] { "Ghẹ hấp", "Mực chiên bơ", "Cá sủ hấp xì dầu", "Tôm hấp bia", "Sò nướng mỡ hành", "Canh cua đồng", "Rau theo mùa", "Cơm trắng", "Cà pháo", "Tráng miệng" });
+        var s350_2 = string.Join("\n", new[] { "Bề bề hấp", "Mực xào cần tỏi", "Cá bọc bạc nướng", "Gà rang gừng", "Hàu nướng mỡ hành", "Nộm sứa", "Canh cua đồng", "Rau theo mùa", "Cơm trắng, Cà pháo", "Tráng miệng" });
+        var s350_3 = string.Join("\n", new[] { "Ốc hương hấp", "Mực trứng hấp", "Cá biển chiên giòn", "Tôm chao dầu", "Ngao to nướng mỡ hành", "Canh cá chua", "Rau theo mùa", "Cơm tám", "Cà pháo", "Tráng miệng" });
+        var s350_4 = string.Join("\n", new[] { "Bề bề rang muối", "Mực trứng nướng", "Tôm chiên giòn", "Cá nướng mọi", "Sò xào măng", "Thịt ba chỉ rang", "Rau theo mùa", "Canh thịt chua", "Cơm trắng, Cà pháo", "Tráng miệng" });
+
+        var s480_1 = string.Join("\n", new[] { "Súp hải sản", "Cua gạch hấp", "Tôm nướng mọi", "Móng tay sốt me", "Mực ống chiên", "Hàu nướng mỡ hành", "Canh ngao chua", "Gà rang gừng", "Rau xào", "Cơm tám + cà pháo", "Hoa quả tráng miệng" });
+        var s480_2 = string.Join("\n", new[] { "Nộm hải sản", "Ghẹ hấp", "Tôm nướng", "Mực trứng hấp", "Bề bề rang muối", "Sò nướng mỡ hành", "Cá thu sốt cà chua", "Canh cua mùng tơi", "Rau xào", "Cơm tám + cà pháo", "Hoa quả tráng miệng" });
+
+        var allNew = new List<MenuItem>();
+        foreach (var h in hotels)
         {
-            "Tôm chao dầu",
-            "Mực xào cần tỏi",
-            "Cá biển sốt cà chua",
-            "Hầu nướng mỡ hành",
-            "Ngô chiên",
-            "Rau theo mùa",
-            "Canh theo ngày",
-            "Cơm trắng",
-            "Cà pháo"
-        });
+            var exists = await dbContext.Set<MenuItem>().AnyAsync(mi => mi.HotelId == h.Id && mi.Category == "Set");
+            if (exists) continue;
 
-        var set2 = string.Join("\n", new[]
+            allNew.AddRange(new[]
+            {
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 200.000đ/người - Set 1", Description = s200_1, UnitPrice = 200000, ImageUrl = "", Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 200.000đ/người - Set 2", Description = s200_2, UnitPrice = 200000, ImageUrl = "", Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 200.000đ/người - Set 3", Description = s200_3, UnitPrice = 200000, ImageUrl = "", Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 200.000đ/người - Set 4", Description = s200_4, UnitPrice = 200000, ImageUrl = "", Status = 0, IsActive = true },
+
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 250.000đ/người - Set 1", Description = s250_1, UnitPrice = 250000, ImageUrl = "", Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 250.000đ/người - Set 2", Description = s250_2, UnitPrice = 250000, ImageUrl = "", Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 250.000đ/người - Set 3", Description = s250_3, UnitPrice = 250000, ImageUrl = "", Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 250.000đ/người - Set 4", Description = s250_4, UnitPrice = 250000, ImageUrl = "", Status = 0, IsActive = true },
+
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 300.000đ/người - Set 1", Description = s300_1, UnitPrice = 300000, ImageUrl = "", Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 300.000đ/người - Set 2", Description = s300_2, UnitPrice = 300000, ImageUrl = "", Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 300.000đ/người - Set 3", Description = s300_3, UnitPrice = 300000, ImageUrl = "", Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 300.000đ/người - Set 4", Description = s300_4, UnitPrice = 300000, ImageUrl = "", Status = 0, IsActive = true },
+
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 350.000đ/người - Set 1", Description = s350_1, UnitPrice = 350000, ImageUrl = "", Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 350.000đ/người - Set 2", Description = s350_2, UnitPrice = 350000, ImageUrl = "", Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 350.000đ/người - Set 3", Description = s350_3, UnitPrice = 350000, ImageUrl = "", Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 350.000đ/người - Set 4", Description = s350_4, UnitPrice = 350000, ImageUrl = "", Status = 0, IsActive = true },
+
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 480.000đ/người - Set 1", Description = s480_1, UnitPrice = 480000, ImageUrl = "", Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 480.000đ/người - Set 2", Description = s480_2, UnitPrice = 480000, ImageUrl = "", Status = 0, IsActive = true },
+            });
+        }
+
+        if (allNew.Any())
         {
-            "Tôm nướng mọi",
-            "Mực nhảy hấp",
-            "Cá rim tiêu",
-            "Sò xào măng",
-            "Khoai chiên",
-            "Rau theo mùa",
-            "Canh theo ngày",
-            "Cơm trắng",
-            "Cà pháo"
-        });
-
-        var set3 = string.Join("\n", new[]
-        {
-            "Tôm rang muối",
-            "Mực chiên bơ",
-            "Gà rang gừng",
-            "Mòng tay xào răm",
-            "Trứng rán",
-            "Rau theo mùa",
-            "Canh theo ngày",
-            "Cơm trắng",
-            "Cà pháo"
-        });
-
-        var set4 = string.Join("\n", new[]
-        {
-            "Móng tay rang me",
-            "Mực chiên lá lốt",
-            "Ngao nướng mỡ hành",
-            "Thịt chưng mắm tép",
-            "Rau theo mùa",
-            "Canh theo ngày",
-            "Cơm trắng",
-            "Cà pháo",
-            "Khoai chiên",
-        });
-
-        var sets = new List<MenuItem>
-        {
-            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Set", Name = "Set 1", Description = set1, UnitPrice = 200000, ImageUrl = "https://chacadevuong.com/wp-content/uploads/2023/12/combo-8.png", Status = 0, IsActive = true },
-            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Set", Name = "Set 2", Description = set2, UnitPrice = 300000, ImageUrl = "https://rosepng.com/wp-content/uploads/2024/10/s11728_healthy_food_dish_isolated_on_white_background_-styli_170b6cc9-d8ba-46a5-89e5-537259b148f8_2-photoroom.png", Status = 0, IsActive = true },
-            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Set", Name = "Set 3", Description = set3, UnitPrice = 400000, ImageUrl = "https://freepngimg.com/save/152994-food-junk-combo-free-hq-image/636x397", Status = 0, IsActive = true },
-            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Set", Name = "Set 4", Description = set4, UnitPrice = 500000, ImageUrl = "https://png.pngtree.com/png-clipart/20240909/original/pngtree-best-combo-street-food-tasty-meal-combination-png-image_15972228.png", Status = 0, IsActive = true },
-        };
-
-        dbContext.Set<MenuItem>().AddRange(sets);
-        await dbContext.SaveChangesAsync();
+            dbContext.Set<MenuItem>().AddRange(allNew);
+            await dbContext.SaveChangesAsync();
+        }
     }
 
     private static async Task SeedUsers(UserManager<AppUser> userManager, ApplicationDbContext dbContext)
