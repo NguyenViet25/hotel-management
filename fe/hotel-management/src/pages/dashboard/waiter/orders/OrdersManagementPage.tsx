@@ -492,6 +492,10 @@ const OrdersManagementPage: React.FC = () => {
                               setSelectedForInvoice(o);
                               setInvoiceOpen(true);
                             }}
+                            disabled={
+                              o.status === EOrderStatus.Cancelled ||
+                              o.status === EOrderStatus.NeedConfirmed
+                            }
                           >
                             Xuất hóa đơn
                           </Button>

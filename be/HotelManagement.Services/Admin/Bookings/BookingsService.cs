@@ -78,7 +78,7 @@ public class BookingsService(
                 DiscountAmount = dto.Discount,
                 TotalAmount = dto.Total,
                 LeftAmount = dto.Left,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
                 Notes = dto.Notes,
             };
             await _bookingRepo.AddAsync(booking);
@@ -840,7 +840,7 @@ public class BookingsService(
             if (query.TypeId.HasValue) q = q.Where(r => r.RoomTypeId == query.TypeId.Value);
             var rooms = await q.ToListAsync();
 
-            var from = query.From?.Date ?? DateTime.UtcNow.Date;
+            var from = query.From?.Date ?? DateTime.Now.Date;
             var to = query.To?.Date ?? from.AddDays(1);
 
             var roomIds = rooms.Select(r => r.Id).ToList();
@@ -920,7 +920,7 @@ public class BookingsService(
     {
         try
         {
-            var now = DateTime.UtcNow;
+            var now = DateTime.Now;
             var bookingRoom = await _bookingRoomRepo.Query()
                 .Where(br => br.RoomId == roomId && br.BookingStatus != BookingRoomStatus.Cancelled)
                 .Where(br => now < br.EndDate && now >= br.StartDate)
@@ -1132,7 +1132,7 @@ public class BookingsService(
         if (bookingRoom != null)
         {
             bookingRoom.BookingStatus = BookingRoomStatus.CheckedIn;
-            bookingRoom.ActualCheckInAt = dto.ActualCheckInAt ?? DateTime.UtcNow;
+            bookingRoom.ActualCheckInAt = dto.ActualCheckInAt ?? DateTime.Now;
             await _bookingRoomRepo.UpdateAsync(bookingRoom);
             await _bookingRoomRepo.SaveChangesAsync();
 
@@ -1149,7 +1149,7 @@ public class BookingsService(
                     HotelId = room.HotelId,
                     RoomId = room.Id,
                     Status = RoomStatus.Occupied,
-                    Timestamp = DateTime.UtcNow
+                    Timestamp = DateTime.Now
                 });
                 await _roomStatusLogRepo.SaveChangesAsync();
             }
@@ -1403,7 +1403,7 @@ public class BookingsService(
                 HotelId = oldRoom.HotelId,
                 RoomId = oldRoom.Id,
                 Status = RoomStatus.Available,
-                Timestamp = DateTime.UtcNow
+                Timestamp = DateTime.Now
             });
             await _roomStatusLogRepo.SaveChangesAsync();
         }
@@ -1418,7 +1418,7 @@ public class BookingsService(
             HotelId = targetRoom.HotelId,
             RoomId = targetRoom.Id,
             Status = targetRoom.Status,
-            Timestamp = DateTime.UtcNow
+            Timestamp = DateTime.Now
         });
         await _roomStatusLogRepo.SaveChangesAsync();
 
@@ -1501,7 +1501,7 @@ public class BookingsService(
 
             if (!string.IsNullOrWhiteSpace(dto.DiscountCode))
             {
-                var now = DateTime.UtcNow;
+                var now = DateTime.Now;
                 var promo = await _promotionRepo.Query()
                     .FirstOrDefaultAsync(p => p.HotelId == booking.HotelId && p.Code == dto.DiscountCode && p.IsActive && p.StartDate <= now && p.EndDate >= now);
                 if (promo == null)
@@ -1552,10 +1552,10 @@ public class BookingsService(
                 Id = Guid.NewGuid(),
                 HotelId = booking.HotelId,
                 BookingId = booking.Id,
-                InvoiceNumber = $"INV-{DateTime.UtcNow:yyMM}-{new Random().Next(100000, 999999)}",
+                InvoiceNumber = $"INV-{DateTime.Now:yyMM}-{new Random().Next(100000, 999999)}",
                 Status = InvoiceStatus.Draft,
                 CreatedById = Guid.Empty,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
                 VatIncluded = true,
                 Notes = dto.Notes,
                 AdditionalAmount = dto.AdditionalAmount
@@ -1580,14 +1580,14 @@ public class BookingsService(
             var totalPaid = booking.DepositAmount + (dto.FinalPayment?.Amount ?? 0);
             invoice.PaidAmount = totalPaid;
             invoice.Status = totalPaid >= invoice.TotalAmount ? InvoiceStatus.Paid : InvoiceStatus.Issued;
-            invoice.PaidAt = totalPaid >= invoice.TotalAmount ? DateTime.UtcNow : null;
+            invoice.PaidAt = totalPaid >= invoice.TotalAmount ? DateTime.Now : null;
             await _invoiceRepo.UpdateAsync(invoice);
             await _invoiceRepo.SaveChangesAsync();
 
             foreach (var br in booking.BookingRoomTypes.SelectMany(rt => rt.BookingRooms))
             {
                 br.BookingStatus = BookingRoomStatus.CheckedOut;
-                br.ActualCheckOutAt = dto.CheckoutTime ?? DateTime.UtcNow;
+                br.ActualCheckOutAt = dto.CheckoutTime ?? DateTime.Now;
                 await _bookingRoomRepo.UpdateAsync(br);
             }
             await _bookingRoomRepo.SaveChangesAsync();
@@ -1615,7 +1615,7 @@ public class BookingsService(
                         HotelId = room.HotelId,
                         RoomId = room.Id,
                         Status = RoomStatus.Dirty,
-                        Timestamp = dto.CheckoutTime ?? DateTime.UtcNow
+                        Timestamp = dto.CheckoutTime ?? DateTime.Now
                     });
                     await _roomStatusLogRepo.SaveChangesAsync();
                 }
@@ -1624,7 +1624,7 @@ public class BookingsService(
             var details = await GetByIdAsync(bookingId);
             if (!details.IsSuccess) return ApiResponse<CheckoutResultDto>.Fail(details.Message ?? "");
 
-            return ApiResponse<CheckoutResultDto>.Ok(new CheckoutResultDto { TotalPaid = totalPaid, Booking = details.Data, CheckoutTime = dto.CheckoutTime ?? DateTime.UtcNow });
+            return ApiResponse<CheckoutResultDto>.Ok(new CheckoutResultDto { TotalPaid = totalPaid, Booking = details.Data, CheckoutTime = dto.CheckoutTime ?? DateTime.Now });
         }
         catch (Exception ex)
         {
@@ -1687,7 +1687,7 @@ public class BookingsService(
                 Id = Guid.NewGuid(),
                 HotelId = booking.HotelId,
                 BookingId = bookingId,
-                InvoiceNumber = $"BK-{bookingId.ToString().Substring(0, 8)}-{DateTime.UtcNow:yyyyMMddHHmmss}",
+                InvoiceNumber = $"BK-{bookingId.ToString().Substring(0, 8)}-{DateTime.Now:yyyyMMddHHmmss}",
                 SubTotal = 0,
                 TaxAmount = 0,
                 DiscountAmount = 0,
@@ -1696,7 +1696,7 @@ public class BookingsService(
                 VatIncluded = true,
                 Status = InvoiceStatus.Draft,
                 CreatedById = Guid.Empty,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
             await _invoiceRepo.AddAsync(invoice);
             await _invoiceRepo.SaveChangesAsync();

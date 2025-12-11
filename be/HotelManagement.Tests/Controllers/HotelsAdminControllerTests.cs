@@ -34,7 +34,7 @@ public class HotelsAdminControllerTests
     {
         var mock = new Mock<IHotelsAdminService>();
         mock.Setup(s => s.ListAsync(It.IsAny<HotelsQueryDto>(), It.IsAny<Guid>(), It.IsAny<bool>()))
-            .ReturnsAsync((new List<HotelSummaryDto> { new HotelSummaryDto(Guid.NewGuid(), "H", "Hotel", "Addr", true, DateTime.UtcNow) }, 1));
+            .ReturnsAsync((new List<HotelSummaryDto> { new HotelSummaryDto(Guid.NewGuid(), "H", "Hotel", "Addr", true, DateTime.Now) }, 1));
         var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString()), new Claim(ClaimTypes.Role, "Admin") }, "TestAuth"));
         var controller = CreateController(mock, user);
         var result = await controller.List(new HotelsQueryDto());
@@ -47,7 +47,7 @@ public class HotelsAdminControllerTests
     public async Task Get_ReturnsOkOrNotFound(bool found)
     {
         var mock = new Mock<IHotelsAdminService>();
-        var dto = found ? new HotelDetailsDto(Guid.NewGuid(), "H", "Hotel", "Addr", true, DateTime.UtcNow) : null;
+        var dto = found ? new HotelDetailsDto(Guid.NewGuid(), "H", "Hotel", "Addr", true, DateTime.Now) : null;
         mock.Setup(s => s.GetAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync(dto);
         var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString()), new Claim(ClaimTypes.Role, "Admin") }, "TestAuth"));
         var controller = CreateController(mock, user);
@@ -70,7 +70,7 @@ public class HotelsAdminControllerTests
     public async Task Update_ReturnsOkOrNotFound(bool found)
     {
         var mock = new Mock<IHotelsAdminService>();
-        var dto = found ? new HotelDetailsDto(Guid.NewGuid(), "H", "Hotel", "Addr", true, DateTime.UtcNow) : null;
+        var dto = found ? new HotelDetailsDto(Guid.NewGuid(), "H", "Hotel", "Addr", true, DateTime.Now) : null;
         mock.Setup(s => s.UpdateAsync(It.IsAny<Guid>(), It.IsAny<UpdateHotelDto>(), It.IsAny<Guid>())).ReturnsAsync(dto);
         var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString()), new Claim(ClaimTypes.Role, "Admin") }, "TestAuth"));
         var controller = CreateController(mock, user);
@@ -84,7 +84,7 @@ public class HotelsAdminControllerTests
     public async Task ChangeStatus_ReturnsOkOrNotFound(bool found)
     {
         var mock = new Mock<IHotelsAdminService>();
-        var dto = found ? new HotelDetailsDto(Guid.NewGuid(), "H", "Hotel", "Addr", true, DateTime.UtcNow) : null;
+        var dto = found ? new HotelDetailsDto(Guid.NewGuid(), "H", "Hotel", "Addr", true, DateTime.Now) : null;
         mock.Setup(s => s.ChangeStatusAsync(It.IsAny<Guid>(), It.IsAny<ChangeHotelStatusDto>(), It.IsAny<Guid>())).ReturnsAsync(dto);
         var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString()), new Claim(ClaimTypes.Role, "Admin") }, "TestAuth"));
         var controller = CreateController(mock, user);

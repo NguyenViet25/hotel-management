@@ -16,7 +16,7 @@ public class Booking
     public string? AdditionalNotes { get; set; }
     public string? PromotionCode { get; set; }
     public decimal PromotionValue { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
     public Hotel? Hotel { get; set; }
     public Guest? PrimaryGuest { get; set; }
     public string? Notes { get; set; }

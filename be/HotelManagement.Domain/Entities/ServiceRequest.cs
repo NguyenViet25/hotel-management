@@ -10,7 +10,7 @@ public class ServiceRequest
     public int Quantity { get; set; } = 1;
     public ServiceRequestStatus Status { get; set; } = ServiceRequestStatus.Pending;
     public Guid? AssignedToUserId { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
     public DateTime? CompletedAt { get; set; }
 }
 

@@ -13,7 +13,7 @@ public class VatInvoice
     public bool EmailSent { get; set; }
     public DateTime? EmailSentAt { get; set; }
     public string? ElectronicInvoiceReference { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
     public Guid CreatedById { get; set; }
     
     // Navigation properties

@@ -448,7 +448,7 @@ public class OrdersService : IOrdersService
                 NewOrderItemId = newItem.Id,
                 OldMenuItemId = oldItem.MenuItemId,
                 NewMenuItemId = newItem.MenuItemId,
-                ChangedAt = DateTime.UtcNow,
+                ChangedAt = DateTime.Now,
                 UserId = userId,
                 Reason = dto.Reason
             });

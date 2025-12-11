@@ -206,7 +206,7 @@ public class RoomsService : IRoomsService
                     HotelId = room.HotelId,
                     RoomId = room.Id,
                     Status = room.Status,
-                    Timestamp = DateTime.UtcNow
+                    Timestamp = DateTime.Now
                 });
             }
 
@@ -296,7 +296,7 @@ public class RoomsService : IRoomsService
                     HotelId = room.HotelId,
                     RoomId = room.Id,
                     Status = RoomStatus.OutOfService,
-                    Timestamp = DateTime.UtcNow
+                    Timestamp = DateTime.Now
                 });
                 await _roomRepository.UpdateAsync(room);
                 await _roomRepository.SaveChangesAsync();

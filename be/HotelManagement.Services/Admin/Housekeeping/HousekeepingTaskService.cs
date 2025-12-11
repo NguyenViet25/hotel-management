@@ -53,7 +53,7 @@ public class HousekeepingTaskService : IHousekeepingTaskService
             RoomId = request.RoomId,
             AssignedToUserId = request.AssignedToUserId,
             Notes = request.Notes,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.Now
         };
 
         await _taskRepo.AddAsync(task);
@@ -110,7 +110,7 @@ public class HousekeepingTaskService : IHousekeepingTaskService
         if (task == null) return ApiResponse<HousekeepingTaskDto>.Fail("Task not found");
         var room = await _roomRepo.FindAsync(task.RoomId);
         if (room == null) return ApiResponse<HousekeepingTaskDto>.Fail("Room not found");
-        task.StartedAt = task.StartedAt ?? DateTime.UtcNow;
+        task.StartedAt = task.StartedAt ?? DateTime.Now;
 
         // Update room to Cleaning and log
         if (room.Status != RoomStatus.Cleaning)
@@ -122,7 +122,7 @@ public class HousekeepingTaskService : IHousekeepingTaskService
                 HotelId = room.HotelId,
                 RoomId = room.Id,
                 Status = RoomStatus.Cleaning,
-                Timestamp = DateTime.UtcNow,
+                Timestamp = DateTime.Now,
                 Notes = request.Notes
             });
             await _roomRepo.UpdateAsync(room);
@@ -140,7 +140,7 @@ public class HousekeepingTaskService : IHousekeepingTaskService
         var room = await _roomRepo.FindAsync(task.RoomId);
         if (room == null) return ApiResponse<HousekeepingTaskDto>.Fail("Room not found");
 
-        task.CompletedAt = DateTime.UtcNow;
+        task.CompletedAt = DateTime.Now;
 
         // Build notes with evidence
         var notes = request.Notes;
@@ -157,7 +157,7 @@ public class HousekeepingTaskService : IHousekeepingTaskService
             HotelId = room.HotelId,
             RoomId = room.Id,
             Status = RoomStatus.Clean,
-            Timestamp = DateTime.UtcNow,
+            Timestamp = DateTime.Now,
             Notes = notes
         });
 

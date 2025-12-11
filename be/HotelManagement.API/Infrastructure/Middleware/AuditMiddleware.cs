@@ -24,7 +24,7 @@ public class AuditMiddleware
             return;
         }
 
-        var start = DateTime.UtcNow;
+        var start = DateTime.Now;
         await _next(context);
 
         var method = context.Request.Method;
@@ -47,7 +47,7 @@ public class AuditMiddleware
             endpoint,
             ip,
             ua,
-            elapsedMs = (int)(DateTime.UtcNow - start).TotalMilliseconds
+            elapsedMs = (int)(DateTime.Now - start).TotalMilliseconds
         };
         var metadataJson = JsonSerializer.Serialize(meta);
 
@@ -58,7 +58,7 @@ public class AuditMiddleware
             UserId = userId,
             Action = action,
             MetadataJson = metadataJson,
-            Timestamp = DateTime.UtcNow
+            Timestamp = DateTime.Now
         };
 
         await db.AuditLogs.AddAsync(log);

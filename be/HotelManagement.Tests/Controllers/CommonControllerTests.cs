@@ -18,7 +18,7 @@ public class CommonControllerTests
     public async Task ListHotels_ReturnsOk_WithVariousCounts(int count)
     {
         var hotels = new Mock<IHotelsAdminService>();
-        hotels.Setup(h => h.ListAllAsync()).ReturnsAsync(Enumerable.Range(0, count).Select(_ => new HotelSummaryDto(Guid.NewGuid(), "C","Name","Addr", true, DateTime.UtcNow)));
+        hotels.Setup(h => h.ListAllAsync()).ReturnsAsync(Enumerable.Range(0, count).Select(_ => new HotelSummaryDto(Guid.NewGuid(), "C","Name","Addr", true, DateTime.Now)));
         var controller = new CommonController(hotels.Object);
         var result = await controller.ListHotels();
         Assert.IsType<OkObjectResult>(result);

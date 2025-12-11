@@ -39,7 +39,7 @@ public class InvoiceService : IInvoiceService
             Status = InvoiceStatus.Draft,
             Notes = request.Notes,
             CreatedById = userId,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.Now
         };
 
         // Add invoice lines
@@ -154,7 +154,7 @@ public class InvoiceService : IInvoiceService
         }
 
         invoice.Status = InvoiceStatus.Issued;
-        invoice.IssuedAt = DateTime.UtcNow;
+        invoice.IssuedAt = DateTime.Now;
 
         await _invoiceRepository.UpdateAsync(invoice);
         await _unitOfWork.SaveChangesAsync();
@@ -386,7 +386,7 @@ public class InvoiceService : IInvoiceService
     private string GenerateInvoiceNumber()
     {
         // Format: INV-{YearMonth}-{Random6Digits}
-        return $"INV-{DateTime.UtcNow:yyMM}-{new Random().Next(100000, 999999)}";
+        return $"INV-{DateTime.Now:yyMM}-{new Random().Next(100000, 999999)}";
     }
 
     private InvoiceDto MapToDto(Invoice invoice)

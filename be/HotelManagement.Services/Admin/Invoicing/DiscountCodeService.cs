@@ -97,7 +97,7 @@ public class DiscountCodeService : IDiscountCodeService
                 IsActive = dto.IsActive ?? true,
                 StartDate = dto.StartDate!.Value,
                 EndDate = dto.EndDate!.Value,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
 
             await _promotionRepository.AddAsync(entity);

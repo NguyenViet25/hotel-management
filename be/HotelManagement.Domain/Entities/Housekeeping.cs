@@ -7,7 +7,7 @@ public class HousekeepingTask
     public Guid RoomId { get; set; }
     public Guid? AssignedToUserId { get; set; }
     public string? Notes { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
     public DateTime? StartedAt { get; set; }
     public DateTime? CompletedAt { get; set; }
 }
@@ -18,6 +18,6 @@ public class RoomStatusLog
     public Guid HotelId { get; set; }
     public Guid RoomId { get; set; }
     public RoomStatus Status { get; set; }
-    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    public DateTime Timestamp { get; set; } = DateTime.Now;
     public string? Notes { get; set; }
 }

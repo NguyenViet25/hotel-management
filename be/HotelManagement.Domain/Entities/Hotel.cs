@@ -10,7 +10,7 @@ public class Hotel
     public string Email { get; set; } = string.Empty;
     public string Phone { get; set; } = string.Empty;
     public bool IsActive { get; set; } = true;
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
     public DateTime? DefaultCheckInTime { get; set; }
     public DateTime? DefaultCheckOutTime { get; set; }
     public decimal? VAT { get; set; }

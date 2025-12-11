@@ -17,7 +17,7 @@ public class DiningSession
     public Guid HotelId { get; set; }
     public Guid? TableId { get; set; }
     public Guid? WaiterUserId { get; set; }
-    public DateTime StartedAt { get; set; } = DateTime.UtcNow;
+    public DateTime StartedAt { get; set; } = DateTime.Now;
     public DateTime? EndedAt { get; set; }
     public string Notes { get; set; } = string.Empty;
     public int TotalGuests { get; set; }
@@ -30,5 +30,5 @@ public class DiningSessionTable
     public Guid HotelId { get; set; }
     public Guid DiningSessionId { get; set; }
     public Guid TableId { get; set; }
-    public DateTime AttachedAt { get; set; } = DateTime.UtcNow;
+    public DateTime AttachedAt { get; set; } = DateTime.Now;
 }

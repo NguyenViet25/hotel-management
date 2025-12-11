@@ -58,7 +58,7 @@ public class MediaService : IMediaService
                 FileUrl = url,
                 ContentType = contentType,
                 Size = size,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
 
             await _repo.AddAsync(entity);
@@ -120,7 +120,7 @@ public class MediaService : IMediaService
 
             if (!string.IsNullOrWhiteSpace(request.FileName)) e.FileName = request.FileName;
             if (!string.IsNullOrWhiteSpace(request.ContentType)) e.ContentType = request.ContentType;
-            e.UpdatedAt = DateTime.UtcNow;
+            e.UpdatedAt = DateTime.Now;
 
             await _repo.UpdateAsync(e);
             await _repo.SaveChangesAsync();

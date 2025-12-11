@@ -36,7 +36,7 @@ public class DashboardControllerTests
         Mock<IOrdersService> orders,
         Mock<IDiningSessionService> sessions,
         Mock<IOrderItemStatusService> orderItems,
-        Mock<HotelManagement.Services.Admin.Invoicing.IInvoiceService> invoiceService,
+ax        Mock<HotelManagement.Services.Admin.Invoicing.IInvoiceService> invoiceService,
         ClaimsPrincipal? user = null)
     {
         var controller = new DashboardController(hotels.Object, users.Object, audit.Object, roomStatus.Object, housekeeping.Object, bookings.Object, orders.Object, sessions.Object, orderItems.Object, invoiceService.Object);
@@ -67,7 +67,7 @@ public class DashboardControllerTests
     public async Task AdminSummary_ReturnsOk()
     {
         var hotels = new Mock<IHotelsAdminService>();
-        hotels.Setup(h => h.ListAllAsync()).ReturnsAsync(new List<HotelSummaryDto> { new HotelSummaryDto(Guid.NewGuid(), "C","Name","Addr", true, DateTime.UtcNow) });
+        hotels.Setup(h => h.ListAllAsync()).ReturnsAsync(new List<HotelSummaryDto> { new HotelSummaryDto(Guid.NewGuid(), "C","Name","Addr", true, DateTime.Now) });
         var users = new Mock<IUsersAdminService>();
         users.Setup(u => u.ListAsync(It.IsAny<UsersQueryDto>())).ReturnsAsync((new List<UserSummaryDto> { new UserSummaryDto(Guid.NewGuid(), "user","email","0123","Full Name", true, null, Enumerable.Empty<string>(), Enumerable.Empty<UserPropertyRoleDto>()) }, 42));
         var audit = new Mock<IAuditService>();

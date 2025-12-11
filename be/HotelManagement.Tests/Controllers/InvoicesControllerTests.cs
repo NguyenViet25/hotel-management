@@ -86,7 +86,7 @@ public class InvoicesControllerTests
         using var ctx = new HotelManagement.Tests.Utils.EfTestContext(options);
         if (invoiceCreated)
         {
-            var invEntity = new HotelManagement.Domain.Invoice { Id = Guid.NewGuid(), HotelId = Guid.NewGuid(), BookingId = Guid.NewGuid(), CreatedAt = DateTime.UtcNow };
+            var invEntity = new HotelManagement.Domain.Invoice { Id = Guid.NewGuid(), HotelId = Guid.NewGuid(), BookingId = Guid.NewGuid(), CreatedAt = DateTime.Now };
             ctx.Invoices.Add(invEntity);
             ctx.SaveChanges();
         }
@@ -128,8 +128,8 @@ public class InvoicesControllerTests
             Scope = "booking",
             Value = 10,
             IsActive = true,
-            StartDate = DateTime.UtcNow.AddDays(-1),
-            EndDate = DateTime.UtcNow.AddDays(1)
+            StartDate = DateTime.Now.AddDays(-1),
+            EndDate = DateTime.Now.AddDays(1)
         });
         ctx.SaveChanges();
 
@@ -179,8 +179,8 @@ public class InvoicesControllerTests
             Scope = "food",
             Value = 15,
             IsActive = true,
-            StartDate = DateTime.UtcNow.AddDays(-1),
-            EndDate = DateTime.UtcNow.AddDays(1)
+            StartDate = DateTime.Now.AddDays(-1),
+            EndDate = DateTime.Now.AddDays(1)
         });
         ctx.SaveChanges();
 

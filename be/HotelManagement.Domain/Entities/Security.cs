@@ -15,5 +15,5 @@ public class AuditLog
     public Guid? UserId { get; set; }
     public string Action { get; set; } = string.Empty;
     public string? MetadataJson { get; set; }
-    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    public DateTime Timestamp { get; set; } = DateTime.Now;
 }

@@ -115,7 +115,7 @@ public class BookingsControllerTests
         mock.Setup(s => s.GetRoomScheduleAsync(It.IsAny<Guid>(), It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .ReturnsAsync(ApiResponse<List<BookingIntervalDto>>.Ok(new List<BookingIntervalDto>()));
         var controller = CreateController(mock);
-        var result = await controller.RoomSchedule(Guid.NewGuid(), DateTime.UtcNow, DateTime.UtcNow.AddDays(1));
+        var result = await controller.RoomSchedule(Guid.NewGuid(), DateTime.Now, DateTime.Now.AddDays(1));
         Assert.IsType<OkObjectResult>(result.Result);
     }
 
@@ -162,7 +162,7 @@ public class BookingsControllerTests
         mock.Setup(s => s.ExtendStayAsync(It.IsAny<Guid>(), It.IsAny<DateTime>(), It.IsAny<string?>()))
             .ReturnsAsync(resp);
         var controller = CreateController(mock);
-        var result = await controller.ExtendStay(Guid.NewGuid(), new ExtendStayDto { NewEndDate = DateTime.UtcNow.AddDays(2), DiscountCode = null });
+        var result = await controller.ExtendStay(Guid.NewGuid(), new ExtendStayDto { NewEndDate = DateTime.Now.AddDays(2), DiscountCode = null });
         var ok = Assert.IsType<OkObjectResult>(result.Result);
         var payload = Assert.IsType<ApiResponse>(ok.Value);
         Assert.Equal(success, payload.IsSuccess);
@@ -234,7 +234,7 @@ public class BookingsControllerTests
         mock.Setup(s => s.UpdateRoomDatesAsync(It.IsAny<Guid>(), It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .ReturnsAsync(ApiResponse<BookingDetailsDto>.Ok(new BookingDetailsDto()));
         var controller = CreateController(mock);
-        var result = await controller.UpdateRoomDates(Guid.NewGuid(), new UpdateBookingRoomDatesDto { StartDate = DateTime.UtcNow, EndDate = DateTime.UtcNow.AddDays(1) });
+        var result = await controller.UpdateRoomDates(Guid.NewGuid(), new UpdateBookingRoomDatesDto { StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(1) });
         Assert.IsType<OkObjectResult>(result.Result);
     }
 
@@ -245,7 +245,7 @@ public class BookingsControllerTests
         mock.Setup(s => s.UpdateRoomActualTimesAsync(It.IsAny<Guid>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>()))
             .ReturnsAsync(ApiResponse<BookingDetailsDto>.Ok(new BookingDetailsDto()));
         var controller = CreateController(mock);
-        var result = await controller.UpdateRoomActualTimes(Guid.NewGuid(), new UpdateBookingRoomActualTimesDto { ActualCheckInAt = DateTime.UtcNow, ActualCheckOutAt = DateTime.UtcNow.AddHours(1) });
+        var result = await controller.UpdateRoomActualTimes(Guid.NewGuid(), new UpdateBookingRoomActualTimesDto { ActualCheckInAt = DateTime.Now, ActualCheckOutAt = DateTime.Now.AddHours(1) });
         Assert.IsType<OkObjectResult>(result.Result);
     }
 

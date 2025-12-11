@@ -67,7 +67,7 @@ public class OrderItemStatusService : IOrderItemStatusService
             MenuItemName = x.MenuItem.Name,
             Quantity = x.OrderItem.Quantity,
             Status = x.OrderItem.Status.ToString(),
-            UpdatedAt = DateTime.UtcNow
+            UpdatedAt = DateTime.Now
         }).ToList();
 
         return ApiResponse<OrderItemStatusListResponse>.Success(new OrderItemStatusListResponse
@@ -106,7 +106,7 @@ public class OrderItemStatusService : IOrderItemStatusService
             MenuItemName = x.MenuItem.Name,
             Quantity = x.OrderItem.Quantity,
             Status = x.OrderItem.Status.ToString(),
-            UpdatedAt = DateTime.UtcNow
+            UpdatedAt = DateTime.Now
         }).ToList();
 
         return ApiResponse<OrderItemStatusListResponse>.Success(new OrderItemStatusListResponse
@@ -128,7 +128,7 @@ public class OrderItemStatusService : IOrderItemStatusService
             MenuItemName = menuItem?.Name ?? "Unknown",
             Quantity = orderItem.Quantity,
             Status = orderItem.Status.ToString(),
-            UpdatedAt = DateTime.UtcNow
+            UpdatedAt = DateTime.Now
         };
     }
 }

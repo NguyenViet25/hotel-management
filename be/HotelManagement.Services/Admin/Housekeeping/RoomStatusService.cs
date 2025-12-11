@@ -49,7 +49,7 @@ public class RoomStatusService : IRoomStatusService
             HotelId = room.HotelId,
             RoomId = room.Id,
             Status = request.Status,
-            Timestamp = DateTime.UtcNow,
+            Timestamp = DateTime.Now,
             Notes = request.Notes
         };
 

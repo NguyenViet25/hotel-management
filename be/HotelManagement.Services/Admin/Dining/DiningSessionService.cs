@@ -45,7 +45,7 @@ public class DiningSessionService : IDiningSessionService
             HotelId = request.HotelId,
             TableId = null,
             WaiterUserId = request.WaiterUserId,
-            StartedAt = request.StartedAt ?? DateTime.UtcNow,
+            StartedAt = request.StartedAt ?? DateTime.Now,
             Notes = request.Notes ?? string.Empty,
             TotalGuests = request.TotalGuests ?? 0,
             Status = DiningSessionStatus.Open
@@ -121,7 +121,7 @@ public class DiningSessionService : IDiningSessionService
             session.Status = status;
             if (status == DiningSessionStatus.Closed)
             {
-                session.EndedAt = DateTime.UtcNow;
+                session.EndedAt = DateTime.Now;
             }
         }
 
@@ -153,7 +153,7 @@ public class DiningSessionService : IDiningSessionService
         }
 
         session.Status = DiningSessionStatus.Closed;
-        session.EndedAt = DateTime.UtcNow;
+        session.EndedAt = DateTime.Now;
 
         var linkedTables = await _diningSessionTableRepository.Query()
             .Where(x => x.DiningSessionId == id)
@@ -204,7 +204,7 @@ public class DiningSessionService : IDiningSessionService
             HotelId = session.HotelId,
             DiningSessionId = sessionId,
             TableId = tableId,
-            AttachedAt = DateTime.UtcNow,
+            AttachedAt = DateTime.Now,
         };
         await _diningSessionTableRepository.AddAsync(link);
         await _diningSessionTableRepository.SaveChangesAsync();
@@ -338,7 +338,7 @@ public class DiningSessionService : IDiningSessionService
                 HotelId = session.HotelId,
                 DiningSessionId = sessionId,
                 TableId = tableId,
-                AttachedAt = DateTime.UtcNow,
+                AttachedAt = DateTime.Now,
             };
             await _diningSessionTableRepository.AddAsync(link);
             await _diningSessionTableRepository.SaveChangesAsync();

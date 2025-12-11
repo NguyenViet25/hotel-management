@@ -89,7 +89,7 @@ public class HotelsAdminService : IHotelsAdminService
             IsActive = true,
             Phone = dto.Phone!,
             Email = dto.Email!,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.Now
         };
         _db.Hotels.Add(hotel);
         await _db.SaveChangesAsync();
@@ -210,7 +210,7 @@ public class HotelsAdminService : IHotelsAdminService
         _db.AuditLogs.Add(new AuditLog
         {
             Id = Guid.NewGuid(),
-            Timestamp = DateTime.UtcNow,
+            Timestamp = DateTime.Now,
             Action = action,
             HotelId = hotelId,
             UserId = actorUserId,

@@ -11,7 +11,7 @@ public class Order
     public bool IsWalkIn { get; set; }
     public OrderStatus Status { get; set; } = OrderStatus.InProgress;
     public string? Notes { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
     public DateTime? ServingDate { get; set; }
     public decimal? PromotionValue { get; set; }
     public string? PromotionCode { get; set; }

@@ -35,7 +35,7 @@ public class AuditControllerTests
     {
         var mock = new Mock<IAuditService>();
         mock.Setup(a => a.QueryAsync(It.IsAny<AuditQueryDto>(), It.IsAny<Guid>(), It.IsAny<bool>()))
-            .ReturnsAsync((new List<AuditLogDto> { new AuditLogDto(Guid.NewGuid(), DateTime.UtcNow, "Action", null, null, null) }, 1));
+            .ReturnsAsync((new List<AuditLogDto> { new AuditLogDto(Guid.NewGuid(), DateTime.Now, "Action", null, null, null) }, 1));
         var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString()), new Claim(ClaimTypes.Role, "Admin") }, "TestAuth"));
         var controller = CreateController(mock, user);
         var result = await controller.Query(new AuditQueryDto());

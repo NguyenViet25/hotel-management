@@ -166,7 +166,7 @@ public static class DatabaseInitializationExtensions
                 Email = "kstantruongson@gmail.com",
                 Description = "Tọa lạc tại vị trí đắc địa bậc nhất Sầm Sơn, Khách sạn Tân Trường Sơn 1... [truncated for brevity]",
                 IsActive = true,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
                 DefaultCheckInTime = DateTime.Today.AddHours(7),   // 7 AM
                 DefaultCheckOutTime = DateTime.Today.AddHours(13), // 1 PM
                 VAT = 8,
@@ -181,7 +181,7 @@ public static class DatabaseInitializationExtensions
                 Email = "kstantruongson@gmail.com",
                 Description = "Tọa lạc tại trái tim Bãi tắm C sầm uất, Khách sạn Tân Trường Sơn 2... [truncated]",
                 IsActive = true,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
                 DefaultCheckInTime = DateTime.Today.AddHours(7),   // 7 AM
                 DefaultCheckOutTime = DateTime.Today.AddHours(13), // 1 PM
                 VAT = 8,
@@ -196,7 +196,7 @@ public static class DatabaseInitializationExtensions
                 Email = "kstantruongson@gmail.com",
                 Description = "Khách sạn Tân Trường Sơn 3 tọa lạc tại khu phố Hồng Thắng...",
                 IsActive = true,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
                 DefaultCheckInTime = DateTime.Today.AddHours(7),   // 7 AM
                 DefaultCheckOutTime = DateTime.Today.AddHours(13), // 1 PM
                 VAT = 8,
@@ -211,7 +211,7 @@ public static class DatabaseInitializationExtensions
                 Email = "kstantruongson@gmail.com",
                 Description = "Nằm tách biệt khỏi sự náo nhiệt của trung tâm bãi tắm, Khách sạn Tân Trường Sơn Legacy...",
                 IsActive = true,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
                 DefaultCheckInTime = DateTime.Today.AddHours(7),   // 7 AM
                 DefaultCheckOutTime = DateTime.Today.AddHours(13), // 1 PM
                 VAT = 8,
@@ -452,7 +452,7 @@ public static class DatabaseInitializationExtensions
             IsActive = true,
             StartDate = new DateTime(2025, 1, 1),
             EndDate = new DateTime(2025, 12, 31),
-            CreatedAt = DateTime.UtcNow,
+            CreatedAt = DateTime.Now,
             Scope = "food"
         },
          new Promotion
@@ -465,7 +465,7 @@ public static class DatabaseInitializationExtensions
             IsActive = true,
             StartDate = new DateTime(2025, 6, 1),
             EndDate = new DateTime(2025, 8, 31),
-            CreatedAt = DateTime.UtcNow,
+            CreatedAt = DateTime.Now,
             Scope = "food"
 
         },
@@ -480,7 +480,7 @@ public static class DatabaseInitializationExtensions
             IsActive = true,
             StartDate = new DateTime(2025, 1, 1),
             EndDate = new DateTime(2025, 12, 31),
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.Now
         },
         new Promotion
         {
@@ -492,7 +492,7 @@ public static class DatabaseInitializationExtensions
             IsActive = true,
             StartDate = new DateTime(2025, 6, 1),
             EndDate = new DateTime(2025, 8, 31),
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.Now
         },
         new Promotion
         {
@@ -504,7 +504,7 @@ public static class DatabaseInitializationExtensions
             IsActive = true,
             StartDate = new DateTime(2025, 1, 1),
             EndDate = new DateTime(2025, 12, 31),
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.Now
         },
         new Promotion
         {
@@ -516,7 +516,7 @@ public static class DatabaseInitializationExtensions
             IsActive = true,
             StartDate = new DateTime(2025, 1, 1),
             EndDate = new DateTime(2025, 12, 31),
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.Now
         },
         new Promotion
         {
@@ -528,7 +528,7 @@ public static class DatabaseInitializationExtensions
             IsActive = true,
             StartDate = new DateTime(2025, 2, 1),
             EndDate = new DateTime(2025, 2, 7),
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.Now
         }
     };
 
@@ -666,7 +666,7 @@ public static class DatabaseInitializationExtensions
                 HotelId = hotelId,
                 RoomId = room.Id,
                 Notes = i == 0 ? "Ưu tiên dọn trước 15:00" : (i == 1 ? "Lưu ý ga giường" : "Kiểm tra vòi nước"),
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             });
         }
         dbContext.Set<HousekeepingTask>().AddRange(tasks);

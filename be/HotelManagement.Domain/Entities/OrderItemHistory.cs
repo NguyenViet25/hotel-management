@@ -8,7 +8,7 @@ public class OrderItemHistory
     public Guid NewOrderItemId { get; set; }
     public Guid OldMenuItemId { get; set; }
     public Guid NewMenuItemId { get; set; }
-    public DateTime ChangedAt { get; set; } = DateTime.UtcNow;
+    public DateTime ChangedAt { get; set; } = DateTime.Now;
     public Guid? UserId { get; set; }
     public string? Reason { get; set; }
 }

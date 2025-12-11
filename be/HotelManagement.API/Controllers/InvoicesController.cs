@@ -92,11 +92,7 @@ public class InvoicesController : ControllerBase
             return BadRequest(ApiResponse<InvoiceDto>.Fail(orderRes.Message ?? "Order not found"));
         }
         var order = orderRes.Data;
-        if (!order.IsWalkIn)
-        {
-            return BadRequest(ApiResponse<InvoiceDto>.Fail("Order is not a walk-in order"));
-        }
-
+       
         var lines = new List<CreateInvoiceLineDto>();
         foreach (var it in order.Items)
         {
@@ -111,7 +107,7 @@ public class InvoicesController : ControllerBase
 
         if (!string.IsNullOrWhiteSpace(request.DiscountCode))
         {
-            var now = DateTime.UtcNow;
+            var now = DateTime.Now;
             var promo = await _promotionRepository.Query()
                 .FirstOrDefaultAsync(p => p.HotelId == order.HotelId && p.Code == request.DiscountCode && p.IsActive && p.StartDate <= now && p.EndDate >= now);
             if (promo is not null && promo.Value > 0)

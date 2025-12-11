@@ -45,7 +45,7 @@ public class ServiceRequestService : IServiceRequestService
             Description = request.Description,
             Quantity = request.Quantity,
             Status = ServiceRequestStatus.Pending,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.Now
         };
 
         await _serviceRequestRepository.AddAsync(serviceRequest);
@@ -67,7 +67,7 @@ public class ServiceRequestService : IServiceRequestService
             serviceRequest.Status = status;
             if (status == ServiceRequestStatus.Completed)
             {
-                serviceRequest.CompletedAt = DateTime.UtcNow;
+                serviceRequest.CompletedAt = DateTime.Now;
             }
         }
 
@@ -146,7 +146,7 @@ public class ServiceRequestService : IServiceRequestService
         }
 
         serviceRequest.Status = ServiceRequestStatus.Completed;
-        serviceRequest.CompletedAt = DateTime.UtcNow;
+        serviceRequest.CompletedAt = DateTime.Now;
 
         await _serviceRequestRepository.UpdateAsync(serviceRequest);
         await _serviceRequestRepository.SaveChangesAsync();

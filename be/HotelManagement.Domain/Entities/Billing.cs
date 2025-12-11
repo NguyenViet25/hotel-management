@@ -21,7 +21,7 @@ public class Invoice
     public InvoiceStatus Status { get; set; } = InvoiceStatus.Draft;
     public string? Notes { get; set; }
     public Guid CreatedById { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
     public DateTime? IssuedAt { get; set; }
     public DateTime? PaidAt { get; set; }
     
