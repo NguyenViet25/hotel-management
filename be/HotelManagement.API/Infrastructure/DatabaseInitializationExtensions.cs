@@ -62,6 +62,8 @@ public static class DatabaseInitializationExtensions
         var tts1HotelId = tts1?.Id;
         var tts2 = await dbContext.Set<Hotel>().FirstOrDefaultAsync(h => h.Code == "TTS2");
         var tts2HotelId = tts2?.Id;
+        var tts3 = await dbContext.Set<Hotel>().FirstOrDefaultAsync(h => h.Code == "TTS3");
+        var tts3HotelId = tts3?.Id;
 
         var allRooms = new List<HotelRoom>();
 
@@ -198,6 +200,54 @@ public static class DatabaseInitializationExtensions
             }
         }
 
+        if (tts3HotelId.HasValue)
+        {
+            var tts3RoomsExist = await dbContext.Set<HotelRoom>().AnyAsync(r => r.HotelId == tts3HotelId.Value);
+            if (!tts3RoomsExist)
+            {
+                var tts3RoomTypes = await dbContext.Set<RoomType>()
+                    .Where(rt => rt.HotelId == tts3HotelId.Value)
+                    .ToListAsync();
+                if (tts3RoomTypes.Any())
+                {
+                    var mappingTts3 = new Dictionary<string, string[]>
+                    {
+                        {
+                            "Phòng Deluxe nhìn ra biển",
+                            new[] { "201", "202", "203", "206", "301", "302", "303", "306", "401", "402", "403", "406", "501", "502", "503", "506", "601", "602", "603", "606" }
+                        },
+                        {
+                            "Studio nhìn ra quang cảnh đại dương",
+                            new[] { "204", "205", "304", "305", "405", "406", "505", "506", "605", "606" }
+                        },
+                        {
+                            "Phòng Superior Có Giường Cỡ Queen",
+                            new[] { "207", "208", "209", "210", "307", "308", "309", "310", "407", "408", "409", "410", "507", "508", "509", "510", "607", "608", "609", "610" }
+                        }
+                    };
+
+                    foreach (var kv in mappingTts3)
+                    {
+                        var rt = tts3RoomTypes.FirstOrDefault(x => x.Name == kv.Key);
+                        if (rt == null) continue;
+                        foreach (var num in kv.Value)
+                        {
+                            var floor = int.Parse(num) / 100;
+                            allRooms.Add(new HotelRoom
+                            {
+                                Id = Guid.NewGuid(),
+                                HotelId = tts3HotelId.Value,
+                                RoomTypeId = rt.Id,
+                                Number = num,
+                                Floor = floor,
+                                Status = RoomStatus.Available
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
         if (allRooms.Any())
         {
             dbContext.Set<HotelRoom>().AddRange(allRooms);
@@ -212,6 +262,8 @@ public static class DatabaseInitializationExtensions
         var tts1HotelId = tts1?.Id;
         var tts2 = await dbContext.Set<Hotel>().FirstOrDefaultAsync(h => h.Code == "TTS2");
         var tts2HotelId = tts2?.Id;
+        var tts3 = await dbContext.Set<Hotel>().FirstOrDefaultAsync(h => h.Code == "TTS3");
+        var tts3HotelId = tts3?.Id;
 
         var toAdd = new List<RoomType>();
 
@@ -324,6 +376,53 @@ public static class DatabaseInitializationExtensions
                         BasePriceTo = 1000000,
                         Prices = "",
                         ImageUrl = "https://byvn.net/A6jV"
+                    }
+                });
+            }
+        }
+
+        if (tts3HotelId.HasValue)
+        {
+            var tts3Exists = await dbContext.Set<RoomType>().AnyAsync(rt => rt.HotelId == tts3HotelId.Value);
+            if (!tts3Exists)
+            {
+                toAdd.AddRange(new[]
+                {
+                    new RoomType
+                    {
+                        Id = Guid.NewGuid(),
+                        HotelId = tts3HotelId.Value,
+                        Capacity = 4,
+                        Name = "Phòng Deluxe nhìn ra biển",
+                        Description = "Phòng được trang bị máy điều hòa, tivi màn hình phẳng với truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Không gian được bố trí tủ quần áo gọn gàng và sở hữu tầm nhìn hướng ra thành phố. Phòng gồm 2 giường đơn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn đồng hành.",
+                        BasePriceFrom = 550000,
+                        BasePriceTo = 700000,
+                        Prices = "",
+                        ImageUrl = "https://byvn.net/Yigf"
+                    },
+                    new RoomType
+                    {
+                        Id = Guid.NewGuid(),
+                        HotelId = tts3HotelId.Value,
+                        Capacity = 4,
+                        Name = "Studio nhìn ra quang cảnh đại dương",
+                        Description = "Phòng được trang bị máy điều hòa, bàn làm việc, sofa, TV màn hình phẳng với các kênh truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Ban công nhìn ra biển. Phòng tắm riêng đi kèm tiện nghi vòi sen và bồn tắm. Phòng gồm 2 giường cỡ lớn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn bè đồng hành",
+                        BasePriceFrom = 800000,
+                        BasePriceTo = 1000000,
+                        Prices = "",
+                        ImageUrl = "https://byvn.net/ts1R"
+                    },
+                    new RoomType
+                    {
+                        Id = Guid.NewGuid(),
+                        HotelId = tts3HotelId.Value,
+                        Capacity = 4,
+                        Name = "Phòng Superior Có Giường Cỡ Queen",
+                        Description = "Phòng được trang bị máy điều hòa, tivi màn hình phẳng với truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Không gian được bố trí tủ quần áo gọn gàng và sở hữu tầm nhìn hướng ra thành phố. Phòng gồm 2 giường đơn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn đồng hành.",
+                        BasePriceFrom = 450000,
+                        BasePriceTo = 600000,
+                        Prices = "",
+                        ImageUrl = "https://byvn.net/yagH"
                     }
                 });
             }
