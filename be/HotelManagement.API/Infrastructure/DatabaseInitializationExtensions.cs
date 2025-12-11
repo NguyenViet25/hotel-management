@@ -752,7 +752,9 @@ public static class DatabaseInitializationExtensions
             foreach (var d in data)
             {
                 var range = defaults.TryGetValue(d.cat, out var def) ? def : (100000m, 300000m);
-                var price = d.min.HasValue && d.max.HasValue ? (d.min.Value == d.max.Value ? d.min.Value : RandBetween(d.min.Value, d.max.Value)) : RandBetween(range.min, range.max);
+                var price = d.min.HasValue && d.max.HasValue
+                    ? (d.min.Value == d.max.Value ? d.min.Value : RandBetween(d.min.Value, d.max.Value))
+                    : RandBetween(range.Item1, range.Item2);
                 items.Add(new MenuItem
                 {
                     Id = Guid.NewGuid(),
@@ -936,6 +938,46 @@ public static class DatabaseInitializationExtensions
 
                     dbContext.Set<UserPropertyRole>().Add(userPropertyRole);
                 }
+            }
+        }
+
+        // Custom staff accounts for TTSLEGACY
+        var legacyStaffSeeds = new[]
+        {
+            new { Email = "vinhphm2002@gmail.com", Username = "vinhphm2002", Role = UserRole.Manager, Fullname = "Phạm Hoàng Vinh", Phone = "" },
+            new { Email = "vinhk8464@gmail.com", Username = "vinhk8464", Role = UserRole.FrontDesk, Fullname = "Phạm Khánh Vinh", Phone = "" },
+            new { Email = "thinhtvhe170782@fpt.edu.vn", Username = "thinhtvhe170782", Role = UserRole.Kitchen, Fullname = "Nguyễn Quốc Thịnh", Phone = "" },
+            new { Email = "thinhkesat@gmail.com", Username = "thinhkesat", Role = UserRole.Waiter, Fullname = "Hoàng Văn Thịnh", Phone = "" },
+            new { Email = "nguyenthanhlam1070@gmail.com", Username = "nguyenthanhlam", Role = UserRole.Housekeeper, Fullname = "Nguyen Thanh Lam", Phone = "" }
+        };
+
+        foreach (var s in legacyStaffSeeds)
+        {
+            var foundByEmail = await userManager.FindByEmailAsync(s.Email);
+            var foundByName = await userManager.FindByNameAsync(s.Username);
+            if (foundByEmail != null || foundByName != null) continue;
+
+            var u = new AppUser
+            {
+                UserName = s.Username,
+                Email = s.Email,
+                EmailConfirmed = true,
+                Fullname = s.Fullname,
+                PhoneNumber = s.Phone,
+                LockoutEnd = DateTime.Now.AddMonths(-1),
+            };
+
+            var created = await userManager.CreateAsync(u, "Password1@");
+            if (created.Succeeded)
+            {
+                await userManager.AddToRoleAsync(u, s.Role.ToString());
+                dbContext.Set<UserPropertyRole>().Add(new UserPropertyRole
+                {
+                    Id = Guid.NewGuid(),
+                    HotelId = DEFAULT_HOTEL_ID,
+                    UserId = u.Id,
+                    Role = s.Role
+                });
             }
         }
 
