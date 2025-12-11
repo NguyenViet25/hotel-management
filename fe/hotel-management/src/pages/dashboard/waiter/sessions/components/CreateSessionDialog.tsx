@@ -29,7 +29,9 @@ export default function CreateSessionDialog({
   onCreated,
 }: Props) {
   const { user, hotelId } = useStore<StoreState>((s) => s);
-  const isWaiter = (user?.roles || []).map((x) => x.toLowerCase()).includes("waiter");
+  const isWaiter = (user?.roles || [])
+    .map((x) => x.toLowerCase())
+    .includes("waiter");
   const [notes, setNotes] = useState("");
   const [totalGuests, setTotalGuests] = useState<number>(1);
   const [startedAt, setStartedAt] = useState<string>(() => {

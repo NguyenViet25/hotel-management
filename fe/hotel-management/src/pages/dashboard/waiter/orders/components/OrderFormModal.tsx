@@ -182,8 +182,7 @@ const OrderFormModal: React.FC<IProps> = ({
       bookingId: values.bookingId || undefined,
       notes: values.notes,
       guests: values.guests || 1,
-      servingDate:
-        values.orderDate || dayjs().format("YYYY-MM-DDTHH:mm:ss"),
+      servingDate: values.orderDate || dayjs().format("YYYY-MM-DDTHH:mm:ss"),
       status: Number(values.status || "1"),
     };
     try {

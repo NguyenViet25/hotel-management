@@ -125,10 +125,12 @@ export default function CheckOutTimeDialog({
         <Button
           variant="contained"
           onClick={() =>
-            onConfirm(
-              value.format("YYYY-MM-DDTHH:mm:ss"),
-              { isLate, days, hours, minutes }
-            )
+            onConfirm(value.format("YYYY-MM-DDTHH:mm:ss"), {
+              isLate,
+              days,
+              hours,
+              minutes,
+            })
           }
         >
           Xác nhận

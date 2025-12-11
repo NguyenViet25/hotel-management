@@ -181,15 +181,15 @@ const BookingInvoiceDialog: React.FC<Props> = ({
         total: unit * rooms,
       });
     }
-    if (ordersTotal > 0) {
-      rows.push({
-        label: "Đồ ăn/uống (đặt món)",
-        quantity: 1,
-        nights: undefined,
-        unit: ordersTotal,
-        total: ordersTotal,
-      });
-    }
+    // if (ordersTotal > 0) {
+    //   rows.push({
+    //     label: "Đồ ăn/uống (đặt món)",
+    //     quantity: 1,
+    //     nights: undefined,
+    //     unit: ordersTotal,
+    //     total: ordersTotal,
+    //   });
+    // }
     for (const l of additional?.lines || []) {
       rows.push({
         label: l.description,

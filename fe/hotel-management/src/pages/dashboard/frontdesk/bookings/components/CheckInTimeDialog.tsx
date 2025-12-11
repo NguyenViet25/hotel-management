@@ -126,10 +126,12 @@ export default function CheckInTimeDialog({
         <Button
           variant="contained"
           onClick={() =>
-            onConfirm(
-              value.format("YYYY-MM-DDTHH:mm:ss"),
-              { isEarly, days, hours, minutes }
-            )
+            onConfirm(value.format("YYYY-MM-DDTHH:mm:ss"), {
+              isEarly,
+              days,
+              hours,
+              minutes,
+            })
           }
         >
           Xác nhận
