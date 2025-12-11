@@ -41,3 +41,11 @@ export const getRoleInfo = (role?: string): RoleInfo => {
   if (!role) return { label: "Không xác định", description: "" };
   return roleMap[role] || { label: role, description: "" };
 };
+
+export const getAllRoles = (): string[] => {
+  return Object.keys(roleMap);
+};
+
+export const getAllRoleExceptAdmin = (): string[] => {
+  return Object.keys(roleMap).filter((role) => role !== "Admin");
+};

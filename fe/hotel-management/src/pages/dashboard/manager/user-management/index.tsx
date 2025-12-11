@@ -1,4 +1,14 @@
-import { Alert, Box, Chip, Snackbar } from "@mui/material";
+import {
+  Alert,
+  Box,
+  Chip,
+  Snackbar,
+  Stack,
+  TextField,
+  MenuItem,
+  Button,
+} from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
 import React, { useEffect, useState } from "react";
 import type {
   CreateUserRequest,
@@ -10,12 +20,17 @@ import type { Column } from "../../../../components/common/DataTable";
 import DataTable from "../../../../components/common/DataTable";
 import PageTitle from "../../../../components/common/PageTitle";
 import { isLocked } from "../../../../utils/is-locked";
-import { getRoleInfo } from "../../../../utils/role-mapper";
+import {
+  getRoleInfo,
+  getAllRoles,
+  getAllRoleExceptAdmin,
+} from "../../../../utils/role-mapper";
 import CreateUserDialog from "../../admin/user-management/dialogs/CreateUserDialog";
 import EditUserDialog from "../../admin/user-management/dialogs/EditUserDialog";
 import LockUserDialog from "../../admin/user-management/dialogs/LockUserDialog";
 import ResetPasswordDialog from "../../admin/user-management/dialogs/ResetPasswordDialog";
 import { type StoreState, useStore } from "../../../../hooks/useStore";
+import { AddCircle, AddCircleOutline } from "@mui/icons-material";
 
 const ManagerUserManagement: React.FC = () => {
   // State for user list
@@ -23,6 +38,7 @@ const ManagerUserManagement: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState<string>(" ");
   const [pageSize] = useState(10);
   const [total, setTotal] = useState(0);
   const { hotelId } = useStore<StoreState>((state) => state);
@@ -107,16 +123,19 @@ const ManagerUserManagement: React.FC = () => {
   // Fetch users on component mount and when page, pageSize, or sorting changes
   useEffect(() => {
     fetchUsers();
-  }, [page, pageSize, sortBy, sortDirection, search]);
+  }, [page, pageSize, sortBy, sortDirection, search, roleFilter]);
 
   const fetchUsers = async () => {
     setLoading(true);
     try {
+      const roleFilterParam = roleFilter === " " ? undefined : roleFilter;
+
       const response = await userService.getUsersByHotel(
         hotelId || "",
         page,
         pageSize,
-        search
+        search,
+        roleFilterParam
       );
       console.log("response", response.data);
       if (response.isSuccess) {
@@ -396,9 +415,56 @@ const ManagerUserManagement: React.FC = () => {
         subtitle="Thêm, sửa và quản lý quyền truy cập của người dùng"
       />
 
+      <Stack
+        direction={{ xs: "column", lg: "row" }}
+        justifyContent={"space-between"}
+        spacing={2}
+        sx={{ mb: 2 }}
+      >
+        <Stack
+          direction={{ xs: "column", lg: "row" }}
+          spacing={2}
+          sx={{ mb: 2 }}
+        >
+          <TextField
+            placeholder="Tìm kiếm..."
+            size="small"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            sx={{ width: { xs: "100%", lg: 320 } }}
+          />
+          <TextField
+            select
+            label="Vai trò"
+            size="small"
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+            sx={{ minWidth: 200 }}
+          >
+            <MenuItem value=" ">Tất cả</MenuItem>
+            {getAllRoleExceptAdmin().map((r) => (
+              <MenuItem key={r} value={r}>
+                {getRoleInfo(r).label}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Stack>
+        <Button
+          variant="contained"
+          startIcon={<AddCircle />}
+          onClick={openCreateDialog}
+        >
+          Thêm mới
+        </Button>
+      </Stack>
+
       <DataTable<User>
         columns={columns}
-        data={users}
+        data={
+          roleFilter
+            ? users.filter((u) => u.roles?.includes(roleFilter))
+            : users
+        }
         title="Danh sách tài khoản"
         loading={loading}
         pagination={{
@@ -407,7 +473,6 @@ const ManagerUserManagement: React.FC = () => {
           total,
           onPageChange: handlePageChange,
         }}
-        onAdd={openCreateDialog}
         onEdit={openEditDialog}
         onLock={openLockDialog}
         onResetPassword={openResetPasswordDialog}
@@ -415,7 +480,6 @@ const ManagerUserManagement: React.FC = () => {
         onSort={handleSort}
         sortBy={sortBy}
         sortDirection={sortDirection}
-        onSearch={(value: string) => setSearch(value)}
       />
 
       {/* Create User Dialog */}

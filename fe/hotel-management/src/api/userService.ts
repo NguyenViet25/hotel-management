@@ -78,23 +78,31 @@ const userService = {
   getUsers: async (
     page: number = 1,
     pageSize: number = 10,
-    search?: string
+    search?: string,
+    role?: string
   ): Promise<UserListResponse> => {
-    const response = await axios.get(
-      `/users?page=${page}&pageSize=${pageSize}&search=${search || ""}`
-    );
+    const params = new URLSearchParams();
+    params.set("page", String(page));
+    params.set("pageSize", String(pageSize));
+    if (search) params.set("search", search);
+    if (role) params.set("role", role);
+    const response = await axios.get(`/users?${params.toString()}`);
     return response.data;
   },
   getUsersByHotel: async (
     hotelId: string,
     page: number = 1,
     pageSize: number = 10,
-    search?: string
+    search?: string,
+    role?: string
   ): Promise<UserListResponse> => {
+    const params = new URLSearchParams();
+    params.set("page", String(page));
+    params.set("pageSize", String(pageSize));
+    if (search) params.set("search", search);
+    if (role) params.set("role", role);
     const response = await axios.get(
-      `/users/by-hotel/${hotelId}?page=${page}&pageSize=${pageSize}&search=${
-        search || ""
-      }`
+      `/users/by-hotel/${hotelId}?${params.toString()}`
     );
     return response.data;
   },
