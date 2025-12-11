@@ -60,6 +60,8 @@ public static class DatabaseInitializationExtensions
 
         var tts1 = await dbContext.Set<Hotel>().FirstOrDefaultAsync(h => h.Code == "TTS1");
         var tts1HotelId = tts1?.Id;
+        var tts2 = await dbContext.Set<Hotel>().FirstOrDefaultAsync(h => h.Code == "TTS2");
+        var tts2HotelId = tts2?.Id;
 
         var allRooms = new List<HotelRoom>();
 
@@ -152,6 +154,50 @@ public static class DatabaseInitializationExtensions
             }
         }
 
+        if (tts2HotelId.HasValue)
+        {
+            var tts2RoomsExist = await dbContext.Set<HotelRoom>().AnyAsync(r => r.HotelId == tts2HotelId.Value);
+            if (!tts2RoomsExist)
+            {
+                var tts2RoomTypes = await dbContext.Set<RoomType>()
+                    .Where(rt => rt.HotelId == tts2HotelId.Value)
+                    .ToListAsync();
+                if (tts2RoomTypes.Any())
+                {
+                    var mappingTts2 = new Dictionary<string, string[]>
+                    {
+                        {
+                            "Phòng Gia Đình Có Ban Công view Resort",
+                            new[] { "301", "302", "303", "306", "401", "402", "403", "406", "501", "502", "503", "506", "604" }
+                        },
+                        {
+                            "Phòng Deluxe nhìn ra biển",
+                            new[] { "204", "205", "206", "304", "305", "404", "405", "504", "505", "601", "602", "603" }
+                        }
+                    };
+
+                    foreach (var kv in mappingTts2)
+                    {
+                        var rt = tts2RoomTypes.FirstOrDefault(x => x.Name == kv.Key);
+                        if (rt == null) continue;
+                        foreach (var num in kv.Value)
+                        {
+                            var floor = int.Parse(num) / 100;
+                            allRooms.Add(new HotelRoom
+                            {
+                                Id = Guid.NewGuid(),
+                                HotelId = tts2HotelId.Value,
+                                RoomTypeId = rt.Id,
+                                Number = num,
+                                Floor = floor,
+                                Status = RoomStatus.Available
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
         if (allRooms.Any())
         {
             dbContext.Set<HotelRoom>().AddRange(allRooms);
@@ -164,6 +210,8 @@ public static class DatabaseInitializationExtensions
         var legacyHotelId = DEFAULT_HOTEL_ID;
         var tts1 = await dbContext.Set<Hotel>().FirstOrDefaultAsync(h => h.Code == "TTS1");
         var tts1HotelId = tts1?.Id;
+        var tts2 = await dbContext.Set<Hotel>().FirstOrDefaultAsync(h => h.Code == "TTS2");
+        var tts2HotelId = tts2?.Id;
 
         var toAdd = new List<RoomType>();
 
@@ -241,6 +289,41 @@ public static class DatabaseInitializationExtensions
                         BasePriceTo = 650000,
                         Prices = "",
                         ImageUrl = "https://byvn.net/RBLG"
+                    }
+                });
+            }
+        }
+
+        if (tts2HotelId.HasValue)
+        {
+            var tts2Exists = await dbContext.Set<RoomType>().AnyAsync(rt => rt.HotelId == tts2HotelId.Value);
+            if (!tts2Exists)
+            {
+                toAdd.AddRange(new[]
+                {
+                    new RoomType
+                    {
+                        Id = Guid.NewGuid(),
+                        HotelId = tts2HotelId.Value,
+                        Capacity = 4,
+                        Name = "Phòng Gia Đình Có Ban Công view Resort",
+                        Description = "Phòng được trang bị máy điều hòa, tivi màn hình phẳng với truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Không gian được bố trí tủ quần áo gọn gàng và sở hữu ban công tầm nhìn hướng ra resort FLC. Phòng gồm 2 giường đơn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn đồng hành.",
+                        BasePriceFrom = 750000,
+                        BasePriceTo = 950000,
+                        Prices = "",
+                        ImageUrl = "https://byvn.net/KxLu"
+                    },
+                    new RoomType
+                    {
+                        Id = Guid.NewGuid(),
+                        HotelId = tts2HotelId.Value,
+                        Capacity = 4,
+                        Name = "Phòng Deluxe nhìn ra biển",
+                        Description = "Phòng được trang bị máy điều hòa, tivi màn hình phẳng với truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Không gian được bố trí tủ quần áo gọn gàng và sở hữu tầm nhìn hướng ra biển. Phòng gồm 2 giường cỡ lớn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn đồng hành.",
+                        BasePriceFrom = 800000,
+                        BasePriceTo = 1000000,
+                        Prices = "",
+                        ImageUrl = "https://byvn.net/A6jV"
                     }
                 });
             }
