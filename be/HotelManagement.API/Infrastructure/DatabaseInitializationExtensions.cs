@@ -33,6 +33,7 @@ public static class DatabaseInitializationExtensions
             SeedPromotionsAsync(dbContext).GetAwaiter().GetResult();
             SeedMinibarsAsync(dbContext).GetAwaiter().GetResult();
             SeedTablesAsync(dbContext).GetAwaiter().GetResult();
+            SeedBookingsAsync(dbContext).GetAwaiter().GetResult();
             //SeedHousekeepingTasksAsync(dbContext).GetAwaiter().GetResult();
         }
 
@@ -1245,6 +1246,128 @@ public static class DatabaseInitializationExtensions
 
         dbContext.Set<Table>().AddRange(tables);
         await dbContext.SaveChangesAsync();
+    }
+
+    public static async Task SeedBookingsAsync(DbContext dbContext)
+    {
+        var hotelId = DEFAULT_HOTEL_ID;
+
+        var already = await dbContext.Set<Booking>().AnyAsync(b => b.HotelId == hotelId);
+        if (already) return;
+
+        var roomTypes = await dbContext.Set<RoomType>().Where(rt => rt.HotelId == hotelId).OrderBy(rt => rt.Capacity).ToListAsync();
+        var rooms = await dbContext.Set<HotelRoom>().Where(r => r.HotelId == hotelId).ToListAsync();
+
+        var seeds = new[]
+        {
+            (name: "Nguyễn Trung Hưng", phone: "0366225777", guests: 16, roomsCount: 4, url: "https://drive.google.com/file/d/1NJoI3LyWmx-KMB02q8FjJ6XzpKX7mtsm/view?usp=sharing"),
+            (name: "Nguyễn Văn Thành", phone: "0983440891", guests: 4, roomsCount: 1, url: "https://drive.google.com/file/d/1Xh1Fju79Si5divfvIVOt03TIK_xafWdA/view?usp=sharing"),
+            (name: "Ngô Tiến Mạnh", phone: "0965291988", guests: 8, roomsCount: 2, url: "https://drive.google.com/file/d/1d4pfs50iQsDG9q7GIuui0dDqsRu4PKPn/view?usp=sharing"),
+            (name: "Đặng Thị Hương", phone: "0975297928", guests: 7, roomsCount: 2, url: "https://drive.google.com/file/d/1loTp4Xo1JULqmUvhr_wJr_RHDnM3driE/view?usp=sharing"),
+            (name: "Nguyễn Thị Vân Anh", phone: "0399131811", guests: 12, roomsCount: 3, url: "https://drive.google.com/file/d/1kuVu1mEXInrtpF-MiQ-806YuQyiUo0cc/view?usp=sharing"),
+            (name: "Phạm Thị Minh", phone: "0356208925", guests: 4, roomsCount: 1, url: "https://drive.google.com/file/d/1G-zp7dRk2aNp4WMqP3qhVOg36HXd3dF3/view?usp=sharing"),
+            (name: "Đặng Thành Trung", phone: "0985546541", guests: 24, roomsCount: 6, url: "https://drive.google.com/file/d/165xMdOy8O7kFQw11QWF0JmHykPp4n7HQ/view?usp=sharing"),
+            (name: "Vũ Thanh Huyền", phone: "0974099087", guests: 78, roomsCount: 20, url: "https://drive.google.com/file/d/1RBmOd1FSl0ouLK2txTsqMQHKMn5EVaM1/view?usp=sharing"),
+            (name: "Đỗ Thanh Huyền", phone: "0364977608", guests: 12, roomsCount: 3, url: "https://drive.google.com/file/d/10OtJcCBqjzCnz4eY7xCch07J4UpyMfZm/view?usp=sharing"),
+            (name: "Đỗ Thị Thanh Thủy", phone: "0369105238", guests: 4, roomsCount: 1, url: "https://drive.google.com/file/d/1uxTz_B7VQr1LOlmwD2etQEfdhqS_eFGZ/view?usp=sharing"),
+            (name: "Đỗ Thị Cương", phone: "0989200919", guests: 22, roomsCount: 6, url: "https://drive.google.com/file/d/1rNyFd5EFqsgingghDMnQBfQcBJKlVra0/view?usp=sharing"),
+            (name: "Phạm Thị Trà My", phone: "0973100791", guests: 18, roomsCount: 5, url: "https://drive.google.com/file/d/1Dd_4275d3vragbzeB0fAQGs4UI6u5dXP/view?usp=sharing"),
+            (name: "Đỗ Văn Dũng", phone: "0964056989", guests: 32, roomsCount: 8, url: "https://drive.google.com/file/d/1WXrqh1Y1SygE_ZkWJnPs_18uCsgnEd0I/view?usp=sharing"),
+            (name: "Phạm Thanh Mai", phone: "0327652433", guests: 14, roomsCount: 4, url: "https://drive.google.com/file/d/1e3X73q1Tqx4mloN99Unc9hZoBTADPWk3/view?usp=sharing")
+        };
+
+        DateTime start = DateTime.Today.AddDays(1);
+        DateTime end = start.AddDays(1);
+
+        foreach (var s in seeds)
+        {
+            var exists = await dbContext.Set<Guest>().AnyAsync(g => g.Phone == s.phone);
+            if (exists) continue;
+
+            var g = new Guest
+            {
+                Id = Guid.NewGuid(),
+                FullName = s.name,
+                Phone = s.phone,
+                IdCard = string.Empty,
+                IdCardFrontImageUrl = s.url,
+                IdCardBackImageUrl = null,
+                Email = null
+            };
+            dbContext.Set<Guest>().Add(g);
+            await dbContext.SaveChangesAsync();
+
+            var perRoom = (int)Math.Ceiling((double)s.guests / Math.Max(s.roomsCount, 1));
+            var rt = roomTypes.FirstOrDefault(x => x.Capacity >= perRoom) ?? roomTypes.OrderByDescending(x => x.Capacity).First();
+            var price = rt.BasePriceFrom;
+
+            var b = new Booking
+            {
+                Id = Guid.NewGuid(),
+                HotelId = hotelId,
+                PrimaryGuestId = g.Id,
+                Status = BookingStatus.Pending,
+                DepositAmount = 0,
+                DiscountAmount = 0,
+                TotalAmount = 0,
+                LeftAmount = 0,
+                AdditionalAmount = 0,
+                PromotionCode = null,
+                PromotionValue = 0,
+                CreatedAt = DateTime.Now,
+                Notes = "Seeded"
+            };
+            dbContext.Set<Booking>().Add(b);
+            await dbContext.SaveChangesAsync();
+
+            var brt = new BookingRoomType
+            {
+                BookingRoomTypeId = Guid.NewGuid(),
+                BookingId = b.Id,
+                RoomTypeId = rt.Id,
+                RoomTypeName = rt.Name,
+                Capacity = rt.Capacity,
+                Price = price,
+                TotalRoom = s.roomsCount,
+                StartDate = start,
+                EndDate = end
+            };
+            dbContext.Set<BookingRoomType>().Add(brt);
+            await dbContext.SaveChangesAsync();
+
+            var availableRoomIds = rooms.Where(r => r.RoomTypeId == rt.Id).Select(r => r.Id).Take(s.roomsCount).ToList();
+            foreach (var rid in availableRoomIds)
+            {
+                var r = rooms.First(x => x.Id == rid);
+                var br = new BookingRoom
+                {
+                    BookingRoomId = Guid.NewGuid(),
+                    BookingRoomTypeId = brt.BookingRoomTypeId,
+                    RoomId = r.Id,
+                    RoomName = r.Number,
+                    StartDate = start,
+                    EndDate = end,
+                    BookingStatus = BookingRoomStatus.Pending
+                };
+                dbContext.Set<BookingRoom>().Add(br);
+                await dbContext.SaveChangesAsync();
+
+                dbContext.Set<BookingGuest>().Add(new BookingGuest
+                {
+                    BookingGuestId = Guid.NewGuid(),
+                    BookingRoomId = br.BookingRoomId,
+                    GuestId = g.Id
+                });
+                await dbContext.SaveChangesAsync();
+            }
+
+            var nights = (end.Date - start.Date).Days;
+            var amount = price * nights * Math.Max(availableRoomIds.Count, 1);
+            b.TotalAmount = amount;
+            b.LeftAmount = amount;
+            dbContext.Set<Booking>().Update(b);
+            await dbContext.SaveChangesAsync();
+        }
     }
 
     public static async Task SeedHousekeepingTasksAsync(DbContext dbContext)
