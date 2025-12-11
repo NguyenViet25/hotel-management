@@ -56,108 +56,201 @@ public static class DatabaseInitializationExtensions
 
     public static async Task SeedHotelRoomsAsync(DbContext dbContext)
     {
-        var hotelId = DEFAULT_HOTEL_ID;
+        var legacyHotelId = DEFAULT_HOTEL_ID;
 
-        bool roomsExist = await dbContext.Set<HotelRoom>()
-            .AnyAsync(r => r.HotelId == hotelId);
-        if (roomsExist) return;
+        var tts1 = await dbContext.Set<Hotel>().FirstOrDefaultAsync(h => h.Code == "TTS1");
+        var tts1HotelId = tts1?.Id;
 
-        var roomTypes = await dbContext.Set<RoomType>()
-            .Where(rt => rt.HotelId == hotelId)
-            .ToListAsync();
-        if (!roomTypes.Any()) return;
+        var allRooms = new List<HotelRoom>();
 
-        var mapping = new Dictionary<string, string[]>
+        var legacyRoomsExist = await dbContext.Set<HotelRoom>().AnyAsync(r => r.HotelId == legacyHotelId);
+        if (!legacyRoomsExist)
         {
+            var legacyRoomTypes = await dbContext.Set<RoomType>()
+                .Where(rt => rt.HotelId == legacyHotelId)
+                .ToListAsync();
+            if (legacyRoomTypes.Any())
             {
-                "Phòng Superior Có Giường Cỡ Queen",
-                new[] { "101", "102", "203", "204", "205", "206", "207", "208", "209", "210", "211", "303", "304", "305", "306", "307", "308", "309", "310", "311", "403", "404", "405", "406", "407", "408", "409", "410", "411", "503", "504", "505", "506", "507", "508", "509", "510", "511", "603", "604", "605", "606", "607", "608", "609", "610", "611" }
-            },
-            {
-                "Phòng Deluxe nhìn ra biển",
-                new[] { "201", "202", "301", "302", "401", "402", "501", "502", "601", "602" }
-            },
-            {
-                "Studio nhìn ra quang cảnh đại dương",
-                new[] { "701", "702", "703", "704", "705" }
-            }
-        };
-
-        var rooms = new List<HotelRoom>();
-
-        foreach (var kv in mapping)
-        {
-            var rt = roomTypes.FirstOrDefault(x => x.Name == kv.Key);
-            if (rt == null) continue;
-            foreach (var num in kv.Value)
-            {
-                var floor = int.Parse(num) / 100;
-                rooms.Add(new HotelRoom
+                var mappingLegacy = new Dictionary<string, string[]>
                 {
-                    Id = Guid.NewGuid(),
-                    HotelId = hotelId,
-                    RoomTypeId = rt.Id,
-                    Number = num,
-                    Floor = floor,
-                    Status = RoomStatus.Available
-                });
+                    {
+                        "Phòng Superior Có Giường Cỡ Queen",
+                        new[] { "101", "102", "203", "204", "205", "206", "207", "208", "209", "210", "211", "303", "304", "305", "306", "307", "308", "309", "310", "311", "403", "404", "405", "406", "407", "408", "409", "410", "411", "503", "504", "505", "506", "507", "508", "509", "510", "511", "603", "604", "605", "606", "607", "608", "609", "610", "611" }
+                    },
+                    {
+                        "Phòng Deluxe nhìn ra biển",
+                        new[] { "201", "202", "301", "302", "401", "402", "501", "502", "601", "602" }
+                    },
+                    {
+                        "Studio nhìn ra quang cảnh đại dương",
+                        new[] { "701", "702", "703", "704", "705" }
+                    }
+                };
+
+                foreach (var kv in mappingLegacy)
+                {
+                    var rt = legacyRoomTypes.FirstOrDefault(x => x.Name == kv.Key);
+                    if (rt == null) continue;
+                    foreach (var num in kv.Value)
+                    {
+                        var floor = int.Parse(num) / 100;
+                        allRooms.Add(new HotelRoom
+                        {
+                            Id = Guid.NewGuid(),
+                            HotelId = legacyHotelId,
+                            RoomTypeId = rt.Id,
+                            Number = num,
+                            Floor = floor,
+                            Status = RoomStatus.Available
+                        });
+                    }
+                }
             }
         }
 
-        dbContext.Set<HotelRoom>().AddRange(rooms);
-        await dbContext.SaveChangesAsync();
+        if (tts1HotelId.HasValue)
+        {
+            var tts1RoomsExist = await dbContext.Set<HotelRoom>().AnyAsync(r => r.HotelId == tts1HotelId.Value);
+            if (!tts1RoomsExist)
+            {
+                var tts1RoomTypes = await dbContext.Set<RoomType>()
+                    .Where(rt => rt.HotelId == tts1HotelId.Value)
+                    .ToListAsync();
+                if (tts1RoomTypes.Any())
+                {
+                    var mappingTts1 = new Dictionary<string, string[]>
+                    {
+                        {
+                            "Phòng Superior Có Giường Cỡ Queen",
+                            new[] { "201", "202", "203", "204", "205", "206", "301", "302", "303", "304", "305", "306", "401", "402", "403", "404", "405", "406", "501", "502", "503", "504", "505", "506", "601", "602", "603", "604", "605", "606", "701", "702", "703", "704", "705", "706", "801", "802", "803", "804", "805", "806", "901", "902", "903", "904", "905", "906" }
+                        },
+                        {
+                            "Phòng Deluxe nhìn ra biển",
+                            new[] { "207", "208", "307", "308", "407", "408", "507", "508", "607", "608", "707", "708", "807", "808", "907", "908" }
+                        }
+                    };
+
+                    foreach (var kv in mappingTts1)
+                    {
+                        var rt = tts1RoomTypes.FirstOrDefault(x => x.Name == kv.Key);
+                        if (rt == null) continue;
+                        foreach (var num in kv.Value)
+                        {
+                            var floor = int.Parse(num) / 100;
+                            allRooms.Add(new HotelRoom
+                            {
+                                Id = Guid.NewGuid(),
+                                HotelId = tts1HotelId.Value,
+                                RoomTypeId = rt.Id,
+                                Number = num,
+                                Floor = floor,
+                                Status = RoomStatus.Available
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        if (allRooms.Any())
+        {
+            dbContext.Set<HotelRoom>().AddRange(allRooms);
+            await dbContext.SaveChangesAsync();
+        }
     }
 
     public static async Task SeedRoomTypesAsync(DbContext dbContext)
     {
-        var hotelId = DEFAULT_HOTEL_ID;
-        // Check if there are already room types for this hotel
-        bool exists = await dbContext.Set<RoomType>().AnyAsync(rt => rt.HotelId == hotelId);
-        if (exists)
-            return; // Already seeded
+        var legacyHotelId = DEFAULT_HOTEL_ID;
+        var tts1 = await dbContext.Set<Hotel>().FirstOrDefaultAsync(h => h.Code == "TTS1");
+        var tts1HotelId = tts1?.Id;
 
-        var roomTypes = new List<RoomType>
+        var toAdd = new List<RoomType>();
+
+        var legacyExists = await dbContext.Set<RoomType>().AnyAsync(rt => rt.HotelId == legacyHotelId);
+        if (!legacyExists)
         {
-            new RoomType
+            toAdd.AddRange(new[]
             {
-                Id = Guid.NewGuid(),
-                HotelId = hotelId,
-                Capacity = 4,
-                Name = "Phòng Superior Có Giường Cỡ Queen",
-                Description = "Phòng được trang bị máy điều hòa, tivi màn hình phẳng với truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Không gian được bố trí tủ quần áo gọn gàng và sở hữu tầm nhìn hướng ra thành phố. Phòng gồm 2 giường đơn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn đồng hành.",
-                BasePriceFrom = 400000,
-                BasePriceTo = 550000,
-                Prices = "",
-                ImageUrl = "https://byvn.net/ajHK"
-            },
-            new RoomType
-            {
-                Id = Guid.NewGuid(),
-                HotelId = hotelId,
-                Capacity = 4,
-                Name = "Phòng Deluxe nhìn ra biển",
-                Description = "Phòng được trang bị máy điều hòa, tivi màn hình phẳng với truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Không gian được bố trí tủ quần áo gọn gàng và sở hữu tầm nhìn hướng ra biển. Phòng gồm 2 giường cỡ lớn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn đồng hành.",
-                BasePriceFrom = 500000,
-                BasePriceTo = 650000,
-                Prices = "",
-                ImageUrl = "https://byvn.net/gO4v"
-            },
-            new RoomType
-            {
-                Id = Guid.NewGuid(),
-                HotelId = hotelId,
-                Capacity = 4,
-                Name = "Studio nhìn ra quang cảnh đại dương",
-                Description = "Phòng được trang bị máy điều hòa, bàn làm việc, sofa, TV màn hình phẳng với các kênh truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Ban công nhìn ra biển. Phòng tắm riêng đi kèm tiện nghi vòi sen và bồn tắm. Phòng gồm 2 giường cỡ lớn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn bè đồng hành",
-                BasePriceFrom = 1000000,
-                BasePriceTo = 1200000,
-                Prices = "",
-                ImageUrl = "https://byvn.net/8a8J",
-            }
-        };
+                new RoomType
+                {
+                    Id = Guid.NewGuid(),
+                    HotelId = legacyHotelId,
+                    Capacity = 4,
+                    Name = "Phòng Superior Có Giường Cỡ Queen",
+                    Description = "Phòng được trang bị máy điều hòa, tivi màn hình phẳng với truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Không gian được bố trí tủ quần áo gọn gàng và sở hữu tầm nhìn hướng ra thành phố. Phòng gồm 2 giường đơn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn đồng hành.",
+                    BasePriceFrom = 400000,
+                    BasePriceTo = 550000,
+                    Prices = "",
+                    ImageUrl = "https://byvn.net/ajHK"
+                },
+                new RoomType
+                {
+                    Id = Guid.NewGuid(),
+                    HotelId = legacyHotelId,
+                    Capacity = 4,
+                    Name = "Phòng Deluxe nhìn ra biển",
+                    Description = "Phòng được trang bị máy điều hòa, tivi màn hình phẳng với truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Không gian được bố trí tủ quần áo gọn gàng và sở hữu tầm nhìn hướng ra biển. Phòng gồm 2 giường cỡ lớn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn đồng hành.",
+                    BasePriceFrom = 500000,
+                    BasePriceTo = 650000,
+                    Prices = "",
+                    ImageUrl = "https://byvn.net/gO4v"
+                },
+                new RoomType
+                {
+                    Id = Guid.NewGuid(),
+                    HotelId = legacyHotelId,
+                    Capacity = 4,
+                    Name = "Studio nhìn ra quang cảnh đại dương",
+                    Description = "Phòng được trang bị máy điều hòa, bàn làm việc, sofa, TV màn hình phẳng với các kênh truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Ban công nhìn ra biển. Phòng tắm riêng đi kèm tiện nghi vòi sen và bồn tắm. Phòng gồm 2 giường cỡ lớn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn bè đồng hành",
+                    BasePriceFrom = 1000000,
+                    BasePriceTo = 1200000,
+                    Prices = "",
+                    ImageUrl = "https://byvn.net/8a8J",
+                }
+            });
+        }
 
-        dbContext.Set<RoomType>().AddRange(roomTypes);
-        await dbContext.SaveChangesAsync();
+        if (tts1HotelId.HasValue)
+        {
+            var tts1Exists = await dbContext.Set<RoomType>().AnyAsync(rt => rt.HotelId == tts1HotelId.Value);
+            if (!tts1Exists)
+            {
+                toAdd.AddRange(new[]
+                {
+                    new RoomType
+                    {
+                        Id = Guid.NewGuid(),
+                        HotelId = tts1HotelId.Value,
+                        Capacity = 4,
+                        Name = "Phòng Superior Có Giường Cỡ Queen",
+                        Description = "Phòng được trang bị máy điều hòa, tivi màn hình phẳng với truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Không gian được bố trí tủ quần áo gọn gàng và sở hữu tầm nhìn hướng ra thành phố. Phòng gồm 2 giường đơn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn đồng hành.",
+                        BasePriceFrom = 400000,
+                        BasePriceTo = 550000,
+                        Prices = "",
+                        ImageUrl = "https://byvn.net/zD6T"
+                    },
+                    new RoomType
+                    {
+                        Id = Guid.NewGuid(),
+                        HotelId = tts1HotelId.Value,
+                        Capacity = 4,
+                        Name = "Phòng Deluxe nhìn ra biển",
+                        Description = "Phòng được trang bị máy điều hòa, tivi màn hình phẳng với truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Không gian được bố trí tủ quần áo gọn gàng và sở hữu tầm nhìn hướng ra biển. Phòng gồm 2 giường cỡ lớn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn đồng hành.",
+                        BasePriceFrom = 500000,
+                        BasePriceTo = 650000,
+                        Prices = "",
+                        ImageUrl = "https://byvn.net/RBLG"
+                    }
+                });
+            }
+        }
+
+        if (toAdd.Any())
+        {
+            dbContext.Set<RoomType>().AddRange(toAdd);
+            await dbContext.SaveChangesAsync();
+        }
     }
 
     public static async Task SeedHotelsAsync(DbContext dbContext)
