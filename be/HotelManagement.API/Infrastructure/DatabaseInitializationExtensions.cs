@@ -716,6 +716,54 @@ public static class DatabaseInitializationExtensions
             }
         }
 
+        var hotels = await dbContext.Set<Hotel>().Where(h => h.Code == "TTSLEGACY" || h.Code == "TTS1" || h.Code == "TTS2" || h.Code == "TTS3").ToListAsync();
+        var roleSeeds = new List<(UserRole role, List<(string name, string phone)> people)> {
+            (UserRole.Manager, new List<(string,string)> { ("Văn Việt Anh","0967092888") }),
+            (UserRole.FrontDesk, new List<(string,string)> { ("Trần Thị Hương","0361129678"), ("Đinh Hà Quang Anh","0989375972") }),
+            (UserRole.Kitchen, new List<(string,string)> { ("Nguyễn Hữu Dũng","0783672973"), ("Trần Viết Hùng","0983452428"), ("Phạm Nguyên Ngọc","0919647283"), ("Hà Thị Lý","0975836475") }),
+            (UserRole.Waiter, new List<(string,string)> { ("Nguyễn Thị Huyền","0366127378"), ("Nguyễn Đình Tuấn","0979153656"), ("Hà Văn Dũng","0363945781"), ("Đinh Thị Thanh Thủy","0974231237"), ("Trần Hạ Vy","0904864923") }),
+            (UserRole.Housekeeper, new List<(string,string)> { ("Trần Thùy Anh","0989182738"), ("Đinh Thanh Hà","0791283923"), ("Cao Thị Vân","0581769141"), ("Trần Nguyễn Bảo Ngọc","0979123746"), ("Hoàng Thị Loan","0904888157") })
+        };
+
+        foreach (var hotel in hotels)
+        {
+            foreach (var (role, people) in roleSeeds)
+            {
+                for (int i = 0; i < 2; i++)
+                {
+                    var person = people[i % people.Count];
+                    var username = $"{role.ToString().ToLower()}-{hotel.Code.ToLower()}-{i + 1}";
+                    var email = $"{username}@hotel.com";
+
+                    var existing = await userManager.FindByNameAsync(username);
+                    if (existing != null) continue;
+
+                    var newUser = new AppUser
+                    {
+                        UserName = username,
+                        Email = email,
+                        EmailConfirmed = true,
+                        Fullname = person.name,
+                        PhoneNumber = person.phone,
+                        LockoutEnd = DateTime.Now.AddMonths(-1),
+                    };
+
+                    var createResult = await userManager.CreateAsync(newUser, "Password1@");
+                    if (createResult.Succeeded)
+                    {
+                        await userManager.AddToRoleAsync(newUser, role.ToString());
+                        dbContext.Set<UserPropertyRole>().Add(new UserPropertyRole
+                        {
+                            Id = Guid.NewGuid(),
+                            HotelId = hotel.Id,
+                            UserId = newUser.Id,
+                            Role = role
+                        });
+                    }
+                }
+            }
+        }
+
         await dbContext.SaveChangesAsync();
     }
 
