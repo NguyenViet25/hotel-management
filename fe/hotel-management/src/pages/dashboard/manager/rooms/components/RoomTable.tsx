@@ -85,7 +85,7 @@ const RoomTable: React.FC<RoomTableProps> = ({
       pagination={{ page, pageSize, total, onPageChange }}
       onAdd={onAdd}
       onEdit={onEdit}
-      onDelete={onDelete}
+      // onDelete={onDelete}
       onLock={onChangeStatus}
       getRowId={(row: RoomDto) => row.id}
       onSearch={onSearch}

@@ -4,6 +4,8 @@ using HotelManagement.Domain;
 using HotelManagement.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
+using System.Globalization;
+using System.Text;
 
 namespace HotelManagement.Api.Infrastructure;
 
@@ -991,18 +993,36 @@ public static class DatabaseInitializationExtensions
             (UserRole.Housekeeper, new List<(string,string)> { ("Trần Thùy Anh","0989182738"), ("Đinh Thanh Hà","0791283923"), ("Cao Thị Vân","0581769141"), ("Trần Nguyễn Bảo Ngọc","0979123746"), ("Hoàng Thị Loan","0904888157") })
         };
 
+        string Slugify(string s)
+        {
+            var n = s.Normalize(NormalizationForm.FormD);
+            var sb = new StringBuilder();
+            foreach (var ch in n)
+            {
+                var cat = CharUnicodeInfo.GetUnicodeCategory(ch);
+                if (cat == UnicodeCategory.NonSpacingMark) continue;
+                var c = char.ToLower(ch);
+                if (char.IsLetterOrDigit(c)) sb.Append(c);
+                else if (char.IsWhiteSpace(c) || c == '-' || c == '_') sb.Append('-');
+            }
+            var slug = sb.ToString().Trim('-');
+            while (slug.Contains("--")) slug = slug.Replace("--", "-");
+            return slug;
+        }
+
         foreach (var hotel in hotels)
         {
             foreach (var (role, people) in roleSeeds)
             {
-                for (int i = 0; i < 1; i++)
+                foreach (var person in people)
                 {
-                    var person = people[i % people.Count];
-                    var username = $"{role.ToString().ToLower()}-{hotel.Code.ToLower()}-{i + 1}";
+                    var baseUser = Slugify(person.name);
+                    var username = $"{baseUser}-{hotel.Code.ToLower()}";
                     var email = $"{username}@hotel.com";
 
-                    var existing = await userManager.FindByNameAsync(username);
-                    if (existing != null) continue;
+                    var existingByName = await userManager.FindByNameAsync(username);
+                    var existingByEmail = await userManager.FindByEmailAsync(email);
+                    if (existingByName != null || existingByEmail != null) continue;
 
                     var newUser = new AppUser
                     {

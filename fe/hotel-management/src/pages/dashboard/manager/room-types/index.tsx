@@ -291,13 +291,12 @@ const RoomTypePage: React.FC = () => {
                 <Box sx={{ position: "relative" }}>
                   <CardMedia
                     component="img"
-                    height="160"
                     image={
                       rt.imageUrl ||
                       "https://via.placeholder.com/640x360?text=Room+Type"
                     }
                     alt={rt.name}
-                    sx={{ objectFit: "contain" }}
+                    sx={{ objectFit: "contain", borderRadius: 1, mb: 1 }}
                   />
 
                   <Stack spacing={0.5}>

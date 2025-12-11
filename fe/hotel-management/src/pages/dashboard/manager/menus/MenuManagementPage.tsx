@@ -237,6 +237,21 @@ const MenuManagementPage: React.FC = () => {
     () => items.filter((it) => (it.category || "").trim() === "Set"),
     [items]
   );
+  const sortedSetRecords: MenuItemDto[] = React.useMemo(
+    () =>
+      [...setRecords].sort((a, b) => Number(a.unitPrice) - Number(b.unitPrice)),
+    [setRecords]
+  );
+  const setGroupsByPrice: Array<[number, MenuItemDto[]]> = React.useMemo(() => {
+    const map = new Map<number, MenuItemDto[]>();
+    setRecords.forEach((it) => {
+      const price = Number(it.unitPrice) || 0;
+      const arr = map.get(price) || [];
+      arr.push(it);
+      map.set(price, arr);
+    });
+    return Array.from(map.entries()).sort((a, b) => a[0] - b[0]);
+  }, [setRecords]);
   const foodItemsFiltered: MenuItemDto[] = React.useMemo(
     () =>
       foodItems.filter(
@@ -515,139 +530,170 @@ const MenuManagementPage: React.FC = () => {
                   />
                 ) : (
                   <Grid container spacing={2}>
-                    {setRecords.map((it) => (
-                      <Grid key={it.id} size={{ xs: 12, lg: 6 }}>
-                        <Card
-                          elevation={0}
-                          sx={{
-                            borderRadius: 3,
-                            p: 2,
-                            backgroundColor: "#FFF8E1",
-                            boxShadow: "0 4px 16px rgba(0,0,0,0.06)",
-                            position: "relative",
-                          }}
-                        >
-                          <Stack
-                            direction={{ xs: "column", md: "row" }}
-                            spacing={2}
-                          >
-                            <Stack
-                              justifyContent={"center"}
-                              sx={{ height: "100%" }}
+                    {sortedSetRecords.map((it, idx, arr) => {
+                      const prevPrice =
+                        idx > 0 ? Number(arr[idx - 1].unitPrice) || 0 : -1;
+                      const price = Number(it.unitPrice) || 0;
+                      const showHeader = prevPrice !== price;
+                      return (
+                        <React.Fragment key={it.id}>
+                          {showHeader && (
+                            <Grid size={{ xs: 12 }}>
+                              <Stack
+                                direction="row"
+                                alignItems="center"
+                                spacing={1}
+                              >
+                                <TableRestaurantIcon color="warning" />
+                                <Typography
+                                  variant="subtitle1"
+                                  sx={{ fontWeight: 800 }}
+                                >
+                                  {`Giá/người: ${Number(
+                                    price
+                                  ).toLocaleString()} ₫`}
+                                </Typography>
+                              </Stack>
+                            </Grid>
+                          )}
+                          <Grid size={{ xs: 12, lg: 6 }}>
+                            <Card
+                              elevation={0}
+                              sx={{
+                                borderRadius: 3,
+                                p: 2,
+                                backgroundColor: "#FFF8E1",
+                                boxShadow: "0 4px 16px rgba(0,0,0,0.06)",
+                                position: "relative",
+                              }}
                             >
-                              <Box
-                                sx={{
-                                  width: 240,
-                                  minWidth: 240,
-                                  height: 240,
-                                  borderRadius: 2,
-                                  overflow: "hidden",
-                                }}
+                              <Stack
+                                direction={{ xs: "column", md: "row" }}
+                                spacing={2}
                               >
-                                <img
-                                  src={it.imageUrl || "/assets/logo.png"}
-                                  alt={it.name}
-                                  style={{
-                                    width: "100%",
-                                    height: "100%",
-                                    objectFit: "contain",
-                                  }}
-                                />
-                              </Box>
-                            </Stack>
+                                <Stack
+                                  justifyContent={"center"}
+                                  sx={{ height: "100%" }}
+                                >
+                                  <Box
+                                    sx={{
+                                      width: 240,
+                                      minWidth: 240,
+                                      height: 240,
+                                      borderRadius: 2,
+                                      overflow: "hidden",
+                                    }}
+                                  >
+                                    <img
+                                      src={it.imageUrl || "/assets/logo.png"}
+                                      alt={it.name}
+                                      style={{
+                                        width: "100%",
+                                        height: "100%",
+                                        objectFit: "contain",
+                                      }}
+                                    />
+                                  </Box>
+                                </Stack>
 
-                            <Stack spacing={1} sx={{ flexGrow: 1 }}>
-                              <Stack
-                                direction="row"
-                                alignItems="center"
-                                justifyContent="space-between"
-                              >
-                                <Stack
-                                  direction="row"
-                                  alignItems="center"
-                                  spacing={1}
-                                >
-                                  <TableRestaurantIcon color="warning" />
-                                  <Typography
-                                    variant="subtitle1"
-                                    sx={{ fontWeight: 800 }}
+                                <Stack spacing={1} sx={{ flexGrow: 1 }}>
+                                  <Stack
+                                    direction="row"
+                                    alignItems="center"
+                                    justifyContent="space-between"
                                   >
-                                    {it.name}
-                                  </Typography>
-                                </Stack>
-                                <Chip
-                                  label="Set"
-                                  color="warning"
-                                  size="small"
-                                />
-                              </Stack>
-                              <Stack spacing={0.5} sx={{ mt: 0.5 }}>
-                                {(it.description || "")
-                                  .split(/\n|,/)
-                                  .map((s) => s.trim())
-                                  .filter((s) => s.length > 0)
-                                  .map((food, idx) => (
-                                    <Typography
-                                      key={idx}
-                                      variant="body2"
-                                      color="text.secondary"
+                                    <Stack
+                                      direction="row"
+                                      alignItems="center"
+                                      spacing={1}
                                     >
-                                      {`${idx + 1}. ${food}`}
-                                    </Typography>
-                                  ))}
-                              </Stack>
-                              <Stack
-                                direction="row"
-                                justifyContent="space-between"
-                                alignItems="center"
-                              >
-                                <Stack
-                                  direction="row"
-                                  spacing={1}
-                                  alignItems="center"
-                                >
-                                  <Chip
-                                    label={
-                                      it.status == 0 ? "Đang bán" : "Ngừng bán"
-                                    }
-                                    color={it.status == 0 ? "success" : "error"}
-                                    size="small"
-                                  />
-                                </Stack>
-                                <Stack direction="row" spacing={0.5}>
-                                  <IconButton
-                                    size="small"
-                                    color="primary"
-                                    onClick={() => openEdit(it)}
+                                      <TableRestaurantIcon color="warning" />
+                                      <Typography
+                                        variant="subtitle1"
+                                        sx={{ fontWeight: 800 }}
+                                      >
+                                        {it.name}
+                                      </Typography>
+                                    </Stack>
+                                    <Chip
+                                      label="Set"
+                                      color="warning"
+                                      size="small"
+                                    />
+                                  </Stack>
+                                  <Stack spacing={0.5} sx={{ mt: 0.5 }}>
+                                    {(it.description || "")
+                                      .split(/\n|,/)
+                                      .map((s) => s.trim())
+                                      .filter((s) => s.length > 0)
+                                      .map((food, idx) => (
+                                        <Typography
+                                          key={idx}
+                                          variant="body2"
+                                          color="text.secondary"
+                                        >
+                                          {`${idx + 1}. ${food}`}
+                                        </Typography>
+                                      ))}
+                                  </Stack>
+                                  <Stack
+                                    direction="row"
+                                    justifyContent="space-between"
+                                    alignItems="center"
                                   >
-                                    <EditIcon fontSize="small" />
-                                  </IconButton>
-                                  {/* <IconButton
+                                    <Stack
+                                      direction="row"
+                                      spacing={1}
+                                      alignItems="center"
+                                    >
+                                      <Chip
+                                        label={
+                                          it.status == 0
+                                            ? "Đang bán"
+                                            : "Ngừng bán"
+                                        }
+                                        color={
+                                          it.status == 0 ? "success" : "error"
+                                        }
+                                        size="small"
+                                      />
+                                    </Stack>
+                                    <Stack direction="row" spacing={0.5}>
+                                      <IconButton
+                                        size="small"
+                                        color="primary"
+                                        onClick={() => openEdit(it)}
+                                      >
+                                        <EditIcon fontSize="small" />
+                                      </IconButton>
+                                      {/* <IconButton
                                     size="small"
                                     color="error"
                                     onClick={() => openDelete(it)}
                                   >
                                     <DeleteOutlineIcon fontSize="small" />
                                   </IconButton> */}
+                                    </Stack>
+                                  </Stack>
                                 </Stack>
                               </Stack>
-                            </Stack>
-                          </Stack>
-                          <Chip
-                            label={`Giá/người: ${Number(
-                              it.unitPrice
-                            ).toLocaleString()} ₫`}
-                            color="warning"
-                            sx={{
-                              position: "absolute",
-                              left: 16,
-                              bottom: 16,
-                              fontWeight: 700,
-                            }}
-                          />
-                        </Card>
-                      </Grid>
-                    ))}
+                              <Chip
+                                label={`Giá/người: ${Number(
+                                  it.unitPrice
+                                ).toLocaleString()} ₫`}
+                                color="warning"
+                                sx={{
+                                  position: "absolute",
+                                  left: 16,
+                                  bottom: 16,
+                                  fontWeight: 700,
+                                }}
+                              />
+                            </Card>
+                          </Grid>
+                        </React.Fragment>
+                      );
+                    })}
                   </Grid>
                 )}
               </Stack>

@@ -608,7 +608,8 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                       boxShadow: "0 3px 12px rgba(0,0,0,0.1)",
                       position: "relative",
                       border: "1px solid rgba(0,0,0,0.08)",
-                      borderLeft: "6px solid",
+                      borderLeft:
+                        (r.status as number) === 4 ? "6px solid" : "0px solid",
                       borderLeftColor:
                         (r.status as number) === 4
                           ? "error.main"
@@ -624,10 +625,9 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                       },
                     }}
                   >
-                    <Box sx={{ position: "relative", pt: 4 }}>
+                    <Box sx={{ position: "relative" }}>
                       <Box
                         sx={{
-                          height: 110,
                           overflow: "hidden",
                         }}
                       >
@@ -640,8 +640,7 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                           style={{
                             width: "100%",
                             height: "100%",
-                            objectFit: "contain",
-                            display: "block",
+                            borderRadius: 4,
                           }}
                         />
                       </Box>
@@ -729,7 +728,10 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                               e.stopPropagation();
                               openEdit(r);
                             }}
-                            sx={{ bgcolor: "white" }}
+                            sx={{
+                              bgcolor: "white",
+                              "&:hover": { bgcolor: "grey.100" },
+                            }}
                           >
                             <EditIcon fontSize="small" />
                           </IconButton>
@@ -742,7 +744,10 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                               e.stopPropagation();
                               openStatus(r);
                             }}
-                            sx={{ bgcolor: "white" }}
+                            sx={{
+                              bgcolor: "white",
+                              "&:hover": { bgcolor: "grey.100" },
+                            }}
                           >
                             <ChangeCircleIcon fontSize="small" />
                           </IconButton>

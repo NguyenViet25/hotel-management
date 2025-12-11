@@ -194,7 +194,7 @@ export default function RoomNeedCleaningPage() {
           borderRadius: 2,
           fontWeight: 700,
         }}
-        icon={cfg.icon}
+        icon={cfg.icon as any}
       />
     );
   };
@@ -337,7 +337,7 @@ export default function RoomNeedCleaningPage() {
       <Grid container spacing={2}>
         {filteredRooms.map((r) => {
           return (
-            <Grid size={{ xs: 12, md: 4 }} key={r.id}>
+            <Grid size={{ xs: 12, md: 6 }} key={r.id}>
               <Card
                 sx={{
                   borderRadius: 3,

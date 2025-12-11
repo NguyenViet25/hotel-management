@@ -41,7 +41,7 @@ const RoomTypeTable: React.FC<RoomTypeTableProps> = ({
       pagination={{ page, pageSize, total, onPageChange }}
       onAdd={onAdd}
       onEdit={onEdit}
-      onDelete={onDelete}
+      // onDelete={onDelete}
       getRowId={(row) => row.id}
       onSearch={onSearch}
     />

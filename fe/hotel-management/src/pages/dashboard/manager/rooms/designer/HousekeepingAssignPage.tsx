@@ -155,15 +155,6 @@ export default function HousekeepingAssignPage() {
                           }}
                         />
                       </Stack>
-                      <Chip
-                        label={s === "Dirty" ? "Bẩn" : s}
-                        sx={{
-                          bgcolor: statusChipCfg.bg,
-                          color: statusChipCfg.text,
-                          fontWeight: 700,
-                        }}
-                        icon={<WarningAmberIcon />}
-                      />
                     </Stack>
                     <Stack direction="row" spacing={1} alignItems="center">
                       <Chip
@@ -196,7 +187,15 @@ export default function HousekeepingAssignPage() {
                         }}
                       />
                     </Stack>
-
+                    <Chip
+                      label={s === "Dirty" ? "Bẩn" : s}
+                      sx={{
+                        bgcolor: statusChipCfg.bg,
+                        color: statusChipCfg.text,
+                        fontWeight: 700,
+                      }}
+                      icon={<WarningAmberIcon />}
+                    />
                     <Stack direction="row" spacing={1}>
                       {taskByRoomId[r.id]?.assignedToName ? (
                         <Button
