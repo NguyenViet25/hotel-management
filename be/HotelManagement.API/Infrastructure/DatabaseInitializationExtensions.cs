@@ -64,28 +64,40 @@ public static class DatabaseInitializationExtensions
 
         var roomTypes = await dbContext.Set<RoomType>()
             .Where(rt => rt.HotelId == hotelId)
-            .OrderBy(rt => rt.Name)
             .ToListAsync();
         if (!roomTypes.Any()) return;
 
-        var rooms = new List<HotelRoom>();
-        var counts = new[] { 12, 11, 10, 12, 11, 10, 12, 11, 10, 12 };
-        int tIndex = 0;
-
-        for (int floor = 1; floor <= 10; floor++)
+        var mapping = new Dictionary<string, string[]>
         {
-            int roomCount = counts[floor - 1];
-            for (int i = 1; i <= roomCount; i++)
             {
-                var rt = roomTypes[tIndex % roomTypes.Count];
-                tIndex++;
-                var number = floor == 10 ? $"10{i:D2}" : $"{floor}{i:D2}";
+                "Phòng Superior Có Giường Cỡ Queen",
+                new[] { "101", "102", "203", "204", "205", "206", "207", "208", "209", "210", "211", "303", "304", "305", "306", "307", "308", "309", "310", "311", "403", "404", "405", "406", "407", "408", "409", "410", "411", "503", "504", "505", "506", "507", "508", "509", "510", "511", "603", "604", "605", "606", "607", "608", "609", "610", "611" }
+            },
+            {
+                "Phòng Deluxe nhìn ra biển",
+                new[] { "201", "202", "301", "302", "401", "402", "501", "502", "601", "602" }
+            },
+            {
+                "Studio nhìn ra quang cảnh đại dương",
+                new[] { "701", "702", "703", "704", "705" }
+            }
+        };
+
+        var rooms = new List<HotelRoom>();
+
+        foreach (var kv in mapping)
+        {
+            var rt = roomTypes.FirstOrDefault(x => x.Name == kv.Key);
+            if (rt == null) continue;
+            foreach (var num in kv.Value)
+            {
+                var floor = int.Parse(num) / 100;
                 rooms.Add(new HotelRoom
                 {
                     Id = Guid.NewGuid(),
                     HotelId = hotelId,
                     RoomTypeId = rt.Id,
-                    Number = number,
+                    Number = num,
                     Floor = floor,
                     Status = RoomStatus.Available
                 });
@@ -110,37 +122,37 @@ public static class DatabaseInitializationExtensions
             {
                 Id = Guid.NewGuid(),
                 HotelId = hotelId,
-                Capacity = 2,
-                Name = "Phòng Standard",
-                Description = "Phòng Standard tiện nghi cho 2 khách, có cửa sổ hướng ra thành phố.",
-                BasePriceFrom = 500000,
-                BasePriceTo = 700000,
-                Prices = "", // JSON string or empty for now
-                ImageUrl = "https://static.vecteezy.com/system/resources/previews/056/668/404/non_2x/vibrant-abstract-cozy-3d-bedroom-illustration-authentic-png.png"
-            },
-            new RoomType
-            {
-                Id = Guid.NewGuid(),
-                HotelId = hotelId,
-                Capacity = 3,
-                Name = "Phòng Superior",
-                Description = "Phòng Superior rộng rãi, trang bị đầy đủ tiện nghi, phù hợp gia đình nhỏ.",
-                BasePriceFrom = 800000,
-                BasePriceTo = 1200000,
+                Capacity = 4,
+                Name = "Phòng Superior Có Giường Cỡ Queen",
+                Description = "Phòng được trang bị máy điều hòa, tivi màn hình phẳng với truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Không gian được bố trí tủ quần áo gọn gàng và sở hữu tầm nhìn hướng ra thành phố. Phòng gồm 2 giường đơn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn đồng hành.",
+                BasePriceFrom = 400000,
+                BasePriceTo = 550000,
                 Prices = "",
-                ImageUrl = "https://png.pngtree.com/png-clipart/20241024/original/pngtree-3d-enchanted-dream-room-design-on-transparent-background-png-image_16482407.png"
+                ImageUrl = "https://byvn.net/ajHK"
             },
             new RoomType
             {
                 Id = Guid.NewGuid(),
                 HotelId = hotelId,
                 Capacity = 4,
-                Name = "Phòng Deluxe",
-                Description = "Phòng Deluxe sang trọng, có ban công và tầm nhìn hướng biển.",
-                BasePriceFrom = 1500000,
-                BasePriceTo = 2000000,
+                Name = "Phòng Deluxe nhìn ra biển",
+                Description = "Phòng được trang bị máy điều hòa, tivi màn hình phẳng với truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Không gian được bố trí tủ quần áo gọn gàng và sở hữu tầm nhìn hướng ra biển. Phòng gồm 2 giường cỡ lớn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn đồng hành.",
+                BasePriceFrom = 500000,
+                BasePriceTo = 650000,
                 Prices = "",
-                ImageUrl = "https://png.pngtree.com/png-vector/20250416/ourmid/pngtree-isometric-room-with-wardrobe-curtains-and-soft-lights-png-image_16020902.png",
+                ImageUrl = "https://byvn.net/gO4v"
+            },
+            new RoomType
+            {
+                Id = Guid.NewGuid(),
+                HotelId = hotelId,
+                Capacity = 4,
+                Name = "Studio nhìn ra quang cảnh đại dương",
+                Description = "Phòng được trang bị máy điều hòa, bàn làm việc, sofa, TV màn hình phẳng với các kênh truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Ban công nhìn ra biển. Phòng tắm riêng đi kèm tiện nghi vòi sen và bồn tắm. Phòng gồm 2 giường cỡ lớn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn bè đồng hành",
+                BasePriceFrom = 1000000,
+                BasePriceTo = 1200000,
+                Prices = "",
+                ImageUrl = "https://byvn.net/8a8J",
             }
         };
 
