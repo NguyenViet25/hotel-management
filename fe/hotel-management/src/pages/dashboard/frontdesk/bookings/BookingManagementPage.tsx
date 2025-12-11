@@ -111,9 +111,7 @@ const BookingManagementPage: React.FC = () => {
           startDate: fromDate
             ? fromDate.format("YYYY-MM-DDTHH:mm:ss")
             : undefined,
-          endDate: toDate
-            ? toDate.format("YYYY-MM-DDTHH:mm:ss")
-            : undefined,
+          endDate: toDate ? toDate.format("YYYY-MM-DDTHH:mm:ss") : undefined,
           guestName: guestName || undefined,
           roomNumber: roomNumber || undefined,
           sortBy: "createdAt",
@@ -388,7 +386,7 @@ const BookingManagementPage: React.FC = () => {
                             setOpenBookingInvoice(true);
                           }}
                         >
-                          In hóa đơn
+                          Xuất hóa đơn
                         </Button>
                       </Stack>
                     </Stack>
