@@ -511,38 +511,265 @@ public static class DatabaseInitializationExtensions
 
     public static async Task SeedMenuItemsAsync(DbContext dbContext)
     {
-        var hotelId = DEFAULT_HOTEL_ID;
-        // Check if there are any menu items already
-        if (await dbContext.Set<MenuItem>().AnyAsync())
-            return; // Already seeded
+        var hotels = await dbContext.Set<Hotel>().ToListAsync();
+        var rnd = new Random(1234);
 
-        var menuItems = new List<MenuItem>
+        decimal RandBetween(decimal min, decimal max)
         {
-            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Món chính", Name = "Hamburger bò", Description = "Hamburger thịt bò nóng hổi với rau xà lách, cà chua và sốt đặc trưng.", UnitPrice = 75000, ImageUrl = "https://png.pngtree.com/png-clipart/20230325/original/pngtree-juicy-burgers-with-a-transparent-background-png-image_9002761.png" },
-            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Món khai vị", Name = "Gỏi cuốn tôm thịt", Description = "Món cuốn truyền thống Việt Nam, gồm tôm, thịt heo, rau sống và bún.", UnitPrice = 35000, ImageUrl = "https://static.vecteezy.com/system/resources/previews/021/333/207/original/white-plate-with-food-isolated-on-a-transparent-background-png.png" },
-            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Món khai vị", Name = "Chả giò rế", Description = "Chả giò rế chiên giòn, nhân thịt heo và rau củ.", UnitPrice = 40000, ImageUrl = "https://cjfoods.com.vn/storage/nganh/product-detail-cha-gio-2-1200x1200.png" },
-            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Món chính", Name = "Phở bò đặc biệt", Description = "Phở bò truyền thống với nước dùng đậm đà, thịt bò tái chín.", UnitPrice = 55000, ImageUrl = "https://png.pngtree.com/png-vector/20240827/ourmid/pngtree-pho-beef-noodle-png-image_13375199.png" },
-            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Món chính", Name = "Bún chả Hà Nội", Description = "Bún chả nướng ăn kèm nước mắm chua ngọt và rau sống.", UnitPrice = 50000, ImageUrl = "https://www.mysaigon.cz/wp-content/uploads/2018/11/N11A2761-cropped-1-1170x679.png" },
-            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Món chính", Name = "Cơm tấm sườn bì chả", Description = "Cơm tấm ăn kèm sườn nướng, bì, chả trứng hấp và nước mắm tỏi ớt.", UnitPrice = 60000, ImageUrl = "https://png.pngtree.com/png-vector/20241225/ourmid/pngtree-grilled-pork-chop-with-side-delights-png-image_14849365.png" },
-            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Món chính", Name = "Bánh xèo miền Tây", Description = "Bánh xèo vàng giòn, nhân tôm thịt, giá đỗ, ăn kèm rau sống.", UnitPrice = 45000, ImageUrl = "https://viquekitchen.com/wp-content/uploads/2024/06/Banh-xeo-Xeo-cake-Trans-Small.png" },
-            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Món chính", Name = "Bò lúc lắc", Description = "Thịt bò cắt vuông, xào với hành tây, ớt chuông, dùng kèm khoai tây chiên.", UnitPrice = 85000, ImageUrl = "https://lauductroc.com/wp-content/uploads/2024/08/DSC03901.png" },
-            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Món lẩu", Name = "Lẩu thái hải sản", Description = "Nước lẩu chua cay kiểu Thái, kèm hải sản tươi ngon.", UnitPrice = 250000, ImageUrl = "https://sgfoods.com.vn/sites/default/files/product_images/noi-lau-thai-hres.png" },
-            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Món lẩu", Name = "Lẩu gà lá é", Description = "Món lẩu đặc sản Đà Lạt với gà ta và lá é thơm.", UnitPrice = 220000, ImageUrl = "https://khruabaanthai.com.vn/wp-content/uploads/2024/01/sot-cham-lau-kieu-thai-flyer-a4-15-20240105162205-oqtu6.png" },
-            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Món lẩu", Name = "Lẩu riêu cua bắp bò", Description = "Lẩu riêu cua truyền thống, ăn cùng bắp bò và đậu phụ.", UnitPrice = 230000, ImageUrl = "https://barona.vn/storage/san-pham/nuoc-dung/noi-lau-rieu-cua.png" },
-            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Món nướng", Name = "Ba chỉ nướng Hàn Quốc", Description = "Ba chỉ heo tươi nướng than hoa, ăn kèm rau cuốn và kim chi.", UnitPrice = 120000, ImageUrl = "https://png.pngtree.com/png-vector/20231213/ourmid/pngtree-watercolor-korean-barbecue-platter-free-elements-png-image_11328037.png" },
-            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Món nướng", Name = "Gà nướng mật ong", Description = "Gà nguyên con ướp mật ong nướng thơm phức, da giòn thịt mềm.", UnitPrice = 180000, ImageUrl = "https://png.pngtree.com/png-clipart/20250606/original/pngtree-honey-glazed-grilled-chicken-with-sambal-and-fresh-vegetables-png-image_21130470.png" },
-            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Món nướng", Name = "Hải sản nướng mỡ hành", Description = "Mực, tôm, sò nướng mỡ hành, chấm muối tiêu chanh.", UnitPrice = 160000, ImageUrl = "https://nhahangngocphuongnam.com/wp-content/uploads/2024/06/nha-hang-ngoc-phuong-nam-tu-hai-nuong-mo-hanh.png" },
-            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Món tráng miệng", Name = "Chè khúc bạch", Description = "Chè mát lạnh với thạch sữa tươi, hạnh nhân, nhãn.", UnitPrice = 35000, ImageUrl = "https://product.hstatic.net/200000863609/product/hoang_ty0622_30b240ec959c465faa620c413302311d_master.png" },
-            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Món tráng miệng", Name = "Bánh flan caramel", Description = "Bánh flan mềm mịn, vị ngọt dịu và lớp caramel hấp dẫn.", UnitPrice = 30000, ImageUrl = "https://png.pngtree.com/png-vector/20240603/ourmid/pngtree-creamy-caramel-flan-dessert-png-image_12611534.png" },
-            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Món tráng miệng", Name = "Kem dừa non", Description = "Kem dừa béo ngậy, ăn kèm cơm dừa non và thạch dừa.", UnitPrice = 40000, ImageUrl = "https://png.pngtree.com/png-vector/20240730/ourmid/pngtree-coconut-ice-cream-png-image_13301606.png" },
-            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Thức uống", Name = "Nước mía sầu riêng", Description = "Nước mía tươi pha sầu riêng thơm béo.", UnitPrice = 30000, ImageUrl = "https://png.pngtree.com/png-clipart/20241114/original/pngtree-sugarcane-juice-refreshment-png-image_17003578.png" },
-            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Thức uống", Name = "Cà phê sữa đá", Description = "Cà phê Việt Nam pha phin truyền thống, thêm sữa đặc và đá.", UnitPrice = 25000, ImageUrl = "https://png.pngtree.com/png-vector/20250125/ourmid/pngtree-perfect-summer-iced-coffees-png-image_15333609.png" },
-            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Thức uống", Name = "Trà tắc mật ong", Description = "Trà tắc tươi kết hợp mật ong rừng, vị thanh mát.", UnitPrice = 25000, ImageUrl = "https://thuviendohoa.com/ckfinder/userfiles/files/%E2%80%94Pngtree%E2%80%94png%20hand%20drawn%20illustration%20element_5774665.png" },
-            new MenuItem { Id = Guid.NewGuid(), HotelId = hotelId, Category = "Thức uống", Name = "Sinh tố xoài", Description = "Sinh tố xoài tươi xay nhuyễn, vị ngọt tự nhiên.", UnitPrice = 40000, ImageUrl = "https://png.pngtree.com/png-clipart/20240428/original/pngtree-sweet-healthy-mango-smoothie-in-a-glass-png-image_14965979.png" }
+            if (min >= max) return min;
+            var step = 10000m;
+            var steps = (int)((max - min) / step) + 1;
+            var pick = rnd.Next(0, steps);
+            return min + pick * step;
+        }
+
+        var defaults = new Dictionary<string, (decimal min, decimal max)>
+        {
+            { "NGAO", (60000m, 200000m) },
+            { "HÀU", (180000m, 300000m) },
+            { "SÒ LÔNG", (100000m, 200000m) },
+            { "BỀ BỀ", (250000m, 500000m) },
+            { "SAM", (250000m, 600000m) },
+            { "MÓNG TAY", (200000m, 350000m) },
+            { "TRAI", (150000m, 300000m) },
+            { "TÔM HÙM", (800000m, 1200000m) },
+            { "TÔM", (200000m, 500000m) },
+            { "CUA GẠCH - CUA THỊT", (300000m, 800000m) },
+            { "RẮN BIỂN", (300000m, 800000m) },
+            { "NEM", (200000m, 250000m) },
+            { "SÚP KHAI VỊ", (200000m, 300000m) },
+            { "GÀ", (200000m, 300000m) },
+            { "THỊT LỢN", (180000m, 200000m) },
+            { "THỊT BÒ", (250000m, 250000m) },
+            { "LƯƠN", (200000m, 250000m) },
+            { "CÁ GIÒ", (200000m, 600000m) },
+            { "RAU", (40000m, 70000m) },
+            { "CANH - CƠM", (60000m, 200000m) },
+            { "GHẸ", (300000m, 700000m) },
+            { "CÁ THU", (150000m, 200000m) },
+            { "CÁ NỤC", (160000m, 200000m) },
+            { "MỰC TƯƠI", (300000m, 350000m) },
+            { "ỐC HƯƠNG", (300000m, 800000m) },
+            { "TU HÀI", (300000m, 800000m) },
+            { "SỨA", (150000m, 150000m) },
+            { "CÁ MÚ", (200000m, 600000m) },
+            { "CÁ SỦ", (150000m, 400000m) },
         };
 
-        dbContext.Set<MenuItem>().AddRange(menuItems);
-        await dbContext.SaveChangesAsync();
+        var data = new List<(string cat, string name, decimal? min, decimal? max, string desc)>
+        {
+            ("NGAO", "Ngao hấp sả", 180000m, 180000m, ""),
+            ("NGAO", "Canh ngao chua", 60000m, 60000m, ""),
+            ("NGAO", "Ngao xào măng", 150000m, 150000m, ""),
+            ("NGAO", "Ngao xào dưa chua", 150000m, 150000m, ""),
+            ("NGAO", "Ngao hấp mùng tơi", 100000m, 100000m, ""),
+            ("NGAO", "Canh ngao mùng tơi", 50000m, 50000m, ""),
+
+            ("HÀU", "Hàu gỏi", 250000m, 250000m, ""),
+            ("HÀU", "Hàu nướng mỡ hành", 200000m, 200000m, ""),
+            ("HÀU", "Hàu hấp", null, null, ""),
+
+            ("SÒ LÔNG", "Sò hấp sả", 100000m, 100000m, ""),
+            ("SÒ LÔNG", "Sò nướng mỡ hành", 150000m, 150000m, ""),
+            ("SÒ LÔNG", "Sò xào giá", 150000m, 150000m, ""),
+            ("SÒ LÔNG", "Sò xào măng", 150000m, 150000m, ""),
+            ("SÒ LÔNG", "Sò xào dưa chua", 150000m, 150000m, ""),
+            ("SÒ LÔNG", "Sò xào thập cẩm", 150000m, 150000m, ""),
+
+            ("BỀ BỀ", "Bề bề sốt me", null, null, ""),
+            ("BỀ BỀ", "Bề bề rang muối", null, null, ""),
+            ("BỀ BỀ", "Bề bề hấp sả ngũ vị", null, null, ""),
+
+            ("SAM", "Sam giả cầy", null, null, ""),
+            ("SAM", "Sam chua ngọt", null, null, ""),
+            ("SAM", "Tiết sam nấu lá chua", null, null, ""),
+            ("SAM", "Sam xào sả ớt", null, null, ""),
+
+            ("MÓNG TAY", "Móng tay nướng", null, null, ""),
+            ("MÓNG TAY", "Móng tay hấp xào chua ngọt", null, null, ""),
+            ("MÓNG TAY", "Móng tay xào dưa chua", null, null, ""),
+
+            ("TRAI", "Trai nướng", null, null, ""),
+            ("TRAI", "Trai hấp", null, null, ""),
+            ("TRAI", "Trai xào giá", null, null, ""),
+
+            ("TÔM HÙM", "Tôm hùm hấp bia/sả", null, null, ""),
+            ("TÔM HÙM", "Tôm hùm nướng", null, null, ""),
+
+            ("TÔM", "Tôm nướng", 250000m, 300000m, ""),
+            ("TÔM", "Tôm hấp", 250000m, 300000m, ""),
+            ("TÔM", "Tôm chiên xù", 300000m, 300000m, ""),
+            ("TÔM", "Tôm chiên giòn", 250000m, 300000m, ""),
+            ("TÔM", "Tôm chao dầu", 250000m, 300000m, ""),
+            ("TÔM", "Tôm xào chua ngọt", null, null, ""),
+            ("TÔM", "Gỏi tôm", 400000m, 500000m, ""),
+            ("TÔM", "Tôm tráng trứng", 150000m, 150000m, ""),
+
+            ("CUA GẠCH - CUA THỊT", "Cua hấp", null, null, ""),
+            ("CUA GẠCH - CUA THỊT", "Cua nướng", null, null, ""),
+            ("CUA GẠCH - CUA THỊT", "Cua rang me", null, null, ""),
+            ("CUA GẠCH - CUA THỊT", "Cua rang muối", null, null, ""),
+            ("CUA GẠCH - CUA THỊT", "Cua nhồi thịt hấp", null, null, ""),
+            ("CUA GẠCH - CUA THỊT", "Cua sốt chua ngọt", null, null, ""),
+            ("CUA GẠCH - CUA THỊT", "Cua xào miến", null, null, ""),
+            ("CUA GẠCH - CUA THỊT", "Nem cua", null, null, ""),
+
+            ("RẮN BIỂN", "Rắn biển xào lăn", null, null, ""),
+            ("RẮN BIỂN", "Chả rắn", null, null, ""),
+            ("RẮN BIỂN", "Rắn biển tẩm bột chiên", null, null, ""),
+            ("RẮN BIỂN", "Rắn biển hấp", null, null, ""),
+            ("RẮN BIỂN", "Rắn biển rang sả", null, null, ""),
+            ("RẮN BIỂN", "Rắn biển nướng ngũ vị", null, null, ""),
+            ("RẮN BIỂN", "Cháo rắn", null, null, ""),
+            ("RẮN BIỂN", "Rượu tiết rắn", null, null, ""),
+
+            ("NEM", "Nem chua", 40000m, 40000m, ""),
+            ("NEM", "Nem hải sản", 200000m, 250000m, ""),
+            ("NEM", "Nem thập cẩm", 200000m, 250000m, ""),
+
+            ("SÚP KHAI VỊ", "Súp hải sản", 200000m, 200000m, ""),
+            ("SÚP KHAI VỊ", "Súp thập cẩm", 200000m, 200000m, ""),
+            ("SÚP KHAI VỊ", "Súp cua ngô non", 300000m, 300000m, ""),
+
+            ("GÀ", "Gà luộc", 250000m, 250000m, ""),
+            ("GÀ", "Gà rang sả ớt", 200000m, 250000m, ""),
+            ("GÀ", "Gà rang gừng", 200000m, 250000m, ""),
+            ("GÀ", "Gà xào chua ngọt", 200000m, 250000m, ""),
+            ("GÀ", "Gà rang muối", 200000m, 250000m, ""),
+            ("GÀ", "Nộm gà", 200000m, 200000m, ""),
+
+            ("THỊT LỢN", "Thịt ba chỉ rang", 180000m, 180000m, ""),
+            ("THỊT LỢN", "Thịt lợn quay", 200000m, 200000m, ""),
+            ("THỊT LỢN", "Thịt kho tàu", 200000m, 200000m, ""),
+            ("THỊT LỢN", "Sườn xào chua ngọt", 200000m, 200000m, ""),
+            ("THỊT LỢN", "Thịt xay rang mắm", 180000m, 180000m, ""),
+            ("THỊT LỢN", "Chân giò luộc", 200000m, 200000m, ""),
+
+            ("THỊT BÒ", "Bò xào thập cẩm", 250000m, 250000m, ""),
+            ("THỊT BÒ", "Bò xào sả ớt", 250000m, 250000m, ""),
+            ("THỊT BÒ", "Bò xào cần tây", 250000m, 250000m, ""),
+            ("THỊT BÒ", "Bò nhúng", 250000m, 250000m, ""),
+
+            ("LƯƠN", "Lươn xào sả ớt", 250000m, 250000m, ""),
+            ("LƯƠN", "Lươn nướng lá chanh", 200000m, 200000m, ""),
+            ("LƯƠN", "Lươn om mẻ", 200000m, 200000m, ""),
+            ("LƯƠN", "Lươn om chuối đậu", 250000m, 250000m, ""),
+
+            ("CUA THỊT + CUA GẠCH", "Cua hấp bia", null, null, ""),
+            ("CUA THỊT + CUA GẠCH", "Cua rang me", null, null, ""),
+            ("CUA THỊT + CUA GẠCH", "Cua rang muối", null, null, ""),
+            ("CUA THỊT + CUA GẠCH", "Cua nấu rau muống", null, null, ""),
+
+            ("CÁ GIÒ", "Cá giò om dưa", 500000m, 500000m, ""),
+            ("CÁ GIÒ", "Cá giò hấp xì dầu", 500000m, 500000m, ""),
+            ("CÁ GIÒ", "Cá giò chiên xù", 500000m, 500000m, ""),
+            ("CÁ GIÒ", "Canh chua cá giò", 200000m, 200000m, ""),
+            ("CÁ GIÒ", "Cá giò nướng chao", 500000m, 500000m, ""),
+            ("CÁ GIÒ", "Cháo cá giò", 200000m, 200000m, ""),
+            ("CÁ GIÒ", "Gỏi cá giò", 600000m, 600000m, ""),
+
+            ("RAU", "Rau muống luộc", 40000m, 40000m, ""),
+            ("RAU", "Rau muống xào", 40000m, 40000m, ""),
+            ("RAU", "Rau khoai lang xào tỏi", 40000m, 40000m, ""),
+            ("RAU", "Rau cải xào tỏi", 40000m, 40000m, ""),
+            ("RAU", "Rau cải xào tôm", 70000m, 70000m, ""),
+            ("RAU", "Rau bí xào tỏi", 50000m, 50000m, ""),
+            ("RAU", "Su su + cà rốt luộc", 40000m, 40000m, ""),
+            ("RAU", "Su su + cà rốt xào", 40000m, 40000m, ""),
+
+            ("CANH - CƠM", "Canh cá chua", 200000m, 200000m, ""),
+            ("CANH - CƠM", "Canh ngao chua", 60000m, 60000m, ""),
+            ("CANH - CƠM", "Canh ngao mùng tơi", 60000m, 60000m, ""),
+            ("CANH - CƠM", "Canh cải thịt nạc", 60000m, 60000m, ""),
+            ("CANH - CƠM", "Canh cải tôm", null, null, ""),
+            ("CANH - CƠM", "Rau ngót thịt", 60000m, 60000m, ""),
+            ("CANH - CƠM", "Canh cua đồng, cà", 60000m, 60000m, ""),
+            ("CANH - CƠM", "Cơm trắng", null, null, ""),
+
+            ("GHẸ", "Ghẹ hấp", null, null, ""),
+            ("GHẸ", "Ghẹ rang me", null, null, ""),
+            ("GHẸ", "Ghẹ rang muối", null, null, ""),
+            ("GHẸ", "Ghẹ nấu rau muống", null, null, ""),
+            ("GHẸ", "Nem ghẹ", null, null, ""),
+
+            ("CÁ THU", "Cá thu rán giòn", 200000m, 200000m, ""),
+            ("CÁ THU", "Cá thu sốt cà chua", 200000m, 200000m, ""),
+            ("CÁ THU", "Cá thu nướng", 200000m, 200000m, ""),
+            ("CÁ THU", "Chả cá thu", 200000m, 200000m, ""),
+            ("CÁ THU", "Cá thu kho gừng", 200000m, 200000m, ""),
+            ("CÁ THU", "Canh chua cá thu", 150000m, 150000m, ""),
+
+            ("CÁ NỤC", "Cá nục rán giòn", 160000m, 160000m, ""),
+            ("CÁ NỤC", "Cá nục kho", 180000m, 180000m, ""),
+            ("CÁ NỤC", "Cá nục sốt cà chua", 180000m, 180000m, ""),
+            ("CÁ NỤC", "Cá nục nướng", 200000m, 200000m, ""),
+
+            ("MỰC TƯƠI", "Mực xào thập cẩm", 300000m, 300000m, ""),
+            ("MỰC TƯƠI", "Mực hấp", 300000m, 300000m, ""),
+            ("MỰC TƯƠI", "Mực chiên xù", 350000m, 350000m, ""),
+            ("MỰC TƯƠI", "Mực chiên giòn", 350000m, 350000m, ""),
+            ("MỰC TƯƠI", "Mực trứng nướng", 350000m, 350000m, ""),
+            ("MỰC TƯƠI", "Mực trứng chao dầu", 350000m, 350000m, ""),
+            ("MỰC TƯƠI", "Mực xào dưa chua", 250000m, 350000m, ""),
+            ("MỰC TƯƠI", "Mực nhồi thịt hấp", 350000m, 350000m, ""),
+            ("MỰC TƯƠI", "Chả mực", 300000m, 350000m, ""),
+
+            ("ỐC HƯƠNG", "Ốc hương hấp gừng sả", null, null, ""),
+            ("ỐC HƯƠNG", "Ốc hương hấp lá chanh", null, null, ""),
+            ("ỐC HƯƠNG", "Ốc hương nướng tiêu bắc", null, null, ""),
+
+            ("TU HÀI", "Tu hài nướng mỡ hành", null, null, ""),
+            ("TU HÀI", "Tu hài hấp", null, null, ""),
+            ("TU HÀI", "Tu hài xào thập cẩm", null, null, ""),
+
+            ("MÓNG TAY", "Móng tay nướng (giá)", 250000m, 300000m, ""),
+            ("MÓNG TAY", "Móng tay hấp (giá)", 250000m, 250000m, ""),
+            ("MÓNG TAY", "Móng tay sốt me (giá)", 250000m, 300000m, ""),
+
+            ("SỨA", "Nộm sứa", 150000m, 150000m, ""),
+
+            ("CÁ MÚ", "Cá mú hấp xì dầu", 600000m, 600000m, ""),
+            ("CÁ MÚ", "Cá mú hấp dưa", 600000m, 600000m, ""),
+            ("CÁ MÚ", "Cá mú hấp ngũ vị", 600000m, 600000m, ""),
+            ("CÁ MÚ", "Gỏi cá mú", 600000m, 600000m, ""),
+            ("CÁ MÚ", "Cá mú nướng giấy bạc", 600000m, 600000m, ""),
+            ("CÁ MÚ", "Canh chua cá mú", 200000m, 200000m, ""),
+            ("CÁ MÚ", "Cháo cá mú", null, null, ""),
+
+            ("CÁ SỦ", "Cá sủ om dưa", 300000m, 350000m, ""),
+            ("CÁ SỦ", "Cá sủ hấp xì dầu", 300000m, 350000m, ""),
+            ("CÁ SỦ", "Cá sủ chiên xù", 300000m, 300000m, ""),
+            ("CÁ SỦ", "Canh chua cá sủ", 150000m, 150000m, ""),
+            ("CÁ SỦ", "Gỏi cá sủ", 400000m, 400000m, ""),
+        };
+
+        foreach (var h in hotels)
+        {
+            var exists = await dbContext.Set<MenuItem>().AnyAsync(mi => mi.HotelId == h.Id && mi.Category != "Set");
+            if (exists) continue;
+
+            var items = new List<MenuItem>();
+            foreach (var d in data)
+            {
+                var range = defaults.TryGetValue(d.cat, out var def) ? def : (100000m, 300000m);
+                var price = d.min.HasValue && d.max.HasValue ? (d.min.Value == d.max.Value ? d.min.Value : RandBetween(d.min.Value, d.max.Value)) : RandBetween(range.min, range.max);
+                items.Add(new MenuItem
+                {
+                    Id = Guid.NewGuid(),
+                    HotelId = h.Id,
+                    Category = d.cat,
+                    Name = d.name,
+                    Description = d.desc,
+                    UnitPrice = price,
+                    ImageUrl = string.Empty,
+                    Status = 0,
+                    IsActive = true
+                });
+            }
+
+            dbContext.Set<MenuItem>().AddRange(items);
+            await dbContext.SaveChangesAsync();
+        }
     }
 
     public static async Task SeedMenuSetsAsync(DbContext dbContext)
