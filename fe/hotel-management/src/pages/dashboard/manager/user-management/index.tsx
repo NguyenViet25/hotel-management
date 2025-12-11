@@ -1,36 +1,30 @@
+import { AddCircle } from "@mui/icons-material";
 import {
   Alert,
   Box,
+  Button,
   Chip,
+  MenuItem,
   Snackbar,
   Stack,
   TextField,
-  MenuItem,
-  Button,
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
 import React, { useEffect, useState } from "react";
-import type {
-  CreateUserRequest,
-  PropertyRole,
-  User,
-} from "../../../../api/userService";
+import type { CreateUserRequest, User } from "../../../../api/userService";
 import userService from "../../../../api/userService";
 import type { Column } from "../../../../components/common/DataTable";
 import DataTable from "../../../../components/common/DataTable";
 import PageTitle from "../../../../components/common/PageTitle";
+import { type StoreState, useStore } from "../../../../hooks/useStore";
 import { isLocked } from "../../../../utils/is-locked";
 import {
-  getRoleInfo,
-  getAllRoles,
   getAllRoleExceptAdmin,
+  getRoleInfo,
 } from "../../../../utils/role-mapper";
 import CreateUserDialog from "../../admin/user-management/dialogs/CreateUserDialog";
 import EditUserDialog from "../../admin/user-management/dialogs/EditUserDialog";
 import LockUserDialog from "../../admin/user-management/dialogs/LockUserDialog";
 import ResetPasswordDialog from "../../admin/user-management/dialogs/ResetPasswordDialog";
-import { type StoreState, useStore } from "../../../../hooks/useStore";
-import { AddCircle, AddCircleOutline } from "@mui/icons-material";
 
 const ManagerUserManagement: React.FC = () => {
   // State for user list
@@ -91,16 +85,7 @@ const ManagerUserManagement: React.FC = () => {
       sortable: true,
       format: (value) => getRoleInfo(value[0]).label || "N/A",
     },
-    {
-      id: "propertyRoles",
-      label: "Cơ sở",
-      minWidth: 120,
-      sortable: true,
-      format: (value: PropertyRole[]) => {
-        if (!value || value.length === 0) return "N/A";
-        return value.map((role) => role.name).join(", ");
-      },
-    },
+
     {
       id: "lockedUntil",
       label: "Trạng thái",
@@ -430,7 +415,10 @@ const ManagerUserManagement: React.FC = () => {
             placeholder="Tìm kiếm..."
             size="small"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
             sx={{ width: { xs: "100%", lg: 320 } }}
           />
           <TextField
@@ -438,7 +426,10 @@ const ManagerUserManagement: React.FC = () => {
             label="Vai trò"
             size="small"
             value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
+            onChange={(e) => {
+              setRoleFilter(e.target.value);
+              setPage(1);
+            }}
             sx={{ minWidth: 200 }}
           >
             <MenuItem value=" ">Tất cả</MenuItem>

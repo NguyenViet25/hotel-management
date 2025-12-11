@@ -1,4 +1,4 @@
-import AddIcon from "@mui/icons-material/Add";
+import { AddCircle } from "@mui/icons-material";
 import {
   Alert,
   Box,
@@ -36,7 +36,7 @@ const UserManagement: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
-  const [roleFilter, setRoleFilter] = useState<string>("");
+  const [roleFilter, setRoleFilter] = useState<string>(" ");
   const [pageSize] = useState(10);
   const [total, setTotal] = useState(0);
 
@@ -133,7 +133,7 @@ const UserManagement: React.FC = () => {
         search,
         roleFilterParam
       );
-      console.log("response", response.data);
+      console.log("response", response);
       if (response.isSuccess) {
         setUsers(response.data);
         setTotal(response.meta.total);
@@ -420,7 +420,10 @@ const UserManagement: React.FC = () => {
             placeholder="Tìm kiếm..."
             size="small"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
             sx={{ width: { xs: "100%", lg: 320 } }}
           />
           <TextField
@@ -428,7 +431,10 @@ const UserManagement: React.FC = () => {
             label="Vai trò"
             size="small"
             value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
+            onChange={(e) => {
+              setRoleFilter(e.target.value);
+              setPage(1);
+            }}
             sx={{ minWidth: 200 }}
           >
             <MenuItem value=" ">Tất cả</MenuItem>
@@ -441,7 +447,7 @@ const UserManagement: React.FC = () => {
         </Stack>
         <Button
           variant="contained"
-          startIcon={<AddIcon />}
+          startIcon={<AddCircle />}
           onClick={openCreateDialog}
         >
           Thêm mới

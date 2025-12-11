@@ -995,7 +995,7 @@ public static class DatabaseInitializationExtensions
         {
             foreach (var (role, people) in roleSeeds)
             {
-                for (int i = 0; i < 2; i++)
+                for (int i = 0; i < 1; i++)
                 {
                     var person = people[i % people.Count];
                     var username = $"{role.ToString().ToLower()}-{hotel.Code.ToLower()}-{i + 1}";
