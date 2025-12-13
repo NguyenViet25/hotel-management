@@ -1,4 +1,7 @@
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Alert,
   Box,
   Button,
@@ -7,9 +10,6 @@ import {
   Snackbar,
   Stack,
   Typography,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
 } from "@mui/material";
 import dayjs, { Dayjs } from "dayjs";
 import React, { useCallback, useEffect, useState } from "react";
@@ -31,11 +31,12 @@ import CancelBookingModal from "./components/CancelBookingModal";
 import {
   AddCircle,
   Edit,
+  ExpandMore,
   Hotel,
+  Info,
   Phone,
   ReceiptLong,
   RemoveRedEye,
-  ExpandMore,
 } from "@mui/icons-material";
 import PersonIcon from "@mui/icons-material/Person";
 import BookingInvoiceDialog from "./components/BookingInvoiceDialog";
@@ -371,12 +372,12 @@ const BookingManagementPage: React.FC = () => {
                         <Button
                           size="small"
                           variant="outlined"
-                          startIcon={<RemoveRedEye />}
+                          startIcon={<Info />}
                           onClick={() =>
                             navigate(`/frontdesk/bookings/${b.id}`)
                           }
                         >
-                          Xem
+                          Chi tiết
                         </Button>
                         <Button
                           size="small"
@@ -477,17 +478,21 @@ const BookingManagementPage: React.FC = () => {
                                     }}
                                   >
                                     <Typography color="text.secondary">
-                                      Giá/đêm
+                                      Giá cơ bản/đêm
                                     </Typography>
                                     <Typography fontWeight={700}>
                                       {perNight.toLocaleString()} đ
                                     </Typography>
-                                    <Typography color="text.secondary">
-                                      Thành tiền
-                                    </Typography>
-                                    <Typography fontWeight={700}>
-                                      {subtotal.toLocaleString()} đ
-                                    </Typography>
+
+                                    <Box>
+                                      <Button
+                                        startIcon={<RemoveRedEye />}
+                                        variant="outlined"
+                                        size="small"
+                                      >
+                                        Xem giá theo ngày
+                                      </Button>
+                                    </Box>
                                   </Stack>
                                 </Stack>
                               );

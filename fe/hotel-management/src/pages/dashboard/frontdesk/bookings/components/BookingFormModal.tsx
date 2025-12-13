@@ -629,12 +629,15 @@ const BookingFormModal: React.FC<Props> = ({
             <Stack spacing={2}>
               {fields.map((f, idx) => (
                 <Card variant="outlined" sx={{ borderRadius: 2 }}>
-                  <CardContent>
+                  <CardContent sx={{ pb: itemOpen[idx] !== false ? 2 : 0 }}>
                     <Stack
                       direction="row"
                       alignItems="center"
                       justifyContent="space-between"
-                      sx={{ mb: 1, cursor: "pointer" }}
+                      sx={{
+                        mb: itemOpen[idx] !== false ? 1 : 0,
+                        cursor: "pointer",
+                      }}
                       onClick={() =>
                         setItemOpen((s) => ({
                           ...s,
