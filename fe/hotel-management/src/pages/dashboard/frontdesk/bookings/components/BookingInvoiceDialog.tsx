@@ -38,6 +38,10 @@ import {
   moneyToVietnameseWords,
   formatDateVN,
 } from "../../../../../utils/money-to-words";
+import pricingApi, {
+  type PricingQuoteResponse,
+} from "../../../../../api/pricingApi";
+import roomTypesApi from "../../../../../api/roomTypesApi";
 
 // Promotion dialog
 import PromotionDialog from "../../invoices/components/PromotionDialog";
@@ -146,37 +150,164 @@ const BookingInvoiceDialog: React.FC<Props> = ({
   }, [open, hotelId]);
 
   // VAT is only fetched and shown when printing
+  //
+  const [priceByDateMap, setPriceByDateMap] = useState<
+    Record<string, { date: string; price: number }[]>
+  >({});
+
+  useEffect(() => {
+    const loadDailyPrices = async () => {
+      if (!open || !booking?.bookingRoomTypes?.length) return;
+      const result: Record<string, { date: string; price: number }[]> = {};
+      await Promise.all(
+        (booking.bookingRoomTypes || []).map(async (rt) => {
+          try {
+            const [qRes, rtRes] = await Promise.all([
+              pricingApi.quote({
+                roomTypeId: rt.roomTypeId,
+                checkInDate: dayjs(rt.startDate).format("YYYY-MM-DD"),
+                checkOutDate: dayjs(rt.endDate).format("YYYY-MM-DD"),
+              }),
+              roomTypesApi.getRoomTypeById(rt.roomTypeId),
+            ]);
+            const rawQuote: PricingQuoteResponse | null =
+              ((qRes as any).data || (qRes as any).data?.data || qRes.data) ??
+              null;
+            const rtDetails = ((rtRes as any).data ||
+              (rtRes as any).data?.data ||
+              rtRes.data) as any;
+            const overrides = (rtDetails?.priceByDates || []).map((d: any) =>
+              dayjs(d.date).format("YYYY-MM-DD")
+            );
+            const overrideSet = new Set(overrides);
+            const inputPrice = rt.price || rtDetails?.priceFrom || 0;
+
+            const start = dayjs(rt.startDate);
+            const end = dayjs(rt.endDate);
+
+            let items =
+              rawQuote?.items && rawQuote.items.length ? rawQuote.items : [];
+            if ((!items || items.length === 0) && start.isBefore(end)) {
+              const temp: { date: string; price: number }[] = [];
+              let cursor = start.clone();
+              while (cursor.isBefore(end)) {
+                const dateStr = cursor.format("YYYY-MM-DD");
+                const overridePrice = rtDetails?.priceByDates?.find(
+                  (p: any) => dayjs(p.date).format("YYYY-MM-DD") === dateStr
+                )?.price;
+                temp.push({
+                  date: dateStr,
+                  price: overridePrice ?? inputPrice,
+                });
+                cursor = cursor.add(1, "day");
+              }
+              items = temp as any;
+            } else {
+              const base = rtDetails?.priceFrom || 0;
+              items = items.map((it: any) => {
+                const d = dayjs(it.date).format("YYYY-MM-DD");
+                const quoted = Number(it.price || 0);
+                const finalPrice = quoted === base ? inputPrice : quoted;
+                return {
+                  date: d,
+                  price: finalPrice,
+                };
+              });
+            }
+            result[rt.bookingRoomTypeId] = items as any;
+          } catch {}
+        })
+      );
+      setPriceByDateMap(result);
+    };
+    loadDailyPrices();
+  }, [open, booking?.bookingRoomTypes]);
 
   const tableRows = useMemo(() => {
     if (!booking)
       return [] as {
         label: string;
+        dateRange?: string;
         quantity: number;
         nights?: number;
         unit: number;
         total: number;
       }[];
-    const rows: {
+    let rows: {
       label: string;
+      dateRange?: string;
       quantity: number;
       nights?: number;
       unit: number;
       total: number;
     }[] = [];
     for (const rt of booking.bookingRoomTypes || []) {
-      const nights = Math.max(
-        1,
-        dayjs(rt.endDate).diff(dayjs(rt.startDate), "day")
-      );
       const rooms = Math.max(rt.totalRoom, 1);
-      const unit = rt.price * nights;
-      rows.push({
-        label: `Phòng ${rt.roomTypeName}`,
-        quantity: rooms,
-        nights,
-        unit,
-        total: unit * rooms,
-      });
+      const daily = (priceByDateMap[rt.bookingRoomTypeId] || []).slice();
+      if (daily.length === 0) {
+        const start = dayjs(rt.startDate);
+        const end = dayjs(rt.endDate);
+        const nights = Math.max(1, end.diff(start, "day"));
+        rows.push({
+          label: `Phòng ${rt.roomTypeName}`,
+          dateRange:
+            nights > 1
+              ? `${start.format("DD/MM/YYYY")} - ${start
+                  .add(nights - 1, "day")
+                  .format("DD/MM/YYYY")}`
+              : `${start.format("DD/MM/YYYY")}`,
+          quantity: rooms,
+          nights,
+          unit: rt.price,
+          total: rt.price * rooms * nights,
+        });
+      } else {
+        daily.sort((a, b) => a.date.localeCompare(b.date));
+        let segStart = daily[0];
+        let segEnd = daily[0];
+        for (let i = 1; i < daily.length; i++) {
+          const cur = daily[i];
+          const prevDate = dayjs(segEnd.date);
+          const curDate = dayjs(cur.date);
+          const isConsecutive = curDate.diff(prevDate, "day") === 1;
+          const samePrice = cur.price === segEnd.price;
+          if (isConsecutive && samePrice) {
+            segEnd = cur;
+          } else {
+            const nights =
+              dayjs(segEnd.date).diff(dayjs(segStart.date), "day") + 1;
+            rows.push({
+              label: `Phòng ${rt.roomTypeName}`,
+              dateRange:
+                nights > 1
+                  ? `${dayjs(segStart.date).format("DD/MM/YYYY")} - ${dayjs(
+                      segEnd.date
+                    ).format("DD/MM/YYYY")}`
+                  : `${dayjs(segStart.date).format("DD/MM/YYYY")}`,
+              quantity: rooms,
+              nights,
+              unit: segEnd.price,
+              total: segEnd.price * rooms * nights,
+            });
+            segStart = cur;
+            segEnd = cur;
+          }
+        }
+        const nights = dayjs(segEnd.date).diff(dayjs(segStart.date), "day") + 1;
+        rows.push({
+          label: `Phòng ${rt.roomTypeName}`,
+          dateRange:
+            nights > 1
+              ? `${dayjs(segStart.date).format("DD/MM/YYYY")} - ${dayjs(
+                  segEnd.date
+                ).format("DD/MM/YYYY")}`
+              : `${dayjs(segStart.date).format("DD/MM/YYYY")}`,
+          quantity: rooms,
+          nights,
+          unit: segEnd.price,
+          total: segEnd.price * rooms * nights,
+        });
+      }
     }
     // if (ordersTotal > 0) {
     //   rows.push({
@@ -280,7 +411,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
       <Box ref={invoiceRef}>
         <DialogContent sx={{ pb: 1 }}>
           <Stack spacing={1}>
@@ -359,11 +490,14 @@ const BookingInvoiceDialog: React.FC<Props> = ({
               >
                 <TableHead>
                   <TableRow>
-                    <TableCell align="center" sx={{ width: "8%" }}>
+                    <TableCell align="center" sx={{ width: "6%" }}>
                       <b>TT</b>
                     </TableCell>
-                    <TableCell sx={{ width: "40%" }}>
+                    <TableCell sx={{ width: "28%" }}>
                       <b>Nội dung</b>
+                    </TableCell>
+                    <TableCell align="center" sx={{ width: "18%" }}>
+                      <b>Khoảng ngày</b>
                     </TableCell>
                     <TableCell align="center" sx={{ width: "8%" }}>
                       <b>SL</b>
@@ -371,10 +505,10 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                     <TableCell align="center" sx={{ width: "8%" }}>
                       <b>Đêm</b>
                     </TableCell>
-                    <TableCell align="right" sx={{ width: "17%" }}>
+                    <TableCell align="right" sx={{ width: "15%" }}>
                       <b>Đơn giá</b>
                     </TableCell>
-                    <TableCell align="right" sx={{ width: "17%" }}>
+                    <TableCell align="right" sx={{ width: "15%" }}>
                       <b>Thành tiền</b>
                     </TableCell>
                   </TableRow>
@@ -384,6 +518,9 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                     <TableRow key={`${it.label}-${idx}`}>
                       <TableCell align="center">{idx + 1}</TableCell>
                       <TableCell>{it.label}</TableCell>
+                      <TableCell align="center">
+                        {it.dateRange || "—"}
+                      </TableCell>
                       <TableCell align="center">{it.quantity}</TableCell>
                       <TableCell align="center">
                         {typeof it.nights === "number" ? it.nights : "—"}
@@ -400,6 +537,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                       <TableCell sx={{ color: "#c62828" }}>
                         Khấu trừ tiền cọc
                       </TableCell>
+                      <TableCell align="center">—</TableCell>
                       <TableCell align="center">1</TableCell>
                       <TableCell align="center">__</TableCell>
                       <TableCell align="right">
@@ -421,6 +559,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                         Giảm giá ({promotionCode ? `${promotionCode} - ` : ""}$
                         {promotionValue}%)
                       </TableCell>
+                      <TableCell align="center">—</TableCell>
                       <TableCell align="center">1</TableCell>
                       <TableCell align="center">—</TableCell>
                       <TableCell align="right">
@@ -442,6 +581,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                       <TableCell sx={{ color: "#c62828" }}>
                         Thuế VAT ({vatPercentage}%)
                       </TableCell>
+                      <TableCell align="center">—</TableCell>
                       <TableCell align="center">1</TableCell>
                       <TableCell align="center">—</TableCell>
                       <TableCell align="right">
@@ -455,6 +595,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                   <TableRow>
                     <TableCell align="center"></TableCell>
                     <TableCell sx={{ fontWeight: 700 }}>Tổng cộng</TableCell>
+                    <TableCell align="right"></TableCell>
                     <TableCell align="right"></TableCell>
                     <TableCell align="right"></TableCell>
                     <TableCell align="right"></TableCell>
