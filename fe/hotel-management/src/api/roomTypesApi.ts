@@ -39,7 +39,7 @@ export interface CreateRoomTypeRequest {
 
 // PriceByDate equivalent
 export interface PriceByDate {
-  date: Date;
+  date: string;
   price: number;
 }
 

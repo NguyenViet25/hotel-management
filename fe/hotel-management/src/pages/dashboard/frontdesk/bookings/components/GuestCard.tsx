@@ -148,6 +148,7 @@ const GuestCard: React.FC<Props> = ({
           top: 6,
           right: 6,
           display: "flex",
+          flexDirection: "column",
           gap: 0.5,
         }}
       >

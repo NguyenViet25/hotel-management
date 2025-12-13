@@ -134,9 +134,9 @@ const BookingDetailsPage: React.FC = () => {
 
       {/* Page title */}
       <Stack
-        direction={{ xs: "column", md: "row" }}
+        direction={{ xs: "column", lg: "row" }}
         spacing={1.5}
-        alignItems={{ xs: "flex-start", md: "center" }}
+        alignItems={{ xs: "flex-start", lg: "center" }}
         justifyContent="space-between"
         sx={{ mb: 2 }}
       >

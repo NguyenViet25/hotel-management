@@ -251,7 +251,11 @@ const RoomTypeBlock: React.FC<{
           </Typography>
         }
         subheader={
-          <Stack direction="row" spacing={2} justifyContent={"space-between"}>
+          <Stack
+            direction={{ xs: "column", lg: "row" }}
+            spacing={2}
+            justifyContent={"space-between"}
+          >
             <Stack direction="row" spacing={1} alignItems="center">
               <Chip
                 label={`Cần gán: ${rt.totalRoom - assignedRooms.length || 0}`}
@@ -298,7 +302,7 @@ const RoomTypeBlock: React.FC<{
           ) : (
             <Grid container spacing={2}>
               {assignedRooms.map((br: BookingRoomDto) => (
-                <Grid size={{ xs: 12, md: 4 }} key={br.bookingRoomId}>
+                <Grid size={{ xs: 12, lg: 4 }} key={br.bookingRoomId}>
                   <Card variant="outlined" sx={{ borderRadius: 2 }}>
                     <CardHeader
                       title={
@@ -579,7 +583,7 @@ const RoomTypeBlock: React.FC<{
                         />
 
                         <Stack
-                          direction={{ xs: "column", md: "row" }}
+                          direction={{ xs: "column", lg: "row" }}
                           spacing={1}
                         >
                           <Button

@@ -33,6 +33,7 @@ import roomTypesApi from "../../../../../api/roomTypesApi";
 import RoomTypeFormSectionBase from "./RoomTypeFormSectionBase";
 import RoomTypeFormSectionDateRange from "./RoomTypeFormSectionDateRange";
 import { useStore, type StoreState } from "../../../../../hooks/useStore";
+import dayjs from "dayjs";
 
 export interface RoomTypeFormProps {
   open: boolean;
@@ -62,14 +63,10 @@ const schema = yup.object({
     .transform((val) => (isNaN(val as any) ? 0 : Number(val)))
     .min(0, "Giá base phải >= 0")
     .required("Nhập giá base")
-    .test(
-      "gt-from",
-      "Giá đến phải lớn hơn Giá từ",
-      function (value) {
-        const from = this.parent?.basePriceFrom ?? 0;
-        return typeof value === "number" && value > from;
-      }
-    ),
+    .test("gt-from", "Giá đến phải lớn hơn Giá từ", function (value) {
+      const from = this.parent?.basePriceFrom ?? 0;
+      return typeof value === "number" && value > from;
+    }),
   prices: yup.array().of(
     yup.object({
       date: yup.date().required(),
@@ -87,7 +84,6 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
   hotelId,
   onSubmit,
 }) => {
-  console.log("initialData", initialData);
   const isEdit = !!initialData;
   const [tabIndex, setTabIndex] = useState(0);
   const { user } = useStore<StoreState>((state) => state);
@@ -142,7 +138,11 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
           capacity: values.capacity,
           priceFrom: values.basePriceFrom,
           priceTo: values.basePriceTo,
-          priceByDates: values.prices || [],
+          priceByDates:
+            values.prices?.map((p) => ({
+              date: dayjs(p.date).format("YYYY-MM-DD"),
+              price: p.price,
+            })) || [],
           imageUrl: values.imageUrl || undefined,
         };
         onSubmit(payload);
@@ -156,7 +156,11 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
         capacity: values.capacity,
         priceFrom: values.basePriceFrom,
         priceTo: values.basePriceTo,
-        priceByDates: values.prices || [],
+        priceByDates:
+          values.prices?.map((p) => ({
+            date: dayjs(p.date).format("YYYY-MM-DD"),
+            price: p.price,
+          })) || [],
         imageUrl: values.imageUrl || undefined,
       };
 
