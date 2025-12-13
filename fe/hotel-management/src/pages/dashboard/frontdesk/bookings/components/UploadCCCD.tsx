@@ -1,5 +1,13 @@
 import React, { useRef } from "react";
-import { Box, Button, Stack, Typography, Card, CardContent, IconButton } from "@mui/material";
+import {
+  Box,
+  Button,
+  Stack,
+  Typography,
+  Card,
+  CardContent,
+  IconButton,
+} from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import mediaApi from "../../../../../api/mediaApi";
 
@@ -27,7 +35,9 @@ const UploadCCCD: React.FC<Props> = ({ label, value, onChange }) => {
     <Card variant="outlined" sx={{ borderRadius: 2 }}>
       <CardContent>
         <Stack spacing={1}>
-          <Typography variant="subtitle2" fontWeight={700}>{label}</Typography>
+          <Typography variant="subtitle2" fontWeight={700}>
+            {label}
+          </Typography>
           {!value ? (
             <Box
               sx={{
@@ -40,15 +50,45 @@ const UploadCCCD: React.FC<Props> = ({ label, value, onChange }) => {
               }}
             >
               <Stack spacing={1} alignItems="center">
-                <Typography variant="body2">Tải ảnh CCCD</Typography>
-                <Button variant="contained" onClick={pickFile}>Tải CCCD</Button>
-                <input type="file" ref={inputRef} style={{ display: "none" }} onChange={handleFile} accept="image/*" />
+                <Typography variant="body2">Tải CMND/CCCD</Typography>
+                <Button variant="contained" onClick={pickFile}>
+                  Tải CMND/CCCD
+                </Button>
+                <input
+                  type="file"
+                  ref={inputRef}
+                  style={{ display: "none" }}
+                  onChange={handleFile}
+                  accept="image/*,application/pdf"
+                />
               </Stack>
             </Box>
           ) : (
             <Box sx={{ position: "relative" }}>
-              <img src={value} alt={label} style={{ width: "100%", borderRadius: 8 }} />
-              <IconButton size="small" color="error" onClick={() => onChange?.(undefined)} sx={{ position: "absolute", top: 8, right: 8 }}>
+              {value?.toLowerCase().endsWith(".pdf") ? (
+                <Stack spacing={1} alignItems="flex-start">
+                  <Button
+                    variant="outlined"
+                    href={value}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Xem CMND/CCCD (PDF)
+                  </Button>
+                </Stack>
+              ) : (
+                <img
+                  src={value}
+                  alt={label}
+                  style={{ width: "100%", borderRadius: 8 }}
+                />
+              )}
+              <IconButton
+                size="small"
+                color="error"
+                onClick={() => onChange?.(undefined)}
+                sx={{ position: "absolute", top: 8, right: 8 }}
+              >
                 <DeleteOutlineIcon />
               </IconButton>
             </Box>

@@ -9,6 +9,7 @@ import {
   TextField,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
+import UploadCCCD from "../../../frontdesk/bookings/components/UploadCCCD";
 import {
   type CreateGuestRequest,
   type GuestDto,
@@ -119,20 +120,16 @@ const GuestFormModal: React.FC<Props> = ({
             required
             fullWidth
           />
-          <Box sx={{ display: "flex", gap: 2 }}>
-            <TextField
-              label="Ảnh mặt trước"
-              value={frontUrl}
-              onChange={(e) => setFrontUrl(e.target.value)}
-              fullWidth
-            />
-            <TextField
-              label="Ảnh mặt sau"
-              value={backUrl}
-              onChange={(e) => setBackUrl(e.target.value)}
-              fullWidth
-            />
-          </Box>
+          <UploadCCCD
+            label="CCCD mặt trước"
+            value={frontUrl}
+            onChange={(url) => setFrontUrl(url || "")}
+          />
+          <UploadCCCD
+            label="CCCD mặt sau"
+            value={backUrl}
+            onChange={(url) => setBackUrl(url || "")}
+          />
         </Stack>
       </DialogContent>
       <DialogActions>
