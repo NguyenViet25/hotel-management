@@ -11,6 +11,7 @@ using HotelManagement.Services.Admin.Minibar;
 using HotelManagement.Services.Admin.Orders;
 using HotelManagement.Services.Admin.Rooms;
 using HotelManagement.Services.Admin.RoomTypes;
+using HotelManagement.Services.Admin.Guests;
 using HotelManagement.Services.Admin.Users;
 using HotelManagement.Services.Auth;
 using HotelManagement.Services.Profile;
@@ -44,6 +45,7 @@ public static class DependencyInjection
         services.AddScoped<IRoomStatusService, RoomStatusService>();
         services.AddScoped<IHousekeepingTaskService, HousekeepingTaskService>();
         services.AddScoped<IInvoiceService, InvoiceService>();
+        services.AddScoped<IGuestsService, GuestsService>();
         return services;
     }
 }
