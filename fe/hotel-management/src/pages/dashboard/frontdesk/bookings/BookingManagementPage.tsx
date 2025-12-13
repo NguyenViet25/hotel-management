@@ -19,6 +19,7 @@ import bookingsApi, {
   type BookingDetailsDto,
   type BookingsQueryDto,
   type BookingStatus,
+  type BookingRoomTypeDto,
 } from "../../../../api/bookingsApi";
 import roomTypesApi, { type RoomType } from "../../../../api/roomTypesApi";
 import EmptyState from "../../../../components/common/EmptyState";
@@ -45,6 +46,7 @@ import FiltersBar, {
 } from "./components/FiltersBar";
 import RoomMapDialog from "./components/RoomMapDialog";
 import TopBarControls from "./components/TopBarControls";
+import PriceCalendarDialog from "./components/PriceCalendarDialog";
 
 type StatusOption = { value: BookingStatus | ""; label: string };
 
@@ -94,6 +96,10 @@ const BookingManagementPage: React.FC = () => {
   const [openBookingInvoice, setOpenBookingInvoice] = useState(false);
   const [invoiceBooking, setInvoiceBooking] =
     useState<BookingDetailsDto | null>(null);
+  const [priceDialogOpen, setPriceDialogOpen] = useState(false);
+  const [priceDialogRt, setPriceDialogRt] = useState<BookingRoomTypeDto | null>(
+    null
+  );
 
   // Notifications
   const [snackbar, setSnackbar] = useState<{
@@ -489,6 +495,10 @@ const BookingManagementPage: React.FC = () => {
                                         startIcon={<RemoveRedEye />}
                                         variant="outlined"
                                         size="small"
+                                        onClick={() => {
+                                          setPriceDialogRt(rt as any);
+                                          setPriceDialogOpen(true);
+                                        }}
                                       >
                                         Xem giá theo ngày
                                       </Button>
@@ -604,6 +614,15 @@ const BookingManagementPage: React.FC = () => {
             });
           }
         }}
+      />
+
+      <PriceCalendarDialog
+        open={priceDialogOpen}
+        onClose={() => {
+          setPriceDialogOpen(false);
+          setPriceDialogRt(null);
+        }}
+        roomType={priceDialogRt}
       />
 
       {/* Cancel */}
