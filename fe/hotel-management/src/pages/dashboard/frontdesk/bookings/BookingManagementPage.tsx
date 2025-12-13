@@ -298,12 +298,17 @@ const BookingManagementPage: React.FC = () => {
               >
                 <AccordionSummary expandIcon={<ExpandMore />}>
                   <Stack
-                    direction={{ xs: "column", sm: "row" }}
+                    direction={{ xs: "column", lg: "row" }}
                     justifyContent="space-between"
-                    alignItems={{ xs: "flex-start", sm: "center" }}
+                    alignItems={{ xs: "flex-start", lg: "center" }}
                     sx={{ width: "100%" }}
+                    spacing={1}
                   >
-                    <Stack direction="row" spacing={1} alignItems="center">
+                    <Stack
+                      spacing={1}
+                      direction={{ xs: "column", lg: "row" }}
+                      alignItems="center"
+                    >
                       <Hotel color="primary" />
                       <Typography
                         fontWeight={700}

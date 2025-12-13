@@ -22,9 +22,10 @@ import {
   Stack,
   TextField,
   Typography,
+  Box,
 } from "@mui/material";
 import dayjs, { Dayjs } from "dayjs";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import bookingsApi, {
@@ -36,6 +37,13 @@ import bookingsApi, {
 import roomTypesApi, { type RoomType } from "../../../../../api/roomTypesApi";
 import { useStore, type StoreState } from "../../../../../hooks/useStore";
 import RoomBookingSection from "./RoomBookingSection";
+import pricingApi, {
+  type PricingQuoteResponse,
+} from "../../../../../api/pricingApi";
+import FullCalendar from "@fullcalendar/react";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import interactionPlugin from "@fullcalendar/interaction";
+import viLocale from "@fullcalendar/core/locales/vi";
 
 type Props = {
   open: boolean;
@@ -157,6 +165,33 @@ const BookingFormModal: React.FC<Props> = ({
   const discountAmount = 0;
   const totalAmount = watch("totalAmount") || 0;
   const afterDiscount = totalAmount - discountAmount - depositAmount;
+  const [quotesByIndex, setQuotesByIndex] = useState<
+    Record<number, PricingQuoteResponse | null>
+  >({});
+
+  const dailyTotals = useMemo(() => {
+    const map: Record<string, number> = {};
+    roomsWatch.forEach((r, idx) => {
+      const q = quotesByIndex[idx];
+      if (q?.items?.length) {
+        q.items.forEach((it) => {
+          const amt = (it.price || 0) * (r.totalRooms || 0);
+          map[it.date] = (map[it.date] || 0) + amt;
+        });
+      } else if (r.startDate && r.endDate && r.price) {
+        let d = dayjs(r.startDate);
+        const end = dayjs(r.endDate);
+        while (d.isBefore(end)) {
+          const k = d.format("YYYY-MM-DD");
+          map[k] = (map[k] || 0) + (r.price || 0) * (r.totalRooms || 0);
+          d = d.add(1, "day");
+        }
+      }
+    });
+    return Object.entries(map)
+      .sort((a, b) => (a[0] < b[0] ? -1 : 1))
+      .map(([date, total]) => ({ date, total }));
+  }, [quotesByIndex, roomsWatch]);
 
   useEffect(() => {
     if (roomTypes.length > 0 && mode === "create") {
@@ -175,17 +210,58 @@ const BookingFormModal: React.FC<Props> = ({
   }, [roomsWatch.map((r) => r.roomId).join("|"), roomTypes]);
 
   useEffect(() => {
-    // Recalculate total amount whenever rooms change
-    const total = roomsWatch.reduce((sum, r) => {
-      const days =
-        r.endDate && r.startDate
-          ? Math.max(dayjs(r.endDate).diff(dayjs(r.startDate), "day"), 0)
-          : 0;
-      const amount = (r.price || 0) * days * (r.totalRooms || 0);
-      return sum + amount;
-    }, 0);
-
-    setValue("totalAmount", total);
+    const fetchQuotes = async () => {
+      const newQuotes: Record<number, PricingQuoteResponse | null> = {
+        ...quotesByIndex,
+      };
+      await Promise.all(
+        roomsWatch.map(async (r, idx) => {
+          const roomTypeId = r.roomId;
+          const startDate = r.startDate;
+          const endDate = r.endDate;
+          if (
+            roomTypeId &&
+            startDate &&
+            endDate &&
+            dayjs(endDate).isAfter(dayjs(startDate))
+          ) {
+            try {
+              const res = await pricingApi.quote({
+                roomTypeId,
+                checkInDate: dayjs(startDate).format("YYYY-MM-DD"),
+                checkOutDate: dayjs(endDate).format("YYYY-MM-DD"),
+              });
+              if (res.isSuccess && res.data) {
+                newQuotes[idx] = res.data;
+              } else {
+                newQuotes[idx] = null;
+              }
+            } catch {
+              newQuotes[idx] = null;
+            }
+          } else {
+            newQuotes[idx] = null;
+          }
+        })
+      );
+      setQuotesByIndex(newQuotes);
+      const total = roomsWatch.reduce((sum, r, idx) => {
+        const quote = newQuotes[idx];
+        const perRoomTotal =
+          quote?.total ??
+          (() => {
+            const days =
+              r.endDate && r.startDate
+                ? Math.max(dayjs(r.endDate).diff(dayjs(r.startDate), "day"), 0)
+                : 0;
+            return (r.price || 0) * days;
+          })();
+        return sum + perRoomTotal * (r.totalRooms || 0);
+      }, 0);
+      setValue("totalAmount", total);
+    };
+    fetchQuotes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomsWatch, roomTypes, reloadCount]);
 
   useEffect(() => {
@@ -483,6 +559,120 @@ const BookingFormModal: React.FC<Props> = ({
                       onRemove={() => remove(idx)}
                       setReloadCount={setReloadCount}
                     />
+                    <Stack sx={{ mt: 1 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Giá cơ bản:{" "}
+                        {new Intl.NumberFormat("vi-VN").format(
+                          roomTypes.find(
+                            (t) => t.id === roomsWatch[idx]?.roomId
+                          )?.priceFrom || 0
+                        )}{" "}
+                        đ
+                      </Typography>
+                    </Stack>
+                    {quotesByIndex[idx]?.items?.length ? (
+                      <Box
+                        sx={{
+                          mt: 2,
+                          "& .fc .price-event": {
+                            backgroundColor: (theme) =>
+                              theme.palette.primary.light,
+                            border: "none",
+                            color: (theme) =>
+                              theme.palette.primary.contrastText,
+                            padding: "2px 6px",
+                            borderRadius: 12,
+                            fontSize: "0.75rem",
+                            display: "inline-block",
+                            marginTop: "2px",
+                          },
+                          "& .fc-daygrid-day": {
+                            cursor: "pointer",
+                          },
+                          "& .fc-daygrid-day.fc-day-today": {
+                            backgroundColor: (theme) =>
+                              theme.palette.action.hover,
+                          },
+                        }}
+                      >
+                        <FullCalendar
+                          plugins={[dayGridPlugin, interactionPlugin]}
+                          locales={[viLocale]}
+                          locale="vi"
+                          initialView="dayGridMonth"
+                          initialDate={dayjs(
+                            roomsWatch[idx]?.startDate
+                          ).toDate()}
+                          selectable={false}
+                          dayMaxEvents
+                          events={quotesByIndex[idx]!.items.map((it) => ({
+                            id: it.date,
+                            start: it.date,
+                            allDay: true,
+                            title: `₫${(it.price || 0).toLocaleString(
+                              "vi-VN"
+                            )}`,
+                            className: "price-event",
+                          }))}
+                          headerToolbar={{
+                            left: "prev,next today",
+                            center: "title",
+                            right: "",
+                          }}
+                          height="auto"
+                        />
+                      </Box>
+                    ) : null}
+                    {quotesByIndex[idx]?.items?.length ? (
+                      <Stack spacing={0.5} sx={{ mt: 2 }}>
+                        <Typography variant="subtitle2" fontWeight={700}>
+                          Bảng giá theo ngày
+                        </Typography>
+                        <Stack spacing={0.5}>
+                          {quotesByIndex[idx]!.items.map((it, i) => {
+                            const price = it.price || 0;
+                            const prev =
+                              i > 0
+                                ? quotesByIndex[idx]!.items[i - 1].price
+                                : price;
+                            const changed = price !== prev;
+                            return (
+                              <Stack
+                                key={`${it.date}-${i}`}
+                                direction="row"
+                                justifyContent="space-between"
+                              >
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                >
+                                  {dayjs(it.date).format("DD/MM/YYYY")}
+                                </Typography>
+                                <Typography
+                                  variant="body2"
+                                  sx={{
+                                    color: changed
+                                      ? "warning.main"
+                                      : "text.primary",
+                                    fontWeight: changed ? 700 : 500,
+                                  }}
+                                >
+                                  {new Intl.NumberFormat("vi-VN").format(price)}{" "}
+                                  đ
+                                </Typography>
+                              </Stack>
+                            );
+                          })}
+                        </Stack>
+                        <Typography variant="body2" sx={{ mt: 0.5 }}>
+                          Tổng (1 phòng):{" "}
+                          {new Intl.NumberFormat("vi-VN").format(
+                            quotesByIndex[idx]!.total || 0
+                          )}{" "}
+                          đ
+                        </Typography>
+                      </Stack>
+                    ) : null}
                   </CardContent>
                 </Card>
               ))}
