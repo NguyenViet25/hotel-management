@@ -46,6 +46,7 @@ export const menuItems = {
     },
     { title: "Loại phòng", path: "/manager/room-types", icon: <Category /> },
     { title: "Phòng", path: "/manager/rooms", icon: <Bed /> },
+    { title: "Khách", path: "/manager/guests", icon: <PersonIcon /> },
     {
       title: "Mã giảm giá",
       path: "/manager/discount-codes",
@@ -77,6 +78,7 @@ export const menuItems = {
       path: "/frontdesk/dashboard",
       icon: <DashboardIcon />,
     },
+    { title: "Khách", path: "/frontdesk/guests", icon: <PersonIcon /> },
     { title: "Đặt phòng", path: "/frontdesk/bookings", icon: <HotelIcon /> },
     { title: "Đặt món", path: "/frontdesk/orders", icon: <RestaurantIcon /> },
     // {

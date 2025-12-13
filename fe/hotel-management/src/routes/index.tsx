@@ -21,6 +21,7 @@ import FrontDeskTableManagementPage from "../pages/dashboard/frontdesk/tables/Fr
 import HotelSettingsPage from "../pages/dashboard/manager/hotels/HotelSettingsPage";
 import FrontDeskTimelinePage from "../pages/dashboard/frontdesk/orders/FrontDeskTimelinePage";
 import ManagerUserManagement from "../pages/dashboard/manager/user-management";
+import GuestsManagementPage from "../pages/dashboard/manager/guests/GuestsManagementPage";
 
 // Role-aware layout wrapper for standalone pages like /profile
 const RoleAwareLayout = () => {
@@ -256,6 +257,14 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: "guests",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <GuestsManagementPage />
+          </Suspense>
+        ),
+      },
+      {
         path: "discount-codes",
         element: (
           <Suspense fallback={<div>Loading...</div>}>
@@ -333,7 +342,15 @@ const router = createBrowserRouter([
       },
       {
         path: "dashboard",
-        element: <FrontDeskDashboard />,
+        element: <FrontDeskDashboardPage />,
+      },
+      {
+        path: "guests",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <GuestsManagementPage />
+          </Suspense>
+        ),
       },
       {
         path: "orders",

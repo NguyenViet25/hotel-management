@@ -49,16 +49,14 @@ const dashboardApi = {
     const res = await axios.get(`/dashboard/admin/summary`);
     return res.data;
   },
-  async getAdminRevenue(
-    params: {
-      hotelId?: string;
-      fromDate?: string;
-      toDate?: string;
-      granularity?: "day" | "month";
-      includeIssued?: boolean;
-      includePaid?: boolean;
-    }
-  ): Promise<ApiResponse<RevenueStatsDto>> {
+  async getAdminRevenue(params: {
+    hotelId?: string;
+    fromDate?: string;
+    toDate?: string;
+    granularity?: "day" | "month";
+    includeIssued?: boolean;
+    includePaid?: boolean;
+  }): Promise<ApiResponse<RevenueStatsDto>> {
     const qp = new URLSearchParams();
     if (params.hotelId) qp.append("hotelId", params.hotelId);
     if (params.fromDate) qp.append("fromDate", params.fromDate);
