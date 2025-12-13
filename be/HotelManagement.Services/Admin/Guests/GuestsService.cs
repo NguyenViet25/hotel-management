@@ -119,9 +119,9 @@ public class GuestsService : IGuestsService
         if (dto.FullName != null) g.FullName = dto.FullName;
         if (dto.Phone != null) g.Phone = dto.Phone;
         if (dto.IdCard != null) g.IdCard = dto.IdCard;
-        if (dto.Email != null) g.Email = dto.Email;
-        if (dto.IdCardFrontImageUrl != null) g.IdCardFrontImageUrl = dto.IdCardFrontImageUrl;
-        if (dto.IdCardBackImageUrl != null) g.IdCardBackImageUrl = dto.IdCardBackImageUrl;
+        g.Email = dto.Email;
+        g.IdCardFrontImageUrl = dto.IdCardFrontImageUrl;
+        g.IdCardBackImageUrl = dto.IdCardBackImageUrl;
 
         await _db.SaveChangesAsync();
         var updated = await GetAsync(id);
