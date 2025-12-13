@@ -620,6 +620,21 @@ const BookingFormModal: React.FC<Props> = ({
                         )}{" "}
                         đ
                       </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Giá cơ bản:{" "}
+                        {new Intl.NumberFormat("vi-VN").format(
+                          roomTypes.find(
+                            (t) => t.id === roomsWatch[idx]?.roomId
+                          )?.priceFrom || 0
+                        )}{" "}
+                        -{" "}
+                        {new Intl.NumberFormat("vi-VN").format(
+                          roomTypes.find(
+                            (t) => t.id === roomsWatch[idx]?.roomId
+                          )?.priceTo || 0
+                        )}{" "}
+                        đ
+                      </Typography>
                     </Stack>
                     {quotesByIndex[idx]?.items?.length ? (
                       <Box

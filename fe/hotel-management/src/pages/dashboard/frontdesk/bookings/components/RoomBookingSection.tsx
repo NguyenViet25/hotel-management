@@ -115,6 +115,7 @@ const RoomBookingSection: React.FC<Props> = ({
                 const raw = e.target.value.replace(/[^0-9]/g, "");
                 const num = raw ? Number(raw) : 0;
                 field.onChange(num);
+                setReloadCount((prev) => prev + 1);
               }}
               error={!!errors.unitPrice}
               helperText={errors.unitPrice?.message}
