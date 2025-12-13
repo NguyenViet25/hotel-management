@@ -23,6 +23,7 @@ type Props = {
   roomTypes: RoomType[];
   onRemove?: () => void;
   setReloadCount: (func: (prev: number) => number) => void;
+  hideHeader?: boolean;
 };
 
 const RoomBookingSection: React.FC<Props> = ({
@@ -32,24 +33,27 @@ const RoomBookingSection: React.FC<Props> = ({
   roomTypes,
   onRemove,
   setReloadCount,
+  hideHeader = false,
 }) => {
   return (
     <Stack spacing={2}>
-      <Stack direction="row" alignItems="center" justifyContent="space-between">
-        <Typography variant="subtitle2" fontWeight={700}>
-          Mục #{index + 1}
-        </Typography>
-        {onRemove && (
-          <IconButton
-            color="error"
-            size="small"
-            onClick={onRemove}
-            aria-label="remove room"
-          >
-            <DeleteOutlineIcon />
-          </IconButton>
-        )}
-      </Stack>
+      {!hideHeader && (
+        <Stack direction="row" alignItems="center" justifyContent="space-between">
+          <Typography variant="subtitle2" fontWeight={700}>
+            Mục #{index + 1}
+          </Typography>
+          {onRemove && (
+            <IconButton
+              color="error"
+              size="small"
+              onClick={onRemove}
+              aria-label="remove room"
+            >
+              <DeleteOutlineIcon />
+            </IconButton>
+          )}
+        </Stack>
+      )}
 
       <Controller
         name={`roomTypes.${index}.roomId`}

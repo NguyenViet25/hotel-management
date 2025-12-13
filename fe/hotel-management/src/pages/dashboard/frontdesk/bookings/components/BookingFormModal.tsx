@@ -1,5 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AddCircle } from "@mui/icons-material";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import CloseIcon from "@mui/icons-material/Close";
 import EmailIcon from "@mui/icons-material/Email";
 import HotelIcon from "@mui/icons-material/Hotel";
@@ -17,6 +19,8 @@ import {
   DialogContent,
   DialogTitle,
   Divider,
+  Collapse,
+  IconButton,
   InputAdornment,
   Snackbar,
   Stack,
@@ -170,6 +174,7 @@ const BookingFormModal: React.FC<Props> = ({
   const [quotesByIndex, setQuotesByIndex] = useState<
     Record<number, PricingQuoteResponse | null>
   >({});
+  const [itemOpen, setItemOpen] = useState<Record<number, boolean>>({});
 
   useEffect(() => {
     if (roomTypes.length > 0 && mode === "create") {
@@ -625,157 +630,244 @@ const BookingFormModal: React.FC<Props> = ({
               {fields.map((f, idx) => (
                 <Card variant="outlined" sx={{ borderRadius: 2 }}>
                   <CardContent>
-                    <RoomBookingSection
-                      index={idx}
-                      control={control}
-                      errors={errors}
-                      roomTypes={roomTypes}
-                      onRemove={() => remove(idx)}
-                      setReloadCount={setReloadCount}
-                    />
-                    <Stack sx={{ mt: 1 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Đơn giá:{" "}
-                        {new Intl.NumberFormat("vi-VN").format(
-                          roomsWatch[idx]?.price ||
-                            roomTypes.find(
-                              (t) => t.id === roomsWatch[idx]?.roomId
-                            )?.priceFrom ||
-                            0
-                        )}{" "}
-                        đ
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Giá cơ bản:{" "}
-                        {new Intl.NumberFormat("vi-VN").format(
-                          roomTypes.find(
-                            (t) => t.id === roomsWatch[idx]?.roomId
-                          )?.priceFrom || 0
-                        )}{" "}
-                        -{" "}
-                        {new Intl.NumberFormat("vi-VN").format(
-                          roomTypes.find(
-                            (t) => t.id === roomsWatch[idx]?.roomId
-                          )?.priceTo || 0
-                        )}{" "}
-                        đ
-                      </Typography>
-                    </Stack>
-                    {quotesByIndex[idx]?.items?.length ? (
-                      <Box
-                        sx={{
-                          mt: 2,
-                          "& .fc .price-event": {
-                            backgroundColor: (theme) =>
-                              theme.palette.primary.light,
-                            border: "none",
-                            color: (theme) =>
-                              theme.palette.primary.contrastText,
-                            padding: "2px 6px",
-                            borderRadius: 12,
-                            fontSize: "0.75rem",
-                            display: "inline-block",
-                            marginTop: "2px",
-                          },
-                          "& .fc-daygrid-day": {
-                            cursor: "pointer",
-                          },
-                          "& .fc-daygrid-day.fc-day-today": {
-                            backgroundColor: (theme) =>
-                              theme.palette.action.hover,
-                          },
-                        }}
-                      >
-                        <FullCalendar
-                          plugins={[dayGridPlugin, interactionPlugin]}
-                          locales={[viLocale]}
-                          locale="vi"
-                          initialView="dayGridMonth"
-                          initialDate={dayjs(
-                            roomsWatch[idx]?.startDate
-                          ).toDate()}
-                          selectable={false}
-                          dayMaxEvents
-                          events={quotesByIndex[idx]!.items.map((it) => ({
-                            id: it.date,
-                            start: it.date,
-                            allDay: true,
-                            title: `₫${(it.price || 0).toLocaleString(
-                              "vi-VN"
-                            )}`,
-                            className: "price-event",
-                          }))}
-                          headerToolbar={{
-                            left: "prev,next today",
-                            center: "title",
-                            right: "",
-                          }}
-                          height="auto"
-                        />
-                      </Box>
-                    ) : null}
-                    {quotesByIndex[idx]?.items?.length ? (
-                      <Stack spacing={0.5} sx={{ mt: 2 }}>
+                    <Stack
+                      direction="row"
+                      alignItems="center"
+                      justifyContent="space-between"
+                      sx={{ mb: 1, cursor: "pointer" }}
+                      onClick={() =>
+                        setItemOpen((s) => ({
+                          ...s,
+                          [idx]: s[idx] === false ? true : false,
+                        }))
+                      }
+                    >
+                      <Stack direction="row" alignItems="center" spacing={1}>
                         <Typography variant="subtitle2" fontWeight={700}>
-                          Bảng giá theo ngày
+                          Mục #{idx + 1}
                         </Typography>
-                        <Stack spacing={0.5}>
-                          {quotesByIndex[idx]!.items.map((it, i) => {
-                            const price = it.price || 0;
-                            const totalRooms = roomsWatch[idx]?.totalRooms || 0;
-                            const prev =
-                              i > 0
-                                ? quotesByIndex[idx]!.items[i - 1].price
-                                : price;
-                            const changed = price !== prev;
-                            return (
-                              <Stack
-                                key={`${it.date}-${i}`}
-                                direction="row"
-                                justifyContent="space-between"
-                              >
-                                <Typography
-                                  variant="body2"
-                                  color="text.secondary"
-                                >
-                                  {dayjs(it.date).format("DD/MM/YYYY")}
-                                </Typography>
-                                <Typography
-                                  variant="body2"
-                                  sx={{
-                                    color: changed
-                                      ? "warning.main"
-                                      : "text.primary",
-                                    fontWeight: changed ? 700 : 500,
-                                  }}
-                                >
-                                  {new Intl.NumberFormat("vi-VN").format(price)}{" "}
-                                  đ{" "}
-                                  {totalRooms > 1
-                                    ? `× ${totalRooms} phòng = ${new Intl.NumberFormat(
-                                        "vi-VN"
-                                      ).format(price * totalRooms)} đ`
-                                    : ""}
-                                </Typography>
-                              </Stack>
-                            );
-                          })}
-                        </Stack>
-                        <Typography
-                          textAlign={"end"}
-                          variant="body2"
-                          sx={{ mt: 0.5 }}
-                          fontWeight={"bold"}
-                        >
-                          Tổng ({roomsWatch[idx]?.totalRooms || 1} phòng):{" "}
+                        <Typography variant="body2" color="text.secondary">
+                          {roomTypes.find(
+                            (t) => t.id === roomsWatch[idx]?.roomId
+                          )?.name || "—"}
+                          {" • "}
+                          {roomsWatch[idx]?.startDate
+                            ? dayjs(roomsWatch[idx]?.startDate).format("DD/MM")
+                            : "—"}
+                          {" - "}
+                          {roomsWatch[idx]?.endDate
+                            ? dayjs(roomsWatch[idx]?.endDate).format("DD/MM")
+                            : "—"}
+                          {" • SL: "}
+                          {roomsWatch[idx]?.totalRooms || 0}
+                          {" • Đơn giá: "}
                           {new Intl.NumberFormat("vi-VN").format(
-                            (quotesByIndex[idx]!.total || 0) *
+                            roomsWatch[idx]?.price ||
+                              roomTypes.find(
+                                (t) => t.id === roomsWatch[idx]?.roomId
+                              )?.priceFrom ||
+                              0
+                          )}{" "}
+                          đ{" • Tổng: "}
+                          {new Intl.NumberFormat("vi-VN").format(
+                            ((quotesByIndex[idx]?.total || 0) as number) *
                               (roomsWatch[idx]?.totalRooms || 1)
                           )}{" "}
                           đ
                         </Typography>
                       </Stack>
-                    ) : null}
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <IconButton
+                          color="error"
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            remove(idx);
+                          }}
+                          aria-label="remove room-type"
+                        >
+                          <CloseIcon />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setItemOpen((s) => ({
+                              ...s,
+                              [idx]: s[idx] === false ? true : false,
+                            }));
+                          }}
+                          aria-label="toggle-item"
+                        >
+                          {itemOpen[idx] !== false ? (
+                            <ExpandLessIcon />
+                          ) : (
+                            <ExpandMoreIcon />
+                          )}
+                        </IconButton>
+                      </Stack>
+                    </Stack>
+                    <Collapse in={itemOpen[idx] !== false}>
+                      <RoomBookingSection
+                        index={idx}
+                        control={control}
+                        errors={errors}
+                        roomTypes={roomTypes}
+                        onRemove={() => remove(idx)}
+                        hideHeader
+                        setReloadCount={setReloadCount}
+                      />
+                      <Stack sx={{ mt: 1 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          Đơn giá:{" "}
+                          {new Intl.NumberFormat("vi-VN").format(
+                            roomsWatch[idx]?.price ||
+                              roomTypes.find(
+                                (t) => t.id === roomsWatch[idx]?.roomId
+                              )?.priceFrom ||
+                              0
+                          )}{" "}
+                          đ
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Giá cơ bản:{" "}
+                          {new Intl.NumberFormat("vi-VN").format(
+                            roomTypes.find(
+                              (t) => t.id === roomsWatch[idx]?.roomId
+                            )?.priceFrom || 0
+                          )}{" "}
+                          -{" "}
+                          {new Intl.NumberFormat("vi-VN").format(
+                            roomTypes.find(
+                              (t) => t.id === roomsWatch[idx]?.roomId
+                            )?.priceTo || 0
+                          )}{" "}
+                          đ
+                        </Typography>
+                      </Stack>
+                      {quotesByIndex[idx]?.items?.length ? (
+                        <Box
+                          sx={{
+                            mt: 2,
+                            "& .fc .price-event": {
+                              backgroundColor: (theme) =>
+                                theme.palette.primary.light,
+                              border: "none",
+                              color: (theme) =>
+                                theme.palette.primary.contrastText,
+                              padding: "2px 6px",
+                              borderRadius: 12,
+                              fontSize: "0.75rem",
+                              display: "inline-block",
+                              marginTop: "2px",
+                            },
+                            "& .fc-daygrid-day": {
+                              cursor: "pointer",
+                            },
+                            "& .fc-daygrid-day.fc-day-today": {
+                              backgroundColor: (theme) =>
+                                theme.palette.action.hover,
+                            },
+                          }}
+                        >
+                          <FullCalendar
+                            plugins={[dayGridPlugin, interactionPlugin]}
+                            locales={[viLocale]}
+                            locale="vi"
+                            initialView="dayGridMonth"
+                            initialDate={dayjs(
+                              roomsWatch[idx]?.startDate
+                            ).toDate()}
+                            selectable={false}
+                            dayMaxEvents
+                            events={quotesByIndex[idx]!.items.map((it) => ({
+                              id: it.date,
+                              start: it.date,
+                              allDay: true,
+                              title: `₫${(it.price || 0).toLocaleString(
+                                "vi-VN"
+                              )}`,
+                              className: "price-event",
+                            }))}
+                            headerToolbar={{
+                              left: "prev,next today",
+                              center: "title",
+                              right: "",
+                            }}
+                            height="auto"
+                          />
+                        </Box>
+                      ) : null}
+                      {quotesByIndex[idx]?.items?.length ? (
+                        <Stack spacing={0.5} sx={{ mt: 2 }}>
+                          <Typography variant="subtitle2" fontWeight={700}>
+                            Bảng giá theo ngày
+                          </Typography>
+                          <Stack spacing={0.5}>
+                            {quotesByIndex[idx]!.items.map((it, i) => {
+                              const price = it.price || 0;
+                              const totalRooms =
+                                roomsWatch[idx]?.totalRooms || 0;
+                              const prev =
+                                i > 0
+                                  ? quotesByIndex[idx]!.items[i - 1].price
+                                  : price;
+                              const changed = price !== prev;
+                              return (
+                                <Stack
+                                  key={`${it.date}-${i}`}
+                                  direction="row"
+                                  justifyContent="space-between"
+                                >
+                                  <Typography
+                                    variant="body2"
+                                    color="text.secondary"
+                                  >
+                                    {dayjs(it.date).format("DD/MM/YYYY")}
+                                  </Typography>
+                                  <Typography
+                                    variant="body2"
+                                    sx={{
+                                      color: changed
+                                        ? "warning.main"
+                                        : "text.primary",
+                                      fontWeight: changed ? 700 : 500,
+                                    }}
+                                  >
+                                    {new Intl.NumberFormat("vi-VN").format(
+                                      price
+                                    )}{" "}
+                                    đ{" "}
+                                    {totalRooms > 1
+                                      ? `× ${totalRooms} phòng = ${new Intl.NumberFormat(
+                                          "vi-VN"
+                                        ).format(price * totalRooms)} đ`
+                                      : ""}
+                                  </Typography>
+                                </Stack>
+                              );
+                            })}
+                          </Stack>
+                          <Typography
+                            textAlign={"end"}
+                            variant="body2"
+                            sx={{ mt: 0.5 }}
+                            fontWeight={"bold"}
+                          >
+                            Tổng ({roomsWatch[idx]?.totalRooms || 1} phòng):{" "}
+                            {new Intl.NumberFormat("vi-VN").format(
+                              (quotesByIndex[idx]!.total || 0) *
+                                (roomsWatch[idx]?.totalRooms || 1)
+                            )}{" "}
+                            đ
+                          </Typography>
+                        </Stack>
+                      ) : null}
+                    </Collapse>
                   </CardContent>
                 </Card>
               ))}
