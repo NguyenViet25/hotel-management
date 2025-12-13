@@ -83,8 +83,6 @@ export interface CreateBookingInvoiceRequest {
   promotionCode?: string;
   promotionValue?: number;
   finalPayment?: { amount: number; type: number };
-  earlyCheckIn?: boolean;
-  lateCheckOut?: boolean;
   checkoutTime?: string;
   notes?: string;
   additionalNotes?: string;

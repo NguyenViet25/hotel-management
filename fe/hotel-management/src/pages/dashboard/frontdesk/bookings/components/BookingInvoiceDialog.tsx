@@ -29,27 +29,27 @@ import bookingsApi, {
   type AdditionalChargesDto,
   type BookingDetailsDto,
 } from "../../../../../api/bookingsApi";
+import hotelService, { type Hotel } from "../../../../../api/hotelService";
 import invoicesApi, { type InvoiceDto } from "../../../../../api/invoicesApi";
 import ordersApi from "../../../../../api/ordersApi";
-import discountCodesApi from "../../../../../api/discountCodesApi";
-import hotelService, { type Hotel } from "../../../../../api/hotelService";
-import { useStore, type StoreState } from "../../../../../hooks/useStore";
-import {
-  moneyToVietnameseWords,
-  formatDateVN,
-} from "../../../../../utils/money-to-words";
 import pricingApi, {
   type PricingQuoteResponse,
 } from "../../../../../api/pricingApi";
 import roomTypesApi from "../../../../../api/roomTypesApi";
+import { useStore, type StoreState } from "../../../../../hooks/useStore";
+import {
+  formatDateVN,
+  moneyToVietnameseWords,
+} from "../../../../../utils/money-to-words";
 
 // Promotion dialog
 import PromotionDialog from "../../invoices/components/PromotionDialog";
 
 // Icons
-import PercentIcon from "@mui/icons-material/Percent";
-import DiscountIcon from "@mui/icons-material/Discount";
 import { Close, Print } from "@mui/icons-material";
+import DiscountIcon from "@mui/icons-material/Discount";
+import PercentIcon from "@mui/icons-material/Percent";
+import Loading from "../../../../../components/common/Loading";
 
 type Props = {
   open: boolean;
@@ -71,9 +71,6 @@ const BookingInvoiceDialog: React.FC<Props> = ({
   const { user, hotelId } = useStore<StoreState>((state) => state);
   const [promotionCode, setPromotionCode] = useState("");
   const [promotionValue, setPromotionValue] = useState<number>(0);
-  const [paymentAmount, setPaymentAmount] = useState<number>(0);
-  const [earlyCheckIn, setEarlyCheckIn] = useState(false);
-  const [lateCheckOut, setLateCheckOut] = useState(false);
 
   const [additionalNotes, setAdditionalNotes] = useState(
     booking?.additionalNotes ?? " "
@@ -122,7 +119,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
           pageSize: 100,
         });
         const sum = (os.data || [])
-          .filter((o) => o.status !== "3")
+          .filter((o) => o.status !== 3)
           .reduce((acc, cur) => acc + (cur.itemsTotal || 0), 0);
         setOrdersTotal(sum);
       } catch {}
@@ -222,7 +219,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
   }, [open, booking?.bookingRoomTypes]);
 
   const tableRows = useMemo(() => {
-    if (!booking)
+    if (!open || !booking)
       return [] as {
         label: string;
         dateRange?: string;
@@ -307,15 +304,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
         });
       }
     }
-    // if (ordersTotal > 0) {
-    //   rows.push({
-    //     label: "Đồ ăn/uống (đặt món)",
-    //     quantity: 1,
-    //     nights: undefined,
-    //     unit: ordersTotal,
-    //     total: ordersTotal,
-    //   });
-    // }
+
     for (const l of additional?.lines || []) {
       rows.push({
         label: l.description,
@@ -338,9 +327,26 @@ const BookingInvoiceDialog: React.FC<Props> = ({
       });
     }
     return rows;
-  }, [booking, additional, ordersTotal, additionalAmount, additionalNotes]);
+  }, [
+    open,
+    additional,
+    ordersTotal,
+    additionalAmount,
+    additionalNotes,
+    priceByDateMap,
+  ]);
 
   const totals = useMemo(() => {
+    if (!open || !booking)
+      return {
+        subtotal: 0,
+        discountAmt: 0,
+        deposit: 0,
+        taxableAmount: 0,
+        vatAmt: 0,
+        finalNoVat: 0,
+        finalWithVat: 0,
+      };
     const subtotal = tableRows
       .filter((r) => r.total > 0)
       .reduce((a, c) => a + c.total, 0);
@@ -367,6 +373,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
     booking?.depositAmount,
     vatPercentage,
     showVat,
+    priceByDateMap,
   ]);
 
   // Confirm invoice
@@ -379,10 +386,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
         promotionCode: promotionCode || undefined,
         discountCode: promotionCode || undefined,
         promotionValue: promotionValue || undefined,
-        finalPayment:
-          paymentAmount > 0 ? { amount: paymentAmount, type: 0 } : undefined,
-        earlyCheckIn,
-        lateCheckOut,
+        finalPayment: undefined,
         additionalNotes,
         additionalAmount,
       });
@@ -729,7 +733,10 @@ const BookingInvoiceDialog: React.FC<Props> = ({
             variant="outlined"
             startIcon={<Close />}
             color="error"
-            onClick={onClose}
+            onClick={() => {
+              onClose();
+              setPriceByDateMap({});
+            }}
           >
             Đóng
           </Button>
