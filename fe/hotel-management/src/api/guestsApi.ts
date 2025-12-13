@@ -70,13 +70,50 @@ const guestsApi = {
     const res = await axios.get(`/guests/${id}`);
     return res.data;
   },
-  create: async (payload: CreateGuestRequest): Promise<ItemResponse<GuestDto>> => {
+  create: async (
+    payload: CreateGuestRequest
+  ): Promise<ItemResponse<GuestDto>> => {
     const res = await axios.post("/guests", payload);
     return res.data;
   },
-  update: async (id: string, payload: UpdateGuestRequest): Promise<ItemResponse<GuestDto>> => {
+  update: async (
+    id: string,
+    payload: UpdateGuestRequest
+  ): Promise<ItemResponse<GuestDto>> => {
     const res = await axios.put(`/guests/${id}`, payload);
     return res.data;
+  },
+  isDuplicate: async (params: {
+    phone?: string;
+    idCard?: string;
+    excludeId?: string;
+  }): Promise<{
+    isSuccess: boolean;
+    isDuplicate: boolean;
+    items: GuestDto[];
+  }> => {
+    const { phone, idCard, excludeId } = params || {};
+    const items: GuestDto[] = [];
+    if (phone) {
+      const res = await guestsApi.list({ phone, page: 1, pageSize: 5 });
+      if (res.isSuccess) items.push(...res.data);
+    }
+    if (idCard) {
+      const res = await guestsApi.list({ idCard, page: 1, pageSize: 5 });
+      if (res.isSuccess) {
+        res.data.forEach((g) => {
+          if (!items.find((x) => x.id === g.id)) items.push(g);
+        });
+      }
+    }
+    const filtered = excludeId
+      ? items.filter((x) => x.id !== excludeId)
+      : items;
+    return {
+      isSuccess: true,
+      isDuplicate: filtered.length > 0,
+      items: filtered,
+    };
   },
 };
 

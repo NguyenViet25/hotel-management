@@ -4,6 +4,7 @@ import PhoneIcon from "@mui/icons-material/Phone";
 import EmailIcon from "@mui/icons-material/Email";
 import CreditCardIcon from "@mui/icons-material/CreditCard";
 import {
+  Alert,
   Button,
   Dialog,
   DialogActions,
@@ -13,7 +14,7 @@ import {
   Stack,
   TextField,
 } from "@mui/material";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import {
@@ -21,7 +22,9 @@ import {
   type GuestDto,
   type UpdateGuestRequest,
 } from "../../../../../api/guestsApi";
+import guestsApi from "../../../../../api/guestsApi";
 import UploadCCCD from "../../../frontdesk/bookings/components/UploadCCCD";
+import { toast } from "react-toastify";
 
 type Props =
   | {
@@ -58,7 +61,7 @@ const updateSchema = z.object({
     .min(8, "Số điện thoại không hợp lệ")
     .max(20, "Số điện thoại quá dài")
     .optional(),
-  email: z.string().email("Email không hợp lệ").optional(),
+  email: z.string().email("Email không hợp lệ").optional().or(z.literal("")),
   idCard: z.string().trim().min(6, "CMND/CCCD không hợp lệ").optional(),
   idCardFrontImageUrl: z.string().optional(),
   idCardBackImageUrl: z.string().optional(),
@@ -72,6 +75,7 @@ const GuestFormModal: React.FC<Props> = ({
   onSubmit,
 }) => {
   const isEditMode = mode === "edit";
+  const [dupError, setDupError] = useState("");
 
   const {
     control,
@@ -122,6 +126,17 @@ const GuestFormModal: React.FC<Props> = ({
   }, [isEditMode, initial, open, reset]);
 
   const onFormSubmit = async (data: any) => {
+    const excludeId = isEditMode && initial ? initial.id : undefined;
+    const dup = await guestsApi.isDuplicate({
+      phone: data.phone,
+      idCard: data.idCard,
+      excludeId,
+    });
+    if (dup.isDuplicate) {
+      toast.error("Đã tồn tại khách với số điện thoại hoặc CMND/CCCD");
+      setDupError("Đã tồn tại khách với số điện thoại hoặc CMND/CCCD");
+      return;
+    }
     if (!isEditMode) {
       const payload: CreateGuestRequest = {
         fullName: data.fullName,
@@ -152,7 +167,15 @@ const GuestFormModal: React.FC<Props> = ({
       </DialogTitle>
       <form onSubmit={handleSubmit(onFormSubmit)}>
         <DialogContent>
-          <Stack spacing={2} sx={{ mt: 1 }}>
+          <Stack spacing={2}>
+            {dupError && (
+              <Alert
+                severity="error"
+                sx={{ color: "error.main", fontSize: 13 }}
+              >
+                {dupError}
+              </Alert>
+            )}
             <Controller
               name="fullName"
               control={control}
@@ -191,6 +214,10 @@ const GuestFormModal: React.FC<Props> = ({
                         <PhoneIcon />
                       </InputAdornment>
                     ),
+                  }}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    setDupError("");
                   }}
                 />
               )}
@@ -233,6 +260,10 @@ const GuestFormModal: React.FC<Props> = ({
                         <CreditCardIcon />
                       </InputAdornment>
                     ),
+                  }}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    setDupError("");
                   }}
                 />
               )}
