@@ -81,8 +81,6 @@ const BookingInvoiceDialog: React.FC<Props> = ({
   const [promoOpen, setPromoOpen] = useState(false);
   const [additional, setAdditional] = useState<AdditionalChargesDto | null>();
 
-  // TODO: set additional
-  const [invoiceDetails, setInvoiceDetails] = useState<InvoiceDto | null>(null);
   const [disableForPrint, setDisableForPrint] = useState(false);
   const [ordersTotal, setOrdersTotal] = useState<number>(0);
   const [hotel, setHotel] = useState<Hotel | null>(null);
@@ -126,7 +124,6 @@ const BookingInvoiceDialog: React.FC<Props> = ({
       } catch {}
 
       try {
-        setInvoiceDetails(null);
         setAdditionalNotes(booking.additionalNotes ?? "");
         setAdditionalAmount(booking.additionalAmount || 0);
         setPromotionCode(booking.promotionCode || "");
@@ -171,7 +168,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
         1,
         dayjs(rt.endDate).diff(dayjs(rt.startDate), "day")
       );
-      const rooms = Math.max(rt.bookingRooms?.length || 0, 1);
+      const rooms = Math.max(rt.totalRoom, 1);
       const unit = rt.price * nights;
       rows.push({
         label: `Phòng ${rt.roomTypeName}`,
@@ -263,7 +260,6 @@ const BookingInvoiceDialog: React.FC<Props> = ({
 
       if (res.isSuccess) {
         toast.success("Xuất hóa đơn thành công");
-        setInvoiceDetails(res.data);
         onInvoiceCreated?.(res.data);
         // Fetch VAT only when printing
         try {
