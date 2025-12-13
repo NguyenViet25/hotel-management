@@ -1,20 +1,27 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import PersonIcon from "@mui/icons-material/Person";
+import PhoneIcon from "@mui/icons-material/Phone";
+import EmailIcon from "@mui/icons-material/Email";
+import CreditCardIcon from "@mui/icons-material/CreditCard";
 import {
-  Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  InputAdornment,
   Stack,
   TextField,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
-import UploadCCCD from "../../../frontdesk/bookings/components/UploadCCCD";
+import React, { useEffect } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { z } from "zod";
 import {
   type CreateGuestRequest,
   type GuestDto,
   type UpdateGuestRequest,
 } from "../../../../../api/guestsApi";
+import UploadCCCD from "../../../frontdesk/bookings/components/UploadCCCD";
 
 type Props =
   | {
@@ -31,6 +38,31 @@ type Props =
       onClose: () => void;
       onSubmit: (payload: UpdateGuestRequest) => Promise<void>;
     };
+const createSchema = z.object({
+  fullName: z.string().trim().min(2, "Họ tên tối thiểu 2 ký tự"),
+  phone: z
+    .string()
+    .trim()
+    .min(8, "Số điện thoại không hợp lệ")
+    .max(20, "Số điện thoại quá dài"),
+  email: z.string().email("Email không hợp lệ").optional().or(z.literal("")),
+  idCard: z.string().trim().min(6, "CMND/CCCD không hợp lệ"),
+  idCardFrontImageUrl: z.string().optional().or(z.literal("")),
+  idCardBackImageUrl: z.string().optional().or(z.literal("")),
+});
+const updateSchema = z.object({
+  fullName: z.string().trim().min(2, "Họ tên tối thiểu 2 ký tự").optional(),
+  phone: z
+    .string()
+    .trim()
+    .min(8, "Số điện thoại không hợp lệ")
+    .max(20, "Số điện thoại quá dài")
+    .optional(),
+  email: z.string().email("Email không hợp lệ").optional(),
+  idCard: z.string().trim().min(6, "CMND/CCCD không hợp lệ").optional(),
+  idCardFrontImageUrl: z.string().optional(),
+  idCardBackImageUrl: z.string().optional(),
+});
 
 const GuestFormModal: React.FC<Props> = ({
   open,
@@ -39,50 +71,77 @@ const GuestFormModal: React.FC<Props> = ({
   onClose,
   onSubmit,
 }) => {
-  const [fullName, setFullName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
-  const [idCard, setIdCard] = useState("");
-  const [frontUrl, setFrontUrl] = useState("");
-  const [backUrl, setBackUrl] = useState("");
+  const isEditMode = mode === "edit";
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm({
+    resolver: zodResolver(isEditMode ? updateSchema : createSchema),
+    defaultValues: isEditMode
+      ? {
+          fullName: initial?.fullName || "",
+          phone: initial?.phone || "",
+          email: initial?.email || "",
+          idCard: initial?.idCard || "",
+          idCardFrontImageUrl: initial?.idCardFrontImageUrl || "",
+          idCardBackImageUrl: initial?.idCardBackImageUrl || "",
+        }
+      : {
+          fullName: "",
+          phone: "",
+          email: "",
+          idCard: "",
+          idCardFrontImageUrl: "",
+          idCardBackImageUrl: "",
+        },
+  });
 
   useEffect(() => {
-    if (mode === "edit" && initial) {
-      setFullName(initial.fullName || "");
-      setPhone(initial.phone || "");
-      setEmail(initial.email || "");
-      setIdCard(initial.idCard || "");
-      setFrontUrl(initial.idCardFrontImageUrl || "");
-      setBackUrl(initial.idCardBackImageUrl || "");
+    if (isEditMode && initial) {
+      reset({
+        fullName: initial.fullName || "",
+        phone: initial.phone || "",
+        email: initial.email || "",
+        idCard: initial.idCard || "",
+        idCardFrontImageUrl: initial.idCardFrontImageUrl || "",
+        idCardBackImageUrl: initial.idCardBackImageUrl || "",
+      });
     } else {
-      setFullName("");
-      setPhone("");
-      setEmail("");
-      setIdCard("");
-      setFrontUrl("");
-      setBackUrl("");
+      reset({
+        fullName: "",
+        phone: "",
+        email: "",
+        idCard: "",
+        idCardFrontImageUrl: "",
+        idCardBackImageUrl: "",
+      });
     }
-  }, [mode, initial, open]);
+  }, [isEditMode, initial, open, reset]);
 
-  const handleSubmit = async () => {
-    if (mode === "create") {
-      await onSubmit({
-        fullName,
-        phone,
-        email: email || undefined,
-        idCard,
-        idCardFrontImageUrl: frontUrl || undefined,
-        idCardBackImageUrl: backUrl || undefined,
-      } as CreateGuestRequest);
+  const onFormSubmit = async (data: any) => {
+    if (!isEditMode) {
+      const payload: CreateGuestRequest = {
+        fullName: data.fullName,
+        phone: data.phone,
+        email: data.email || undefined,
+        idCard: data.idCard,
+        idCardFrontImageUrl: data.idCardFrontImageUrl || undefined,
+        idCardBackImageUrl: data.idCardBackImageUrl || undefined,
+      };
+      await onSubmit(payload);
     } else {
-      await onSubmit({
-        fullName: fullName || undefined,
-        phone: phone || undefined,
-        email: email || undefined,
-        idCard: idCard || undefined,
-        idCardFrontImageUrl: frontUrl || undefined,
-        idCardBackImageUrl: backUrl || undefined,
-      } as UpdateGuestRequest);
+      const payload: UpdateGuestRequest = {
+        fullName: data.fullName || undefined,
+        phone: data.phone || undefined,
+        email: data.email || undefined,
+        idCard: data.idCard || undefined,
+        idCardFrontImageUrl: data.idCardFrontImageUrl || undefined,
+        idCardBackImageUrl: data.idCardBackImageUrl || undefined,
+      };
+      await onSubmit(payload);
     }
   };
 
@@ -91,53 +150,124 @@ const GuestFormModal: React.FC<Props> = ({
       <DialogTitle>
         {mode === "create" ? "Thêm khách" : "Cập nhật thông tin khách"}
       </DialogTitle>
-      <DialogContent>
-        <Stack spacing={2} sx={{ mt: 1 }}>
-          <TextField
-            label="Họ tên"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            required
-            fullWidth
-          />
-          <TextField
-            label="Điện thoại"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            required
-            fullWidth
-          />
-          <TextField
-            label="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            fullWidth
-          />
-          <TextField
-            label="CMND/CCCD"
-            value={idCard}
-            onChange={(e) => setIdCard(e.target.value)}
-            required
-            fullWidth
-          />
-          <UploadCCCD
-            label="CCCD mặt trước"
-            value={frontUrl}
-            onChange={(url) => setFrontUrl(url || "")}
-          />
-          <UploadCCCD
-            label="CCCD mặt sau"
-            value={backUrl}
-            onChange={(url) => setBackUrl(url || "")}
-          />
-        </Stack>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Hủy</Button>
-        <Button variant="contained" onClick={handleSubmit}>
-          {mode === "create" ? "Thêm" : "Lưu"}
-        </Button>
-      </DialogActions>
+      <form onSubmit={handleSubmit(onFormSubmit)}>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <Controller
+              name="fullName"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Họ tên"
+                  placeholder="Nhập họ tên"
+                  fullWidth
+                  error={!!errors.fullName}
+                  helperText={errors.fullName?.message as string}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <PersonIcon />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              )}
+            />
+            <Controller
+              name="phone"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Điện thoại"
+                  placeholder="Nhập số điện thoại"
+                  fullWidth
+                  error={!!errors.phone}
+                  helperText={errors.phone?.message as string}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <PhoneIcon />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              )}
+            />
+            <Controller
+              name="email"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Email"
+                  placeholder="Nhập email"
+                  fullWidth
+                  error={!!errors.email}
+                  helperText={errors.email?.message as string}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <EmailIcon />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              )}
+            />
+            <Controller
+              name="idCard"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="CMND/CCCD"
+                  placeholder="Nhập CMND/CCCD"
+                  fullWidth
+                  error={!!errors.idCard}
+                  helperText={errors.idCard?.message as string}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <CreditCardIcon />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              )}
+            />
+            <Controller
+              name="idCardFrontImageUrl"
+              control={control}
+              render={({ field: { value, onChange } }) => (
+                <UploadCCCD
+                  label="CCCD mặt trước"
+                  value={value || ""}
+                  onChange={(url) => onChange(url || "")}
+                />
+              )}
+            />
+            <Controller
+              name="idCardBackImageUrl"
+              control={control}
+              render={({ field: { value, onChange } }) => (
+                <UploadCCCD
+                  label="CCCD mặt sau"
+                  value={value || ""}
+                  onChange={(url) => onChange(url || "")}
+                />
+              )}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onClose}>Hủy</Button>
+          <Button variant="contained" type="submit">
+            {mode === "create" ? "Thêm" : "Lưu"}
+          </Button>
+        </DialogActions>
+      </form>
     </Dialog>
   );
 };
