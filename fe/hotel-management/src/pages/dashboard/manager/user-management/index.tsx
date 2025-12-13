@@ -25,6 +25,7 @@ import CreateUserDialog from "../../admin/user-management/dialogs/CreateUserDial
 import EditUserDialog from "../../admin/user-management/dialogs/EditUserDialog";
 import LockUserDialog from "../../admin/user-management/dialogs/LockUserDialog";
 import ResetPasswordDialog from "../../admin/user-management/dialogs/ResetPasswordDialog";
+import { isEmpty } from "lodash";
 
 const ManagerUserManagement: React.FC = () => {
   // State for user list
@@ -122,7 +123,6 @@ const ManagerUserManagement: React.FC = () => {
         search,
         roleFilterParam
       );
-      console.log("response", response.data);
       if (response.isSuccess) {
         setUsers(response.data);
         setTotal(response.meta.total);
@@ -451,11 +451,7 @@ const ManagerUserManagement: React.FC = () => {
 
       <DataTable<User>
         columns={columns}
-        data={
-          roleFilter
-            ? users.filter((u) => u.roles?.includes(roleFilter))
-            : users
-        }
+        data={users}
         title="Danh sách tài khoản"
         loading={loading}
         pagination={{

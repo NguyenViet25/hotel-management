@@ -29,7 +29,7 @@ import CreateUserDialog from "./dialogs/CreateUserDialog";
 import EditUserDialog from "./dialogs/EditUserDialog";
 import LockUserDialog from "./dialogs/LockUserDialog";
 import ResetPasswordDialog from "./dialogs/ResetPasswordDialog";
-
+import { isEmpty } from "lodash";
 const UserManagement: React.FC = () => {
   // State for user list
   const [users, setUsers] = useState<User[]>([]);
@@ -456,11 +456,7 @@ const UserManagement: React.FC = () => {
 
       <DataTable<User>
         columns={columns}
-        data={
-          roleFilter
-            ? users.filter((u) => u.roles?.includes(roleFilter))
-            : users
-        }
+        data={users}
         title="Danh sách tài khoản"
         loading={loading}
         pagination={{
