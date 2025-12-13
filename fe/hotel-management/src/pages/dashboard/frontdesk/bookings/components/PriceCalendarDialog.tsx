@@ -14,8 +14,11 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import viLocale from "@fullcalendar/core/locales/vi";
-import pricingApi, { type PricingQuoteResponse } from "../../../../../api/pricingApi";
+import pricingApi, {
+  type PricingQuoteResponse,
+} from "../../../../../api/pricingApi";
 import { type BookingRoomTypeDto } from "../../../../../api/bookingsApi";
+import roomTypesApi from "../../../../../api/roomTypesApi";
 
 type Props = {
   open: boolean;
@@ -32,12 +35,68 @@ const PriceCalendarDialog: React.FC<Props> = ({ open, onClose, roomType }) => {
       if (!open || !roomType) return;
       setLoading(true);
       try {
-        const res = await pricingApi.quote({
-          roomTypeId: roomType.roomTypeId,
-          checkInDate: dayjs(roomType.startDate).format("YYYY-MM-DD"),
-          checkOutDate: dayjs(roomType.endDate).format("YYYY-MM-DD"),
-        });
-        setQuote((res as any).data || res.data || null);
+        const [res, rtRes] = await Promise.all([
+          pricingApi.quote({
+            roomTypeId: roomType.roomTypeId,
+            checkInDate: dayjs(roomType.startDate).format("YYYY-MM-DD"),
+            checkOutDate: dayjs(roomType.endDate).format("YYYY-MM-DD"),
+          }),
+          roomTypesApi.getRoomTypeById(roomType.roomTypeId),
+        ]);
+
+        const rawQuote: PricingQuoteResponse | null =
+          ((res as any).data || (res as any).data?.data || res.data) ?? null;
+        const rt = ((rtRes as any).data ||
+          (rtRes as any).data?.data ||
+          rtRes.data) as any;
+
+        const overrides = (rt?.priceByDates || []).map((d: any) =>
+          dayjs(d.date).format("YYYY-MM-DD")
+        );
+        const overrideSet = new Set(overrides);
+        const inputPrice = roomType.price || rt?.priceFrom || 0;
+
+        const start = roomType.startDate ? dayjs(roomType.startDate) : null;
+        const end = roomType.endDate ? dayjs(roomType.endDate) : null;
+
+        let items =
+          rawQuote?.items && rawQuote.items.length ? rawQuote.items : [];
+        if (
+          (!items || items.length === 0) &&
+          start &&
+          end &&
+          start.isBefore(end)
+        ) {
+          const temp: { date: string; price: number }[] = [];
+          let cursor = start.clone();
+          while (cursor.isBefore(end)) {
+            const dateStr = cursor.format("YYYY-MM-DD");
+            const overridePrice = rt?.priceByDates?.find(
+              (p: any) => dayjs(p.date).format("YYYY-MM-DD") === dateStr
+            )?.price;
+            temp.push({
+              date: dateStr,
+              price: overridePrice ?? inputPrice,
+            });
+            cursor = cursor.add(1, "day");
+          }
+          items = temp as any;
+        } else {
+          items = items.map((it: any) => {
+            const d = dayjs(it.date).format("YYYY-MM-DD");
+            const isOverride = overrideSet.has(d);
+            return {
+              ...it,
+              price: isOverride ? it.price : inputPrice,
+            };
+          });
+        }
+
+        const total = items.reduce(
+          (s: number, it: any) => s + (it.price || 0),
+          0
+        );
+        setQuote({ items, total });
       } finally {
         setLoading(false);
       }
@@ -51,14 +110,10 @@ const PriceCalendarDialog: React.FC<Props> = ({ open, onClose, roomType }) => {
     1;
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="md"
-      fullWidth
-    >
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>
-        Giá theo ngày {roomType?.roomTypeName ? `- ${roomType.roomTypeName}` : ""}
+        Giá theo ngày{" "}
+        {roomType?.roomTypeName ? `- ${roomType.roomTypeName}` : ""}
       </DialogTitle>
       <DialogContent dividers>
         {loading ? (
@@ -85,7 +140,9 @@ const PriceCalendarDialog: React.FC<Props> = ({ open, onClose, roomType }) => {
                 locale="vi"
                 initialView="dayGridMonth"
                 initialDate={
-                  roomType?.startDate ? dayjs(roomType.startDate).toDate() : undefined
+                  roomType?.startDate
+                    ? dayjs(roomType.startDate).toDate()
+                    : undefined
                 }
                 selectable={false}
                 dayMaxEvents
@@ -129,7 +186,12 @@ const PriceCalendarDialog: React.FC<Props> = ({ open, onClose, roomType }) => {
                           fontWeight: changed ? 700 : 500,
                         }}
                       >
-                        {new Intl.NumberFormat("vi-VN").format(price)} đ
+                        {new Intl.NumberFormat("vi-VN").format(price)} đ{" "}
+                        {totalRooms > 1
+                          ? `× ${totalRooms} phòng = ${new Intl.NumberFormat(
+                              "vi-VN"
+                            ).format(price * totalRooms)} đ`
+                          : ""}
                       </Typography>
                     </Stack>
                   );
