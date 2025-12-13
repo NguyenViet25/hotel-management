@@ -203,14 +203,12 @@ const BookingInvoiceDialog: React.FC<Props> = ({
               }
               items = temp as any;
             } else {
-              const base = rtDetails?.priceFrom || 0;
               items = items.map((it: any) => {
                 const d = dayjs(it.date).format("YYYY-MM-DD");
-                const quoted = Number(it.price || 0);
-                const finalPrice = quoted === base ? inputPrice : quoted;
+                const isOverride = overrideSet.has(d);
                 return {
                   date: d,
-                  price: finalPrice,
+                  price: isOverride ? it.price : inputPrice,
                 };
               });
             }
@@ -497,7 +495,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                       <b>Nội dung</b>
                     </TableCell>
                     <TableCell align="center" sx={{ width: "18%" }}>
-                      <b>Khoảng ngày</b>
+                      <b>Ngày</b>
                     </TableCell>
                     <TableCell align="center" sx={{ width: "8%" }}>
                       <b>SL</b>
