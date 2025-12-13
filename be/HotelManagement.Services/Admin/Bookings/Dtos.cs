@@ -53,14 +53,14 @@ public class CreateBookingDto
     [Required]
     public Guid HotelId { get; set; }
     [Required]
-    [Range(0, 100000000)]
+    [Range(0, Double.MaxValue)]
     public decimal Deposit { get; set; }
-    [Range(0, 100000000)]
+    [Range(0, Double.MaxValue)]
     public decimal Discount { get; set; }
 
-    [Range(0, 100000000)]
+    [Range(0, Double.MaxValue)]
     public decimal Total { get; set; }
-    [Range(0, 100000000)]
+    [Range(0, Double.MaxValue)]
     public decimal Left { get; set; }
 
     [Required]

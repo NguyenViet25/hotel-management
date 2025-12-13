@@ -265,7 +265,12 @@ const BookingFormModal: React.FC<Props> = ({
             ? newQuotes[idx]!.items
             : [];
 
-        if ((!items || items.length === 0) && start && end && start.isBefore(end)) {
+        if (
+          (!items || items.length === 0) &&
+          start &&
+          end &&
+          start.isBefore(end)
+        ) {
           const temp: { date: string; price: number }[] = [];
           let cursor = start.clone();
           while (cursor.isBefore(end)) {
@@ -605,11 +610,13 @@ const BookingFormModal: React.FC<Props> = ({
                     />
                     <Stack sx={{ mt: 1 }}>
                       <Typography variant="body2" color="text.secondary">
-                        Giá cơ bản:{" "}
+                        Đơn giá:{" "}
                         {new Intl.NumberFormat("vi-VN").format(
-                          roomTypes.find(
-                            (t) => t.id === roomsWatch[idx]?.roomId
-                          )?.priceFrom || 0
+                          roomsWatch[idx]?.price ||
+                            roomTypes.find(
+                              (t) => t.id === roomsWatch[idx]?.roomId
+                            )?.priceFrom ||
+                            0
                         )}{" "}
                         đ
                       </Typography>
@@ -675,6 +682,7 @@ const BookingFormModal: React.FC<Props> = ({
                         <Stack spacing={0.5}>
                           {quotesByIndex[idx]!.items.map((it, i) => {
                             const price = it.price || 0;
+                            const totalRooms = roomsWatch[idx]?.totalRooms || 0;
                             const prev =
                               i > 0
                                 ? quotesByIndex[idx]!.items[i - 1].price
@@ -702,16 +710,27 @@ const BookingFormModal: React.FC<Props> = ({
                                   }}
                                 >
                                   {new Intl.NumberFormat("vi-VN").format(price)}{" "}
-                                  đ
+                                  đ{" "}
+                                  {totalRooms > 1
+                                    ? `× ${totalRooms} phòng = ${new Intl.NumberFormat(
+                                        "vi-VN"
+                                      ).format(price * totalRooms)} đ`
+                                    : ""}
                                 </Typography>
                               </Stack>
                             );
                           })}
                         </Stack>
-                        <Typography variant="body2" sx={{ mt: 0.5 }}>
-                          Tổng (1 phòng):{" "}
+                        <Typography
+                          textAlign={"end"}
+                          variant="body2"
+                          sx={{ mt: 0.5 }}
+                          fontWeight={"bold"}
+                        >
+                          Tổng ({roomsWatch[idx]?.totalRooms || 1} phòng):{" "}
                           {new Intl.NumberFormat("vi-VN").format(
-                            quotesByIndex[idx]!.total || 0
+                            (quotesByIndex[idx]!.total || 0) *
+                              (roomsWatch[idx]?.totalRooms || 1)
                           )}{" "}
                           đ
                         </Typography>
