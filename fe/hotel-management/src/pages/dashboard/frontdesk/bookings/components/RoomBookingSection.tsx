@@ -117,8 +117,8 @@ const RoomBookingSection: React.FC<Props> = ({
                 field.onChange(num);
                 setReloadCount((prev) => prev + 1);
               }}
-              error={!!errors.unitPrice}
-              helperText={errors.unitPrice?.message}
+              error={!!errors?.roomTypes?.[index]?.price}
+              helperText={errors?.roomTypes?.[index]?.price?.message}
               inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
               InputProps={{
                 startAdornment: (
@@ -154,12 +154,17 @@ const RoomBookingSection: React.FC<Props> = ({
                     <RoomPreferencesIcon fontSize="small" />
                   </InputAdornment>
                 ),
-                inputProps: { min: 1 },
                 sx: { height: "100%" },
               }}
-              {...field}
+              value={
+                field.value !== undefined && field.value !== null
+                  ? Number(field.value)
+                  : 1
+              }
               onChange={(e) => {
-                field.onChange(e);
+                const raw = e.target.value;
+                const num = raw ? Number(raw) : 1;
+                field.onChange(num);
                 setReloadCount((prev) => prev + 1);
               }}
             />

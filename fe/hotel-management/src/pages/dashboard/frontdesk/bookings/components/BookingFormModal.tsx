@@ -67,7 +67,8 @@ const roomItemSchema = z
     totalRooms: z.coerce
       .number("Số lượng phòng phải là số")
       .int("Số lượng phòng phải là số nguyên")
-      .min(1, "Tối thiểu 1 phòng"),
+      .min(1, "Tối thiểu 1 phòng")
+      .max(100, "Tối đa 100 phòng"),
     price: z.coerce.number("Giá phòng phải là số").min(1, "Giá tối thiểu là 1"),
     rooms: z.array(
       z
@@ -131,6 +132,7 @@ const BookingFormModal: React.FC<Props> = ({
     handleSubmit,
     reset,
     setValue,
+    setError,
     watch,
     formState: { errors },
   } = useForm<FormValues>({
@@ -168,30 +170,6 @@ const BookingFormModal: React.FC<Props> = ({
   const [quotesByIndex, setQuotesByIndex] = useState<
     Record<number, PricingQuoteResponse | null>
   >({});
-
-  const dailyTotals = useMemo(() => {
-    const map: Record<string, number> = {};
-    roomsWatch.forEach((r, idx) => {
-      const q = quotesByIndex[idx];
-      if (q?.items?.length) {
-        q.items.forEach((it) => {
-          const amt = (it.price || 0) * (r.totalRooms || 0);
-          map[it.date] = (map[it.date] || 0) + amt;
-        });
-      } else if (r.startDate && r.endDate && r.price) {
-        let d = dayjs(r.startDate);
-        const end = dayjs(r.endDate);
-        while (d.isBefore(end)) {
-          const k = d.format("YYYY-MM-DD");
-          map[k] = (map[k] || 0) + (r.price || 0) * (r.totalRooms || 0);
-          d = d.add(1, "day");
-        }
-      }
-    });
-    return Object.entries(map)
-      .sort((a, b) => (a[0] < b[0] ? -1 : 1))
-      .map(([date, total]) => ({ date, total }));
-  }, [quotesByIndex, roomsWatch]);
 
   useEffect(() => {
     if (roomTypes.length > 0 && mode === "create") {
@@ -360,6 +338,7 @@ const BookingFormModal: React.FC<Props> = ({
         };
       });
       if (mapped.length > 0) setValue("roomTypes", mapped as any);
+
       setValue("depositAmount", (bookingData as any).depositAmount || 0);
       setValue("notes", (bookingData as any).notes || "");
       setValue("totalAmount", (bookingData as any).totalAmount || 0);
@@ -381,6 +360,52 @@ const BookingFormModal: React.FC<Props> = ({
         setSnackbar({
           open: true,
           message: "Số tiền còn lại không hợp lệ",
+          severity: "error",
+        });
+        return;
+      }
+      let dynError = false;
+      values.roomTypes.forEach((rt, idx) => {
+        const t = roomTypes.find((x) => x.id === rt.roomId);
+        const min = t?.priceFrom ?? 0;
+        const max = t?.priceTo ?? Number.MAX_SAFE_INTEGER;
+        if (rt.price < min || rt.price > max) {
+          setError(
+            `roomTypes.${idx}.price` as any,
+            {
+              type: "manual",
+              message: `Đơn giá phải trong khoảng ${new Intl.NumberFormat(
+                "vi-VN"
+              ).format(min)} - ${new Intl.NumberFormat("vi-VN").format(max)} đ`,
+            } as any
+          );
+          dynError = true;
+        }
+        if ((rt.totalRooms as any) > 100) {
+          setError(
+            `roomTypes.${idx}.totalRooms` as any,
+            {
+              type: "manual",
+              message: "Tối đa 100 phòng",
+            } as any
+          );
+          dynError = true;
+        }
+        if ((rt.totalRooms as any) < 1) {
+          setError(
+            `roomTypes.${idx}.totalRooms` as any,
+            {
+              type: "manual",
+              message: "Tối thiểu 1 phòng",
+            } as any
+          );
+          dynError = true;
+        }
+      });
+      if (dynError) {
+        setSnackbar({
+          open: true,
+          message: "Vui lòng kiểm tra lỗi trong yêu cầu đặt phòng",
           severity: "error",
         });
         return;
@@ -869,7 +894,13 @@ const BookingFormModal: React.FC<Props> = ({
           </Button>
           <Button
             variant="contained"
-            onClick={handleSubmit(submit as any)}
+            onClick={handleSubmit(submit as any, () =>
+              setSnackbar({
+                open: true,
+                message: "Vui lòng kiểm tra lỗi trong yêu cầu đặt phòng",
+                severity: "error",
+              })
+            )}
             startIcon={<SaveIcon />}
           >
             {mode === "update" ? "Cập nhật" : "Lưu yêu cầu"}

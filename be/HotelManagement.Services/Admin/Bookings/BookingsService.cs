@@ -101,7 +101,7 @@ public class BookingsService(
                     RoomTypeId = rt.RoomTypeId,
                     RoomTypeName = roomType.Name,
                     Capacity = roomType.Capacity,
-                    Price = roomType.BasePriceFrom,
+                    Price = rt.Price ?? roomType.BasePriceFrom,
                     StartDate = rt.StartDate,
                     EndDate = rt.EndDate,
                     TotalRoom = rt.TotalRoom ?? 0
@@ -616,7 +616,7 @@ public class BookingsService(
                         StartDate = rt.StartDate,
                         EndDate = rt.EndDate,
                         Capacity = roomType.Capacity,
-                        Price = roomType.BasePriceFrom,
+                        Price = rt.Price ?? roomType.BasePriceFrom,
                         TotalRoom = rt.TotalRoom ?? 0
                     };
                     await _bookingRoomTypeRepo.AddAsync(brt);
