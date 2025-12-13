@@ -7,18 +7,18 @@ namespace HotelManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/guests")]
-[Authorize(Roles = "Manager,FrontDesk")]
+[Authorize]
 public class GuestsController : ControllerBase
 {
     private readonly IGuestsService _svc;
     public GuestsController(IGuestsService svc) { _svc = svc; }
 
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<IEnumerable<GuestSummaryDto>>>> List([FromQuery] GuestsQueryDto query)
+    public async Task<ActionResult<ApiResponse<IEnumerable<GuestDetailsDto>>>> List([FromQuery] GuestsQueryDto query)
     {
         var (items, total) = await _svc.ListAsync(query);
         var meta = new { total, page = query.Page, pageSize = query.PageSize };
-        return Ok(ApiResponse<IEnumerable<GuestSummaryDto>>.Ok(items, meta: meta));
+        return Ok(ApiResponse<IEnumerable<GuestDetailsDto>>.Ok(items, meta: meta));
     }
 
     [HttpGet("{id:guid}")]

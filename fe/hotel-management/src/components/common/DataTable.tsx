@@ -5,6 +5,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import KeyIcon from "@mui/icons-material/Key";
 import LockIcon from "@mui/icons-material/Lock";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
+import RemoveRedEye from "@mui/icons-material/RemoveRedEye";
 import SearchIcon from "@mui/icons-material/Search";
 import {
   Box,
@@ -53,6 +54,7 @@ export interface DataTableProps<T> {
   onDelete?: (record: T) => void;
   onLock?: (record: T) => void;
   onResetPassword?: (record: T) => void;
+  onView?: (record: T) => void;
   actionColumn?: boolean;
   getRowId: (row: T) => string | number;
   onSort?: (property: string) => void;
@@ -73,6 +75,7 @@ const DataTable = <T extends object>({
   onDelete,
   onLock,
   onResetPassword,
+  onView,
   actionColumn = true,
   getRowId,
   onSort,
@@ -174,7 +177,7 @@ const DataTable = <T extends object>({
                 </TableCell>
               ))}
               {actionColumn &&
-                (onEdit || onDelete || onLock || onResetPassword) && (
+                (onView || onEdit || onDelete || onLock || onResetPassword) && (
                   <TableCell
                     align="center"
                     style={{ minWidth: 150, fontWeight: "bold" }}
@@ -225,13 +228,23 @@ const DataTable = <T extends object>({
                       );
                     })}
                     {actionColumn &&
-                      (onEdit || onDelete || onLock || onResetPassword) && (
+                      (onView || onEdit || onDelete || onLock || onResetPassword) && (
                         <TableCell align="center">
                           <Stack
                             direction="row"
                             spacing={1}
                             justifyContent="center"
                           >
+                            {onView && (
+                              <IconButton
+                                size="small"
+                                color="info"
+                                onClick={() => onView(row)}
+                                aria-label="view"
+                              >
+                                <RemoveRedEye fontSize="small" />
+                              </IconButton>
+                            )}
                             {onEdit && (
                               <IconButton
                                 size="small"

@@ -7,7 +7,7 @@ namespace HotelManagement.Services.Admin.Guests;
 
 public interface IGuestsService
 {
-    Task<(IEnumerable<GuestSummaryDto> Items, int Total)> ListAsync(GuestsQueryDto query);
+    Task<(IEnumerable<GuestDetailsDto> Items, int Total)> ListAsync(GuestsQueryDto query);
     Task<GuestDetailsDto?> GetAsync(Guid id);
     Task<ApiResponse<GuestDetailsDto>> CreateAsync(CreateGuestDto dto);
     Task<ApiResponse<GuestDetailsDto>> UpdateAsync(Guid id, UpdateGuestDto dto);
@@ -18,7 +18,7 @@ public class GuestsService : IGuestsService
     private readonly ApplicationDbContext _db;
     public GuestsService(ApplicationDbContext db) { _db = db; }
 
-    public async Task<(IEnumerable<GuestSummaryDto> Items, int Total)> ListAsync(GuestsQueryDto query)
+    public async Task<(IEnumerable<GuestDetailsDto> Items, int Total)> ListAsync(GuestsQueryDto query)
     {
         var baseQuery = _db.Guests.AsQueryable();
 
@@ -54,13 +54,15 @@ public class GuestsService : IGuestsService
         var items = await baseQuery
             .Skip((query.Page - 1) * query.PageSize)
             .Take(query.PageSize)
-            .Select(g => new GuestSummaryDto
+            .Select(g => new GuestDetailsDto
             {
                 Id = g.Id,
                 FullName = g.FullName,
                 Phone = g.Phone,
                 Email = g.Email,
-                IdCard = g.IdCard
+                IdCard = g.IdCard,
+                IdCardBackImageUrl = g.IdCardBackImageUrl,
+                IdCardFrontImageUrl = g.IdCardFrontImageUrl,
             })
             .ToListAsync();
 

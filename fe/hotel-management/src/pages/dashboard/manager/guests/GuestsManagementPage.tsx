@@ -1,11 +1,24 @@
-import { Box, Snackbar, Alert } from "@mui/material";
+import {
+  Box,
+  Snackbar,
+  Alert,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Stack,
+  Typography,
+} from "@mui/material";
 import React, { useEffect, useMemo, useState } from "react";
 import guestsApi, {
   type CreateGuestRequest,
   type GuestDto,
   type UpdateGuestRequest,
 } from "../../../../api/guestsApi";
-import DataTable, { type Column } from "../../../../components/common/DataTable";
+import DataTable, {
+  type Column,
+} from "../../../../components/common/DataTable";
 import PageTitle from "../../../../components/common/PageTitle";
 import GuestFormModal from "./components/GuestFormModal";
 
@@ -20,6 +33,8 @@ const GuestsManagementPage: React.FC = () => {
   const [editOpen, setEditOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<GuestDto | null>(null);
+  const [viewOpen, setViewOpen] = useState(false);
+  const [viewItem, setViewItem] = useState<GuestDto | null>(null);
 
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -33,6 +48,60 @@ const GuestsManagementPage: React.FC = () => {
       { id: "phone", label: "Điện thoại", minWidth: 140 },
       { id: "email", label: "Email", minWidth: 200 },
       { id: "idCard", label: "CMND/CCCD", minWidth: 140 },
+      {
+        id: "idCardFrontImageUrl",
+        label: "Mặt trước",
+        minWidth: 120,
+        render: (row) => {
+          const url = row.idCardFrontImageUrl || "";
+          if (!url) return "-";
+          const isPdf = url.toLowerCase().endsWith(".pdf");
+          return isPdf ? (
+            <Button
+              size="small"
+              variant="outlined"
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Xem PDF
+            </Button>
+          ) : (
+            <img
+              src={url}
+              alt="CCCD trước"
+              style={{ height: 40, borderRadius: 4 }}
+            />
+          );
+        },
+      },
+      {
+        id: "idCardBackImageUrl",
+        label: "Mặt sau",
+        minWidth: 120,
+        render: (row) => {
+          const url = row.idCardBackImageUrl || "";
+          if (!url) return "-";
+          const isPdf = url.toLowerCase().endsWith(".pdf");
+          return isPdf ? (
+            <Button
+              size="small"
+              variant="outlined"
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Xem PDF
+            </Button>
+          ) : (
+            <img
+              src={url}
+              alt="CCCD sau"
+              style={{ height: 40, borderRadius: 4 }}
+            />
+          );
+        },
+      },
     ],
     []
   );
@@ -90,10 +159,17 @@ const GuestsManagementPage: React.FC = () => {
     setEditingItem(row);
     setEditOpen(true);
   };
+  const handleView = (row: GuestDto) => {
+    setViewItem(row);
+    setViewOpen(true);
+  };
 
   return (
     <Box>
-      <PageTitle title="Quản lý khách" subtitle="Tra cứu và cập nhật thông tin khách" />
+      <PageTitle
+        title="Quản lý khách"
+        subtitle="Tra cứu và cập nhật thông tin khách"
+      />
 
       <DataTable
         title="Danh sách khách"
@@ -102,6 +178,7 @@ const GuestsManagementPage: React.FC = () => {
         loading={loading}
         pagination={{ page, pageSize, total, onPageChange }}
         onAdd={handleAdd}
+        onView={handleView}
         onEdit={handleEdit}
         getRowId={(row) => row.id}
         onSearch={(txt) => setSearchText(txt || "")}
@@ -173,6 +250,85 @@ const GuestsManagementPage: React.FC = () => {
           }
         }}
       />
+      <Dialog
+        open={viewOpen}
+        onClose={() => setViewOpen(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>Chi tiết khách</DialogTitle>
+        <DialogContent>
+          {viewItem ? (
+            <Stack spacing={2}>
+              <Typography variant="subtitle2" fontWeight={700}>
+                {viewItem.fullName}
+              </Typography>
+              <Typography variant="body2">
+                Điện thoại: {viewItem.phone || "-"}
+              </Typography>
+              <Typography variant="body2">
+                Email: {viewItem.email || "-"}
+              </Typography>
+              <Typography variant="body2">
+                CMND/CCCD: {viewItem.idCard || "-"}
+              </Typography>
+              <Stack spacing={2} alignItems="center">
+                {viewItem.idCardFrontImageUrl ? (
+                  viewItem.idCardFrontImageUrl
+                    .toLowerCase()
+                    .endsWith(".pdf") ? (
+                    <Button
+                      variant="outlined"
+                      href={viewItem.idCardFrontImageUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Xem CCCD mặt trước (PDF)
+                    </Button>
+                  ) : (
+                    <img
+                      src={viewItem.idCardFrontImageUrl}
+                      alt="Mặt trước"
+                      style={{
+                        width: "100%",
+                        height: "auto",
+                        borderRadius: 8,
+                        border: "1px solid #ddd",
+                      }}
+                    />
+                  )
+                ) : null}
+                {viewItem.idCardBackImageUrl ? (
+                  viewItem.idCardBackImageUrl.toLowerCase().endsWith(".pdf") ? (
+                    <Button
+                      variant="outlined"
+                      href={viewItem.idCardBackImageUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Xem CCCD mặt sau (PDF)
+                    </Button>
+                  ) : (
+                    <img
+                      src={viewItem.idCardBackImageUrl}
+                      alt="Mặt sau"
+                      style={{
+                        width: "100%",
+                        height: "auto",
+                        borderRadius: 8,
+                        border: "1px solid #ddd",
+                      }}
+                    />
+                  )
+                ) : null}
+              </Stack>
+            </Stack>
+          ) : null}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setViewOpen(false)}>Đóng</Button>
+        </DialogActions>
+      </Dialog>
 
       <Snackbar
         open={snackbar.open}
