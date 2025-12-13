@@ -244,18 +244,62 @@ const BookingFormModal: React.FC<Props> = ({
           }
         })
       );
-      setQuotesByIndex(newQuotes);
+      // Adjust calendar prices:
+      // - Keep specific override prices intact (from roomTypes.priceByDates)
+      // - For base-price days, use the current input price (rt.price). If missing, use priceFrom.
+      const enrichedQuotes: Record<number, PricingQuoteResponse | null> = {};
+      roomsWatch.forEach((r, idx) => {
+        const rt = roomTypes.find((t) => t.id === r.roomId);
+        const overrides = (rt?.priceByDates || []).map((d) =>
+          dayjs(d.date).format("YYYY-MM-DD")
+        );
+        const overrideSet = new Set(overrides);
+        const inputPrice = r.price || rt?.priceFrom || 0;
+
+        const start = r.startDate ? dayjs(r.startDate) : null;
+        const end = r.endDate ? dayjs(r.endDate) : null;
+
+        // Build items either from API or locally if API not available
+        let items =
+          newQuotes[idx]?.items && newQuotes[idx]?.items.length
+            ? newQuotes[idx]!.items
+            : [];
+
+        if ((!items || items.length === 0) && start && end && start.isBefore(end)) {
+          const temp: { date: string; price: number }[] = [];
+          let cursor = start.clone();
+          while (cursor.isBefore(end)) {
+            const dateStr = cursor.format("YYYY-MM-DD");
+            const overridePrice = rt?.priceByDates?.find(
+              (p) => dayjs(p.date).format("YYYY-MM-DD") === dateStr
+            )?.price;
+            temp.push({
+              date: dateStr,
+              price: overridePrice ?? inputPrice,
+            });
+            cursor = cursor.add(1, "day");
+          }
+          items = temp as any;
+        } else {
+          // Replace base-price days with current input price; keep overrides
+          items = items.map((it) => {
+            const d = dayjs(it.date).format("YYYY-MM-DD");
+            const isOverride = overrideSet.has(d);
+            return {
+              ...it,
+              price: isOverride ? it.price : inputPrice,
+            };
+          });
+        }
+
+        const total = items.reduce((s, it) => s + (it.price || 0), 0);
+        enrichedQuotes[idx] = { items, total };
+      });
+
+      setQuotesByIndex(enrichedQuotes);
       const total = roomsWatch.reduce((sum, r, idx) => {
-        const quote = newQuotes[idx];
-        const perRoomTotal =
-          quote?.total ??
-          (() => {
-            const days =
-              r.endDate && r.startDate
-                ? Math.max(dayjs(r.endDate).diff(dayjs(r.startDate), "day"), 0)
-                : 0;
-            return (r.price || 0) * days;
-          })();
+        const quote = enrichedQuotes[idx];
+        const perRoomTotal = quote?.total ?? 0;
         return sum + perRoomTotal * (r.totalRooms || 0);
       }, 0);
       setValue("totalAmount", total);
