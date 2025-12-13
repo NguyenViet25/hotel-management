@@ -24,7 +24,7 @@ public class UsersAdminService : IUsersAdminService
 
     public async Task<(IEnumerable<UserSummaryDto> Items, int Total)> ListByHotelAsync(UsersQueryDto query, Guid hotelId)
     {
-        var q = _users.Users.AsNoTracking();
+        var q = _users.Users.Where(x => x.UserName != "admin").AsNoTracking();
         if (!string.IsNullOrWhiteSpace(query.Search))
         {
             var s = query.Search.Trim();
@@ -57,10 +57,9 @@ public class UsersAdminService : IUsersAdminService
             }
         }
 
-        var total = await q.CountAsync();
         var page = Math.Max(1, query.Page);
         var pageSize = Math.Clamp(query.PageSize, 1, 200);
-        var users = await q.OrderBy(u => u.UserName).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+        var users = await q.OrderBy(u => u.UserName).ToListAsync();
 
         // Load roles in batch
         var userIds = users.Select(u => u.Id).ToList();
@@ -76,7 +75,7 @@ public class UsersAdminService : IUsersAdminService
 
         var list = await GetHotel(propertyRoles);
 
-        var items = users.Where(x => usersByHotel.Contains(x.Id) && x.UserName != "admin").Select(u => new UserSummaryDto(
+        var items = users.Where(x => usersByHotel.Contains(x.Id)).Select(u => new UserSummaryDto(
             u.Id,
             u.UserName,
             u.Email,
@@ -86,14 +85,15 @@ public class UsersAdminService : IUsersAdminService
             u.LockoutEnd,
             rolesByUser.TryGetValue(u.Id, out var r) ? r : Array.Empty<string>(),
             propertyRoles = list.Where(x => x.Id == u.Id).ToList()
-        ));
+        )).Skip((page - 1) * pageSize).Take(pageSize);
+        var total =  items.Count();
 
         return (items, total);
     }
 
     public async Task<(IEnumerable<UserSummaryDto> Items, int Total)> ListAsync(UsersQueryDto query)
     {
-        var q = _users.Users.AsNoTracking();
+        var q = _users.Users.Where(x => x.UserName != "admin").AsNoTracking();
         if (!string.IsNullOrWhiteSpace(query.Search))
         {
             var s = query.Search.Trim();
@@ -143,7 +143,7 @@ public class UsersAdminService : IUsersAdminService
 
         var list = await GetHotel(propertyRoles);
 
-        var items = users.Where(x => x.UserName != "admin").Select(u => new UserSummaryDto(
+        var items = users.Select(u => new UserSummaryDto(
             u.Id,
             u.UserName,
             u.Email,
