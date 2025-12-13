@@ -25,22 +25,12 @@ public class GuestsService : IGuestsService
         if (!string.IsNullOrWhiteSpace(query.Name))
         {
             var s = query.Name.ToLower();
-            baseQuery = baseQuery.Where(g => g.FullName.ToLower().Contains(s));
+            baseQuery = baseQuery.Where(g => g.FullName.ToLower().Contains(s) 
+                || g.Phone.Contains(s)
+                || (g.Email ?? "").ToLower().Contains(s)
+                || g.IdCard.Contains(s));
         }
-        if (!string.IsNullOrWhiteSpace(query.Phone))
-        {
-            baseQuery = baseQuery.Where(g => g.Phone.Contains(query.Phone));
-        }
-        if (!string.IsNullOrWhiteSpace(query.Email))
-        {
-            var e = query.Email.ToLower();
-            baseQuery = baseQuery.Where(g => (g.Email ?? "").ToLower().Contains(e));
-        }
-        if (!string.IsNullOrWhiteSpace(query.IdCard))
-        {
-            baseQuery = baseQuery.Where(g => g.IdCard.Contains(query.IdCard));
-        }
-
+     
         baseQuery = (query.SortBy?.ToLower(), query.SortDir?.ToLower()) switch
         {
             ("fullname", "asc") => baseQuery.OrderBy(g => g.FullName),
