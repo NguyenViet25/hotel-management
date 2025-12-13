@@ -180,12 +180,12 @@ const BookingFormModal: React.FC<Props> = ({
   }, [roomTypes, mode]);
 
   useEffect(() => {
-    // Keep price synced when room type changes
+    if (mode !== "create") return;
     roomsWatch.forEach((r, idx) => {
       const p = roomTypes.find((t) => t.id === r.roomId)?.priceFrom || 0;
       if (p && p !== r.price) setValue(`roomTypes.${idx}.price`, p);
     });
-  }, [roomsWatch.map((r) => r.roomId).join("|"), roomTypes]);
+  }, [roomsWatch.map((r) => r.roomId).join("|"), roomTypes, mode]);
 
   useEffect(() => {
     const fetchQuotes = async () => {
