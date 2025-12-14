@@ -91,6 +91,12 @@ public class BookingsController(IBookingsService bookingsService, IWebHostEnviro
         return Ok(result);
     }
 
+    [HttpPut("complete/{id}")]
+    public async Task<ActionResult<ApiResponse>> Complete(Guid id)
+    {
+        var result = await _bookingsService.CompleteAsync(id);
+        return Ok(result);
+    }
 
     [HttpDelete("{id}")]
     public async Task<ActionResult<ApiResponse>> Cancel(Guid id)

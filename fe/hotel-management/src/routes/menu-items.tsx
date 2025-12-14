@@ -13,6 +13,7 @@ import {
   Hotel as HotelIcon,
   InsertEmoticon,
   Money,
+  People,
   Person as PersonIcon,
   Receipt as ReceiptIcon,
   Restaurant as RestaurantIcon,
@@ -46,7 +47,7 @@ export const menuItems = {
     },
     { title: "Loại phòng", path: "/manager/room-types", icon: <Category /> },
     { title: "Phòng", path: "/manager/rooms", icon: <Bed /> },
-    { title: "Khách", path: "/manager/guests", icon: <PersonIcon /> },
+    { title: "Khách hàng", path: "/manager/guests", icon: <People /> },
     {
       title: "Mã giảm giá",
       path: "/manager/discount-codes",
@@ -78,7 +79,7 @@ export const menuItems = {
       path: "/frontdesk/dashboard",
       icon: <DashboardIcon />,
     },
-    { title: "Khách", path: "/frontdesk/guests", icon: <PersonIcon /> },
+    { title: "Khách hàng", path: "/frontdesk/guests", icon: <People /> },
     { title: "Đặt phòng", path: "/frontdesk/bookings", icon: <HotelIcon /> },
     { title: "Đặt món", path: "/frontdesk/orders", icon: <RestaurantIcon /> },
     // {

@@ -732,6 +732,24 @@ public class BookingsService(
         }
     }
 
+    public async Task<ApiResponse> CompleteAsync(Guid id)
+    {
+        try
+        {
+            var booking = await _bookingRepo.FindAsync(id);
+            if (booking == null) return ApiResponse.Fail("Booking not found");
+
+            booking.Status = BookingStatus.Completed;
+            await _bookingRepo.UpdateAsync(booking);
+            await _bookingRepo.SaveChangesAsync();
+            return ApiResponse.Ok("Booking Confirmed");
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse.Fail($"Error cancelling booking: {ex.Message}");
+        }
+    }
+
     public async Task<ApiResponse<CallLogDto>> AddCallLogAsync(Guid bookingId, AddCallLogDto dto)
     {
         try
@@ -1592,7 +1610,7 @@ public class BookingsService(
             }
             await _bookingRoomRepo.SaveChangesAsync();
 
-            booking.Status = BookingStatus.Completed;
+            //booking.Status = BookingStatus.Completed;
             booking.AdditionalNotes = dto.AdditionalNotes;
             booking.AdditionalAmount = dto.AdditionalAmount ?? 0;
 

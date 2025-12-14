@@ -1,10 +1,8 @@
-import { Recycling, RestartAlt } from "@mui/icons-material";
+import { RestartAlt } from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import KeyIcon from "@mui/icons-material/Key";
-import LockIcon from "@mui/icons-material/Lock";
-import LockOpenIcon from "@mui/icons-material/LockOpen";
 import RemoveRedEye from "@mui/icons-material/RemoveRedEye";
 import SearchIcon from "@mui/icons-material/Search";
 import {
@@ -228,7 +226,11 @@ const DataTable = <T extends object>({
                       );
                     })}
                     {actionColumn &&
-                      (onView || onEdit || onDelete || onLock || onResetPassword) && (
+                      (onView ||
+                        onEdit ||
+                        onDelete ||
+                        onLock ||
+                        onResetPassword) && (
                         <TableCell align="center">
                           <Stack
                             direction="row"

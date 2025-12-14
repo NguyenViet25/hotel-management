@@ -11,7 +11,14 @@ type Props = {
   statusColor: string;
 };
 
-const RoomCard: React.FC<Props> = ({ room, selected, disabled, onClick, statusLabel, statusColor }) => {
+const RoomCard: React.FC<Props> = ({
+  room,
+  selected,
+  disabled,
+  onClick,
+  statusLabel,
+  statusColor,
+}) => {
   return (
     <Card
       onClick={disabled ? undefined : onClick}
@@ -26,16 +33,38 @@ const RoomCard: React.FC<Props> = ({ room, selected, disabled, onClick, statusLa
         bgcolor: disabled ? "action.disabledBackground" : "background.paper",
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.7 : 1,
-        '&:hover': { boxShadow: 6, transform: disabled ? 'none' : 'translateY(-2px) scale(1.02)' },
+        "&:hover": {
+          boxShadow: 6,
+          transform: disabled ? "none" : "translateY(-2px) scale(1.02)",
+        },
       }}
     >
       <CardContent sx={{ p: 2 }}>
         <Stack spacing={1}>
-          <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
-            <Typography variant="subtitle2" fontWeight={800}>#{room.roomNumber}</Typography>
-            <Chip label={room.roomTypeName} size="small" sx={{ bgcolor: 'primary.main', color: 'white' }} />
+          <Stack spacing={1} alignItems="center" justifyContent="space-between">
+            <Typography variant="subtitle2" fontWeight={800}>
+              Phòng #{room.roomNumber}
+            </Typography>
+            <Chip
+              label={room.roomTypeName}
+              size="small"
+              sx={{
+                bgcolor: "primary.main",
+                color: "white",
+                height: "auto",
+                "& .MuiChip-label": {
+                  padding: "4px 8px",
+                  whiteSpace: "normal",
+                  lineHeight: 1.2,
+                },
+              }}
+            />
           </Stack>
-          <Chip label={statusLabel} size="small" sx={{ bgcolor: statusColor, color: 'white', borderRadius: 1 }} />
+          <Chip
+            label={statusLabel}
+            size="small"
+            sx={{ bgcolor: statusColor, color: "white", borderRadius: 1 }}
+          />
         </Stack>
       </CardContent>
     </Card>

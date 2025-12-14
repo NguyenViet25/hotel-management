@@ -120,7 +120,6 @@ public class BookingRoomTypeDto
     public int TotalRoom { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
-
     public List<BookingRoomDto> BookingRooms { get; set; } = new();
 }
 
