@@ -45,6 +45,7 @@ import { toast } from "react-toastify";
 import CustomSelect from "../../../../components/common/CustomSelect";
 import EmptyState from "../../../../components/common/EmptyState";
 import { isEmpty } from "lodash";
+import FloatingWarningIcon from "../../../../components/common/FloatingWarningIcon";
 
 const getOrderPhase = (status: number): string => {
   if (status === EOrderStatus.Draft) return "Mới";
@@ -547,9 +548,9 @@ const OrdersManagementPage: React.FC = () => {
                           backgroundColor: "yellow",
                         }}
                       >
-                        <Info color="action" />
+                        <FloatingWarningIcon color="error" />
                         <Typography>
-                          Yêu cầu đổi món: {o.changeFoodRequest || "—"}
+                          <b> Yêu cầu đổi món:</b> {o.changeFoodRequest || "—"}
                         </Typography>
                       </Stack>
                     )}

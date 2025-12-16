@@ -1,9 +1,11 @@
 import {
   AccessTime,
   ArrowCircleRight,
+  ChatBubble,
   Check,
   Close,
   ExpandMore,
+  Info,
   Phone,
   Save,
   Search,
@@ -46,6 +48,7 @@ import ordersApi, {
   type OrderSummaryDto,
 } from "../../../../api/ordersApi";
 import PageTitle from "../../../../components/common/PageTitle";
+import FloatingWarningIcon from "../../../../components/common/FloatingWarningIcon";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
 
 type ColumnKey = "Mới" | "Đang nấu" | "Sẵn sàng" | "Đã phục vụ";
@@ -428,14 +431,12 @@ export default function KitchenManagementPage() {
               <AccordionDetails>
                 <Stack spacing={1.5}>
                   <Stack spacing={1}>
-                    <Typography fontWeight={600}>
-                      Thông tin khách hàng
-                    </Typography>
                     <Box
                       sx={{
-                        border: "1px dashed",
-                        borderRadius: 2,
                         p: 1,
+                        border: "1px dashed",
+                        borderColor: "divider",
+                        borderRadius: 1.5,
                         bgcolor: "grey.50",
                       }}
                     >
@@ -482,71 +483,103 @@ export default function KitchenManagementPage() {
                             </Typography>
                           </Stack>
                         )}
+                        <Stack
+                          direction="row"
+                          spacing={0.75}
+                          alignItems="center"
+                        >
+                          <ChatBubble fontSize="small" color="action" />
+                          <Typography variant="body2">
+                            Ghi chú của lễ tân: {order.notes || "—"}
+                          </Typography>
+                        </Stack>
                       </Stack>
                     </Box>
                   </Stack>
 
                   <Stack spacing={1}>
-                    <Stack
-                      direction="row"
-                      justifyContent={"space-between"}
-                      spacing={1}
-                      alignItems={"center"}
-                    >
-                      <Alert severity="info">
-                        <b>Ghi chú của lễ tân:</b> {order.notes}
-                      </Alert>
-                    </Stack>
-                    <Stack
-                      direction="row"
-                      justifyContent={"space-between"}
-                      spacing={1}
-                      alignItems={"center"}
-                    >
-                      <Typography fontWeight={600}>Yêu cầu đổi món</Typography>
-                      {Number(order.status) === EOrderStatus.NeedConfirmed && (
-                        <Button
-                          startIcon={<Warning />}
-                          color="error"
-                          size="small"
-                          variant="contained"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setNotesDraft((m) => ({
-                              ...m,
-                              [order.id]: IngredientNote,
-                            }));
-                            setNeedConfirm((m) => ({ ...m, [order.id]: true }));
-                          }}
+                    <Box>
+                      <Stack spacing={0.75}>
+                        <Stack
+                          direction="row"
+                          justifyContent="space-between"
+                          alignItems="center"
                         >
-                          Không đạt nguyên liệu
-                        </Button>
-                      )}
-                    </Stack>
-                    {Number(order.status) === EOrderStatus.NeedConfirmed ? (
-                      <TextField
-                        size="small"
-                        value={
-                          notesDraft[order.id] ?? order.changeFoodRequest ?? ""
-                        }
-                        onChange={(e) =>
-                          setNotesDraft((m) => ({
-                            ...m,
-                            [order.id]: e.target.value,
-                          }))
-                        }
-                        placeholder="Nhập yêu cầu đổi món"
-                        multiline
-                        minRows={3}
-                      />
-                    ) : (
-                      <Typography
-                        variant="body2"
-                        sx={{ whiteSpace: "pre-wrap" }}
-                      >
-                        {order.changeFoodRequest ?? ""}
-                      </Typography>
-                    )}
+                          {Number(order.status) ===
+                            EOrderStatus.NeedConfirmed && (
+                            <Stack
+                              direction="row"
+                              spacing={0.75}
+                              alignItems="center"
+                            >
+                              <Typography variant="body2" fontWeight={700}>
+                                Yêu cầu đổi món
+                              </Typography>
+                              <Button
+                                startIcon={<Warning />}
+                                color="warning"
+                                size="small"
+                                variant="outlined"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  setNotesDraft((m) => ({
+                                    ...m,
+                                    [order.id]: IngredientNote,
+                                  }));
+                                  setNeedConfirm((m) => ({
+                                    ...m,
+                                    [order.id]: true,
+                                  }));
+                                }}
+                                sx={{ fontSize: "0.75rem", py: 0.3 }}
+                              >
+                                Gợi ý ghi chú
+                              </Button>
+                            </Stack>
+                          )}
+                        </Stack>
+                        {Number(order.status) === EOrderStatus.NeedConfirmed ? (
+                          <TextField
+                            size="small"
+                            value={
+                              notesDraft[order.id] ??
+                              order.changeFoodRequest ??
+                              ""
+                            }
+                            onChange={(e) =>
+                              setNotesDraft((m) => ({
+                                ...m,
+                                [order.id]: e.target.value,
+                              }))
+                            }
+                            placeholder="Nhập yêu cầu đổi món"
+                            multiline
+                            minRows={2}
+                            sx={{
+                              "& .MuiInputBase-input": { fontSize: "0.9rem" },
+                            }}
+                          />
+                        ) : (
+                          <Stack
+                            direction={{ xs: "row" }}
+                            spacing={1}
+                            alignItems="center"
+                            sx={{
+                              border: "1px dashed",
+                              borderRadius: 3,
+                              p: 1,
+                              backgroundColor: "yellow",
+                            }}
+                          >
+                            <FloatingWarningIcon color="error" />
+                            <Typography>
+                              <b>Yêu cầu đổi món: </b>
+                              {order.changeFoodRequest || "—"}
+                            </Typography>
+                          </Stack>
+                        )}
+                      </Stack>
+                    </Box>
                     <Stack direction="row" spacing={1} flexWrap="wrap">
                       {Number(order.status) === EOrderStatus.NeedConfirmed && (
                         <Button
