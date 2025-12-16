@@ -77,6 +77,7 @@ export interface OrderSummaryDto {
   customerPhone?: string;
   status: number;
   notes?: string;
+  changeFoodRequest?: string;
   createdAt: string; // ISO
   itemsCount: number;
   itemsTotal: number;

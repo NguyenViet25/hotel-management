@@ -25,7 +25,6 @@ public class GuestsController : ControllerBase
     public async Task<ActionResult<ApiResponse<GuestDetailsDto>>> Get(Guid id)
     {
         var dto = await _svc.GetAsync(id);
-        if (dto == null) return NotFound(ApiResponse<GuestDetailsDto>.Fail("Guest not found"));
         return Ok(ApiResponse<GuestDetailsDto>.Ok(dto));
     }
 
@@ -33,7 +32,6 @@ public class GuestsController : ControllerBase
     public async Task<ActionResult<ApiResponse<GuestDetailsDto>>> Create([FromBody] CreateGuestDto request)
     {
         var resp = await _svc.CreateAsync(request);
-        if (!resp.IsSuccess) return BadRequest(resp);
         return Ok(resp);
     }
 
@@ -41,7 +39,6 @@ public class GuestsController : ControllerBase
     public async Task<ActionResult<ApiResponse<GuestDetailsDto>>> Update(Guid id, [FromBody] UpdateGuestDto request)
     {
         var resp = await _svc.UpdateAsync(id, request);
-        if (!resp.IsSuccess) return NotFound(resp);
         return Ok(resp);
     }
 }

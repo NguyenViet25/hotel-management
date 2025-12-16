@@ -126,37 +126,30 @@ const GuestFormModal: React.FC<Props> = ({
   }, [isEditMode, initial, open, reset]);
 
   const onFormSubmit = async (data: any) => {
-    const excludeId = isEditMode && initial ? initial.id : undefined;
-    const dup = await guestsApi.isDuplicate({
-      phone: data.phone,
-      idCard: data.idCard,
-      excludeId,
-    });
-    if (dup.isDuplicate) {
-      toast.error("Đã tồn tại khách với số điện thoại hoặc CMND/CCCD");
-      setDupError("Đã tồn tại khách với số điện thoại hoặc CMND/CCCD");
-      return;
-    }
-    if (!isEditMode) {
-      const payload: CreateGuestRequest = {
-        fullName: data.fullName,
-        phone: data.phone,
-        email: data.email || undefined,
-        idCard: data.idCard,
-        idCardFrontImageUrl: data.idCardFrontImageUrl || undefined,
-        idCardBackImageUrl: data.idCardBackImageUrl || undefined,
-      };
-      await onSubmit(payload);
-    } else {
-      const payload: UpdateGuestRequest = {
-        fullName: data.fullName || undefined,
-        phone: data.phone || undefined,
-        email: data.email || undefined,
-        idCard: data.idCard || undefined,
-        idCardFrontImageUrl: data.idCardFrontImageUrl || undefined,
-        idCardBackImageUrl: data.idCardBackImageUrl || undefined,
-      };
-      await onSubmit(payload);
+    try {
+      if (!isEditMode) {
+        const payload: CreateGuestRequest = {
+          fullName: data.fullName,
+          phone: data.phone,
+          email: data.email || undefined,
+          idCard: data.idCard,
+          idCardFrontImageUrl: data.idCardFrontImageUrl || undefined,
+          idCardBackImageUrl: data.idCardBackImageUrl || undefined,
+        };
+        await onSubmit(payload);
+      } else {
+        const payload: UpdateGuestRequest = {
+          fullName: data.fullName || undefined,
+          phone: data.phone || undefined,
+          email: data.email || undefined,
+          idCard: data.idCard || undefined,
+          idCardFrontImageUrl: data.idCardFrontImageUrl || undefined,
+          idCardBackImageUrl: data.idCardBackImageUrl || undefined,
+        };
+        await onSubmit(payload);
+      }
+    } catch (error: any) {
+      toast.error(error.message);
     }
   };
 

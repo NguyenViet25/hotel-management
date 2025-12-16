@@ -1,11 +1,14 @@
 import {
   AccessTime,
   AcUnit,
+  ArrowCircleRight,
   Bed,
   Cancel,
+  Check,
   CheckCircle,
   CleanHands,
   CleaningServices,
+  Close,
   DryCleaning,
   Edit,
   EmojiFoodBeverage,
@@ -18,6 +21,7 @@ import {
   Phone,
   PlayCircle,
   Power,
+  QuestionMark,
   ReceiptLong,
   RemoveCircle,
   RestaurantMenu,
@@ -54,6 +58,7 @@ import {
   TableRow,
   Tabs,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { DateTimePicker } from "@mui/x-date-pickers";
@@ -63,7 +68,10 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import useSWR from "swr";
 import diningSessionsApi from "../../../../api/diningSessionsApi";
-import { type OrderSummaryDto } from "../../../../api/ordersApi";
+import ordersApi, {
+  EOrderStatus,
+  type OrderSummaryDto,
+} from "../../../../api/ordersApi";
 import serviceRequestsApi, {
   type ServiceRequestDto,
 } from "../../../../api/serviceRequestsApi";
@@ -98,6 +106,7 @@ export default function SessionDetailsPage() {
   const [openConfirmOpen, setOpenConfirmOpen] = useState(false);
   const [deleteReqId, setDeleteReqId] = useState<string | null>(null);
   const [reload, setReload] = useState<number>(0);
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
 
   const requestTypes = useMemo(
     () => [
@@ -229,6 +238,18 @@ export default function SessionDetailsPage() {
   const openAttachForSession = () => {
     if (isWaiter) return;
     setAttachFromSessionOpen(true);
+  };
+
+  const confirmStatusChange = async () => {
+    if (!orderRes) return;
+
+    await ordersApi.updateStatus(orderRes?.data?.id || "", {
+      status: EOrderStatus.Completed,
+    });
+
+    setStatusDialogOpen(false);
+    mutateOrder();
+    toast.success("Đã xác nhận thành công");
   };
 
   const detachTable = async (tableId: string) => {
@@ -479,16 +500,18 @@ export default function SessionDetailsPage() {
               >
                 Gán yêu cầu đặt món
               </Button>
-              <Button
-                size="small"
-                variant="contained"
-                color="warning"
-                startIcon={<StopCircle />}
-                onClick={() => setEndConfirmOpen(true)}
-                disabled={isWaiter || session?.status !== "Open"}
-              >
-                Kết thúc
-              </Button>
+              <Tooltip title="Chạy bài sẽ kết thúc phiên khi phục vụ xong">
+                <Button
+                  size="small"
+                  variant="contained"
+                  color="warning"
+                  startIcon={<StopCircle />}
+                  onClick={() => setEndConfirmOpen(true)}
+                  disabled={!isWaiter || session?.status !== "Open"}
+                >
+                  Kết thúc
+                </Button>
+              </Tooltip>
               <Button
                 size="small"
                 variant="contained"
@@ -750,7 +773,7 @@ export default function SessionDetailsPage() {
               variant="contained"
               sx={{ minWidth: 120 }}
               onClick={handleCreateRequest}
-              disabled={isWaiter || session?.status !== "Open"}
+              disabled={!isWaiter || session?.status !== "Open"}
             >
               Gửi
             </Button>
@@ -865,7 +888,23 @@ export default function SessionDetailsPage() {
 
       {tab === 1 && (
         <Box>
-          <Typography variant="h6">Yêu cầu đặt món</Typography>
+          <Typography variant="h6">
+            Yêu cầu đặt món{" "}
+            {orderRes?.data?.status === EOrderStatus.Completed && (
+              <Chip
+                label={
+                  orderRes?.data?.status === EOrderStatus.Completed
+                    ? "Đã phục vụ"
+                    : ""
+                }
+                color={
+                  orderRes?.data?.status === EOrderStatus.Completed
+                    ? "success"
+                    : "default"
+                }
+              />
+            )}
+          </Typography>
           <Box mt={1}>
             {!orderRes?.data ? (
               <Typography variant="body2" color="text.secondary">
@@ -994,12 +1033,58 @@ export default function SessionDetailsPage() {
                     </TableRow>
                   </TableBody>
                 </Table>
+
+                <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+                  <Button
+                    variant="contained"
+                    color="success"
+                    size="small"
+                    startIcon={<CheckCircle />}
+                    onClick={() => setStatusDialogOpen(true)}
+                  >
+                    Đã phục vụ
+                  </Button>
+                </Box>
               </Stack>
             )}
           </Box>
         </Box>
       )}
-
+      <Dialog
+        open={statusDialogOpen}
+        onClose={() => setStatusDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 600 }}>
+          Xác nhận đã phục vụ xong
+        </DialogTitle>
+        <DialogContent dividers>
+          <Stack spacing={1.25}>
+            <Stack direction={"row"} alignItems="center" spacing={1}>
+              Bạn có chắc đã phục vụ xong
+              <QuestionMark color="action" />
+            </Stack>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setStatusDialogOpen(false)}
+            color="inherit"
+            variant="outlined"
+            startIcon={<Close />}
+          >
+            Đóng
+          </Button>
+          <Button
+            onClick={confirmStatusChange}
+            variant="contained"
+            startIcon={<Check />}
+          >
+            Xác nhận
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Dialog
         open={attachFromSessionOpen}
         onClose={() => setAttachFromSessionOpen(false)}
@@ -1141,7 +1226,7 @@ export default function SessionDetailsPage() {
             variant="contained"
             color="warning"
             onClick={confirmEndSession}
-            disabled={isWaiter}
+            disabled={!isWaiter}
           >
             Kết thúc
           </Button>

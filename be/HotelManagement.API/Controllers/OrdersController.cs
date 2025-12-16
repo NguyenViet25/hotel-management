@@ -108,7 +108,6 @@ public class OrdersController : ControllerBase
     public async Task<ActionResult<ApiResponse<OrderDetailsDto>>> UpdateStatus(Guid id, [FromBody] UpdateOrderStatusDto dto)
     {
         var result = await _ordersService.UpdateStatusAsync(id, dto);
-        if (!result.IsSuccess) return BadRequest(result);
         return Ok(result);
     }
 }

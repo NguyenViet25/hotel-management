@@ -88,6 +88,7 @@ public class OrdersService : IOrdersService
                     CustomerPhone = o.CustomerPhone,
                     Status = o.Status,
                     Notes = o.Notes,
+                    ChangeFoodRequest = o.ChangeFoodRequest,
                     CreatedAt = o.CreatedAt,
                     ItemsCount = o.Items.Count,
                     PromotionCode = o.PromotionCode,
@@ -170,6 +171,7 @@ public class OrdersService : IOrdersService
                 CustomerPhone = o.CustomerPhone,
                 Status = o.Status,
                 Notes = o.Notes,
+                ChangeFoodRequest = o.ChangeFoodRequest,
                 CreatedAt = o.CreatedAt,
                 ItemsCount = o.Items.Count,
                 ServingDate = o.ServingDate,
@@ -615,7 +617,7 @@ public class OrdersService : IOrdersService
             order.Status = dto.Status;
             if (!string.IsNullOrWhiteSpace(dto.Notes))
             {
-                order.Notes = dto.Notes;
+                order.ChangeFoodRequest = dto.Notes;
             }
 
             await _orderRepository.UpdateAsync(order);

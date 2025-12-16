@@ -60,16 +60,6 @@ const getOrderPhase = (status: number): string => {
   return "Mới";
 };
 
-const getOrderPhaseColor = (status: number): string => {
-  if (status === EOrderStatus.Draft) return "gray";
-  if (status === EOrderStatus.NeedConfirmed) return "warning";
-  if (status === EOrderStatus.Confirmed) return "info";
-  if (status === EOrderStatus.InProgress) return "primary";
-  if (status === EOrderStatus.Ready) return "violet";
-  if (status === EOrderStatus.Completed) return "success";
-  return "default";
-};
-
 export default function KitchenManagementPage() {
   const { hotelId } = useStore<StoreState>((s) => s);
   const [summaries, setSummaries] = useState<OrderSummaryDto[]>([]);
@@ -338,7 +328,7 @@ export default function KitchenManagementPage() {
     const res = await ordersApi.getById(orderId);
     setDetailsMap((m) => ({ ...m, [orderId]: res.data }));
 
-    toast.success("Lưu ghi chú thành công");
+    toast.success("Lưu yêu cầu đổi món thành công");
   };
 
   const applyReplaceMenu = async (menuItem: MenuItemDto) => {
@@ -503,7 +493,17 @@ export default function KitchenManagementPage() {
                       spacing={1}
                       alignItems={"center"}
                     >
-                      <Typography fontWeight={600}>Ghi chú</Typography>
+                      <Alert severity="info">
+                        <b>Ghi chú của lễ tân:</b> {order.notes}
+                      </Alert>
+                    </Stack>
+                    <Stack
+                      direction="row"
+                      justifyContent={"space-between"}
+                      spacing={1}
+                      alignItems={"center"}
+                    >
+                      <Typography fontWeight={600}>Yêu cầu đổi món</Typography>
                       {Number(order.status) === EOrderStatus.NeedConfirmed && (
                         <Button
                           startIcon={<Warning />}
@@ -523,30 +523,32 @@ export default function KitchenManagementPage() {
                         </Button>
                       )}
                     </Stack>
-                    {Number(order.status) === EOrderStatus.Completed ? (
-                      <Typography
-                        variant="body2"
-                        sx={{ whiteSpace: "pre-wrap" }}
-                      >
-                        {order.notes ?? ""}
-                      </Typography>
-                    ) : (
+                    {Number(order.status) === EOrderStatus.NeedConfirmed ? (
                       <TextField
                         size="small"
-                        value={notesDraft[order.id] ?? order.notes ?? ""}
+                        value={
+                          notesDraft[order.id] ?? order.changeFoodRequest ?? ""
+                        }
                         onChange={(e) =>
                           setNotesDraft((m) => ({
                             ...m,
                             [order.id]: e.target.value,
                           }))
                         }
-                        placeholder="Nhập ghi chú"
+                        placeholder="Nhập yêu cầu đổi món"
                         multiline
                         minRows={3}
                       />
+                    ) : (
+                      <Typography
+                        variant="body2"
+                        sx={{ whiteSpace: "pre-wrap" }}
+                      >
+                        {order.changeFoodRequest ?? ""}
+                      </Typography>
                     )}
                     <Stack direction="row" spacing={1} flexWrap="wrap">
-                      {Number(order.status) !== EOrderStatus.Completed && (
+                      {Number(order.status) === EOrderStatus.NeedConfirmed && (
                         <Button
                           variant="contained"
                           color="primary"
@@ -554,7 +556,7 @@ export default function KitchenManagementPage() {
                           size="small"
                           onClick={() => saveNotes(order.id)}
                         >
-                          Lưu ghi chú
+                          Lưu yêu cầu đổi món
                         </Button>
                       )}
                     </Stack>
@@ -662,7 +664,8 @@ export default function KitchenManagementPage() {
                             >
                               Xác nhận đơn
                             </Button>
-                          ) : cs !== EOrderStatus.Draft ? (
+                          ) : cs !== EOrderStatus.Draft &&
+                            cs !== EOrderStatus.Ready ? (
                             <Button
                               variant="contained"
                               startIcon={icon}

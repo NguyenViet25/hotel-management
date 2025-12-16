@@ -45,13 +45,23 @@ interface RoleSelectProps {
   value: string;
   onChange: (event: React.ChangeEvent<{ value: unknown }>) => void;
   name?: string;
+  enableHotelSelect?: boolean;
 }
 
-const RoleSelect: React.FC<RoleSelectProps> = ({ value, onChange, name }) => {
+const RoleSelect: React.FC<RoleSelectProps> = ({
+  value,
+  onChange,
+  name,
+  enableHotelSelect = true,
+}) => {
   const options: Option[] = Object.entries(roleMap).map(([key, info]) => ({
     value: key,
     label: info.label,
   }));
+
+  if (enableHotelSelect === false) {
+    options.splice(0, 1);
+  }
 
   return (
     <CustomSelect

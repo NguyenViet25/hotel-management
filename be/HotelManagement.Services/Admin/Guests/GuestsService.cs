@@ -1,4 +1,4 @@
-using HotelManagement.Domain;
+﻿using HotelManagement.Domain;
 using HotelManagement.Repository;
 using HotelManagement.Services.Common;
 using Microsoft.EntityFrameworkCore;
@@ -25,12 +25,12 @@ public class GuestsService : IGuestsService
         if (!string.IsNullOrWhiteSpace(query.Name))
         {
             var s = query.Name.ToLower();
-            baseQuery = baseQuery.Where(g => g.FullName.ToLower().Contains(s) 
+            baseQuery = baseQuery.Where(g => g.FullName.ToLower().Contains(s)
                 || g.Phone.Contains(s)
                 || (g.Email ?? "").ToLower().Contains(s)
                 || g.IdCard.Contains(s));
         }
-     
+
         baseQuery = (query.SortBy?.ToLower(), query.SortDir?.ToLower()) switch
         {
             ("fullname", "asc") => baseQuery.OrderBy(g => g.FullName),
@@ -81,8 +81,8 @@ public class GuestsService : IGuestsService
         if (string.IsNullOrWhiteSpace(dto.Phone)) return ApiResponse<GuestDetailsDto>.Fail("Phone is required");
         if (string.IsNullOrWhiteSpace(dto.IdCard)) return ApiResponse<GuestDetailsDto>.Fail("IdCard is required");
 
-        var exists = await _db.Guests.AnyAsync(g => g.Phone == dto.Phone && g.IdCard == dto.IdCard);
-        if (exists) return ApiResponse<GuestDetailsDto>.Fail("Duplicate guest");
+        var exists = await _db.Guests.AnyAsync(g => g.Phone == dto.Phone || g.IdCard == dto.IdCard);
+        if (exists) return ApiResponse<GuestDetailsDto>.Fail("Đã tồn tại khách với số điện thoại hoặc CMND/CCCD");
 
         var entity = new Guest
         {
@@ -105,6 +105,9 @@ public class GuestsService : IGuestsService
     {
         var g = await _db.Guests.FirstOrDefaultAsync(x => x.Id == id);
         if (g == null) return ApiResponse<GuestDetailsDto>.Fail("Guest not found");
+
+        var exists = await _db.Guests.AnyAsync(g => g.Phone == dto.Phone || g.IdCard == dto.IdCard);
+        if (exists) return ApiResponse<GuestDetailsDto>.Fail("Đã tồn tại khách với số điện thoại hoặc CMND/CCCD");
 
         if (dto.FullName != null) g.FullName = dto.FullName;
         if (dto.Phone != null) g.Phone = dto.Phone;

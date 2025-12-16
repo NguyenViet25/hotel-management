@@ -44,6 +44,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import { toast } from "react-toastify";
 import CustomSelect from "../../../../components/common/CustomSelect";
 import EmptyState from "../../../../components/common/EmptyState";
+import { isEmpty } from "lodash";
 
 const getOrderPhase = (status: number): string => {
   if (status === EOrderStatus.Draft) return "Mới";
@@ -533,20 +534,25 @@ const OrdersManagementPage: React.FC = () => {
                         )}
                       </Stack>
                     </Stack>
-                    <Stack
-                      direction={{ xs: "row" }}
-                      spacing={1}
-                      alignItems="center"
-                      sx={{
-                        border: "1px dashed",
-                        borderRadius: 3,
-                        p: 1,
-                        backgroundColor: "yellow",
-                      }}
-                    >
-                      <Info color="action" />
-                      <Typography>Ghi chú: {o.notes || "—"}</Typography>
-                    </Stack>
+                    <Typography>Ghi chú: {o.notes || "—"}</Typography>
+                    {isEmpty(o.changeFoodRequest) ? null : (
+                      <Stack
+                        direction={{ xs: "row" }}
+                        spacing={1}
+                        alignItems="center"
+                        sx={{
+                          border: "1px dashed",
+                          borderRadius: 3,
+                          p: 1,
+                          backgroundColor: "yellow",
+                        }}
+                      >
+                        <Info color="action" />
+                        <Typography>
+                          Yêu cầu đổi món: {o.changeFoodRequest || "—"}
+                        </Typography>
+                      </Stack>
+                    )}
                     <Stack spacing={1}>
                       <Typography variant="subtitle2" fontWeight={700}>
                         Món ăn
