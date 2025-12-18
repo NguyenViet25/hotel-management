@@ -130,7 +130,8 @@ export default function ChangeRoomDialog({
               fontWeight={700}
               sx={{ display: "flex", alignItems: "center", gap: 1 }}
             >
-              <HotelIcon fontSize="small" /> Phòng hiện tại
+              <HotelIcon fontSize="small" />{" "}
+              {booking?.bookingRoomTypes[0]?.roomTypeName}
             </Typography>
 
             <Typography variant="body2">

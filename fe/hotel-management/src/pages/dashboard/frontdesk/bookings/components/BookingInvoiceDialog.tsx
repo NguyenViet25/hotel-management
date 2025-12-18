@@ -354,7 +354,9 @@ const BookingInvoiceDialog: React.FC<Props> = ({
     const deposit = booking?.depositAmount || 0;
     const taxableAmount = subtotal - discountAmt;
     const vatAmt = Math.round(
-      (taxableAmount * (showVat ? vatPercentage || 0 : 0)) / 100
+      ((taxableAmount - additionalAmount) *
+        (showVat ? vatPercentage || 0 : 0)) /
+        100
     );
     const finalNoVat = taxableAmount - deposit;
     const finalWithVat = taxableAmount + vatAmt - deposit;

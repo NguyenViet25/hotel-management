@@ -26,7 +26,7 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import "dayjs/locale/vi"; // make sure Vietnamese locale is imported
 import React, { useEffect, useMemo, useState } from "react";
 import kitchenApi, {
@@ -230,7 +230,7 @@ const FoodTimeline: React.FC = () => {
   };
 
   const handleShoppingSubmit = async (payload: {
-    orderDate: string;
+    orderDate: Dayjs;
     hotelId: string;
     notes?: string | null;
     shoppingItems?: { name: string; quantity: string; unit: string }[] | null;
@@ -238,9 +238,15 @@ const FoodTimeline: React.FC = () => {
     try {
       let res;
       if (modalMode === "create") {
-        res = await kitchenApi.generateShoppingList(payload);
+        res = await kitchenApi.generateShoppingList({
+          ...payload,
+          orderDate: payload.orderDate.toDate().toLocaleDateString(),
+        });
       } else {
-        res = await kitchenApi.updateShoppingList(payload);
+        res = await kitchenApi.updateShoppingList({
+          ...payload,
+          orderDate: payload.orderDate.toDate().toLocaleDateString(),
+        });
       }
       if (res.isSuccess) {
         setSnackbar({

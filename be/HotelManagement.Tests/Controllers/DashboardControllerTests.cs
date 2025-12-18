@@ -36,7 +36,7 @@ public class DashboardControllerTests
         Mock<IOrdersService> orders,
         Mock<IDiningSessionService> sessions,
         Mock<IOrderItemStatusService> orderItems,
-ax        Mock<HotelManagement.Services.Admin.Invoicing.IInvoiceService> invoiceService,
+        Mock<HotelManagement.Services.Admin.Invoicing.IInvoiceService> invoiceService,
         ClaimsPrincipal? user = null)
     {
         var controller = new DashboardController(hotels.Object, users.Object, audit.Object, roomStatus.Object, housekeeping.Object, bookings.Object, orders.Object, sessions.Object, orderItems.Object, invoiceService.Object);

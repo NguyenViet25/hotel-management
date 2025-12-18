@@ -7,7 +7,7 @@ namespace HotelManagement.Services.Admin.Guests;
 
 public interface IGuestsService
 {
-    Task<(IEnumerable<GuestDetailsDto> Items, int Total)> ListAsync(GuestsQueryDto query);
+    Task<(IEnumerable<GuestDetailsDto> Items, int Total)> ListAsync(GuestsQueryDto query, Guid hotelId);
     Task<GuestDetailsDto?> GetAsync(Guid id);
     Task<ApiResponse<GuestDetailsDto>> CreateAsync(CreateGuestDto dto);
     Task<ApiResponse<GuestDetailsDto>> UpdateAsync(Guid id, UpdateGuestDto dto);
@@ -18,9 +18,9 @@ public class GuestsService : IGuestsService
     private readonly ApplicationDbContext _db;
     public GuestsService(ApplicationDbContext db) { _db = db; }
 
-    public async Task<(IEnumerable<GuestDetailsDto> Items, int Total)> ListAsync(GuestsQueryDto query)
+    public async Task<(IEnumerable<GuestDetailsDto> Items, int Total)> ListAsync(GuestsQueryDto query, Guid hotelId)
     {
-        var baseQuery = _db.Guests.AsQueryable();
+        var baseQuery = _db.Guests.Where(x => x.HotelId == hotelId).AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(query.Name))
         {

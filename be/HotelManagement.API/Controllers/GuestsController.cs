@@ -16,7 +16,13 @@ public class GuestsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<ApiResponse<IEnumerable<GuestDetailsDto>>>> List([FromQuery] GuestsQueryDto query)
     {
-        var (items, total) = await _svc.ListAsync(query);
+        var hotelIdClaim = User.FindFirst("hotelId")?.Value;
+
+        if (hotelIdClaim == null)
+            return BadRequest("HotelId not found in user claims");
+
+        Guid hotelId = Guid.Parse(hotelIdClaim);
+        var (items, total) = await _svc.ListAsync(query, hotelId);
         var meta = new { total, page = query.Page, pageSize = query.PageSize };
         return Ok(ApiResponse<IEnumerable<GuestDetailsDto>>.Ok(items, meta: meta));
     }
