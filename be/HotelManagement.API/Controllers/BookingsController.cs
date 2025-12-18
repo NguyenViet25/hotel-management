@@ -91,6 +91,7 @@ public class BookingsController(IBookingsService bookingsService, IWebHostEnviro
         return Ok(result);
     }
 
+
     [HttpPut("complete/{id}")]
     public async Task<ActionResult<ApiResponse>> Complete(Guid id)
     {
@@ -227,6 +228,8 @@ public class BookingsController(IBookingsService bookingsService, IWebHostEnviro
         var result = await _bookingsService.GetRoomHistoryAsync(roomId, from, to);
         return Ok(result);
     }
+
+
 }
 
 public class AddRoomToBooking

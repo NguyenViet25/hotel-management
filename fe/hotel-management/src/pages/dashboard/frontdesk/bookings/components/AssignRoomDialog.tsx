@@ -38,7 +38,7 @@ const AssignRoomDialog: React.FC<Props> = ({
   const [rooms, setRooms] = useState<RoomMapItemDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
-
+  const [reload, setReload] = useState(0);
   const assignedRooms = roomType.bookingRooms || [];
   const remaining = Math.max(
     0,
@@ -52,6 +52,7 @@ const AssignRoomDialog: React.FC<Props> = ({
         date: roomType.startDate,
         hotelId: booking.hotelId,
       });
+      console.log("roomType", roomType);
       if (res.isSuccess && res.data)
         setRooms(res.data.filter((r) => r.roomTypeId === roomType.roomTypeId));
     } catch {}
@@ -62,6 +63,7 @@ const AssignRoomDialog: React.FC<Props> = ({
     if (open) {
       setSelected([]);
       fetchMap();
+      setReload((prev) => prev + 1);
     }
   }, [open]);
 
@@ -92,7 +94,9 @@ const AssignRoomDialog: React.FC<Props> = ({
       byFloor[f].push(r);
     });
     return Object.entries(byFloor).sort((a, b) => Number(a[0]) - Number(b[0]));
-  }, [rooms]);
+  }, [rooms, reload]);
+
+  console.log("rooms", rooms);
 
   const confirmAssign = async () => {
     try {

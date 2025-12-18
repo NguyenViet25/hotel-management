@@ -4,6 +4,7 @@ using HotelManagement.Domain;
 using HotelManagement.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
+using System.Linq;
 using System.Globalization;
 using System.Text;
 
@@ -274,92 +275,11 @@ public static class DatabaseInitializationExtensions
         if (!legacyExists)
         {
             toAdd.AddRange(new[]
-            {
-                new RoomType
-                {
-                    Id = Guid.NewGuid(),
-                    HotelId = legacyHotelId,
-                    Capacity = 4,
-                    Name = "Phòng Superior Có Giường Cỡ Queen",
-                    Description = "Phòng được trang bị máy điều hòa, tivi màn hình phẳng với truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Không gian được bố trí tủ quần áo gọn gàng và sở hữu tầm nhìn hướng ra thành phố. Phòng gồm 2 giường đơn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn đồng hành.",
-                    BasePriceFrom = 400000,
-                    BasePriceTo = 550000,
-                    Prices = "",
-                    ImageUrl = "https://byvn.net/ajHK"
-                },
-                new RoomType
-                {
-                    Id = Guid.NewGuid(),
-                    HotelId = legacyHotelId,
-                    Capacity = 4,
-                    Name = "Phòng Deluxe nhìn ra biển",
-                    Description = "Phòng được trang bị máy điều hòa, tivi màn hình phẳng với truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Không gian được bố trí tủ quần áo gọn gàng và sở hữu tầm nhìn hướng ra biển. Phòng gồm 2 giường cỡ lớn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn đồng hành.",
-                    BasePriceFrom = 500000,
-                    BasePriceTo = 650000,
-                    Prices = "",
-                    ImageUrl = "https://byvn.net/gO4v"
-                },
-                new RoomType
-                {
-                    Id = Guid.NewGuid(),
-                    HotelId = legacyHotelId,
-                    Capacity = 4,
-                    Name = "Studio nhìn ra quang cảnh đại dương",
-                    Description = "Phòng được trang bị máy điều hòa, bàn làm việc, sofa, TV màn hình phẳng với các kênh truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Ban công nhìn ra biển. Phòng tắm riêng đi kèm tiện nghi vòi sen và bồn tắm. Phòng gồm 2 giường cỡ lớn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn bè đồng hành",
-                    BasePriceFrom = 1000000,
-                    BasePriceTo = 1200000,
-                    Prices = "",
-                    ImageUrl = "https://byvn.net/8a8J",
-                }
-            });
-        }
-
-        if (tts1HotelId.HasValue)
-        {
-            var tts1Exists = await dbContext.Set<RoomType>().AnyAsync(rt => rt.HotelId == tts1HotelId.Value);
-            if (!tts1Exists)
-            {
-                toAdd.AddRange(new[]
-                {
+               {
                     new RoomType
                     {
                         Id = Guid.NewGuid(),
-                        HotelId = tts1HotelId.Value,
-                        Capacity = 4,
-                        Name = "Phòng Superior Có Giường Cỡ Queen",
-                        Description = "Phòng được trang bị máy điều hòa, tivi màn hình phẳng với truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Không gian được bố trí tủ quần áo gọn gàng và sở hữu tầm nhìn hướng ra thành phố. Phòng gồm 2 giường đơn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn đồng hành.",
-                        BasePriceFrom = 400000,
-                        BasePriceTo = 550000,
-                        Prices = "",
-                        ImageUrl = "https://byvn.net/zD6T"
-                    },
-                    new RoomType
-                    {
-                        Id = Guid.NewGuid(),
-                        HotelId = tts1HotelId.Value,
-                        Capacity = 4,
-                        Name = "Phòng Deluxe nhìn ra biển",
-                        Description = "Phòng được trang bị máy điều hòa, tivi màn hình phẳng với truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Không gian được bố trí tủ quần áo gọn gàng và sở hữu tầm nhìn hướng ra biển. Phòng gồm 2 giường cỡ lớn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn đồng hành.",
-                        BasePriceFrom = 500000,
-                        BasePriceTo = 650000,
-                        Prices = "",
-                        ImageUrl = "https://byvn.net/RBLG"
-                    }
-                });
-            }
-        }
-
-        if (tts2HotelId.HasValue)
-        {
-            var tts2Exists = await dbContext.Set<RoomType>().AnyAsync(rt => rt.HotelId == tts2HotelId.Value);
-            if (!tts2Exists)
-            {
-                toAdd.AddRange(new[]
-                {
-                    new RoomType
-                    {
-                        Id = Guid.NewGuid(),
-                        HotelId = tts2HotelId.Value,
+                        HotelId = legacyHotelId,
                         Capacity = 4,
                         Name = "Phòng Gia Đình Có Ban Công view Resort",
                         Description = "Phòng được trang bị máy điều hòa, tivi màn hình phẳng với truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Không gian được bố trí tủ quần áo gọn gàng và sở hữu ban công tầm nhìn hướng ra resort FLC. Phòng gồm 2 giường đơn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn đồng hành.",
@@ -371,7 +291,7 @@ public static class DatabaseInitializationExtensions
                     new RoomType
                     {
                         Id = Guid.NewGuid(),
-                        HotelId = tts2HotelId.Value,
+                        HotelId =legacyHotelId,
                         Capacity = 4,
                         Name = "Phòng Deluxe nhìn ra biển",
                         Description = "Phòng được trang bị máy điều hòa, tivi màn hình phẳng với truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Không gian được bố trí tủ quần áo gọn gàng và sở hữu tầm nhìn hướng ra biển. Phòng gồm 2 giường cỡ lớn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn đồng hành.",
@@ -381,6 +301,91 @@ public static class DatabaseInitializationExtensions
                         ImageUrl = "https://byvn.net/A6jV"
                     }
                 });
+        }
+
+        if (tts1HotelId.HasValue)
+        {
+            var tts1Exists = await dbContext.Set<RoomType>().AnyAsync(rt => rt.HotelId == tts1HotelId.Value);
+            if (!tts1Exists)
+            {
+                toAdd.AddRange(new[]
+           {
+                new RoomType
+                {
+                    Id = Guid.NewGuid(),
+                    HotelId = tts1HotelId.Value,
+                    Capacity = 4,
+                    Name = "Phòng Superior Có Giường Cỡ Queen",
+                    Description = "Phòng được trang bị máy điều hòa, tivi màn hình phẳng với truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Không gian được bố trí tủ quần áo gọn gàng và sở hữu tầm nhìn hướng ra thành phố. Phòng gồm 2 giường đơn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn đồng hành.",
+                    BasePriceFrom = 400000,
+                    BasePriceTo = 550000,
+                    Prices = "",
+                    ImageUrl = "https://byvn.net/ajHK"
+                },
+                new RoomType
+                {
+                    Id = Guid.NewGuid(),
+                    HotelId = tts1HotelId.Value,
+                    Capacity = 4,
+                    Name = "Phòng Deluxe nhìn ra biển",
+                    Description = "Phòng được trang bị máy điều hòa, tivi màn hình phẳng với truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Không gian được bố trí tủ quần áo gọn gàng và sở hữu tầm nhìn hướng ra biển. Phòng gồm 2 giường cỡ lớn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn đồng hành.",
+                    BasePriceFrom = 500000,
+                    BasePriceTo = 650000,
+                    Prices = "",
+                    ImageUrl = "https://byvn.net/gO4v"
+                },
+                new RoomType
+                {
+                    Id = Guid.NewGuid(),
+                    HotelId = tts1HotelId.Value,
+                    Capacity = 4,
+                    Name = "Studio nhìn ra quang cảnh đại dương",
+                    Description = "Phòng được trang bị máy điều hòa, bàn làm việc, sofa, TV màn hình phẳng với các kênh truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Ban công nhìn ra biển. Phòng tắm riêng đi kèm tiện nghi vòi sen và bồn tắm. Phòng gồm 2 giường cỡ lớn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn bè đồng hành",
+                    BasePriceFrom = 1000000,
+                    BasePriceTo = 1200000,
+                    Prices = "",
+                    ImageUrl = "https://byvn.net/8a8J",
+                }
+            });
+
+              
+            }
+        }
+
+        if (tts2HotelId.HasValue)
+        {
+            var tts2Exists = await dbContext.Set<RoomType>().AnyAsync(rt => rt.HotelId == tts2HotelId.Value);
+            if (!tts2Exists)
+            {
+                toAdd.AddRange(new[]
+              {
+                    new RoomType
+                    {
+                        Id = Guid.NewGuid(),
+                        HotelId = tts2HotelId.Value,
+                        Capacity = 4,
+                        Name = "Phòng Superior Có Giường Cỡ Queen",
+                        Description = "Phòng được trang bị máy điều hòa, tivi màn hình phẳng với truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Không gian được bố trí tủ quần áo gọn gàng và sở hữu tầm nhìn hướng ra thành phố. Phòng gồm 2 giường đơn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn đồng hành.",
+                        BasePriceFrom = 400000,
+                        BasePriceTo = 550000,
+                        Prices = "",
+                        ImageUrl = "https://byvn.net/zD6T"
+                    },
+                    new RoomType
+                    {
+                        Id = Guid.NewGuid(),
+                        HotelId = tts2HotelId.Value,
+                        Capacity = 4,
+                        Name = "Phòng Deluxe nhìn ra biển",
+                        Description = "Phòng được trang bị máy điều hòa, tivi màn hình phẳng với truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Không gian được bố trí tủ quần áo gọn gàng và sở hữu tầm nhìn hướng ra biển. Phòng gồm 2 giường cỡ lớn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn đồng hành.",
+                        BasePriceFrom = 500000,
+                        BasePriceTo = 650000,
+                        Prices = "",
+                        ImageUrl = "https://byvn.net/RBLG"
+                    }
+                });
+
+              
             }
         }
 
@@ -457,7 +462,7 @@ public static class DatabaseInitializationExtensions
                 Description = "Tọa lạc tại vị trí đắc địa bậc nhất Sầm Sơn, Khách sạn Tân Trường Sơn 1... [truncated for brevity]",
                 IsActive = true,
                 CreatedAt = DateTime.Now,
-                DefaultCheckInTime = DateTime.Today.AddHours(7),   // 7 AM
+                DefaultCheckInTime = DateTime.Today.AddHours(12),   // 7 AM
                 DefaultCheckOutTime = DateTime.Today.AddHours(13), // 1 PM
                 VAT = 8,
             },
@@ -472,7 +477,7 @@ public static class DatabaseInitializationExtensions
                 Description = "Tọa lạc tại trái tim Bãi tắm C sầm uất, Khách sạn Tân Trường Sơn 2... [truncated]",
                 IsActive = true,
                 CreatedAt = DateTime.Now,
-                DefaultCheckInTime = DateTime.Today.AddHours(7),   // 7 AM
+                DefaultCheckInTime = DateTime.Today.AddHours(12),   // 7 AM
                 DefaultCheckOutTime = DateTime.Today.AddHours(13), // 1 PM
                 VAT = 8,
             },
@@ -487,7 +492,7 @@ public static class DatabaseInitializationExtensions
                 Description = "Khách sạn Tân Trường Sơn 3 tọa lạc tại khu phố Hồng Thắng...",
                 IsActive = true,
                 CreatedAt = DateTime.Now,
-                DefaultCheckInTime = DateTime.Today.AddHours(7),   // 7 AM
+                DefaultCheckInTime = DateTime.Today.AddHours(12),   // 7 AM
                 DefaultCheckOutTime = DateTime.Today.AddHours(13), // 1 PM
                 VAT = 8,
             },
@@ -502,7 +507,7 @@ public static class DatabaseInitializationExtensions
                 Description = "Nằm tách biệt khỏi sự náo nhiệt của trung tâm bãi tắm, Khách sạn Tân Trường Sơn Legacy...",
                 IsActive = true,
                 CreatedAt = DateTime.Now,
-                DefaultCheckInTime = DateTime.Today.AddHours(7),   // 7 AM
+                DefaultCheckInTime = DateTime.Today.AddHours(12),   // 7 AM
                 DefaultCheckOutTime = DateTime.Today.AddHours(13), // 1 PM
                 VAT = 8,
             }
@@ -559,7 +564,7 @@ public static class DatabaseInitializationExtensions
             { "CÁ SỦ", (150000m, 400000m) },
         };
 
-        var data = new List<(string cat, string name, decimal? min, decimal? max, string desc)>
+        var raw = new List<(string cat, string name, decimal? min, decimal? max, string desc)>
         {
             ("NGAO", "Ngao hấp sả", 180000m, 180000m, ""),
             ("NGAO", "Canh ngao chua", 60000m, 60000m, ""),
@@ -746,6 +751,48 @@ public static class DatabaseInitializationExtensions
             ("CÁ SỦ", "Gỏi cá sủ", 400000m, 400000m, ""),
         };
 
+        var tagMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "NGAO", "food,clam,seafood" },
+            { "HÀU", "food,oyster,seafood" },
+            { "SÒ LÔNG", "food,shellfish,seafood" },
+            { "BỀ BỀ", "food,shrimp,seafood" },
+            { "SAM", "food,crab,seafood" },
+            { "MÓNG TAY", "food,clam,seafood" },
+            { "TRAI", "food,mussel,seafood" },
+            { "TÔM HÙM", "food,lobster,seafood" },
+            { "TÔM", "food,shrimp,seafood" },
+            { "CUA GẠCH - CUA THỊT", "food,crab,seafood" },
+            { "RẮN BIỂN", "food,fish,seafood" },
+            { "NEM", "food,spring-roll,vietnamese" },
+            { "SÚP KHAI VỊ", "food,soup" },
+            { "GÀ", "food,chicken" },
+            { "THỊT LỢN", "food,pork" },
+            { "THỊT BÒ", "food,beef" },
+            { "LƯƠN", "food,eel,seafood" },
+            { "CÁ GIÒ", "food,fish,seafood" },
+            { "RAU", "food,vegetable,greens" },
+            { "CANH - CƠM", "food,soup,rice" },
+            { "GHẸ", "food,crab,seafood" },
+            { "CÁ THU", "food,fish,seafood" },
+            { "CÁ NỤC", "food,fish,seafood" },
+            { "MỰC TƯƠI", "food,squid,seafood" },
+            { "ỐC HƯƠNG", "food,snail,seafood" },
+            { "TU HÀI", "food,clam,seafood" },
+            { "SỨA", "food,jellyfish,seafood" },
+            { "CÁ MÚ", "food,fish,seafood" },
+            { "CÁ SỦ", "food,fish,seafood" }
+        };
+
+        string ImgOf(string cat, string name)
+        {
+            var seed = (cat + "-" + name).Replace(" ", "-");
+            var tags = tagMap.TryGetValue(cat, out var t) ? t : "food";
+            return $"https://loremflickr.com/seed/{seed}/600/400/{tags}";
+        }
+
+        var data = raw.Select(d => (cat: d.cat, name: d.name, min: d.min, max: d.max, desc: d.desc, imageSrc: ImgOf(d.cat, d.name))).ToList();
+
         foreach (var h in hotels)
         {
             var exists = await dbContext.Set<MenuItem>().AnyAsync(mi => mi.HotelId == h.Id && mi.Category != "Set");
@@ -766,7 +813,7 @@ public static class DatabaseInitializationExtensions
                     Name = d.name,
                     Description = d.desc,
                     UnitPrice = price,
-                    ImageUrl = string.Empty,
+                    ImageUrl = d.imageSrc,
                     Status = 0,
                     IsActive = true
                 });

@@ -1397,7 +1397,7 @@ public class BookingsService(
         if (targetRoom == null || targetRoom.HotelId != booking.HotelId) return ApiResponse<BookingDetailsDto>.Fail("Phòng không hợp lệ");
 
         var overlap = await _bookingRoomRepo.Query()
-            .Where(br => br.RoomId == newRoomId && br.BookingStatus != BookingRoomStatus.Cancelled 
+            .Where(br => br.RoomId == newRoomId && br.BookingStatus != BookingRoomStatus.Cancelled && br.BookingStatus != BookingRoomStatus.CheckedOut
                && br.BookingRoomId != bookingRoomId)
             .AnyAsync(br => bookingRoom.StartDate < br.EndDate && bookingRoom.EndDate > br.StartDate);
         if (overlap) return ApiResponse<BookingDetailsDto>.Fail("Phòng không trống trong khoảng thời gian");

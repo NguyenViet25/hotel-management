@@ -25,8 +25,10 @@ import { BookingSummary } from "./components/BookingSummary";
 import CallLogsDisplay from "./components/CallLogDIsplay";
 import CallLogModal from "./components/CallLogModal";
 import CancelBookingModal from "./components/CancelBookingModal";
+import CompleteBookingModal from "./components/CompleteBookingModal";
 import RoomTypeAssignCheckIn from "./components/RoomTypeAssignCheckIn";
 import type { IBookingSummary } from "./components/types";
+import { toast } from "react-toastify";
 
 const BookingDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -36,6 +38,7 @@ const BookingDetailsPage: React.FC = () => {
   const [openCancel, setOpenCancel] = useState(false);
   const [openCall, setOpenCall] = useState(false);
   const [openCheckout, setOpenCheckout] = useState(false);
+  const [openComplete, setOpenComplete] = useState(false);
 
   const fetch = async () => {
     if (!id) return;
@@ -66,6 +69,17 @@ const BookingDetailsPage: React.FC = () => {
       const res = await bookingsApi.confirm(data?.id);
       if (res.isSuccess) {
         await fetch();
+      }
+    } catch {}
+  };
+
+  const handleSetCompleteStatus = async () => {
+    if (!data?.id) return;
+    try {
+      const res = await bookingsApi.complete(data?.id);
+      if (res.isSuccess) {
+        await fetch();
+        toast.success("Hoàn thành yêu cầu đặt phòng");
       }
     } catch {}
   };
@@ -180,6 +194,18 @@ const BookingDetailsPage: React.FC = () => {
               Xác nhận
             </Button>
           )}
+
+          {data?.status === EBookingStatus.Confirmed && (
+            <Button
+              variant="contained"
+              color="success"
+              startIcon={<Check />}
+              onClick={() => setOpenComplete(true)}
+              aria-label="Xác nhận booking"
+            >
+              Hoàn thành
+            </Button>
+          )}
         </Stack>
       </Stack>
 
@@ -260,6 +286,16 @@ const BookingDetailsPage: React.FC = () => {
         onClose={() => setOpenCall(false)}
         booking={data as any}
         onSubmitted={fetch}
+      />
+
+      <CompleteBookingModal
+        open={openComplete}
+        onClose={() => setOpenComplete(false)}
+        booking={data as any}
+        onProceed={() => {
+          setOpenComplete(false);
+          handleSetCompleteStatus();
+        }}
       />
 
       <BookingInvoiceDialog

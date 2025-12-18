@@ -375,6 +375,11 @@ const bookingsApi = {
     return res.data;
   },
 
+  async complete(id: string): Promise<ApiResponse<BookingDetailsDto>> {
+    const res = await axios.put(`/bookings/complete/${id}`, {});
+    return res.data;
+  },
+
   async checkIn(
     id: string,
     payload: CheckInDto
