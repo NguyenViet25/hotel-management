@@ -615,7 +615,7 @@ public class OrdersService : IOrdersService
             if (order == null) return ApiResponse<OrderDetailsDto>.Fail("Order not found");
 
             order.Status = dto.Status;
-            if (!string.IsNullOrWhiteSpace(dto.Notes))
+            if (dto.Notes != null)
             {
                 order.ChangeFoodRequest = dto.Notes;
             }

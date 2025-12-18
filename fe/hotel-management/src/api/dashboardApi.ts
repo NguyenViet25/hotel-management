@@ -32,11 +32,15 @@ export interface FrontDeskDashboardSummary {
 export interface KitchenDashboardSummary {
   pendingOrderItems: number;
   inProgressOrders: number;
+  readyOrders: number;
+  completedOrders: number;
 }
 
 export interface WaiterDashboardSummary {
   openDiningSessions: number;
   inProgressOrders: number;
+  readyOrders: number;
+  completedOrders: number;
 }
 
 export interface HousekeeperDashboardSummary {

@@ -1,9 +1,10 @@
-import { InfoOutline } from "@mui/icons-material";
+import { InfoOutline, Warning } from "@mui/icons-material";
 import {
   Box,
   Button,
   Card,
   CardContent,
+  Chip,
   Divider,
   MenuItem,
   Stack,
@@ -124,9 +125,26 @@ const RevenuePage: React.FC = () => {
       <Card variant="outlined" sx={{ mb: 2 }}>
         <CardContent>
           <Stack spacing={1}>
-            <Typography variant="body2" color="text.secondary">
-              Tổng doanh thu
-            </Typography>
+            <Stack
+              direction={"row"}
+              justifyItems={"center"}
+              alignItems={"center"}
+              spacing={1}
+              mb={2}
+            >
+              <Typography variant="h6" fontWeight={700}>
+                Tổng doanh thu
+              </Typography>
+              <Box>
+                <Chip
+                  size="small"
+                  icon={<Warning />}
+                  label="Không bao gồm VAT"
+                  sx={{ bgcolor: "#FFE0B2" }}
+                />
+              </Box>
+            </Stack>
+
             <Typography variant="h5" fontWeight={800}>
               {currency(stats?.total || 0)}
             </Typography>
@@ -140,9 +158,25 @@ const RevenuePage: React.FC = () => {
       </Card>
 
       <Card variant="outlined" sx={{ p: 2 }}>
-        <Typography variant="h6" fontWeight={600} mb={2}>
-          Biểu đồ doanh thu
-        </Typography>
+        <Stack
+          direction={"row"}
+          justifyItems={"center"}
+          alignItems={"center"}
+          spacing={1}
+          mb={2}
+        >
+          <Typography variant="h6" fontWeight={700}>
+            Biểu đồ doanh thu
+          </Typography>
+          <Box>
+            <Chip
+              size="small"
+              icon={<Warning />}
+              label="Không bao gồm VAT"
+              sx={{ bgcolor: "#FFE0B2" }}
+            />
+          </Box>
+        </Stack>
 
         <Stack spacing={2} direction={{ xs: "column", lg: "row" }}>
           <TextField

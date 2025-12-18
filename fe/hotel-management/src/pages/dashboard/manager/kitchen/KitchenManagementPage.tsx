@@ -6,6 +6,7 @@ import {
   Close,
   ExpandMore,
   Info,
+  Lightbulb,
   Phone,
   Save,
   Search,
@@ -352,7 +353,7 @@ export default function KitchenManagementPage() {
   };
 
   const IngredientNote =
-    "VD: Hôm nay nguyên liệu A không đạt, xin phép bếp thay bằng món B. Anh/chị xác nhận giúp bếp ạ.";
+    "Hôm nay nguyên liệu A không đạt, xin phép bếp thay bằng món B. Anh/chị xác nhận giúp bếp ạ.";
 
   const Column = ({
     title,
@@ -516,7 +517,7 @@ export default function KitchenManagementPage() {
                                 Yêu cầu đổi món
                               </Typography>
                               <Button
-                                startIcon={<Warning />}
+                                startIcon={<Lightbulb />}
                                 color="warning"
                                 size="small"
                                 variant="outlined"
@@ -533,7 +534,7 @@ export default function KitchenManagementPage() {
                                 }}
                                 sx={{ fontSize: "0.75rem", py: 0.3 }}
                               >
-                                Gợi ý ghi chú
+                                Gợi ý thay đổi món
                               </Button>
                             </Stack>
                           )}
