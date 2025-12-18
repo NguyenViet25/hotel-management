@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace HotelManagement.Domain.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class INit : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
