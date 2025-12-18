@@ -4,6 +4,7 @@ using HotelManagement.Domain;
 using HotelManagement.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
+using System.Linq;
 using System.Globalization;
 using System.Text;
 
@@ -563,7 +564,7 @@ public static class DatabaseInitializationExtensions
             { "CÁ SỦ", (150000m, 400000m) },
         };
 
-        var data = new List<(string cat, string name, decimal? min, decimal? max, string desc)>
+        var raw = new List<(string cat, string name, decimal? min, decimal? max, string desc)>
         {
             ("NGAO", "Ngao hấp sả", 180000m, 180000m, ""),
             ("NGAO", "Canh ngao chua", 60000m, 60000m, ""),
@@ -750,6 +751,48 @@ public static class DatabaseInitializationExtensions
             ("CÁ SỦ", "Gỏi cá sủ", 400000m, 400000m, ""),
         };
 
+        var tagMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "NGAO", "food,clam,seafood" },
+            { "HÀU", "food,oyster,seafood" },
+            { "SÒ LÔNG", "food,shellfish,seafood" },
+            { "BỀ BỀ", "food,shrimp,seafood" },
+            { "SAM", "food,crab,seafood" },
+            { "MÓNG TAY", "food,clam,seafood" },
+            { "TRAI", "food,mussel,seafood" },
+            { "TÔM HÙM", "food,lobster,seafood" },
+            { "TÔM", "food,shrimp,seafood" },
+            { "CUA GẠCH - CUA THỊT", "food,crab,seafood" },
+            { "RẮN BIỂN", "food,fish,seafood" },
+            { "NEM", "food,spring-roll,vietnamese" },
+            { "SÚP KHAI VỊ", "food,soup" },
+            { "GÀ", "food,chicken" },
+            { "THỊT LỢN", "food,pork" },
+            { "THỊT BÒ", "food,beef" },
+            { "LƯƠN", "food,eel,seafood" },
+            { "CÁ GIÒ", "food,fish,seafood" },
+            { "RAU", "food,vegetable,greens" },
+            { "CANH - CƠM", "food,soup,rice" },
+            { "GHẸ", "food,crab,seafood" },
+            { "CÁ THU", "food,fish,seafood" },
+            { "CÁ NỤC", "food,fish,seafood" },
+            { "MỰC TƯƠI", "food,squid,seafood" },
+            { "ỐC HƯƠNG", "food,snail,seafood" },
+            { "TU HÀI", "food,clam,seafood" },
+            { "SỨA", "food,jellyfish,seafood" },
+            { "CÁ MÚ", "food,fish,seafood" },
+            { "CÁ SỦ", "food,fish,seafood" }
+        };
+
+        string ImgOf(string cat, string name)
+        {
+            var seed = (cat + "-" + name).Replace(" ", "-");
+            var tags = tagMap.TryGetValue(cat, out var t) ? t : "food";
+            return $"https://loremflickr.com/seed/{seed}/600/400/{tags}";
+        }
+
+        var data = raw.Select(d => (cat: d.cat, name: d.name, min: d.min, max: d.max, desc: d.desc, imageSrc: ImgOf(d.cat, d.name))).ToList();
+
         foreach (var h in hotels)
         {
             var exists = await dbContext.Set<MenuItem>().AnyAsync(mi => mi.HotelId == h.Id && mi.Category != "Set");
@@ -770,7 +813,7 @@ public static class DatabaseInitializationExtensions
                     Name = d.name,
                     Description = d.desc,
                     UnitPrice = price,
-                    ImageUrl = string.Empty,
+                    ImageUrl = d.imageSrc,
                     Status = 0,
                     IsActive = true
                 });

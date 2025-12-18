@@ -296,7 +296,13 @@ const RoomTypePage: React.FC = () => {
                       "https://via.placeholder.com/640x360?text=Room+Type"
                     }
                     alt={rt.name}
-                    sx={{ objectFit: "contain", borderRadius: 1, mb: 1 }}
+                    sx={{
+                      objectFit: "cover",
+                      borderRadius: 1,
+                      mb: 1,
+                      width: "100%",
+                      height: 200,
+                    }}
                   />
 
                   <Stack spacing={0.5}>
