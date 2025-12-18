@@ -15,6 +15,7 @@ import { useStore, type StoreState } from "../../../hooks/useStore";
 import dashboardApi, {
   type KitchenDashboardSummary,
 } from "../../../api/dashboardApi";
+import { CheckCircle, FoodBank, WaterfallChart } from "@mui/icons-material";
 
 const KitchenDashboard: React.FC = () => {
   const { hotelId } = useStore<StoreState>((s) => s);
@@ -60,7 +61,7 @@ const KitchenDashboard: React.FC = () => {
       )}
 
       <Grid container spacing={3}>
-        <Grid size={{ xs: 12, md: 6 }}>
+        <Grid size={{ xs: 12, md: 3 }}>
           <Card variant="outlined" sx={{ borderRadius: 2, bgcolor: "#FFF3E0" }}>
             <CardContent>
               <Stack direction="row" spacing={2} alignItems="center">
@@ -79,7 +80,7 @@ const KitchenDashboard: React.FC = () => {
                 </Box>
                 <Stack>
                   <Typography variant="subtitle2" color="text.secondary">
-                    Món chờ chế biến
+                    Tổng đơn
                   </Typography>
                   <Typography variant="h5" fontWeight={700}>
                     {loading ? "—" : summary?.pendingOrderItems ?? "—"}
@@ -89,7 +90,7 @@ const KitchenDashboard: React.FC = () => {
             </CardContent>
           </Card>
         </Grid>
-        <Grid size={{ xs: 12, md: 6 }}>
+        <Grid size={{ xs: 12, md: 3 }}>
           <Card variant="outlined" sx={{ borderRadius: 2, bgcolor: "#E3F2FD" }}>
             <CardContent>
               <Stack direction="row" spacing={2} alignItems="center">
@@ -108,10 +109,71 @@ const KitchenDashboard: React.FC = () => {
                 </Box>
                 <Stack>
                   <Typography variant="subtitle2" color="text.secondary">
-                    Đơn đang xử lý
+                    Đơn đang nấu
                   </Typography>
                   <Typography variant="h5" fontWeight={700}>
                     {loading ? "—" : summary?.inProgressOrders ?? "—"}
+                  </Typography>
+                </Stack>
+              </Stack>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid size={{ xs: 12, md: 3 }}>
+          <Card variant="outlined" sx={{ borderRadius: 2, bgcolor: "#C8E6C9" }}>
+            <CardContent>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Box
+                  sx={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 2,
+                    bgcolor: "#A5D6A7",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <FoodBank color="primary" />
+                </Box>
+                <Stack>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Đơn sẵn sàng
+                  </Typography>
+                  <Typography variant="h5" fontWeight={700}>
+                    {loading ? "—" : summary?.readyOrders ?? "—"}
+                  </Typography>
+                </Stack>
+              </Stack>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid size={{ xs: 12, md: 3 }}>
+          <Card
+            variant="outlined"
+            sx={{ borderRadius: 2, bgcolor: "lightgreen" }}
+          >
+            <CardContent>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Box
+                  sx={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 2,
+                    bgcolor: "#C8E6C9",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <CheckCircle color="primary" />
+                </Box>
+                <Stack>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Đơn hoàn thành
+                  </Typography>
+                  <Typography variant="h5" fontWeight={700}>
+                    {loading ? "—" : summary?.completedOrders ?? "—"}
                   </Typography>
                 </Stack>
               </Stack>

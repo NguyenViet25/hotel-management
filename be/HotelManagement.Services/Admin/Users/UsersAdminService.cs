@@ -158,7 +158,7 @@ public class UsersAdminService : IUsersAdminService
         return (items, total);
     }
 
-    public async Task<IEnumerable<UserSummaryDto>> ListByRoleAsync(UserByRoleQuery query)
+    public async Task<IEnumerable<UserSummaryDto>> ListByRoleAsync(UserByRoleQuery query, Guid hotelId)
     {
         var q = _users.Users.AsNoTracking();
 
@@ -188,11 +188,12 @@ public class UsersAdminService : IUsersAdminService
             .ToListAsync();
         var rolesByUser = userRolePairs.GroupBy(x => x.UserId).ToDictionary(g => g.Key, g => g.Select(x => x.Name ?? string.Empty).ToList());
         var propertyRoles = await _db.UserPropertyRoles.AsNoTracking().Select(pr => new UserPropertyRoleDto(pr.UserId, pr.HotelId, pr.Role, "")).ToListAsync();
-
+        var usersByHotel = await _db.UserPropertyRoles.Where(x => x.HotelId == hotelId)
+         .AsNoTracking().Select(pr => pr.UserId).ToListAsync();
 
         var list = await GetHotel(propertyRoles);
 
-        var items = users.Select(u => new UserSummaryDto(
+        var items = users.Where(x => usersByHotel.Contains(x.Id)).Select(u => new UserSummaryDto(
             u.Id,
             u.UserName,
             u.Email,

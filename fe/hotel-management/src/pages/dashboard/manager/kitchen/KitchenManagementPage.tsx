@@ -1,9 +1,12 @@
 import {
   AccessTime,
   ArrowCircleRight,
+  ChatBubble,
   Check,
   Close,
   ExpandMore,
+  Info,
+  Lightbulb,
   Phone,
   Save,
   Search,
@@ -46,6 +49,7 @@ import ordersApi, {
   type OrderSummaryDto,
 } from "../../../../api/ordersApi";
 import PageTitle from "../../../../components/common/PageTitle";
+import FloatingWarningIcon from "../../../../components/common/FloatingWarningIcon";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
 
 type ColumnKey = "Mới" | "Đang nấu" | "Sẵn sàng" | "Đã phục vụ";
@@ -58,16 +62,6 @@ const getOrderPhase = (status: number): string => {
   if (status === EOrderStatus.Ready) return "Sẵn sàng";
   if (status === EOrderStatus.Completed) return "Đã phục vụ";
   return "Mới";
-};
-
-const getOrderPhaseColor = (status: number): string => {
-  if (status === EOrderStatus.Draft) return "gray";
-  if (status === EOrderStatus.NeedConfirmed) return "warning";
-  if (status === EOrderStatus.Confirmed) return "info";
-  if (status === EOrderStatus.InProgress) return "primary";
-  if (status === EOrderStatus.Ready) return "violet";
-  if (status === EOrderStatus.Completed) return "success";
-  return "default";
 };
 
 export default function KitchenManagementPage() {
@@ -338,7 +332,7 @@ export default function KitchenManagementPage() {
     const res = await ordersApi.getById(orderId);
     setDetailsMap((m) => ({ ...m, [orderId]: res.data }));
 
-    toast.success("Lưu ghi chú thành công");
+    toast.success("Lưu yêu cầu đổi món thành công");
   };
 
   const applyReplaceMenu = async (menuItem: MenuItemDto) => {
@@ -359,7 +353,7 @@ export default function KitchenManagementPage() {
   };
 
   const IngredientNote =
-    "VD: Hôm nay nguyên liệu A không đạt, xin phép bếp thay bằng món B. Anh/chị xác nhận giúp bếp ạ.";
+    "Hôm nay nguyên liệu A không đạt, xin phép bếp thay bằng món B. Anh/chị xác nhận giúp bếp ạ.";
 
   const Column = ({
     title,
@@ -438,14 +432,12 @@ export default function KitchenManagementPage() {
               <AccordionDetails>
                 <Stack spacing={1.5}>
                   <Stack spacing={1}>
-                    <Typography fontWeight={600}>
-                      Thông tin khách hàng
-                    </Typography>
                     <Box
                       sx={{
-                        border: "1px dashed",
-                        borderRadius: 2,
                         p: 1,
+                        border: "1px dashed",
+                        borderColor: "divider",
+                        borderRadius: 1.5,
                         bgcolor: "grey.50",
                       }}
                     >
@@ -492,61 +484,105 @@ export default function KitchenManagementPage() {
                             </Typography>
                           </Stack>
                         )}
+                        <Stack
+                          direction="row"
+                          spacing={0.75}
+                          alignItems="center"
+                        >
+                          <ChatBubble fontSize="small" color="action" />
+                          <Typography variant="body2">
+                            Ghi chú của lễ tân: {order.notes || "—"}
+                          </Typography>
+                        </Stack>
                       </Stack>
                     </Box>
                   </Stack>
 
                   <Stack spacing={1}>
-                    <Stack
-                      direction="row"
-                      justifyContent={"space-between"}
-                      spacing={1}
-                      alignItems={"center"}
-                    >
-                      <Typography fontWeight={600}>Ghi chú</Typography>
-                      {Number(order.status) === EOrderStatus.NeedConfirmed && (
-                        <Button
-                          startIcon={<Warning />}
-                          color="error"
-                          size="small"
-                          variant="contained"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setNotesDraft((m) => ({
-                              ...m,
-                              [order.id]: IngredientNote,
-                            }));
-                            setNeedConfirm((m) => ({ ...m, [order.id]: true }));
-                          }}
+                    <Box>
+                      <Stack spacing={0.75}>
+                        <Stack
+                          direction="row"
+                          justifyContent="space-between"
+                          alignItems="center"
                         >
-                          Không đạt nguyên liệu
-                        </Button>
-                      )}
-                    </Stack>
-                    {Number(order.status) === EOrderStatus.Completed ? (
-                      <Typography
-                        variant="body2"
-                        sx={{ whiteSpace: "pre-wrap" }}
-                      >
-                        {order.notes ?? ""}
-                      </Typography>
-                    ) : (
-                      <TextField
-                        size="small"
-                        value={notesDraft[order.id] ?? order.notes ?? ""}
-                        onChange={(e) =>
-                          setNotesDraft((m) => ({
-                            ...m,
-                            [order.id]: e.target.value,
-                          }))
-                        }
-                        placeholder="Nhập ghi chú"
-                        multiline
-                        minRows={3}
-                      />
-                    )}
+                          {Number(order.status) ===
+                            EOrderStatus.NeedConfirmed && (
+                            <Stack
+                              direction="row"
+                              spacing={0.75}
+                              alignItems="center"
+                            >
+                              <Typography variant="body2" fontWeight={700}>
+                                Yêu cầu đổi món
+                              </Typography>
+                              <Button
+                                startIcon={<Lightbulb />}
+                                color="warning"
+                                size="small"
+                                variant="outlined"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  setNotesDraft((m) => ({
+                                    ...m,
+                                    [order.id]: IngredientNote,
+                                  }));
+                                  setNeedConfirm((m) => ({
+                                    ...m,
+                                    [order.id]: true,
+                                  }));
+                                }}
+                                sx={{ fontSize: "0.75rem", py: 0.3 }}
+                              >
+                                Gợi ý thay đổi món
+                              </Button>
+                            </Stack>
+                          )}
+                        </Stack>
+                        {Number(order.status) === EOrderStatus.NeedConfirmed ? (
+                          <TextField
+                            size="small"
+                            value={
+                              notesDraft[order.id] ??
+                              order.changeFoodRequest ??
+                              ""
+                            }
+                            onChange={(e) =>
+                              setNotesDraft((m) => ({
+                                ...m,
+                                [order.id]: e.target.value,
+                              }))
+                            }
+                            placeholder="Nhập yêu cầu đổi món"
+                            multiline
+                            minRows={2}
+                            sx={{
+                              "& .MuiInputBase-input": { fontSize: "0.9rem" },
+                            }}
+                          />
+                        ) : (
+                          <Stack
+                            direction={{ xs: "row" }}
+                            spacing={1}
+                            alignItems="center"
+                            sx={{
+                              border: "1px dashed",
+                              borderRadius: 3,
+                              p: 1,
+                              backgroundColor: "yellow",
+                            }}
+                          >
+                            <FloatingWarningIcon color="error" />
+                            <Typography>
+                              <b>Yêu cầu đổi món: </b>
+                              {order.changeFoodRequest || "—"}
+                            </Typography>
+                          </Stack>
+                        )}
+                      </Stack>
+                    </Box>
                     <Stack direction="row" spacing={1} flexWrap="wrap">
-                      {Number(order.status) !== EOrderStatus.Completed && (
+                      {Number(order.status) === EOrderStatus.NeedConfirmed && (
                         <Button
                           variant="contained"
                           color="primary"
@@ -554,7 +590,7 @@ export default function KitchenManagementPage() {
                           size="small"
                           onClick={() => saveNotes(order.id)}
                         >
-                          Lưu ghi chú
+                          Lưu yêu cầu đổi món
                         </Button>
                       )}
                     </Stack>
@@ -662,7 +698,8 @@ export default function KitchenManagementPage() {
                             >
                               Xác nhận đơn
                             </Button>
-                          ) : cs !== EOrderStatus.Draft ? (
+                          ) : cs !== EOrderStatus.Draft &&
+                            cs !== EOrderStatus.Ready ? (
                             <Button
                               variant="contained"
                               startIcon={icon}

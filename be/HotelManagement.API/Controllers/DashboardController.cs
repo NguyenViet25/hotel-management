@@ -203,7 +203,7 @@ public class DashboardController : ControllerBase
         return Ok(ApiResponse<WaiterDashboardSummaryDto>.Ok(dto));
     }
 
-    public record KitchenDashboardSummaryDto(int PendingOrderItems, int InProgressOrders);
+    public record KitchenDashboardSummaryDto(int PendingOrderItems, int InProgressOrders, int ReadyOrders, int CompletedOrders);
 
     [HttpGet("kitchen/summary")]
     [Authorize(Roles = "Kitchen")]
@@ -212,12 +212,17 @@ public class DashboardController : ControllerBase
         if (hotelId == null || hotelId == Guid.Empty)
             return BadRequest(ApiResponse.Fail("HotelId is required"));
 
-        var pendingItems = await _orderItems.GetPendingOrderItemsAsync(hotelId.Value, page: 1, pageSize: 1);
-        var orders = await _orders.ListAsync(new OrdersQueryDto { HotelId = hotelId.Value, Status = HotelManagement.Domain.OrderStatus.InProgress, Page = 1, PageSize = 1000 });
+        var orders = await _orders.ListAsync(new OrdersQueryDto { 
+            HotelId = hotelId.Value, 
+            Page = 1, 
+            PageSize = 1000 
+        });
 
         var dto = new KitchenDashboardSummaryDto(
-            PendingOrderItems: pendingItems.Data?.TotalCount ?? 0,
-            InProgressOrders: orders.Data?.Count ?? 0
+            PendingOrderItems: orders.Data?.Count ?? 0,
+            InProgressOrders: orders.Data?.Count(x => x.Status == Domain.OrderStatus.InProgress) ?? 0,
+            ReadyOrders: orders.Data?.Count(x => x.Status == Domain.OrderStatus.Ready) ?? 0,
+            CompletedOrders: orders.Data?.Count(x => x.Status == Domain.OrderStatus.Completed) ?? 0
         );
         return Ok(ApiResponse<KitchenDashboardSummaryDto>.Ok(dto));
     }

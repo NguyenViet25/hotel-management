@@ -816,6 +816,7 @@ namespace HotelManagement.Domain.Migrations
                     IsWalkIn = table.Column<bool>(type: "bit", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ChangeFoodRequest = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ServingDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     PromotionValue = table.Column<decimal>(type: "decimal(18,2)", nullable: true),

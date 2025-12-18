@@ -884,6 +884,9 @@ namespace HotelManagement.Domain.Migrations
                     b.Property<Guid?>("BookingId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("ChangeFoodRequest")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 

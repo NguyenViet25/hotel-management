@@ -143,6 +143,7 @@ public class OrderSummaryDto
     public string? CustomerPhone { get; set; }
     public OrderStatus Status { get; set; }
     public string? Notes { get; set; }
+    public string? ChangeFoodRequest { get; set; }
     public DateTime CreatedAt { get; set; }
     public int ItemsCount { get; set; }
     public decimal ItemsTotal { get; set; }

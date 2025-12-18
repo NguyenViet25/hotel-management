@@ -88,6 +88,7 @@ public class OrdersService : IOrdersService
                     CustomerPhone = o.CustomerPhone,
                     Status = o.Status,
                     Notes = o.Notes,
+                    ChangeFoodRequest = o.ChangeFoodRequest,
                     CreatedAt = o.CreatedAt,
                     ItemsCount = o.Items.Count,
                     PromotionCode = o.PromotionCode,
@@ -170,6 +171,7 @@ public class OrdersService : IOrdersService
                 CustomerPhone = o.CustomerPhone,
                 Status = o.Status,
                 Notes = o.Notes,
+                ChangeFoodRequest = o.ChangeFoodRequest,
                 CreatedAt = o.CreatedAt,
                 ItemsCount = o.Items.Count,
                 ServingDate = o.ServingDate,
@@ -613,9 +615,9 @@ public class OrdersService : IOrdersService
             if (order == null) return ApiResponse<OrderDetailsDto>.Fail("Order not found");
 
             order.Status = dto.Status;
-            if (!string.IsNullOrWhiteSpace(dto.Notes))
+            if (dto.Notes != null)
             {
-                order.Notes = dto.Notes;
+                order.ChangeFoodRequest = dto.Notes;
             }
 
             await _orderRepository.UpdateAsync(order);

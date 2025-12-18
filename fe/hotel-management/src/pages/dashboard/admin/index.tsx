@@ -6,6 +6,7 @@ import {
   Box,
   Card,
   CardContent,
+  Chip,
   Divider,
   Grid,
   MenuItem,
@@ -32,6 +33,7 @@ import hotelService, { type Hotel } from "../../../api/hotelService";
 import type { RevenueStatsDto } from "../../../api/revenueApi";
 import EmptyState from "../../../components/common/EmptyState";
 import PageTitle from "../../../components/common/PageTitle";
+import { Info, Warning } from "@mui/icons-material";
 const currency = (v: number) => `${Math.round(Number(v)).toLocaleString()} đ`;
 
 const AdminDashboardPage: React.FC = () => {
@@ -212,9 +214,20 @@ const AdminDashboardPage: React.FC = () => {
       </Grid>
 
       <Card variant="outlined" sx={{ p: 2, mb: 2 }}>
-        <Typography variant="h6" fontWeight={700} mb={2}>
-          Biểu đồ doanh thu toàn hệ thống
-        </Typography>
+        <Stack mb={2}>
+          <Typography variant="h6" fontWeight={700}>
+            Biểu đồ doanh thu toàn hệ thống
+          </Typography>
+          <Box>
+            <Chip
+              size="small"
+              icon={<Warning />}
+              label="Không bao gồm VAT"
+              sx={{ bgcolor: "#FFE0B2" }}
+            />
+          </Box>
+        </Stack>
+
         <Stack spacing={2} direction={{ xs: "column", lg: "row" }}>
           <TextField
             select
@@ -265,7 +278,7 @@ const AdminDashboardPage: React.FC = () => {
             <CardContent>
               <Stack spacing={1}>
                 <Typography variant="body2" color="text.secondary">
-                  Tổng doanh thu
+                  Tổng doanh thu (Không bao gồm VAT)
                 </Typography>
                 <Typography variant="h5" fontWeight={800}>
                   {Math.round(Number(revStats?.total || 0)).toLocaleString()} đ

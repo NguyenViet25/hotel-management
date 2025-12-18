@@ -34,7 +34,13 @@ public class UsersAdminController : ControllerBase
     [HttpGet("by-role")]
     public async Task<ActionResult<ApiResponse<IEnumerable<UserSummaryDto>>>> ListHouseKeppers([FromQuery] UserByRoleQuery query)
     {
-        var items = await _svc.ListByRoleAsync(query);
+        var hotelIdClaim = User.FindFirst("hotelId")?.Value;
+
+        if (hotelIdClaim == null)
+            return BadRequest("HotelId not found in user claims");
+
+        Guid hotelId = Guid.Parse(hotelIdClaim);
+        var items = await _svc.ListByRoleAsync(query, hotelId);
         return Ok(ApiResponse<IEnumerable<UserSummaryDto>>.Ok(items));
     }
 
