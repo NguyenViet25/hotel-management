@@ -274,92 +274,11 @@ public static class DatabaseInitializationExtensions
         if (!legacyExists)
         {
             toAdd.AddRange(new[]
-            {
-                new RoomType
-                {
-                    Id = Guid.NewGuid(),
-                    HotelId = legacyHotelId,
-                    Capacity = 4,
-                    Name = "Phòng Superior Có Giường Cỡ Queen",
-                    Description = "Phòng được trang bị máy điều hòa, tivi màn hình phẳng với truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Không gian được bố trí tủ quần áo gọn gàng và sở hữu tầm nhìn hướng ra thành phố. Phòng gồm 2 giường đơn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn đồng hành.",
-                    BasePriceFrom = 400000,
-                    BasePriceTo = 550000,
-                    Prices = "",
-                    ImageUrl = "https://byvn.net/ajHK"
-                },
-                new RoomType
-                {
-                    Id = Guid.NewGuid(),
-                    HotelId = legacyHotelId,
-                    Capacity = 4,
-                    Name = "Phòng Deluxe nhìn ra biển",
-                    Description = "Phòng được trang bị máy điều hòa, tivi màn hình phẳng với truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Không gian được bố trí tủ quần áo gọn gàng và sở hữu tầm nhìn hướng ra biển. Phòng gồm 2 giường cỡ lớn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn đồng hành.",
-                    BasePriceFrom = 500000,
-                    BasePriceTo = 650000,
-                    Prices = "",
-                    ImageUrl = "https://byvn.net/gO4v"
-                },
-                new RoomType
-                {
-                    Id = Guid.NewGuid(),
-                    HotelId = legacyHotelId,
-                    Capacity = 4,
-                    Name = "Studio nhìn ra quang cảnh đại dương",
-                    Description = "Phòng được trang bị máy điều hòa, bàn làm việc, sofa, TV màn hình phẳng với các kênh truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Ban công nhìn ra biển. Phòng tắm riêng đi kèm tiện nghi vòi sen và bồn tắm. Phòng gồm 2 giường cỡ lớn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn bè đồng hành",
-                    BasePriceFrom = 1000000,
-                    BasePriceTo = 1200000,
-                    Prices = "",
-                    ImageUrl = "https://byvn.net/8a8J",
-                }
-            });
-        }
-
-        if (tts1HotelId.HasValue)
-        {
-            var tts1Exists = await dbContext.Set<RoomType>().AnyAsync(rt => rt.HotelId == tts1HotelId.Value);
-            if (!tts1Exists)
-            {
-                toAdd.AddRange(new[]
-                {
+               {
                     new RoomType
                     {
                         Id = Guid.NewGuid(),
-                        HotelId = tts1HotelId.Value,
-                        Capacity = 4,
-                        Name = "Phòng Superior Có Giường Cỡ Queen",
-                        Description = "Phòng được trang bị máy điều hòa, tivi màn hình phẳng với truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Không gian được bố trí tủ quần áo gọn gàng và sở hữu tầm nhìn hướng ra thành phố. Phòng gồm 2 giường đơn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn đồng hành.",
-                        BasePriceFrom = 400000,
-                        BasePriceTo = 550000,
-                        Prices = "",
-                        ImageUrl = "https://byvn.net/zD6T"
-                    },
-                    new RoomType
-                    {
-                        Id = Guid.NewGuid(),
-                        HotelId = tts1HotelId.Value,
-                        Capacity = 4,
-                        Name = "Phòng Deluxe nhìn ra biển",
-                        Description = "Phòng được trang bị máy điều hòa, tivi màn hình phẳng với truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Không gian được bố trí tủ quần áo gọn gàng và sở hữu tầm nhìn hướng ra biển. Phòng gồm 2 giường cỡ lớn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn đồng hành.",
-                        BasePriceFrom = 500000,
-                        BasePriceTo = 650000,
-                        Prices = "",
-                        ImageUrl = "https://byvn.net/RBLG"
-                    }
-                });
-            }
-        }
-
-        if (tts2HotelId.HasValue)
-        {
-            var tts2Exists = await dbContext.Set<RoomType>().AnyAsync(rt => rt.HotelId == tts2HotelId.Value);
-            if (!tts2Exists)
-            {
-                toAdd.AddRange(new[]
-                {
-                    new RoomType
-                    {
-                        Id = Guid.NewGuid(),
-                        HotelId = tts2HotelId.Value,
+                        HotelId = legacyHotelId,
                         Capacity = 4,
                         Name = "Phòng Gia Đình Có Ban Công view Resort",
                         Description = "Phòng được trang bị máy điều hòa, tivi màn hình phẳng với truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Không gian được bố trí tủ quần áo gọn gàng và sở hữu ban công tầm nhìn hướng ra resort FLC. Phòng gồm 2 giường đơn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn đồng hành.",
@@ -371,7 +290,7 @@ public static class DatabaseInitializationExtensions
                     new RoomType
                     {
                         Id = Guid.NewGuid(),
-                        HotelId = tts2HotelId.Value,
+                        HotelId =legacyHotelId,
                         Capacity = 4,
                         Name = "Phòng Deluxe nhìn ra biển",
                         Description = "Phòng được trang bị máy điều hòa, tivi màn hình phẳng với truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Không gian được bố trí tủ quần áo gọn gàng và sở hữu tầm nhìn hướng ra biển. Phòng gồm 2 giường cỡ lớn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn đồng hành.",
@@ -381,6 +300,91 @@ public static class DatabaseInitializationExtensions
                         ImageUrl = "https://byvn.net/A6jV"
                     }
                 });
+        }
+
+        if (tts1HotelId.HasValue)
+        {
+            var tts1Exists = await dbContext.Set<RoomType>().AnyAsync(rt => rt.HotelId == tts1HotelId.Value);
+            if (!tts1Exists)
+            {
+                toAdd.AddRange(new[]
+           {
+                new RoomType
+                {
+                    Id = Guid.NewGuid(),
+                    HotelId = tts1HotelId.Value,
+                    Capacity = 4,
+                    Name = "Phòng Superior Có Giường Cỡ Queen",
+                    Description = "Phòng được trang bị máy điều hòa, tivi màn hình phẳng với truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Không gian được bố trí tủ quần áo gọn gàng và sở hữu tầm nhìn hướng ra thành phố. Phòng gồm 2 giường đơn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn đồng hành.",
+                    BasePriceFrom = 400000,
+                    BasePriceTo = 550000,
+                    Prices = "",
+                    ImageUrl = "https://byvn.net/ajHK"
+                },
+                new RoomType
+                {
+                    Id = Guid.NewGuid(),
+                    HotelId = tts1HotelId.Value,
+                    Capacity = 4,
+                    Name = "Phòng Deluxe nhìn ra biển",
+                    Description = "Phòng được trang bị máy điều hòa, tivi màn hình phẳng với truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Không gian được bố trí tủ quần áo gọn gàng và sở hữu tầm nhìn hướng ra biển. Phòng gồm 2 giường cỡ lớn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn đồng hành.",
+                    BasePriceFrom = 500000,
+                    BasePriceTo = 650000,
+                    Prices = "",
+                    ImageUrl = "https://byvn.net/gO4v"
+                },
+                new RoomType
+                {
+                    Id = Guid.NewGuid(),
+                    HotelId = tts1HotelId.Value,
+                    Capacity = 4,
+                    Name = "Studio nhìn ra quang cảnh đại dương",
+                    Description = "Phòng được trang bị máy điều hòa, bàn làm việc, sofa, TV màn hình phẳng với các kênh truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Ban công nhìn ra biển. Phòng tắm riêng đi kèm tiện nghi vòi sen và bồn tắm. Phòng gồm 2 giường cỡ lớn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn bè đồng hành",
+                    BasePriceFrom = 1000000,
+                    BasePriceTo = 1200000,
+                    Prices = "",
+                    ImageUrl = "https://byvn.net/8a8J",
+                }
+            });
+
+              
+            }
+        }
+
+        if (tts2HotelId.HasValue)
+        {
+            var tts2Exists = await dbContext.Set<RoomType>().AnyAsync(rt => rt.HotelId == tts2HotelId.Value);
+            if (!tts2Exists)
+            {
+                toAdd.AddRange(new[]
+              {
+                    new RoomType
+                    {
+                        Id = Guid.NewGuid(),
+                        HotelId = tts2HotelId.Value,
+                        Capacity = 4,
+                        Name = "Phòng Superior Có Giường Cỡ Queen",
+                        Description = "Phòng được trang bị máy điều hòa, tivi màn hình phẳng với truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Không gian được bố trí tủ quần áo gọn gàng và sở hữu tầm nhìn hướng ra thành phố. Phòng gồm 2 giường đơn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn đồng hành.",
+                        BasePriceFrom = 400000,
+                        BasePriceTo = 550000,
+                        Prices = "",
+                        ImageUrl = "https://byvn.net/zD6T"
+                    },
+                    new RoomType
+                    {
+                        Id = Guid.NewGuid(),
+                        HotelId = tts2HotelId.Value,
+                        Capacity = 4,
+                        Name = "Phòng Deluxe nhìn ra biển",
+                        Description = "Phòng được trang bị máy điều hòa, tivi màn hình phẳng với truyền hình cáp, hệ thống cách âm đảm bảo sự riêng tư và minibar tiện lợi. Không gian được bố trí tủ quần áo gọn gàng và sở hữu tầm nhìn hướng ra biển. Phòng gồm 2 giường cỡ lớn, phù hợp cho khách đi cùng gia đình hoặc du lịch cùng bạn đồng hành.",
+                        BasePriceFrom = 500000,
+                        BasePriceTo = 650000,
+                        Prices = "",
+                        ImageUrl = "https://byvn.net/RBLG"
+                    }
+                });
+
+              
             }
         }
 
