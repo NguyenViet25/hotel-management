@@ -424,6 +424,10 @@ const RoomTypeBlock: React.FC<{
                               variant="outlined"
                               size="small"
                               color="primary"
+                              disabled={
+                                br.actualCheckOutAt !== undefined &&
+                                br.actualCheckOutAt !== null
+                              }
                               onClick={() => {
                                 setActiveRoom(br);
                                 setExtendOpen(true);

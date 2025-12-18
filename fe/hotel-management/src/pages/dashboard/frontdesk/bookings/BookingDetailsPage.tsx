@@ -201,6 +201,15 @@ const BookingDetailsPage: React.FC = () => {
               color="success"
               startIcon={<Check />}
               onClick={() => setOpenComplete(true)}
+              disabled={data?.bookingRoomTypes
+                .flatMap((x) => x.bookingRooms)
+                .some(
+                  (r) =>
+                    r.actualCheckInAt === undefined ||
+                    r.actualCheckInAt === null ||
+                    r.actualCheckOutAt === undefined ||
+                    r.actualCheckOutAt === null
+                )}
               aria-label="Xác nhận booking"
             >
               Hoàn thành

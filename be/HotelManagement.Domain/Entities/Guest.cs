@@ -9,4 +9,5 @@ public class Guest
     public string? Email { get; set; }
     public string? IdCardFrontImageUrl { get; set; }
     public string? IdCardBackImageUrl { get; set; }
+    public Guid? HotelId { get; set; }
 }

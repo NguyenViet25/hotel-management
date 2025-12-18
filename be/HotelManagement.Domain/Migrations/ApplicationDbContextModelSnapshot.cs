@@ -470,6 +470,9 @@ namespace HotelManagement.Domain.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid?>("HotelId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("IdCard")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");

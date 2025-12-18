@@ -61,7 +61,8 @@ namespace HotelManagement.Domain.Migrations
                     IdCard = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IdCardFrontImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    IdCardBackImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    IdCardBackImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    HotelId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
                 constraints: table =>
                 {

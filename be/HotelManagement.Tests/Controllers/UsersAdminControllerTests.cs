@@ -30,7 +30,7 @@ public class UsersAdminControllerTests
     public async Task ListHouseKeepers_ReturnsOk()
     {
         var mock = new Mock<IUsersAdminService>();
-        mock.Setup(s => s.ListByRoleAsync(It.IsAny<UserByRoleQuery>()))
+        mock.Setup(s => s.ListByRoleAsync(It.IsAny<UserByRoleQuery>(), It.IsAny<Guid>()))
             .ReturnsAsync(new List<UserSummaryDto> { new UserSummaryDto(Guid.NewGuid(), "user","email","0123","Full Name", true, null, Enumerable.Empty<string>(), Enumerable.Empty<UserPropertyRoleDto>()) });
         var controller = CreateController(mock);
         var result = await controller.ListHouseKeppers(new UserByRoleQuery(Guid.NewGuid(), "Housekeeper"));

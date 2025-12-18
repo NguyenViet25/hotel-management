@@ -59,7 +59,10 @@ const AuditLogs: React.FC = () => {
       label: "Thời gian",
       minWidth: 180,
       sortable: true,
-      format: (value) => dayjs(value).format("DD/MM/YYYY HH:mm:ss"),
+      format: (value) =>
+        `${dayjs(value).toDate().toLocaleDateString()} ${dayjs(value)
+          .toDate()
+          .toLocaleTimeString()}`,
     },
     {
       id: "metadata",
