@@ -611,8 +611,11 @@ const RoomTypeBlock: React.FC<{
                               setCheckOutOpen(true);
                             }}
                             disabled={
-                              br.actualCheckOutAt !== undefined &&
-                              br.actualCheckOutAt !== null
+                              !br.actualCheckInAt ||
+                              br.actualCheckInAt === null ||
+                              br.actualCheckInAt === undefined ||
+                              (br.actualCheckOutAt !== undefined &&
+                                br.actualCheckOutAt !== null)
                             }
                           >
                             Check out
