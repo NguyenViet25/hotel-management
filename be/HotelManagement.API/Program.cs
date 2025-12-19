@@ -46,6 +46,6 @@ app.UseMiddleware<AuditMiddleware>();
 app.MapControllers();
 
 // Initialize the database (apply migrations)
-//app.InitializeDatabase();
+app.InitializeDatabase();
 
 app.Run();

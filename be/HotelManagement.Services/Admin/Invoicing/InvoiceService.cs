@@ -12,18 +12,21 @@ public class InvoiceService : IInvoiceService
     private readonly IRepository<Invoice> _invoiceRepository;
     private readonly IRepository<InvoiceLine> _invoiceLineRepository;
     private readonly IRepository<Booking> _bookingRepository;
+    private readonly IRepository<Order> _orderRepo;
     private readonly IUnitOfWork _unitOfWork;
 
     public InvoiceService(
         IRepository<Invoice> invoiceRepository,
         IRepository<InvoiceLine> invoiceLineRepository,
         IRepository<Booking> bookingRepository,
+         IRepository<Order> orderRepo,
         IUnitOfWork unitOfWork)
     {
         _invoiceRepository = invoiceRepository;
         _invoiceLineRepository = invoiceLineRepository;
         _unitOfWork = unitOfWork;
         _bookingRepository = bookingRepository;
+        _orderRepo = orderRepo;
     }
 
 
@@ -66,6 +69,24 @@ public class InvoiceService : IInvoiceService
         await _invoiceRepository.SaveChangesAsync();
 
         return MapToDto(invoice);
+    }
+
+
+    public async Task<bool> AllowAddBookingInvoiceAsync(Guid targetId)
+    {
+        var booking = await _bookingRepository.Query().Where(x => x.Id == targetId).FirstOrDefaultAsync();
+
+        var invoice = await _invoiceRepository.Query().Where(x => x.BookingId == targetId).FirstOrDefaultAsync();
+
+        return booking?.Status == BookingStatus.Completed && invoice is  null;
+    }
+
+    public async Task<bool> AllowAddOrderInvoiceAsync(Guid targetId)
+    {
+        var order = await _orderRepo.Query().Where(x => x.Id == targetId).FirstOrDefaultAsync();
+        var invoice = await _invoiceRepository.Query().Where(x => x.OrderId == targetId).FirstOrDefaultAsync();
+
+        return order?.Status == OrderStatus.Completed && invoice is not null;
     }
 
     public async Task<bool> RemoveLastBookingInvoiceAsync(Guid targetId)

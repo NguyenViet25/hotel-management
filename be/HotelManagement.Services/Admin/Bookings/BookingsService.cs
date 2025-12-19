@@ -1558,6 +1558,67 @@ public class BookingsService(
             var booking = await _bookingRepo.Query().Include(b => b.BookingRoomTypes).ThenInclude(rt => rt.BookingRooms).FirstOrDefaultAsync(b => b.Id == bookingId);
             if (booking == null) return ApiResponse<CheckoutResultDto>.Fail("Không tìm thấy booking");
 
+
+            var totalPaid = booking.DepositAmount + (dto.FinalPayment?.Amount ?? 0);
+            foreach (var br in booking.BookingRoomTypes.SelectMany(rt => rt.BookingRooms))
+            {
+                br.BookingStatus = BookingRoomStatus.CheckedOut;
+                br.ActualCheckOutAt = dto.CheckoutTime ?? DateTime.Now;
+                await _bookingRoomRepo.UpdateAsync(br);
+            }
+            await _bookingRoomRepo.SaveChangesAsync();
+
+            //booking.Status = BookingStatus.Completed;
+            booking.AdditionalNotes = dto.AdditionalNotes;
+            booking.AdditionalAmount = dto.AdditionalAmount ?? 0;
+            booking.AdditionalBookingNotes = dto.AdditionalBookingNotes;
+            booking.AdditionalBookingAmount = dto.AdditionalBookingAmount ?? 0;
+
+            await _bookingRepo.UpdateAsync(booking);
+            await _bookingRepo.SaveChangesAsync();
+
+            var rooms = booking.BookingRoomTypes.SelectMany(rt => rt.BookingRooms).Select(r => r.RoomId).Distinct().ToList();
+            foreach (var roomId in rooms)
+            {
+                var room = await _roomRepo.FindAsync(roomId);
+                if (room != null)
+                {
+                    room.Status = RoomStatus.Dirty;
+                    await _roomRepo.UpdateAsync(room);
+                    await _roomRepo.SaveChangesAsync();
+
+                    await _roomStatusLogRepo.AddAsync(new RoomStatusLog
+                    {
+                        Id = Guid.NewGuid(),
+                        HotelId = room.HotelId,
+                        RoomId = room.Id,
+                        Status = RoomStatus.Dirty,
+                        Timestamp = dto.CheckoutTime ?? DateTime.Now
+                    });
+                    await _roomStatusLogRepo.SaveChangesAsync();
+                }
+            }
+
+            var details = await GetByIdAsync(bookingId);
+            if (!details.IsSuccess) return ApiResponse<CheckoutResultDto>.Fail(details.Message ?? "");
+
+            return ApiResponse<CheckoutResultDto>.Ok(new CheckoutResultDto { TotalPaid = totalPaid, Booking = details.Data, CheckoutTime = dto.CheckoutTime ?? DateTime.Now });
+        }
+        catch (Exception ex)
+        {
+
+            return ApiResponse<CheckoutResultDto>.Fail(ex.Message);
+        }
+    }
+
+
+    public async Task<ApiResponse<CheckoutResultDto>> AddBookingInvoiceAsync(Guid bookingId, CheckoutRequestDto dto)
+    {
+        try
+        {
+            var booking = await _bookingRepo.Query().Include(b => b.BookingRoomTypes).ThenInclude(rt => rt.BookingRooms).FirstOrDefaultAsync(b => b.Id == bookingId);
+            if (booking == null) return ApiResponse<CheckoutResultDto>.Fail("Không tìm thấy booking");
+
             var lines = new List<InvoiceLine>();
 
             foreach (var rt in booking.BookingRoomTypes)
