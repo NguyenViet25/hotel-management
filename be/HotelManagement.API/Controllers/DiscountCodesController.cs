@@ -9,7 +9,7 @@ namespace HotelManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/discount-codes")]
-[Authorize]
+//[Authorize]
 public class DiscountCodesController : ControllerBase
 {
     private readonly IDiscountCodeService _service;

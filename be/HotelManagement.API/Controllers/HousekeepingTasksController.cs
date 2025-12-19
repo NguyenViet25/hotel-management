@@ -7,7 +7,7 @@ namespace HotelManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/housekeeping/tasks")]
-[Authorize]
+//[Authorize]
 public class HousekeepingTasksController : ControllerBase
 {
     private readonly IHousekeepingTaskService _service;

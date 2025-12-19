@@ -65,7 +65,7 @@ public class DashboardController : ControllerBase
     }
 
     [HttpGet("admin/revenue")]
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
     public async Task<ActionResult<ApiResponse<RevenueStatsDto>>> GetAdminTotalRevenue([FromQuery] Guid? hotelId, [FromQuery] DateTime? fromDate, [FromQuery] DateTime? toDate, [FromQuery] string? granularity = "day", [FromQuery] bool includeIssued = true, [FromQuery] bool includePaid = true)
     {
         var uid = CurrentUserId();
@@ -118,7 +118,7 @@ public class DashboardController : ControllerBase
     public record AdminDashboardSummaryDto(int TotalHotels, int TotalUsers, int AuditCountLast24Hours);
 
     [HttpGet("admin/summary")]
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
     public async Task<ActionResult<ApiResponse<AdminDashboardSummaryDto>>> GetAdminSummary()
     {
         var uid = CurrentUserId();
@@ -144,7 +144,7 @@ public class DashboardController : ControllerBase
         int OccupiedRoomsCount);
 
     [HttpGet("manager/summary")]
-    [Authorize(Roles = "Manager")]
+    //[Authorize(Roles = "Admin")]
     public async Task<ActionResult<ApiResponse<ManagerDashboardSummaryDto>>> GetManagerSummary([FromQuery] Guid? hotelId)
     {
         if (hotelId == null || hotelId == Guid.Empty)
@@ -166,7 +166,7 @@ public class DashboardController : ControllerBase
     public record FrontDeskDashboardSummaryDto(int PendingBookings, int ConfirmedBookings, int CompletedBookings);
 
     [HttpGet("frontdesk/summary")]
-    [Authorize(Roles = "FrontDesk")]
+    //[Authorize(Roles = "Admin")]
     public async Task<ActionResult<ApiResponse<FrontDeskDashboardSummaryDto>>> GetFrontDeskSummary([FromQuery] Guid? hotelId)
     {
         if (hotelId == null || hotelId == Guid.Empty)
@@ -187,7 +187,7 @@ public class DashboardController : ControllerBase
     public record WaiterDashboardSummaryDto(int OpenDiningSessions, int InProgressOrders);
 
     [HttpGet("waiter/summary")]
-    [Authorize(Roles = "Waiter")]
+    //[Authorize(Roles = "Admin")]
     public async Task<ActionResult<ApiResponse<WaiterDashboardSummaryDto>>> GetWaiterSummary([FromQuery] Guid? hotelId)
     {
         if (hotelId == null || hotelId == Guid.Empty)
@@ -206,7 +206,7 @@ public class DashboardController : ControllerBase
     public record KitchenDashboardSummaryDto(int PendingOrderItems, int InProgressOrders, int ReadyOrders, int CompletedOrders);
 
     [HttpGet("kitchen/summary")]
-    [Authorize(Roles = "Kitchen")]
+    //[Authorize(Roles = "Admin")]
     public async Task<ActionResult<ApiResponse<KitchenDashboardSummaryDto>>> GetKitchenSummary([FromQuery] Guid? hotelId)
     {
         if (hotelId == null || hotelId == Guid.Empty)
@@ -230,7 +230,7 @@ public class DashboardController : ControllerBase
     public record HousekeeperDashboardSummaryDto(int AssignedActiveTasks, int DirtyRoomsCount);
 
     [HttpGet("housekeeper/summary")]
-    [Authorize(Roles = "Housekeeper")]
+    //[Authorize(Roles = "Admin")]
     public async Task<ActionResult<ApiResponse<HousekeeperDashboardSummaryDto>>> GetHousekeeperSummary([FromQuery] Guid? hotelId)
     {
         var uid = CurrentUserId();

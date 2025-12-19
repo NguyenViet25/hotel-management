@@ -9,7 +9,8 @@ namespace HotelManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/profile")]
-[Authorize]
+//[Authorize]
+
 public class ProfileController : ControllerBase
 {
     private readonly IProfileService _svc;

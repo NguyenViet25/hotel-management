@@ -82,12 +82,7 @@ const CustomerDetailsPage: React.FC = () => {
         label: "SĐT",
         minWidth: 120,
       },
-      {
-        id: "status",
-        label: "Trạng thái",
-        minWidth: 120,
-        render: (row) => <Chip size="small" label={String(row.status)} />,
-      },
+
       {
         id: "totalAmount",
         label: "Tổng tiền",
@@ -111,12 +106,7 @@ const CustomerDetailsPage: React.FC = () => {
       { id: "id", label: "Mã", minWidth: 120 },
       { id: "customerName", label: "Khách", minWidth: 160 },
       { id: "customerPhone", label: "SĐT", minWidth: 120 },
-      {
-        id: "status",
-        label: "Trạng thái",
-        minWidth: 120,
-        render: (row) => <Chip size="small" label={String(row.status)} />,
-      },
+
       {
         id: "itemsTotal",
         label: "Tổng món",
@@ -166,7 +156,7 @@ const CustomerDetailsPage: React.FC = () => {
       <Card variant="outlined">
         <CardHeader title={header} />
         <CardContent>
-          <Stack direction={{ xs: "column", lg: "row" }} spacing={2}>
+          <Stack spacing={2}>
             <Stack sx={{ flex: 1 }}>
               <Typography variant="subtitle2" fontWeight={700}>
                 Lịch sử đặt phòng

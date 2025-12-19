@@ -7,7 +7,8 @@ namespace HotelManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/service-requests")]
-[Authorize]
+//[Authorize]
+
 public class ServiceRequestController : ControllerBase
 {
     private readonly IServiceRequestService _serviceRequestService;

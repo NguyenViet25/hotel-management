@@ -6,7 +6,7 @@ namespace HotelManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/kitchen")]
-[Authorize]
+//[Authorize]
 public class KitchenController : ControllerBase
 {
     private readonly IKitchenService _kitchenService;

@@ -8,7 +8,7 @@ namespace HotelManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/minibars")]
-[Authorize]
+//[Authorize]
 public class MinibarsController : ControllerBase
 {
     private readonly IMinibarService _service;

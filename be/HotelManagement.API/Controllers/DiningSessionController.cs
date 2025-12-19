@@ -8,7 +8,7 @@ namespace HotelManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/dining-sessions")]
-[Authorize]
+//[Authorize]
 public class DiningSessionController : ControllerBase
 {
     private readonly IDiningSessionService _diningSessionService;

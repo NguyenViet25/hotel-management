@@ -7,7 +7,7 @@ namespace HotelManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/guests")]
-[Authorize]
+//[Authorize]
 public class GuestsController : ControllerBase
 {
     private readonly IGuestsService _svc;

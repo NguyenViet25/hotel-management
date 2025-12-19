@@ -16,7 +16,7 @@ namespace HotelManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/invoices")]
-[Authorize]
+//[Authorize]
 public class InvoicesController : ControllerBase
 {
     private readonly IInvoiceService _invoiceService;

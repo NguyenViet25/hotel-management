@@ -8,7 +8,8 @@ namespace HotelManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/users")]
-[Authorize]
+//[Authorize]
+
 public class UsersAdminController : ControllerBase
 {
     private readonly IUsersAdminService _svc;

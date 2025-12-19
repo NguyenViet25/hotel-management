@@ -9,6 +9,7 @@ import {
   DialogActions,
   Stack,
   Typography,
+  IconButton,
 } from "@mui/material";
 import React, { useEffect, useMemo, useState } from "react";
 import guestsApi, {
@@ -21,6 +22,8 @@ import DataTable, {
 } from "../../../../components/common/DataTable";
 import PageTitle from "../../../../components/common/PageTitle";
 import GuestFormModal from "./components/GuestFormModal";
+import { History } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
 
 const GuestsManagementPage: React.FC = () => {
   const [items, setItems] = useState<GuestDto[]>([]);
@@ -41,6 +44,7 @@ const GuestsManagementPage: React.FC = () => {
     message: string;
     severity: "success" | "error" | "warning" | "info";
   }>({ open: false, message: "", severity: "success" });
+  const navigate = useNavigate();
 
   const columns = useMemo<Column<GuestDto>[]>(
     () => [
@@ -101,6 +105,20 @@ const GuestsManagementPage: React.FC = () => {
             />
           );
         },
+      },
+      {
+        id: "history",
+        label: "Lịch sử hoạt động",
+        minWidth: 160,
+        align: "center",
+        render: (row) => (
+          <IconButton
+            size="small"
+            onClick={() => navigate(`/frontdesk/customers/${row.id}`)}
+          >
+            <History fontSize="small" />
+          </IconButton>
+        ),
       },
     ],
     []
