@@ -407,7 +407,7 @@ public class BookingsService(
                 Notes = b.Notes,
                 AdditionalAmount = b.AdditionalAmount,
                 AdditionalNotes = b.AdditionalNotes,
-                PromotionValue= b.PromotionValue,
+                PromotionValue = b.PromotionValue,
                 PromotionCode = b.PromotionCode,
                 AdditionalBookingNotes = b.AdditionalBookingNotes,
                 AdditionalBookingAmount = b.AdditionalBookingAmount ?? 0,
@@ -1580,7 +1580,8 @@ public class BookingsService(
                 booking.PromotionCode = promo.Code;
                 booking.PromotionValue = promo.Value;
                 booking.DiscountAmount = discountAmt;
-            } else
+            }
+            else
             {
                 booking.PromotionCode = null;
                 booking.PromotionValue = 0;
@@ -1617,7 +1618,7 @@ public class BookingsService(
                 invoice.Lines.Add(l);
             }
 
-           
+
 
             invoice.SubTotal = invoice.Lines.Where(x => x.Amount > 0).Sum(x => x.Amount);
             invoice.DiscountAmount = Math.Abs(invoice.Lines.Where(x => x.Amount < 0).Sum(x => x.Amount));
@@ -1685,7 +1686,7 @@ public class BookingsService(
         }
     }
 
-    
+
 
     public async Task<ApiResponse<AdditionalChargesDto>> GetAdditionalChargesPreviewAsync(Guid bookingId)
     {
@@ -1728,32 +1729,6 @@ public class BookingsService(
         var booking = await _bookingRepo.FindAsync(bookingId);
         if (booking == null) return ApiResponse.Fail("Không tìm thấy booking");
 
-        var totalCharge = 0m;
-
-        var invoice = await _invoiceRepo.Query()
-            .FirstOrDefaultAsync(i => i.BookingId == bookingId && i.Status != InvoiceStatus.Paid);
-        if (invoice == null)
-        {
-            invoice = new Invoice
-            {
-                Id = Guid.NewGuid(),
-                HotelId = booking.HotelId,
-                BookingId = bookingId,
-                InvoiceNumber = $"BK-{bookingId.ToString().Substring(0, 8)}-{DateTime.Now:yyyyMMddHHmmss}",
-                SubTotal = 0,
-                TaxAmount = 0,
-                DiscountAmount = 0,
-                TotalAmount = 0,
-                PaidAmount = 0,
-                VatIncluded = true,
-                Status = InvoiceStatus.Draft,
-                CreatedById = Guid.Empty,
-                CreatedAt = DateTime.Now
-            };
-            await _invoiceRepo.AddAsync(invoice);
-            await _invoiceRepo.SaveChangesAsync();
-        }
-
         foreach (var item in dto.Items)
         {
             var minibar = await _minibarRepo.FindAsync(item.MinibarId);
@@ -1765,39 +1740,16 @@ public class BookingsService(
             {
                 Id = Guid.NewGuid(),
                 BookingId = bookingId,
+                HouseKeepingTaskId = dto.HouseKeepingTaskId,
                 MinibarId = item.MinibarId,
                 ComsumedQuantity = consumed,
-                OriginalQuantity = minibar.Quantity
+                OriginalQuantity = minibar.Quantity,
+                MinibarBookingStatus = consumed == minibar.Quantity ? MinibarBookingStatus.Full : MinibarBookingStatus.Missing
             };
             await _minibarBookingRepo.AddAsync(mb);
-
-            var amount = minibar.Price * consumed;
-            totalCharge += amount;
-
-            var line = new InvoiceLine
-            {
-                Id = Guid.NewGuid(),
-                InvoiceId = invoice.Id,
-                Description = $"Minibar - {minibar.Name}",
-                Amount = amount,
-                SourceType = InvoiceLineSourceType.Fnb,
-                SourceId = mb.Id
-            };
-            await _invoiceLineRepo.AddAsync(line);
+            await _minibarBookingRepo.SaveChangesAsync();
         }
 
-        invoice.SubTotal += totalCharge;
-        invoice.TotalAmount = invoice.SubTotal + invoice.TaxAmount - invoice.DiscountAmount;
-        await _invoiceRepo.UpdateAsync(invoice);
-        await _invoiceRepo.SaveChangesAsync();
-
-        booking.TotalAmount += totalCharge;
-        booking.LeftAmount += totalCharge;
-        await _bookingRepo.UpdateAsync(booking);
-        await _bookingRepo.SaveChangesAsync();
-
-        await _minibarBookingRepo.SaveChangesAsync();
-
-        return ApiResponse.Ok("Đã ghi nhận minibar và post vào hóa đơn");
+        return ApiResponse.Ok("Đã ghi nhận minibar");
     }
 }

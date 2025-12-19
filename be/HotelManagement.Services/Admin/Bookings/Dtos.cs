@@ -333,6 +333,7 @@ public class MinibarConsumptionItemDto
 
 public class MinibarConsumptionDto
 {
+    public Guid HouseKeepingTaskId { get; set; }
     public List<MinibarConsumptionItemDto> Items { get; set; } = new();
 }
 

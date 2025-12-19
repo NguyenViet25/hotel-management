@@ -18,8 +18,17 @@ public class MinibarBooking
     public Guid Id { get; set; }
     public Guid MinibarId { get; set; }
     public Guid BookingId { get; set; }
+    public Guid HouseKeepingTaskId { get; set; }
     public int ComsumedQuantity { get; set; }
     public int OriginalQuantity { get; set; }
+    public MinibarBookingStatus MinibarBookingStatus { get; set; }
     public Booking? Booking { get; set; }
     public Minibar? Minibar { get; set; }
+}
+
+public enum MinibarBookingStatus
+{
+    NeedEvaluation = 0,
+    Missing = 1,
+    Full = 2,
 }
