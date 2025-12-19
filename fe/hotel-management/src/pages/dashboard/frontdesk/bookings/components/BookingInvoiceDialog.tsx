@@ -49,7 +49,6 @@ import PromotionDialog from "../../invoices/components/PromotionDialog";
 import { Close, Print } from "@mui/icons-material";
 import DiscountIcon from "@mui/icons-material/Discount";
 import PercentIcon from "@mui/icons-material/Percent";
-import Loading from "../../../../../components/common/Loading";
 
 type Props = {
   open: boolean;
@@ -78,6 +77,9 @@ const BookingInvoiceDialog: React.FC<Props> = ({
   const [additionalAmount, setAdditionalAmount] = useState<number>(
     booking?.additionalAmount ?? 0
   );
+
+  const [additionalBookingAmount, setAdditionalBookingAmount] =
+    useState<number>(booking?.additionalBookingAmount ?? 0);
 
   const [promoOpen, setPromoOpen] = useState(false);
   const [additional, setAdditional] = useState<AdditionalChargesDto | null>();
@@ -127,6 +129,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
       try {
         setAdditionalNotes(booking.additionalNotes ?? "");
         setAdditionalAmount(booking.additionalAmount || 0);
+        setAdditionalBookingAmount(booking.additionalBookingAmount || 0);
         setPromotionCode(booking.promotionCode || "");
         setPromotionValue(booking.promotionValue || 0);
       } catch {}
@@ -314,24 +317,36 @@ const BookingInvoiceDialog: React.FC<Props> = ({
         total: l.amount,
       });
     }
+    if (additionalBookingAmount > 0) {
+      rows.push({
+        label: "Phụ thu thêm",
+        quantity: "—",
+        nights: undefined,
+        unit: additionalBookingAmount,
+        total: additionalBookingAmount,
+      });
+    }
+
     if (additionalAmount > 0) {
       rows.push({
         label:
           additionalNotes && additionalNotes.trim().length
-            ? `Phụ thu thêm: ${additionalNotes.trim()}`
-            : "Phụ thu thêm",
-        quantity: 1,
+            ? `Đền bù: ${additionalNotes.trim()}`
+            : "Đền bù",
+        quantity: "—",
         nights: undefined,
         unit: additionalAmount,
         total: additionalAmount,
       });
     }
+
     return rows;
   }, [
     open,
     additional,
     ordersTotal,
     additionalAmount,
+    additionalBookingAmount,
     additionalNotes,
     priceByDateMap,
   ]);
@@ -352,7 +367,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
       .reduce((a, c) => a + c.total, 0);
     const discountAmt = Math.round((subtotal * (promotionValue || 0)) / 100);
     const deposit = booking?.depositAmount || 0;
-    const taxableAmount = subtotal - discountAmt;
+    const taxableAmount = subtotal - discountAmt + additionalBookingAmount;
     const vatAmt = Math.round(
       ((taxableAmount - additionalAmount) *
         (showVat ? vatPercentage || 0 : 0)) /
@@ -391,6 +406,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
         finalPayment: undefined,
         additionalNotes,
         additionalAmount,
+        additionalBookingAmount,
       });
 
       if (res.isSuccess) {
@@ -664,6 +680,34 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                   >
                     Chọn mã khuyến mãi
                   </Button>
+
+                  <TextField
+                    type="number"
+                    value={
+                      additionalBookingAmount !== undefined &&
+                      additionalBookingAmount !== null
+                        ? new Intl.NumberFormat("vi-VN").format(
+                            Number(additionalBookingAmount)
+                          )
+                        : ""
+                    }
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/[^0-9]/g, "");
+                      const num = raw ? Number(raw) : 0;
+                      setAdditionalBookingAmount(num);
+                    }}
+                    label="Phụ thu"
+                    slotProps={{
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position="start">VND</InputAdornment>
+                        ),
+                      },
+                    }}
+                    placeholder="Nhập phụ thu"
+                    fullWidth
+                  />
+
                   <TextField
                     type="number"
                     value={
@@ -679,7 +723,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                       const num = raw ? Number(raw) : 0;
                       setAdditionalAmount(num);
                     }}
-                    label="Phụ thu"
+                    label="Đền bù"
                     slotProps={{
                       input: {
                         endAdornment: (
@@ -687,12 +731,13 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                         ),
                       },
                     }}
-                    placeholder="Nhập phụ thu"
+                    placeholder="Nhập đền bù"
                     fullWidth
                   />
+
                   <TextField
                     value={additionalNotes}
-                    label="Ghi chú"
+                    label="Ghi chú đền bù"
                     onChange={(e) => setAdditionalNotes(e.target.value)}
                     placeholder="Nhập ghi chú"
                     fullWidth

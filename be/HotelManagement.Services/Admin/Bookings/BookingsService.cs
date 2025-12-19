@@ -409,6 +409,8 @@ public class BookingsService(
                 AdditionalNotes = b.AdditionalNotes,
                 PromotionValue= b.PromotionValue,
                 PromotionCode = b.PromotionCode,
+                AdditionalBookingNotes = b.AdditionalBookingNotes,
+                AdditionalBookingAmount = b.AdditionalBookingAmount ?? 0,
                 BookingRoomTypes = b.BookingRoomTypes.Select(rt => new BookingRoomTypeDto
                 {
                     BookingRoomTypeId = rt.BookingRoomTypeId,
@@ -708,6 +710,32 @@ public class BookingsService(
             booking.Status = BookingStatus.Cancelled;
             await _bookingRepo.UpdateAsync(booking);
             await _bookingRepo.SaveChangesAsync();
+
+
+            var bookingRoomTypes = await _bookingRoomTypeRepo.Query()
+                .Include(x => x.BookingRooms)
+                .Where(x => x.BookingId == booking.Id)
+                .ToListAsync();
+            booking.BookingRoomTypes = bookingRoomTypes;
+
+            if (booking.BookingRoomTypes != null)
+            {
+                foreach (var roomType in booking.BookingRoomTypes)
+                {
+                    foreach (var r in roomType.BookingRooms)
+                    {
+                        var room = await _roomRepo.Query().Where(x => x.Id == r.RoomId).FirstOrDefaultAsync();
+                        if (room == null) continue;
+
+                        room.Status = RoomStatus.Available;
+                        await _roomRepo.UpdateAsync(room);
+                        await _roomRepo.SaveChangesAsync();
+
+                    }
+                }
+
+            }
+
             return ApiResponse.Ok("Booking cancelled");
         }
         catch (Exception ex)

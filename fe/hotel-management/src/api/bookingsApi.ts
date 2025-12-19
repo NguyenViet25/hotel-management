@@ -115,6 +115,7 @@ export interface BookingDetailsDto {
   bookingRoomTypes: BookingRoomTypeDto[];
   callLogs: CallLogDto[];
   additionalAmount?: number;
+  additionalBookingAmount?: number;
   additionalNotes?: string;
   promotionValue?: number;
   promotionCode?: string;

@@ -1392,7 +1392,7 @@ public static class DatabaseInitializationExtensions
                 IdCard = Random.Shared.NextInt64(100000000000, 999999999999).ToString(),
                 IdCardFrontImageUrl = "https://cdn.tgdd.vn/Files/2021/04/19/1344608/7_800x450.jpg",
                 IdCardBackImageUrl = "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:format(webp):quality(75)/doi_cccd_het_han_online_12_48804bb731.jpeg",
-                Email = $"{VietnameseNameToEmail(s.name)}-{Random.Shared.NextInt64(100000000000, 999999999999)}",
+                Email = $"{VietnameseNameToEmail(s.name)}-{Random.Shared.NextInt64(100000000000, 999999999999)}@gmail.com",
                 HotelId = DEFAULT_HOTEL_ID
             };
             dbContext.Set<Guest>().Add(g);
