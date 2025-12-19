@@ -36,6 +36,8 @@ export default function HousekeepingTasksTable({
 }: Props) {
   const [infoOpen, setInfoOpen] = useState(false);
   const [selected, setSelected] = useState<HousekeepingTaskDto | null>(null);
+  const currency = (v?: number) =>
+    typeof v === "number" ? `${v.toLocaleString()}₫` : "—";
 
   const openInfo = async (id: string) => {
     try {
@@ -112,7 +114,7 @@ export default function HousekeepingTasksTable({
       <Dialog
         open={infoOpen}
         onClose={() => setInfoOpen(false)}
-        maxWidth="sm"
+        maxWidth="md"
         fullWidth
       >
         <DialogTitle
@@ -272,12 +274,15 @@ export default function HousekeepingTasksTable({
                           <TableCell align="center" sx={{ width: "8%" }}>
                             #
                           </TableCell>
-                          <TableCell sx={{ width: "32%" }}>Minibar</TableCell>
-                          <TableCell align="right" sx={{ width: "20%" }}>
-                            SL gốc
+                          <TableCell sx={{ width: "28%" }}>Minibar</TableCell>
+                          <TableCell align="right" sx={{ width: "16%" }}>
+                            SL
                           </TableCell>
-                          <TableCell align="right" sx={{ width: "20%" }}>
-                            SL tiêu thụ
+                          <TableCell align="right" sx={{ width: "12%" }}>
+                            Đơn giá
+                          </TableCell>
+                          <TableCell align="right" sx={{ width: "16%" }}>
+                            SL trong phòng
                           </TableCell>
                           <TableCell align="center" sx={{ width: "20%" }}>
                             Trạng thái
@@ -302,17 +307,12 @@ export default function HousekeepingTasksTable({
                                 </Typography>
                               </TableCell>
                               <TableCell align="right">
-                                <TextField
-                                  type="number"
-                                  size="small"
-                                  value={b.comsumedQuantity}
-                                  inputProps={{
-                                    min: 0,
-                                    max: b.originalQuantity,
-                                    readOnly: true,
-                                  }}
-                                  sx={{ width: 100 }}
-                                />
+                                <Typography variant="body2">
+                                  {currency((b as any).minibarPrice)}
+                                </Typography>
+                              </TableCell>
+                              <TableCell align="right">
+                                {b.comsumedQuantity}
                               </TableCell>
                               <TableCell align="center">
                                 {isFull ? (

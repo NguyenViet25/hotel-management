@@ -1261,13 +1261,14 @@ public static class DatabaseInitializationExtensions
                     "điều khiển điều hòa" => Random.Shared.Next(1, 3),
                     _ => 1
                 };
+                var imageUrl = $"https://via.placeholder.com/256?text={Uri.EscapeDataString(n)}";
                 return new Minibar
                 {
                     Id = Guid.NewGuid(),
                     HotelId = roomType.HotelId,
                     RoomTypeId = roomType.Id,
                     Name = n,
-                    ImageUrl = string.Empty,
+                    ImageUrl = imageUrl,
                     Price = (decimal)price,
                     Quantity = qty
                 };

@@ -91,7 +91,7 @@ export default function HousekeepingAssignPage() {
     try {
       const res = await housekeepingTasksApi.list({
         hotelId,
-        onlyActive: true,
+        onlyActive: false,
       });
       if (res.isSuccess && Array.isArray(res.data)) setTasks(res.data);
     } finally {

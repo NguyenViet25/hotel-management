@@ -1,8 +1,7 @@
 import {
-  Hotel as HotelIcon,
+  Lock,
   Login,
   Person,
-  Lock,
   Visibility,
   VisibilityOff,
 } from "@mui/icons-material";
@@ -11,6 +10,7 @@ import {
   Button,
   Card,
   Container,
+  IconButton,
   InputAdornment,
   Stack,
   TextField,
@@ -19,7 +19,6 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import { IconButton } from "@mui/material";
 import { useLayoutEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -27,7 +26,6 @@ import axiosInstance from "../../api/axios";
 import type { User } from "../../api/userService";
 import { useStore, type StoreState } from "../../hooks/useStore";
 import { localStorageHelper } from "../../utils/local-storage-helper";
-import { uppercase } from "zod";
 
 import bg from "../../assets/bg.png";
 
@@ -270,7 +268,7 @@ const LoginPage = () => {
             </Box>
           </Container>
         </Box>
-        <Card sx={{ pb: 2, px: 2, opacity: 1 }}>
+        {/* <Card sx={{ pb: 2, px: 2, opacity: 1 }}>
           <Stack gap={1}>
             <Typography
               variant="body2"
@@ -366,7 +364,7 @@ const LoginPage = () => {
               </Button>
             </Tooltip>
           </Stack>
-        </Card>
+        </Card> */}
       </Box>
     </Box>
   );

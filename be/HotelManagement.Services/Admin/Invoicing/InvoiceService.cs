@@ -3,6 +3,7 @@ using HotelManagement.Domain.Repositories;
 using HotelManagement.Repository.Common;
 using HotelManagement.Services.Admin.Invoicing.Dtos;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace HotelManagement.Services.Admin.Invoicing;
 
@@ -10,16 +11,19 @@ public class InvoiceService : IInvoiceService
 {
     private readonly IRepository<Invoice> _invoiceRepository;
     private readonly IRepository<InvoiceLine> _invoiceLineRepository;
+    private readonly IRepository<Booking> _bookingRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public InvoiceService(
         IRepository<Invoice> invoiceRepository,
         IRepository<InvoiceLine> invoiceLineRepository,
+        IRepository<Booking> bookingRepository,
         IUnitOfWork unitOfWork)
     {
         _invoiceRepository = invoiceRepository;
         _invoiceLineRepository = invoiceLineRepository;
         _unitOfWork = unitOfWork;
+        _bookingRepository = bookingRepository;
     }
 
 
@@ -244,7 +248,12 @@ public class InvoiceService : IInvoiceService
 
     public async Task<RevenueStatsDto> GetRevenueAsync(RevenueQueryDto query)
     {
-        var q = _invoiceRepository.Query().AsQueryable();
+        var bookingQuery = _bookingRepository.Query().Where(x => x.HotelId == query.HotelId);
+    
+        bookingQuery.Where(x => x.Status == BookingStatus.Completed);
+
+        var bookings = await bookingQuery.Select(x => x.Id).ToListAsync();
+        var q = _invoiceRepository.Query().Where(x => x.BookingId != null && bookings.Contains((Guid)x.BookingId)).AsQueryable();
 
         q = q.Where(i => i.HotelId == query.HotelId);
         q = q.Where(i => i.Status != InvoiceStatus.Cancelled);
@@ -283,7 +292,7 @@ public class InvoiceService : IInvoiceService
         var total = items.Sum(i => i.TotalAmount);
         var count = items.Count;
 
-        return new RevenueStatsDto { Total = total, Count = count, Points = points };
+        return new RevenueStatsDto { Total = total < 0 ? 0 : total, Count = count, Points = points };
     }
 
     public async Task<RevenueBreakdownDto> GetRevenueBreakdownAsync(RevenueQueryDto query)
@@ -372,13 +381,13 @@ public class InvoiceService : IInvoiceService
     {
         // Calculate subtotal (sum of all positive line amounts)
         invoice.SubTotal = invoice.Lines.Where(l => l.Amount > 0).Sum(l => l.Amount);
-        
+
         // Calculate discount amount (sum of all negative line amounts, as a positive number)
         invoice.DiscountAmount = Math.Abs(invoice.Lines.Where(l => l.Amount < 0).Sum(l => l.Amount));
-        
+
         // Calculate tax amount (if VAT included)
         invoice.TaxAmount = invoice.VatIncluded ? Math.Round(invoice.SubTotal * 0.1m, 2) : 0;
-        
+
         // Calculate total amount
         invoice.TotalAmount = invoice.SubTotal - invoice.DiscountAmount + invoice.TaxAmount;
     }
