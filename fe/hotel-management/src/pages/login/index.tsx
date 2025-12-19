@@ -268,7 +268,7 @@ const LoginPage = () => {
             </Box>
           </Container>
         </Box>
-        {/* <Card sx={{ pb: 2, px: 2, opacity: 1 }}>
+        <Card sx={{ pb: 2, px: 2, opacity: 1 }}>
           <Stack gap={1}>
             <Typography
               variant="body2"
@@ -364,7 +364,7 @@ const LoginPage = () => {
               </Button>
             </Tooltip>
           </Stack>
-        </Card> */}
+        </Card>
       </Box>
     </Box>
   );

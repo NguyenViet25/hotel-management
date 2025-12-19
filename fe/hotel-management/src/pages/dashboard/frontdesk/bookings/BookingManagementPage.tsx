@@ -540,13 +540,13 @@ const BookingManagementPage: React.FC = () => {
                         <Stack alignItems="flex-end">
                           <Typography color="red">Cọc</Typography>
                           <Typography color="red" fontWeight={700}>
-                            - {(b.depositAmount || 0).toLocaleString()} đ
+                            {(b.depositAmount || 0).toLocaleString()} đ
                           </Typography>
                         </Stack>
                         <Stack alignItems="flex-end">
                           <Typography color="red">Giảm giá</Typography>
                           <Typography color="red" fontWeight={700}>
-                            - {(discountAmount || 0).toLocaleString()} đ
+                            {(discountAmount || 0).toLocaleString()} đ
                           </Typography>
                         </Stack>
                         <Stack alignItems="flex-end">

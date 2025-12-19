@@ -440,6 +440,7 @@ public class BookingsService(
                 var roomTypes = await _bookingRoomTypeRepo.Query()
                     .Include(x => x.RoomType).Where(x => x.BookingId == item.Id).ToListAsync();
 
+
                 item.BookingRoomTypes = roomTypes.Select(rt => new BookingRoomTypeDto
                 {
                     BookingRoomTypeId = rt.BookingRoomTypeId,
@@ -456,7 +457,7 @@ public class BookingsService(
                         RoomId = r.RoomId,
                         RoomName = r.RoomName,
                         StartDate = r.StartDate,
-                        EndDate = r.EndDate,
+                        EndDate = r.ExtendedDate.HasValue ? r.ExtendedDate.Value : r.EndDate,
                         BookingStatus = r.BookingStatus,
                         Guests = new List<BookingGuestDto>()
                     }).ToList()
