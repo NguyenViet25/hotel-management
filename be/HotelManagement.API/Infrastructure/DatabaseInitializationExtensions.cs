@@ -38,7 +38,7 @@ public static class DatabaseInitializationExtensions
             SeedPromotionsAsync(dbContext).GetAwaiter().GetResult();
             SeedMinibarsAsync(dbContext).GetAwaiter().GetResult();
             SeedTablesAsync(dbContext).GetAwaiter().GetResult();
-            SeedBookingsAsync(dbContext).GetAwaiter().GetResult();
+            //SeedBookingsAsync(dbContext).GetAwaiter().GetResult();
             //SeedHousekeepingTasksAsync(dbContext).GetAwaiter().GetResult();
         }
 
