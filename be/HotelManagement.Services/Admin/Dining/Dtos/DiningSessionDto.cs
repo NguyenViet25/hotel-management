@@ -6,6 +6,7 @@ public class DiningSessionDto
     public Guid HotelId { get; set; }
     public Guid? WaiterUserId { get; set; }
     public string? WaiterName { get; set; }
+    public string? WaiterPhoneNumber { get; set; }
     public DateTime StartedAt { get; set; }
     public DateTime? EndedAt { get; set; }
     public string Status { get; set; } = string.Empty;

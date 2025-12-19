@@ -372,7 +372,7 @@ public class DiningSessionService : IDiningSessionService
         {
             return ApiResponse<bool>.Fail("Hotel mismatch");
         }
-      
+
         order.DiningSessionId = sessionId;
 
         await _orderRepository.UpdateAsync(order);
@@ -419,10 +419,12 @@ public class DiningSessionService : IDiningSessionService
     private async Task<DiningSessionDto> MapToDto(DiningSession session)
     {
         string? waiterName = null;
+        string? wainterPhone = null;
         if (session.WaiterUserId.HasValue)
         {
             var waiter = await _userRepository.FindAsync(session.WaiterUserId.Value);
             waiterName = waiter?.Fullname;
+            wainterPhone = waiter?.PhoneNumber;
         }
 
         var links = await _diningSessionTableRepository.Query()
@@ -450,6 +452,7 @@ public class DiningSessionService : IDiningSessionService
             HotelId = session.HotelId,
             WaiterUserId = session.WaiterUserId,
             WaiterName = waiterName,
+            WaiterPhoneNumber = wainterPhone,
             StartedAt = session.StartedAt,
             EndedAt = session.EndedAt,
             Status = session.Status.ToString(),
@@ -571,5 +574,24 @@ public class DiningSessionService : IDiningSessionService
         {
             return ApiResponse<OrderDetailsDto>.Fail($"Error retrieving order: {ex.Message}");
         }
+    }
+
+    public async Task<(bool, string)> AssignWaiterAsync(AssignWaiterRequest request)
+    {
+
+        var item = _diningSessionRepository.Query().Where(x => x.Id == request.SessionId).FirstOrDefaultAsync();
+        if (item is null) return (false, "Không tìm thấy phiên phục vụ");
+
+        // TODO: check max 3 
+        var isWaiterAvailable = (await _diningSessionRepository
+            .Query()
+            .Where(x => x.WaiterUserId == request.WaiterId)
+            .Where(x => x.Status == DiningSessionStatus.Open)
+            .CountAsync()) <= 3;
+
+        if (isWaiterAvailable)
+            return (false, "Mỗi nhân viên phục vụ chỉ được chỉ định tối đa 3 bàn cùng lúc.");
+
+        return (true, "Gán nhân viên phục vụ thành công");
     }
 }
