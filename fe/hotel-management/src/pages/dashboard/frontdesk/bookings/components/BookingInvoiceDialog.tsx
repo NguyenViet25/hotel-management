@@ -70,7 +70,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
   const { user, hotelId } = useStore<StoreState>((state) => state);
   const [promotionCode, setPromotionCode] = useState("");
   const [promotionValue, setPromotionValue] = useState<number>(0);
-
+  const [totalAmount, setTotalAmount] = useState<number>(0);
   const [additionalNotes, setAdditionalNotes] = useState(
     booking?.additionalNotes ?? " "
   );
@@ -269,7 +269,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                     .add(1, "day")
                     .format("DD/MM/YYYY")}`,
             quantity: 1,
-            nights: nights === 1 ? 1 : nights - 1,
+            nights: nights,
             unit: rt.price,
             total: rt.price * nights,
           });
@@ -292,9 +292,9 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                 label: `Phòng ${br.roomName || "—"} (${rt.roomTypeName})`,
                 dateRange:
                   nights > 1
-                    ? `${dayjs(segStart.date)
-                        .add(1, "day")
-                        .format("DD/MM/YYYY")} - ${dayjs(segEnd.date)
+                    ? `${dayjs(segStart.date).format("DD/MM/YYYY")} - ${dayjs(
+                        segEnd.date
+                      )
                         .add(1, "day")
                         .format("DD/MM/YYYY")}`
                     : `${dayjs(segStart.date).format("DD/MM/YYYY")} - ${dayjs(
@@ -303,7 +303,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                         .add(1, "day")
                         .format("DD/MM/YYYY")}`,
                 quantity: 1,
-                nights: nights === 1 ? 1 : nights - 1,
+                nights: nights,
                 unit: segEnd.price,
                 total: segEnd.price * nights,
               });
@@ -317,9 +317,9 @@ const BookingInvoiceDialog: React.FC<Props> = ({
             label: `Phòng ${br.roomName || "—"} (${rt.roomTypeName})`,
             dateRange:
               nights > 1
-                ? `${dayjs(segStart.date)
-                    .add(1, "day")
-                    .format("DD/MM/YYYY")} - ${dayjs(segEnd.date)
+                ? `${dayjs(segStart.date).format("DD/MM/YYYY")} - ${dayjs(
+                    segEnd.date
+                  )
                     .add(1, "day")
                     .format("DD/MM/YYYY")}`
                 : `${dayjs(segStart.date).format("DD/MM/YYYY")} - ${dayjs(
@@ -328,7 +328,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                     .add(1, "day")
                     .format("DD/MM/YYYY")}`,
             quantity: 1,
-            nights: nights === 1 ? 1 : nights - 1,
+            nights: nights,
             unit: segEnd.price,
             total: segEnd.price * nights,
           });
@@ -403,6 +403,9 @@ const BookingInvoiceDialog: React.FC<Props> = ({
     );
     const finalNoVat = taxableAmount - deposit;
     const finalWithVat = taxableAmount + vatAmt - deposit;
+
+    setTotalAmount(finalNoVat);
+
     return {
       subtotal,
       discountAmt,
@@ -435,6 +438,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
         additionalNotes,
         additionalAmount,
         additionalBookingAmount,
+        totalAmount,
       });
 
       if (res.isSuccess) {
@@ -457,6 +461,14 @@ const BookingInvoiceDialog: React.FC<Props> = ({
       toast.error("Đã xảy ra lỗi khi xuất hóa đơn");
     }
   };
+
+  function formatVND(value: number | null | undefined) {
+    if (value === null || value === undefined) return "";
+
+    const digits = value.toString();
+
+    return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  }
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
@@ -710,12 +722,12 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                   </Button>
 
                   <TextField
-                    type="number"
+                    type="text"
                     value={
                       additionalBookingAmount !== undefined &&
                       additionalBookingAmount !== null
                         ? new Intl.NumberFormat("vi-VN").format(
-                            Number(additionalBookingAmount)
+                            additionalBookingAmount || 0
                           )
                         : ""
                     }
@@ -737,7 +749,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                   />
 
                   <TextField
-                    type="number"
+                    type="text"
                     value={
                       additionalAmount !== undefined &&
                       additionalAmount !== null

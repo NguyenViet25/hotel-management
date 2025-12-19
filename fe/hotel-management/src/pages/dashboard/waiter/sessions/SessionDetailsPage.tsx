@@ -507,7 +507,7 @@ export default function SessionDetailsPage() {
                   color="warning"
                   startIcon={<StopCircle />}
                   onClick={() => setEndConfirmOpen(true)}
-                  disabled={!isWaiter || session?.status !== "Open"}
+                  disabled={isWaiter || session?.status !== "Open"}
                 >
                   Kết thúc
                 </Button>
@@ -732,52 +732,54 @@ export default function SessionDetailsPage() {
       {tab === 2 && (
         <Box>
           <Typography variant="h6">Yêu cầu thêm</Typography>
-          <Box mt={1} display="flex" gap={1}>
-            <FormControl size="small" sx={{ minWidth: 160 }}>
-              <InputLabel>Loại</InputLabel>
-              <Select
-                label="Loại"
-                value={requestType}
-                onChange={(e) => setRequestType(String(e.target.value))}
+          {isWaiter && (
+            <Box mt={1} display="flex" gap={1}>
+              <FormControl size="small" sx={{ minWidth: 160 }}>
+                <InputLabel>Loại</InputLabel>
+                <Select
+                  label="Loại"
+                  value={requestType}
+                  onChange={(e) => setRequestType(String(e.target.value))}
+                  disabled={session?.status !== "Open"}
+                >
+                  {requestTypes.map((t) => (
+                    <MenuItem key={t.value} value={t.value}>
+                      {t.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <TextField
+                label="Mô tả"
+                value={requestDesc}
+                onChange={(e) => setRequestDesc(e.target.value)}
+                size="small"
+                fullWidth
                 disabled={session?.status !== "Open"}
+              />
+              <TextField
+                label="Số lượng"
+                type="number"
+                value={requestQty}
+                onChange={(e) =>
+                  setRequestQty(Math.max(1, Number(e.target.value || 1)))
+                }
+                size="small"
+                sx={{ width: 120 }}
+                inputProps={{ min: 1 }}
+                disabled={session?.status !== "Open"}
+              />
+              <Button
+                startIcon={<Send />}
+                variant="contained"
+                sx={{ minWidth: 120 }}
+                onClick={handleCreateRequest}
+                disabled={!isWaiter || session?.status !== "Open"}
               >
-                {requestTypes.map((t) => (
-                  <MenuItem key={t.value} value={t.value}>
-                    {t.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <TextField
-              label="Mô tả"
-              value={requestDesc}
-              onChange={(e) => setRequestDesc(e.target.value)}
-              size="small"
-              fullWidth
-              disabled={session?.status !== "Open"}
-            />
-            <TextField
-              label="Số lượng"
-              type="number"
-              value={requestQty}
-              onChange={(e) =>
-                setRequestQty(Math.max(1, Number(e.target.value || 1)))
-              }
-              size="small"
-              sx={{ width: 120 }}
-              inputProps={{ min: 1 }}
-              disabled={session?.status !== "Open"}
-            />
-            <Button
-              startIcon={<Send />}
-              variant="contained"
-              sx={{ minWidth: 120 }}
-              onClick={handleCreateRequest}
-              disabled={!isWaiter || session?.status !== "Open"}
-            >
-              Gửi
-            </Button>
-          </Box>
+                Gửi
+              </Button>
+            </Box>
+          )}
           <Grid container spacing={2} sx={{ mt: 2 }}>
             {requests.map((r) => (
               <Grid key={r.id} size={{ xs: 12, md: 6, lg: 4 }}>
@@ -1228,7 +1230,7 @@ export default function SessionDetailsPage() {
             variant="contained"
             color="warning"
             onClick={confirmEndSession}
-            disabled={!isWaiter}
+            disabled={isWaiter || session?.status !== "Open"}
           >
             Kết thúc
           </Button>

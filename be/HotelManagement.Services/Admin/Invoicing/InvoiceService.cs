@@ -1,4 +1,4 @@
-using HotelManagement.Domain;
+﻿using HotelManagement.Domain;
 using HotelManagement.Domain.Repositories;
 using HotelManagement.Repository.Common;
 using HotelManagement.Services.Admin.Invoicing.Dtos;
@@ -403,22 +403,19 @@ public class InvoiceService : IInvoiceService
         var invoices = await q.OrderByDescending(i => i.CreatedAt).ToListAsync();
 
         var list = new List<RevenueDetailItemDto>();
+
         foreach (var inv in invoices)
         {
-            foreach (var l in inv.Lines)
+            list.Add(new RevenueDetailItemDto
             {
-                if (sourceType.HasValue && l.SourceType != sourceType.Value) continue;
-                list.Add(new RevenueDetailItemDto
-                {
-                    InvoiceId = inv.Id,
-                    BookingId = inv.BookingId,
-                    OrderId = inv.OrderId,
-                    CreatedAt = inv.CreatedAt,
-                    Description = l.Description,
-                    Amount = l.Amount,
-                    SourceType = l.SourceType
-                });
-            }
+                InvoiceId = inv.Id,
+                BookingId = inv.BookingId,
+                OrderId = inv.OrderId,
+                CreatedAt = inv.CreatedAt,
+                Description = inv.BookingId.HasValue ? "Đặt phòng" : "Đặt đồ ăn",
+                Amount = inv.TotalAmount,
+                SourceType = inv.BookingId.HasValue ? InvoiceSourceType.Booking : InvoiceSourceType.Order
+            });
         }
         return list;
     }

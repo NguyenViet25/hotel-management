@@ -2,7 +2,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 
 let API_URL = import.meta.env.VITE_API_URL || "http://localhost:5283/api";
-API_URL = "https://hm-web-api.azurewebsites.net/api";
+// API_URL = "https://hm-web-api.azurewebsites.net/api";
 
 const axiosInstance = axios.create({
   baseURL: API_URL,

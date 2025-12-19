@@ -5,6 +5,7 @@ using HotelManagement.Services.Admin.Bookings.Dtos;
 using HotelManagement.Services.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace HotelManagement.Services.Admin.Bookings;
 
@@ -1466,11 +1467,30 @@ public class BookingsService(
         var targetRoom = await _roomRepo.FindAsync(newRoomId);
         if (targetRoom == null || targetRoom.HotelId != booking.HotelId) return ApiResponse<BookingDetailsDto>.Fail("Phòng không hợp lệ");
 
-        var overlap = await _bookingRoomRepo.Query()
-            .Where(br => br.RoomId == newRoomId && br.BookingStatus != BookingRoomStatus.Cancelled && br.BookingStatus != BookingRoomStatus.CheckedOut
-               && br.BookingRoomId != bookingRoomId)
-            .AnyAsync(br => bookingRoom.StartDate < br.EndDate && bookingRoom.EndDate > br.StartDate);
-        if (overlap) return ApiResponse<BookingDetailsDto>.Fail("Phòng không trống trong khoảng thời gian");
+
+        var q = _roomRepo.Query().Include(r => r.RoomType).Where(r => true);
+        q = q.Where(r => r.RoomTypeId == bookingRoom.BookingRoomTypeId);
+        var rooms = await q.ToListAsync();
+
+
+        var from = bookingRoom?.StartDate ?? DateTime.Now.Date;
+        var to = bookingRoom?.EndDate ?? from.AddDays(1);
+
+        var roomIds = rooms.Select(r => r.Id).ToList();
+        var overlapping = await _bookingRoomRepo.Query()
+             .Where(br => roomIds.Contains(br.RoomId) && br.BookingStatus != BookingRoomStatus.Cancelled)
+             .Where(br => from < br.EndDate && to > br.StartDate)
+             .Select(br => br.RoomId)
+             .Distinct()
+             .ToListAsync();
+
+        var unavailable = overlapping.Contains(newRoomId);
+
+        //var overlap = await _bookingRoomRepo.Query()
+        //    .Where(br => br.RoomId == newRoomId && br.BookingStatus != BookingRoomStatus.Cancelled && br.BookingStatus != BookingRoomStatus.CheckedOut
+        //       && br.BookingRoomId != bookingRoomId)
+        //    .AnyAsync(br => bookingRoom.StartDate < br.EndDate && bookingRoom.EndDate > br.StartDate);
+        if (unavailable) return ApiResponse<BookingDetailsDto>.Fail("Phòng không trống trong khoảng thời gian");
 
         var oldRoom = await _roomRepo.FindAsync(bookingRoom.RoomId);
 
@@ -1693,7 +1713,18 @@ public class BookingsService(
                     Id = Guid.NewGuid(),
                     Description = $"Phụ thu",
                     Amount = dto.AdditionalAmount ?? 0,
-                    SourceType = InvoiceLineSourceType.Discount,
+                    SourceType = InvoiceLineSourceType.Surcharge,
+                });
+            }
+
+            if (dto.AdditionalBookingAmount > 0)
+            {
+                lines.Add(new InvoiceLine
+                {
+                    Id = Guid.NewGuid(),
+                    Description = $"Phụ thu",
+                    Amount = dto.AdditionalBookingAmount ?? 0,
+                    SourceType = InvoiceLineSourceType.Surcharge,
                 });
             }
 
@@ -1722,16 +1753,9 @@ public class BookingsService(
             invoice.SubTotal = invoice.Lines.Where(x => x.Amount > 0).Sum(x => x.Amount);
             invoice.DiscountAmount = Math.Abs(invoice.Lines.Where(x => x.Amount < 0).Sum(x => x.Amount));
             invoice.TaxAmount = Math.Round(invoice.SubTotal * 0.1m, 2);
-            invoice.TotalAmount = invoice.SubTotal - invoice.DiscountAmount + invoice.TaxAmount;
+            invoice.TotalAmount = dto.TotalAmount ?? 0;
 
             await _invoiceRepo.AddAsync(invoice);
-            await _invoiceRepo.SaveChangesAsync();
-
-            var totalPaid = booking.DepositAmount + (dto.FinalPayment?.Amount ?? 0);
-            invoice.PaidAmount = totalPaid;
-            invoice.Status = totalPaid >= invoice.TotalAmount ? InvoiceStatus.Paid : InvoiceStatus.Issued;
-            invoice.PaidAt = totalPaid >= invoice.TotalAmount ? DateTime.Now : null;
-            await _invoiceRepo.UpdateAsync(invoice);
             await _invoiceRepo.SaveChangesAsync();
 
             foreach (var br in booking.BookingRoomTypes.SelectMany(rt => rt.BookingRooms))
@@ -1776,7 +1800,7 @@ public class BookingsService(
             var details = await GetByIdAsync(bookingId);
             if (!details.IsSuccess) return ApiResponse<CheckoutResultDto>.Fail(details.Message ?? "");
 
-            return ApiResponse<CheckoutResultDto>.Ok(new CheckoutResultDto { TotalPaid = totalPaid, Booking = details.Data, CheckoutTime = dto.CheckoutTime ?? DateTime.Now });
+            return ApiResponse<CheckoutResultDto>.Ok(new CheckoutResultDto { TotalPaid = 0, Booking = details.Data, CheckoutTime = dto.CheckoutTime ?? DateTime.Now });
         }
         catch (Exception ex)
         {

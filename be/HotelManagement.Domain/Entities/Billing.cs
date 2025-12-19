@@ -24,7 +24,7 @@ public class Invoice
     public DateTime CreatedAt { get; set; } = DateTime.Now;
     public DateTime? IssuedAt { get; set; }
     public DateTime? PaidAt { get; set; }
-    
+
     // Navigation properties
     public ICollection<InvoiceLine> Lines { get; set; } = new List<InvoiceLine>();
 }
@@ -36,6 +36,13 @@ public enum InvoiceLineSourceType
     Surcharge = 2,
     Discount = 3
 }
+
+public enum InvoiceSourceType
+{
+    Booking = 0,
+    Order = 1
+}
+
 
 public class InvoiceLine
 {

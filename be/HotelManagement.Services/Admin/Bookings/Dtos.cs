@@ -285,6 +285,7 @@ public class CheckoutRequestDto
     public string? AdditionalBookingNotes { get; set; }
     public decimal? AdditionalAmount { get; set; } = 0;
     public decimal? AdditionalBookingAmount { get; set; } = 0;
+    public decimal? TotalAmount { get; set; } = 0;
     public PaymentDto? FinalPayment { get; set; }
     public DateTime? CheckoutTime { get; set; }
 }

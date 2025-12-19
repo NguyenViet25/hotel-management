@@ -199,7 +199,8 @@ public class InvoicesController : ControllerBase
             AdditionalNotes = request.AdditionalNotes,
             Notes = request.Notes,
             AdditionalBookingAmount = request.AdditionalBookingAmount,
-            AdditionalBookingNotes = request.AdditionalNotes
+            AdditionalBookingNotes = request.AdditionalNotes,
+            TotalAmount = request.TotalAmount
         };
 
 
@@ -250,6 +251,7 @@ public class CreateBookingInvoiceRequest
     public decimal? AdditionalAmount { get; set; }
     public decimal? AdditionalBookingAmount { get; set; }
     public string? AdditionalBookingNotes { get; set; }
+    public decimal? TotalAmount { get; set; }
     public PaymentDto? FinalPayment { get; set; }
     public DateTime? CheckoutTime { get; set; }
 }

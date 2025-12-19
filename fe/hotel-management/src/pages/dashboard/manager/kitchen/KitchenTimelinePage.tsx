@@ -240,12 +240,12 @@ const FoodTimeline: React.FC = () => {
       if (modalMode === "create") {
         res = await kitchenApi.generateShoppingList({
           ...payload,
-          orderDate: payload.orderDate.toDate().toLocaleDateString(),
+          orderDate: dayjs(payload.orderDate).format("YYYY-MM-DDTHH:mm:ss"),
         });
       } else {
         res = await kitchenApi.updateShoppingList({
           ...payload,
-          orderDate: payload.orderDate.toDate().toLocaleDateString(),
+          orderDate: dayjs(payload.orderDate).format("YYYY-MM-DDTHH:mm:ss"),
         });
       }
       if (res.isSuccess) {
@@ -355,15 +355,24 @@ const FoodTimeline: React.FC = () => {
                     </Typography>
                     <Stack gap={1}>
                       {!hasShoppingOrder ? (
-                        <Button
-                          startIcon={<Add />}
-                          size="small"
-                          variant="contained"
-                          color="primary"
-                          onClick={() => openCreateShopping(d)}
-                        >
-                          Tạo yêu cầu mua nguyên liệu
-                        </Button>
+                        <>
+                          {d.isBefore(today, "day") ? (
+                            <Alert severity="info" sx={{ mt: 1 }}>
+                              Ngày này đã qua và không có yêu cầu mua nguyên
+                              liệu.
+                            </Alert>
+                          ) : (
+                            <Button
+                              startIcon={<Add />}
+                              size="small"
+                              variant="contained"
+                              color="primary"
+                              onClick={() => openCreateShopping(d)}
+                            >
+                              Tạo yêu cầu mua nguyên liệu
+                            </Button>
+                          )}
+                        </>
                       ) : (
                         <Stack gap={1}>
                           <Button

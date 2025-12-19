@@ -41,6 +41,7 @@ const GuestList: React.FC<Props> = ({
           variant="outlined"
           startIcon={<AddCircle />}
           size="small"
+          disabled={!editable}
         >
           Thêm khách
         </Button>
@@ -62,6 +63,7 @@ const GuestList: React.FC<Props> = ({
                 onDelete={onDelete ? () => onDelete(idx, g) : undefined}
                 disabledEdit={!editable}
                 disabledDelete={!editable}
+                disabledChangeRoom={!editable}
                 onChangeRoom={onChangeRoom ? () => onChangeRoom(g) : undefined}
                 onExtendStay={onExtendStay}
               />

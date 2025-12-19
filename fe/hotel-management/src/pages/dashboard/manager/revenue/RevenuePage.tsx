@@ -47,6 +47,7 @@ const RevenuePage: React.FC = () => {
   const [details, setDetails] = useState<RevenueDetailItemDto[]>([]);
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailPage, setDetailPage] = useState(1);
+  const [catType, setCatType] = useState<number>(0);
   const [detailPageSize, setDetailPageSize] = useState(10);
   const [catFrom, setCatFrom] = useState<Dayjs>(from);
   const [catTo, setCatTo] = useState<Dayjs>(to);
@@ -70,20 +71,34 @@ const RevenuePage: React.FC = () => {
     if (!hotelId) return;
     setLoading(true);
     try {
-      const res = await revenueApi.getRevenue({
+      const res = await revenueApi.getDetails({
+        hotelId: hotelId || "",
+        fromDate: catFrom.startOf("day").format("YYYY-MM-DDTHH:mm:ss"),
+        toDate: catTo.endOf("day").format("YYYY-MM-DDTHH:mm:ss"),
+        sourceType: 0,
+      });
+
+      if (res.isSuccess) {
+        setCatBreakdown({
+          roomTotal: res.data
+            .filter((d) => d.sourceType === 0)
+            .reduce((acc, cur) => acc + cur.amount, 0),
+          fnbTotal: res.data
+            .filter((d) => d.sourceType === 1)
+            .reduce((acc, cur) => acc + cur.amount, 0),
+          discountTotal: 0,
+          otherTotal: 0,
+          points: [],
+        });
+      }
+
+      const data = await revenueApi.getRevenue({
         hotelId,
         fromDate: from.startOf("day").format("YYYY-MM-DDTHH:mm:ss"),
         toDate: to.endOf("day").format("YYYY-MM-DDTHH:mm:ss"),
         granularity,
       });
-      if (res.isSuccess) setStats(res.data);
-      const br = await revenueApi.getBreakdown({
-        hotelId,
-        fromDate: from.startOf("day").format("YYYY-MM-DDTHH:mm:ss"),
-        toDate: to.endOf("day").format("YYYY-MM-DDTHH:mm:ss"),
-        granularity,
-      });
-      if (br.isSuccess) setBreakdown(br.data);
+      if (res.isSuccess) setStats(data.data);
     } finally {
       setLoading(false);
     }
@@ -101,24 +116,36 @@ const RevenuePage: React.FC = () => {
   }, [catFrom, catTo]);
 
   useEffect(() => {
-    const loadCategoryBreakdown = async () => {
-      if (!hotelId || !catFrom || !catTo) return;
-      const res = await revenueApi.getBreakdown({
-        hotelId,
-        fromDate: catFrom.startOf("day").format("YYYY-MM-DDTHH:mm:ss"),
-        toDate: catTo.endOf("day").format("YYYY-MM-DDTHH:mm:ss"),
-        granularity,
-      });
-      if (res.isSuccess) setCatBreakdown(res.data);
-    };
-    loadCategoryBreakdown();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hotelId, catFrom, catTo, granularity]);
-
-  useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hotelId, from, to, granularity]);
+
+  const handleFilterByType = async (type: number) => {
+    const res = await revenueApi.getDetails({
+      hotelId: hotelId || "",
+      fromDate: catFrom.startOf("day").format("YYYY-MM-DDTHH:mm:ss"),
+      toDate: catTo.endOf("day").format("YYYY-MM-DDTHH:mm:ss"),
+      sourceType: 0,
+    });
+    if (res.isSuccess) {
+      setDetails(res.data.filter((d) => d.sourceType === type));
+      setDetailPage(1);
+      setDetailOpen(true);
+
+      setCatBreakdown({
+        roomTotal: res.data
+          .filter((d) => d.sourceType === 0)
+          .reduce((acc, cur) => acc + cur.amount, 0),
+        fnbTotal: res.data
+          .filter((d) => d.sourceType === 1)
+          .reduce((acc, cur) => acc + cur.amount, 0),
+        discountTotal: 0,
+        otherTotal: 0,
+        points: [],
+      });
+    }
+    setCatType(type);
+  };
 
   return (
     <Box>
@@ -257,6 +284,20 @@ const RevenuePage: React.FC = () => {
             direction={{ xs: "column", sm: "row" }}
             sx={{ mb: 1 }}
           >
+            <TextField
+              select
+              label="Theo loại"
+              value={catType}
+              onChange={(e) => {
+                handleFilterByType(Number(e.target.value));
+              }}
+              fullWidth
+              size="small"
+              sx={{ width: { xs: "100%", lg: 180 } }}
+            >
+              <MenuItem value={0}>Đặt phòng</MenuItem>
+              <MenuItem value={1}>Đặt đồ ăn</MenuItem>
+            </TextField>
             <DatePicker
               label="Từ ngày (lọc)"
               value={catFrom}
@@ -278,6 +319,7 @@ const RevenuePage: React.FC = () => {
               }}
             />
           </Stack>
+
           <Stack spacing={1}>
             <Stack
               direction="row"
@@ -286,28 +328,6 @@ const RevenuePage: React.FC = () => {
             >
               <Stack direction="row" spacing={1} alignItems="center">
                 <Typography>Đặt phòng</Typography>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  startIcon={<InfoOutline />}
-                  onClick={async () => {
-                    const res = await revenueApi.getDetails({
-                      hotelId: hotelId || "",
-                      fromDate: catFrom
-                        .startOf("day")
-                        .format("YYYY-MM-DDTHH:mm:ss"),
-                      toDate: catTo.endOf("day").format("YYYY-MM-DDTHH:mm:ss"),
-                      sourceType: 0,
-                    });
-                    if (res.isSuccess) {
-                      setDetails(res.data);
-                      setDetailPage(1);
-                      setDetailOpen(true);
-                    }
-                  }}
-                >
-                  Chi tiết
-                </Button>
               </Stack>
               <Typography fontWeight={700}>
                 {currency(catBreakdown?.roomTotal ?? 0)}
@@ -320,28 +340,6 @@ const RevenuePage: React.FC = () => {
             >
               <Stack direction="row" spacing={1.8} alignItems="center">
                 <Typography>Đặt đồ ăn</Typography>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  startIcon={<InfoOutline />}
-                  onClick={async () => {
-                    const res = await revenueApi.getDetails({
-                      hotelId: hotelId || "",
-                      fromDate: catFrom
-                        .startOf("day")
-                        .format("YYYY-MM-DDTHH:mm:ss"),
-                      toDate: catTo.endOf("day").format("YYYY-MM-DDTHH:mm:ss"),
-                      sourceType: 1,
-                    });
-                    if (res.isSuccess) {
-                      setDetails(res.data);
-                      setDetailPage(1);
-                      setDetailOpen(true);
-                    }
-                  }}
-                >
-                  Chi tiết
-                </Button>
               </Stack>
               <Typography fontWeight={700}>
                 {currency(catBreakdown?.fnbTotal ?? 0)}

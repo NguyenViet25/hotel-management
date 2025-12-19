@@ -25,6 +25,7 @@ import {
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import bookingsApi, {
+  BookingRoomStatus,
   EBookingStatus,
   type BookingDetailsDto,
   type BookingGuestDto,
@@ -48,6 +49,7 @@ import GuestDialog from "./GuestDialog";
 import GuestList from "./GuestList";
 import MoveGuestDialog from "./MoveGuestDialog";
 import PlannedDatesDialog from "./PlannedDatesDialog";
+import { toast } from "react-toastify";
 
 type Props = {
   booking: BookingDetailsDto | null;
@@ -320,6 +322,10 @@ const RoomTypeBlock: React.FC<{
                                   setActiveRoom(br);
                                   setChangeRoomOpen(true);
                                 }}
+                                disabled={
+                                  br.actualCheckOutAt !== undefined &&
+                                  br.actualCheckOutAt !== null
+                                }
                                 aria-label="Đổi cả phòng"
                               >
                                 <MoveUp fontSize="small" />
@@ -490,6 +496,10 @@ const RoomTypeBlock: React.FC<{
                                     setActiveRoom(br);
                                     setEditActualInOpen(true);
                                   }}
+                                  disabled={
+                                    br.actualCheckOutAt !== undefined &&
+                                    br.actualCheckOutAt !== null
+                                  }
                                 >
                                   <Edit fontSize="small" />
                                 </IconButton>
@@ -522,6 +532,10 @@ const RoomTypeBlock: React.FC<{
                                     setActiveRoom(br);
                                     setEditActualOutOpen(true);
                                   }}
+                                  disabled={
+                                    br.actualCheckOutAt !== undefined &&
+                                    br.actualCheckOutAt !== null
+                                  }
                                 >
                                   <Edit fontSize="small" />
                                 </IconButton>
@@ -537,7 +551,9 @@ const RoomTypeBlock: React.FC<{
                           onAddGuestClick={() => openAddGuest(br.bookingRoomId)}
                           title="Danh sách khách"
                           guests={br.guests || []}
-                          editable={true}
+                          editable={
+                            br.bookingStatus != BookingRoomStatus.CheckedOut
+                          }
                           onEdit={(idx, gi) =>
                             openEditGuest(br.bookingRoomId, idx, {
                               ...gi,
@@ -611,8 +627,12 @@ const RoomTypeBlock: React.FC<{
                             variant="contained"
                             color="success"
                             onClick={() => {
-                              setActiveRoom(br);
-                              setCheckOutOpen(true);
+                              if (br.guests.length > 0) {
+                                setActiveRoom(br);
+                                setCheckOutOpen(true);
+                              } else {
+                                toast.error("Thêm khách trước khi checkout");
+                              }
                             }}
                             disabled={
                               !br.actualCheckInAt ||

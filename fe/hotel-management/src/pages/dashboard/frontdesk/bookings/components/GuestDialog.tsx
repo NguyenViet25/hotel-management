@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -53,7 +53,24 @@ const GuestDialog: React.FC<Props> = ({ open, initial, onClose, onSubmit }) => {
       );
   }, [open, initial]);
 
+  const isPhoneValid = useMemo(() => {
+    const v = (guest.phone || "").trim();
+    const re = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
+    return re.test(v);
+  }, [guest.phone]);
+
+  const allRequiredFilled = useMemo(() => {
+    return Boolean(
+      guest.name &&
+        guest.phone &&
+        guest.idCard &&
+        guest.idCardFrontImageUrl &&
+        guest.idCardBackImageUrl
+    );
+  }, [guest]);
+
   const submit = () => {
+    if (!allRequiredFilled || !isPhoneValid) return;
     onSubmit(guest);
   };
 
@@ -79,6 +96,9 @@ const GuestDialog: React.FC<Props> = ({ open, initial, onClose, onSubmit }) => {
             placeholder="Nhập họ và tên"
             onChange={(e) => setGuest({ ...guest, name: e.target.value })}
             fullWidth
+            required
+            error={!guest.name}
+            helperText={!guest.name ? "Bắt buộc nhập họ và tên" : undefined}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -95,6 +115,9 @@ const GuestDialog: React.FC<Props> = ({ open, initial, onClose, onSubmit }) => {
             value={guest.idCard}
             onChange={(e) => setGuest({ ...guest, idCard: e.target.value })}
             fullWidth
+            required
+            error={!guest.idCard}
+            helperText={!guest.idCard ? "Bắt buộc nhập CCCD" : undefined}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -111,6 +134,13 @@ const GuestDialog: React.FC<Props> = ({ open, initial, onClose, onSubmit }) => {
             placeholder="Nhập số điện thoại"
             onChange={(e) => setGuest({ ...guest, phone: e.target.value })}
             fullWidth
+            required
+            error={!!guest.phone && !isPhoneValid}
+            helperText={
+              guest.phone && !isPhoneValid
+                ? "Số điện thoại Việt Nam không hợp lệ"
+                : undefined
+            }
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -139,7 +169,7 @@ const GuestDialog: React.FC<Props> = ({ open, initial, onClose, onSubmit }) => {
         <Button
           variant="contained"
           onClick={submit}
-          disabled={!guest.name || !guest.phone}
+          disabled={!allRequiredFilled || !isPhoneValid}
         >
           Lưu
         </Button>

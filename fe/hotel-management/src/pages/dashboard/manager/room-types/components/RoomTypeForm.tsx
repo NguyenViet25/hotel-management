@@ -265,7 +265,7 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
         />
         <Tooltip title="Nhập URL ảnh đại diện của loại phòng">
           <TextField
-            label="Image URL"
+            label="Ảnh loại phòng"
             fullWidth
             margin="normal"
             {...register("imageUrl")}

@@ -25,6 +25,7 @@ import { BookingSummary } from "./components/BookingSummary";
 import CallLogsDisplay from "./components/CallLogDIsplay";
 import CallLogModal from "./components/CallLogModal";
 import CancelBookingModal from "./components/CancelBookingModal";
+import ConfirmBookingModal from "./components/ConfirmBookingModal";
 import CompleteBookingModal from "./components/CompleteBookingModal";
 import RoomTypeAssignCheckIn from "./components/RoomTypeAssignCheckIn";
 import type { IBookingSummary } from "./components/types";
@@ -38,6 +39,7 @@ const BookingDetailsPage: React.FC = () => {
   const [openCancel, setOpenCancel] = useState(false);
   const [openCall, setOpenCall] = useState(false);
   const [openCheckout, setOpenCheckout] = useState(false);
+  const [openConfirm, setOpenConfirm] = useState(false);
   const [openComplete, setOpenComplete] = useState(false);
 
   const fetch = async () => {
@@ -47,6 +49,8 @@ const BookingDetailsPage: React.FC = () => {
       if (res.isSuccess && res.data) setData(res.data);
     } catch {}
   };
+
+  console.log("res.data", data);
 
   useEffect(() => {
     fetch();
@@ -161,34 +165,35 @@ const BookingDetailsPage: React.FC = () => {
           {statusChip}
         </Stack>
         <Stack direction="row" spacing={1}>
-          <Button
-            variant="outlined"
-            color="primary"
-            startIcon={<Edit />}
-            onClick={() => setOpenEdit(true)}
-            aria-label="Chỉnh sửa booking"
-          >
-            Chỉnh sửa
-          </Button>
-          {data?.status != EBookingStatus.Cancelled && (
-            <Button
-              variant="outlined"
-              color="error"
-              startIcon={<CancelIcon />}
-              onClick={() => setOpenCancel(true)}
-              aria-label="Hủy booking"
-            >
-              Hủy
-            </Button>
+          {data?.status !== EBookingStatus.Completed && (
+            <>
+              <Button
+                variant="outlined"
+                color="primary"
+                startIcon={<Edit />}
+                onClick={() => setOpenEdit(true)}
+                aria-label="Chỉnh sửa booking"
+              >
+                Chỉnh sửa
+              </Button>
+              <Button
+                variant="outlined"
+                color="error"
+                startIcon={<CancelIcon />}
+                onClick={() => setOpenCancel(true)}
+                aria-label="Hủy booking"
+              >
+                Hủy
+              </Button>
+            </>
           )}
 
-          {(data?.status === EBookingStatus.Cancelled ||
-            data?.status === EBookingStatus.Pending) && (
+          {data?.status === EBookingStatus.Pending && (
             <Button
               variant="outlined"
               color="success"
               startIcon={<Check />}
-              onClick={handleConfirm}
+              onClick={() => setOpenConfirm(true)}
               aria-label="Xác nhận booking"
             >
               Xác nhận
@@ -202,7 +207,7 @@ const BookingDetailsPage: React.FC = () => {
               startIcon={<Check />}
               onClick={() => setOpenComplete(true)}
               disabled={
-                data?.bookingRoomTypes
+                (data?.bookingRoomTypes
                   .flatMap((x) => x.bookingRooms)
                   .some(
                     (r) =>
@@ -211,8 +216,10 @@ const BookingDetailsPage: React.FC = () => {
                       r.actualCheckOutAt === undefined ||
                       r.actualCheckOutAt === null
                   ) ||
-                data?.bookingRoomTypes.flatMap((x) => x.bookingRooms).length ===
-                  0
+                  !data?.bookingRoomTypes?.every(
+                    (x) => x.bookingRooms.length > 0
+                  )) ??
+                false
               }
               aria-label="Xác nhận booking"
             >
@@ -291,6 +298,15 @@ const BookingDetailsPage: React.FC = () => {
         onClose={() => setOpenCancel(false)}
         booking={data as any}
         onSubmitted={fetch}
+      />
+      <ConfirmBookingModal
+        open={openConfirm}
+        onClose={() => setOpenConfirm(false)}
+        booking={data as any}
+        onSubmitted={async () => {
+          setOpenConfirm(false);
+          await fetch();
+        }}
       />
 
       {/* Call Log Modal */}
