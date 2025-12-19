@@ -469,7 +469,7 @@ export default function KitchenManagementPage() {
                         >
                           <Phone fontSize="small" color="action" />
                           <Typography variant="body2">
-                            SĐT: {order.customerName}
+                            SĐT: {order.customerPhone}
                           </Typography>
                         </Stack>
                         {(guestCount || order.guests) && (
