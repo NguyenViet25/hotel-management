@@ -17,6 +17,8 @@ public class HousekeepingTaskDto
     public DateTime CreatedAt { get; set; }
     public DateTime? StartedAt { get; set; }
     public DateTime? CompletedAt { get; set; }
+    public List<RoomStatusLog> RoomStatusLogs { get; set; } = [];
+    public List<MinibarBooking> MinibarBookings { get; set; } = [];
 }
 
 public class CreateHousekeepingTaskRequest

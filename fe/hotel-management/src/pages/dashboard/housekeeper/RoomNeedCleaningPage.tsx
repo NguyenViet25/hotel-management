@@ -231,7 +231,9 @@ export default function RoomNeedCleaningPage() {
         page: 1,
         pageSize: 200,
       });
-      setMinibarItems((res.data || []).map((it) => ({ item: it, qty: 0 })));
+      setMinibarItems(
+        (res.data || []).map((it) => ({ item: it, qty: it.quantity || 0 }))
+      );
     } catch {
       setMinibarItems([]);
     }
@@ -257,7 +259,7 @@ export default function RoomNeedCleaningPage() {
 
   const submitComplete = async () => {
     if (!completeRoom) return;
-    const urls = completeEvidence.map((m) => m.fileUrl).filter(Boolean);
+    const urls = completeEvidence.map((m) => m.fileUrl);
     if (completeTaskId) {
       await housekeepingTasksApi.complete({
         taskId: completeTaskId,
@@ -265,6 +267,7 @@ export default function RoomNeedCleaningPage() {
         evidenceUrls: urls,
       });
     }
+
     if (minibarBookingId) {
       const items = minibarItems
         .filter((x) => x.qty > 0)
@@ -639,6 +642,7 @@ export default function RoomNeedCleaningPage() {
                         <TextField
                           type="number"
                           size="small"
+                          defaultValue={mi.item.quantity}
                           sx={{ width: "70%", alignSelf: "end" }}
                           inputProps={{ min: 0, max: mi.item.quantity }}
                           value={mi.qty}

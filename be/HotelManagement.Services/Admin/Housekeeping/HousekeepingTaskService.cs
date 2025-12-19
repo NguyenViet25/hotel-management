@@ -26,12 +26,14 @@ public class HousekeepingTaskService : IHousekeepingTaskService
     private readonly IRepository<RoomStatusLog> _statusLogRepo;
     private readonly IRepository<AppUser> _userRepo;
     private readonly IUnitOfWork _uow;
+    private readonly IRepository<HotelManagement.Domain.MinibarBooking> _minibarBookingRepo;
 
     public HousekeepingTaskService(
         IRepository<HousekeepingTask> taskRepo,
         IRepository<HotelRoom> roomRepo,
         IRepository<RoomStatusLog> statusLogRepo,
         IRepository<AppUser> userRepo,
+        IRepository<HotelManagement.Domain.MinibarBooking> minibarBookingRepo,
         IUnitOfWork uow)
     {
         _taskRepo = taskRepo;
@@ -39,6 +41,7 @@ public class HousekeepingTaskService : IHousekeepingTaskService
         _statusLogRepo = statusLogRepo;
         _userRepo = userRepo;
         _uow = uow;
+        _minibarBookingRepo = minibarBookingRepo;
     }
 
     public async Task<ApiResponse<HousekeepingTaskDto>> CreateAsync(CreateHousekeepingTaskRequest request)
@@ -149,6 +152,7 @@ public class HousekeepingTaskService : IHousekeepingTaskService
         await _statusLogRepo.AddAsync(new RoomStatusLog
         {
             Id = Guid.NewGuid(),
+            TaskId = request.TaskId,
             HotelId = room.HotelId,
             RoomId = room.Id,
             Status = RoomStatus.Clean,
@@ -169,6 +173,9 @@ public class HousekeepingTaskService : IHousekeepingTaskService
         var task = await _taskRepo.FindAsync(id);
         if (task == null) return ApiResponse<HousekeepingTaskDto>.Fail("Task not found");
         var dto = await ToDto(task);
+
+        dto.RoomStatusLogs = await _statusLogRepo.Query().Where(x => x.TaskId == id).ToListAsync();
+        dto.MinibarBookings = await _minibarBookingRepo.Query().Where(x => x.HouseKeepingTaskId == id).ToListAsync();
         return ApiResponse<HousekeepingTaskDto>.Success(dto);
     }
 

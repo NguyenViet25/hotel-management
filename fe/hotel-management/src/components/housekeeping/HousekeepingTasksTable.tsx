@@ -1,3 +1,4 @@
+import { Info } from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -10,12 +11,10 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import DataTable, { type Column } from "../common/DataTable";
-import { type HousekeepingTaskDto } from "../../api/housekeepingTasksApi";
-import bookingsApi, { type BookingIntervalDto } from "../../api/bookingsApi";
 import { useState } from "react";
-import { Info } from "@mui/icons-material";
-import dayjs from "dayjs";
+import housekeepingApi from "../../api/housekeepingApi";
+import { type HousekeepingTaskDto } from "../../api/housekeepingTasksApi";
+import DataTable, { type Column } from "../common/DataTable";
 
 type Props = {
   title?: string;
@@ -30,26 +29,16 @@ export default function HousekeepingTasksTable({
 }: Props) {
   const [infoOpen, setInfoOpen] = useState(false);
   const [selected, setSelected] = useState<HousekeepingTaskDto | null>(null);
-  const [minibarBookingId, setMinibarBookingId] = useState<string>("");
 
-  const openInfo = async (t: HousekeepingTaskDto) => {
-    setSelected(t);
-    setMinibarBookingId("");
+  const openInfo = async (id: string) => {
     try {
-      const from = new Date(t.startedAt || t.createdAt);
+      const from = new Date(selected?.startedAt!);
       from.setHours(0, 0, 0, 0);
-      const to = new Date(t.completedAt || t.startedAt || t.createdAt);
+      const to = new Date(selected?.completedAt!);
       to.setHours(23, 59, 59, 999);
-      const schedRes = await bookingsApi.roomSchedule(
-        t.roomId,
-        dayjs(from).format("YYYY-MM-DDTHH:mm:ss"),
-        dayjs(to).format("YYYY-MM-DDTHH:mm:ss")
-      );
-      const intervals = (schedRes.data || []) as BookingIntervalDto[];
-      setMinibarBookingId(intervals[0]?.bookingId || "");
-    } catch {
-      setMinibarBookingId("");
-    }
+      const houseKeepingTask = await housekeepingApi.getAsync(id);
+      setSelected(houseKeepingTask.data || null);
+    } catch {}
     setInfoOpen(true);
   };
 
@@ -91,7 +80,7 @@ export default function HousekeepingTasksTable({
           startIcon={<Info fontSize="small" />}
           variant="outlined"
           size="small"
-          onClick={() => openInfo(row)}
+          onClick={() => openInfo(row.id)}
         >
           Xem chi tiết
         </Button>
@@ -212,8 +201,7 @@ export default function HousekeepingTasksTable({
                 <Typography variant="subtitle1" fontWeight={600}>
                   📸 Ảnh minh chứng
                 </Typography>
-
-                {/* Replace this when you have images */}
+                // TODO: show images
                 <Stack
                   spacing={1}
                   sx={{
@@ -235,18 +223,7 @@ export default function HousekeepingTasksTable({
                 <Typography variant="subtitle1" fontWeight={600}>
                   🛒 Minibar
                 </Typography>
-
-                {minibarBookingId ? (
-                  <Chip
-                    label={`Booking: ${minibarBookingId}`}
-                    color="primary"
-                    sx={{ width: "fit-content", fontWeight: 600 }}
-                  />
-                ) : (
-                  <Typography variant="caption" color="text.secondary">
-                    Không có thông tin minibar
-                  </Typography>
-                )}
+                // TODO: show table minibar booking
               </Stack>
             </Stack>
           )}

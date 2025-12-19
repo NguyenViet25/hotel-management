@@ -1726,9 +1726,7 @@ public class BookingsService(
 
     public async Task<ApiResponse> RecordMinibarConsumptionAsync(Guid bookingId, MinibarConsumptionDto dto)
     {
-        var booking = await _bookingRepo.FindAsync(bookingId);
-        if (booking == null) return ApiResponse.Fail("Không tìm thấy booking");
-
+      
         foreach (var item in dto.Items)
         {
             var minibar = await _minibarRepo.FindAsync(item.MinibarId);
