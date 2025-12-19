@@ -32,6 +32,7 @@ import dayjs, { Dayjs } from "dayjs";
 import React, { useEffect, useMemo, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
+import { phoneSchema } from "../../../../../validation/phone";
 import bookingsApi, {
   type BookingDetailsDto,
   type BookingRoomTypeDto,
@@ -92,18 +93,13 @@ const roomItemSchema = z
 
 const schema = z.object({
   guestName: z.string().min(2, "Họ tên phải có ít nhất 2 ký tự"),
-  guestPhone: z
-    .string()
-    .min(10, "SĐT tối thiểu 10 ký tự")
-    .max(20, "SĐT tối đa 20 ký tự")
-    .regex(/^[+0-9\-\s()]+$/, "SĐT chỉ gồm số và ký tự phổ biến"),
+  guestPhone: phoneSchema,
   guestEmail: z
     .string()
     .email("Email không hợp lệ")
     .optional()
     .or(z.literal("")),
   roomTypes: z.array(roomItemSchema).min(1, "Thêm ít nhất 1 phòng"),
-
   depositAmount: z.coerce
     .number("Tiền cọc phải là số")
     .min(0, "Tiền cọc không âm"),
