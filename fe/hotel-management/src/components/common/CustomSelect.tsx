@@ -29,7 +29,6 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   onChange,
   startIcon,
   options = [],
-  placeholder,
   size = "medium",
 }) => {
   return (
@@ -40,7 +39,9 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         value={value}
         onChange={onChange}
         startAdornment={
-          startIcon && <InputAdornment>{startIcon}</InputAdornment>
+          startIcon && (
+            <InputAdornment position="start">{startIcon}</InputAdornment>
+          )
         }
         label={label}
       >

@@ -504,7 +504,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                       <b>Ngày</b>
                     </TableCell>
                     <TableCell align="center" sx={{ width: "8%" }}>
-                      <b>SL</b>
+                      <b>SL Phòng</b>
                     </TableCell>
                     <TableCell align="center" sx={{ width: "8%" }}>
                       <b>Đêm</b>

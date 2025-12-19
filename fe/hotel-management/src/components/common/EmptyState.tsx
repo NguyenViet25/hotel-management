@@ -1,4 +1,4 @@
-import { Box, Button, Paper, Stack, Typography } from "@mui/material";
+import { Box, Paper, Stack, Typography } from "@mui/material";
 import React from "react";
 import InboxIcon from "@mui/icons-material/Inbox";
 

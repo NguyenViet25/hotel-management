@@ -7,8 +7,10 @@ import { defineConfig, globalIgnores } from "eslint/config";
 
 export default defineConfig([
   globalIgnores(["dist"]),
+
   js.configs.recommended,
   ...tseslint.configs.recommended,
+
   {
     files: ["**/*.{ts,tsx}"],
     languageOptions: {
@@ -23,10 +25,18 @@ export default defineConfig([
       "react-refresh": reactRefresh,
     },
     rules: {
+      // 🔥 QUAN TRỌNG
+      "no-unused-vars": "off",
+
       "@typescript-eslint/no-unused-vars": [
         "warn",
-        { argsIgnorePattern: "^_" },
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
       ],
+
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "warn",
       "react-refresh/only-export-components": [

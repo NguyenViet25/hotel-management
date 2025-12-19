@@ -65,7 +65,6 @@ export interface DataTableProps<T> {
 const DataTable = <T extends object>({
   columns,
   data,
-  title,
   loading = false,
   pagination,
   onAdd,

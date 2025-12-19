@@ -13,7 +13,7 @@ import {
 import DataTable, { type Column } from "../common/DataTable";
 import { type HousekeepingTaskDto } from "../../api/housekeepingTasksApi";
 import bookingsApi, { type BookingIntervalDto } from "../../api/bookingsApi";
-import React, { useState } from "react";
+import { useState } from "react";
 import { Info } from "@mui/icons-material";
 import dayjs from "dayjs";
 

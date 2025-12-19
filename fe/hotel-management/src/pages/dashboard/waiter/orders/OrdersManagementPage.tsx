@@ -392,7 +392,9 @@ const OrdersManagementPage: React.FC = () => {
                         Yêu cầu đặt món: #{String(number + 1).toUpperCase()}
                       </Typography>
                       <Chip
-                        label={o.isWalkIn ? "Vãng lai" : "Đặt phòng"}
+                        label={
+                          o.isWalkIn ? "Khách vãng lai" : "Khách đặt phòng"
+                        }
                         size="small"
                       />
                     </Stack>
