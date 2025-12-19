@@ -68,6 +68,34 @@ public class InvoiceService : IInvoiceService
         return MapToDto(invoice);
     }
 
+    public async Task<bool> RemoveLastBookingInvoiceAsync(Guid targetId)
+    {
+        var invoice = await _invoiceRepository.Query().Where(x => x.BookingId == targetId).FirstOrDefaultAsync();
+
+        if (invoice is not null)
+        {
+            await _invoiceRepository.RemoveAsync(invoice);
+            await _invoiceRepository.SaveChangesAsync();
+            return true;
+        }
+
+        return false;
+    }
+
+    public async Task<bool> RemoveLastOrderInvoiceAsync(Guid targetId)
+    {
+        var invoice = await _invoiceRepository.Query().Where(x => x.OrderId == targetId).FirstOrDefaultAsync();
+
+        if (invoice is not null)
+        {
+            await _invoiceRepository.RemoveAsync(invoice);
+            await _invoiceRepository.SaveChangesAsync();
+            return true;
+        }
+
+        return false;
+    }
+
     public async Task<InvoiceDto> GetInvoiceAsync(Guid id)
     {
         var invoice = await _invoiceRepository.Query()
@@ -248,7 +276,7 @@ public class InvoiceService : IInvoiceService
 
     public async Task<RevenueStatsDto> GetRevenueAsync(RevenueQueryDto query)
     {
-    
+
 
         var q = _invoiceRepository.Query().Where(x => x.BookingId != null).AsQueryable();
 

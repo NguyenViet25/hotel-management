@@ -8,6 +8,7 @@ using HotelManagement.Services.Admin.Invoicing.Dtos;
 using HotelManagement.Services.Admin.Orders;
 using HotelManagement.Services.Common;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -92,7 +93,7 @@ public class InvoicesController : ControllerBase
             return BadRequest(ApiResponse<InvoiceDto>.Fail(orderRes.Message ?? "Order not found"));
         }
         var order = orderRes.Data;
-       
+
         var lines = new List<CreateInvoiceLineDto>();
         foreach (var it in order.Items)
         {
@@ -136,7 +137,8 @@ public class InvoicesController : ControllerBase
                     PromotionValue = promo.Value,
                     PromotionCode = promo.Code
                 });
-            } else
+            }
+            else
             {
                 await _ordersService.UpdateWalkPromotionAsync(request.OrderId, new Services.Admin.Orders.Dtos.UpdateWalkInPromotionDto()
                 {
@@ -160,6 +162,9 @@ public class InvoicesController : ControllerBase
         var uidClaim = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         Guid.TryParse(uidClaim, out var userId);
 
+        if (createDto.OrderId is not null)
+            await _invoiceService.RemoveLastBookingInvoiceAsync((Guid)createDto.OrderId);
+
         var invoice = await _invoiceService.CreateInvoiceAsync(createDto, userId);
         return Ok(ApiResponse<InvoiceDto>.Ok(invoice, "Created"));
     }
@@ -178,6 +183,8 @@ public class InvoicesController : ControllerBase
             AdditionalBookingAmount = request.AdditionalBookingAmount,
             AdditionalBookingNotes = request.AdditionalNotes
         };
+
+        await _invoiceService.RemoveLastBookingInvoiceAsync(request.BookingId);
 
         var result = await _bookingsService.CheckOutAsync(request.BookingId, checkoutDto);
         if (!result.IsSuccess)
@@ -198,7 +205,7 @@ public class InvoicesController : ControllerBase
         return Ok(ApiResponse<InvoiceDto>.Ok(dto, "Created"));
     }
 
-    
+
 }
 
 public class CreateWalkInInvoiceRequest
