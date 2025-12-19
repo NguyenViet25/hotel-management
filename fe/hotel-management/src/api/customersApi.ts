@@ -23,4 +23,3 @@ const customersApi = {
 };
 
 export default customersApi;
-

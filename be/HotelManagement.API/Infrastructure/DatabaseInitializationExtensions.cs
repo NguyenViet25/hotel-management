@@ -8,6 +8,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Text.RegularExpressions;
+using static System.Net.WebRequestMethods;
 
 namespace HotelManagement.Api.Infrastructure;
 
@@ -1267,7 +1268,24 @@ public static class DatabaseInitializationExtensions
                     "điều khiển điều hòa" => Random.Shared.Next(1, 3),
                     _ => 1
                 };
-                var imageUrl = $"https://via.placeholder.com/256?text={Uri.EscapeDataString(n)}";
+
+
+                var imageMap = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase)
+                {
+                    { "tivi", "https://pngimg.com/d/tv_PNG39274.png" },
+                    { "tủ lạnh", "https://png.pngtree.com/png-vector/20250214/ourmid/pngtree-d-isolated-render-of-fridge-icon-on-white-background-for-appliance-vector-png-image_15464759.png" },
+                    { "điều khiển tivi", "https://png.pngtree.com/png-clipart/20240810/original/pngtree-tv-remote-controller-png-image_15738768.png" },
+                    { "điều khiển điều hòa", "https://png.pngtree.com/png-vector/20250717/ourmid/pngtree-3d-air-conditioner-remote-control-isolated-on-transparent-background-png-image_16782911.webp" },
+                    { "móc treo quần áo", "https://png.pngtree.com/png-clipart/20231017/original/pngtree-hanger-household-isolated-fashion-picture-image_13176405.png" },
+                    { "bàn là", "https://png.pngtree.com/png-clipart/20240927/original/pngtree-electric-iron-picture-transparent-free-png-image_16099533.png" },
+                    { "máy sấy tóc", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrlS_ypbUqxd-PtLANywNAmxkSwpvF5GXm6A&s" },
+                    { "ấm siêu tốc", "https://goldsun.vn/pic/ProductItem/EK-GBB121_637121896997421007.png" },
+                    { "quạt treo tường", "https://thietbipanasonic.vn/wp-content/uploads/2020/02/Quat-treo-tuong-Panasonic-F409M1.png" },
+                    { "khăn tắm", "https://png.pngtree.com/png-clipart/20210314/original/pngtree-white-bath-towel-clean-cotton-towel-roll-png-image_6088364.jpg" },
+                    { "gương", "https://png.pngtree.com/png-clipart/20241222/original/pngtree-stand-mirror-isolated-on-white-transparent-background-png-image_18128768.png" }
+                };
+
+                var imageUrl = imageMap.ContainsKey(key) ? imageMap[key] : $"https://via.placeholder.com/256?text={Uri.EscapeDataString(n)}";
                 return new Minibar
                 {
                     Id = Guid.NewGuid(),

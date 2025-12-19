@@ -18,6 +18,7 @@ import {
   LocalCafe,
   MonetizationOn,
   Person,
+  PersonAdd,
   Phone,
   PlayCircle,
   Power,
@@ -63,7 +64,7 @@ import {
 } from "@mui/material";
 import { DateTimePicker } from "@mui/x-date-pickers";
 import dayjs, { Dayjs } from "dayjs";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import useSWR from "swr";
@@ -281,6 +282,19 @@ export default function SessionDetailsPage() {
     setEditOpen(true);
   };
 
+  useEffect(() => {
+    async function loadWaiters() {
+      const res = await userService.listWaiters();
+      setWaiters(res.data || []);
+    }
+
+    if (session?.waiterUserId) {
+      setSelectedWaiterId(session?.waiterUserId);
+    }
+
+    loadWaiters();
+  }, [session]);
+
   const submitEdit = async () => {
     if (isWaiter) return;
     if (!id) return;
@@ -475,17 +489,6 @@ export default function SessionDetailsPage() {
                 ? `Phục vụ: ${session.waiterName}`
                 : "Chưa gán nhân viên phục vụ"}
             </Typography>
-            {!isWaiter && (
-              <Button
-                size="small"
-                variant="outlined"
-                sx={{ ml: 1 }}
-                onClick={() => setAssignWaiterOpen(true)}
-                disabled={session?.status !== "Open"}
-              >
-                Gán nhân viên
-              </Button>
-            )}
           </Stack>
 
           {!isWaiter && (
@@ -504,6 +507,18 @@ export default function SessionDetailsPage() {
               >
                 Gắn bàn
               </Button>
+              {!isWaiter && (
+                <Button
+                  size="small"
+                  variant="contained"
+                  sx={{ backgroundColor: "gray", ml: 1 }}
+                  startIcon={<PersonAdd />}
+                  onClick={() => setAssignWaiterOpen(true)}
+                  disabled={session?.status !== "Open"}
+                >
+                  Gán nhân viên
+                </Button>
+              )}
               {session?.status !== "Open" && (
                 <Button
                   size="small"
@@ -1242,16 +1257,6 @@ export default function SessionDetailsPage() {
               <Select
                 label="Nhân viên phục vụ"
                 value={selectedWaiterId}
-                onOpen={async () => {
-                  try {
-                    setWaitersLoading(true);
-                    const res = await userService.listWaiters();
-                    setWaiters(res.data || []);
-                  } catch {
-                  } finally {
-                    setWaitersLoading(false);
-                  }
-                }}
                 onChange={(e) => setSelectedWaiterId(String(e.target.value))}
               >
                 {waiters.map((w) => (
@@ -1278,7 +1283,6 @@ export default function SessionDetailsPage() {
                 if (res.isSuccess) {
                   toast.success(res.data || "Đã gán nhân viên phục vụ");
                   setAssignWaiterOpen(false);
-                  setSelectedWaiterId("");
                   await mutateSession();
                 } else {
                   toast.error(res.message || "Gán nhân viên thất bại");

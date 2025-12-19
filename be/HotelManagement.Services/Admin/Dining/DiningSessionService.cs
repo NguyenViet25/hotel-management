@@ -44,7 +44,6 @@ public class DiningSessionService : IDiningSessionService
             Id = Guid.NewGuid(),
             HotelId = request.HotelId,
             TableId = null,
-            WaiterUserId = request.WaiterUserId,
             StartedAt = request.StartedAt ?? DateTime.Now,
             Notes = request.Notes ?? string.Empty,
             TotalGuests = request.TotalGuests ?? 0,

@@ -54,11 +54,10 @@ public class UsersAdminController : ControllerBase
 
         Guid hotelId = Guid.Parse(hotelIdClaim);
 
-        var waiterRoleId = await _svc.GetWaiterRoleId();
-        var query = new UserByRoleQuery(hotelId, waiterRoleId);
+        var query = new UsersQueryDto(1, 99999, null, "waiter", null, null);
 
-        var items = await _svc.ListByRoleAsync(query, hotelId);
-        return Ok(ApiResponse<IEnumerable<UserSummaryDto>>.Ok(items));
+        var items = await _svc.ListByHotelAsync(query, hotelId);
+        return Ok(ApiResponse<IEnumerable<UserSummaryDto>>.Ok(items.Items));
     }
 
 
