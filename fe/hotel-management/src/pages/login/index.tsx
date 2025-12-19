@@ -43,6 +43,7 @@ const LoginPage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // breakpoint for mobile
   const { setUser, user } = useStore<StoreState>((state) => state);
+  const isForDev = false;
 
   useLayoutEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -268,103 +269,105 @@ const LoginPage = () => {
             </Box>
           </Container>
         </Box>
-        <Card sx={{ pb: 2, px: 2, opacity: 1 }}>
-          <Stack gap={1}>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              textAlign={"center"}
-              sx={{ mt: 2, color: "red", fontWeight: "bold" }}
-            >
-              For development only
-            </Typography>
-            <Tooltip title="Admin">
-              <Button
-                fullWidth
-                variant="contained"
-                color="success"
-                size="small"
-                startIcon={<Login />}
-                onClick={() => superLogin("admin", "Password1@")}
-                sx={{ borderRadius: 3, textTransform: "none" }}
+        {isForDev && (
+          <Card sx={{ pb: 2, px: 2, opacity: 1 }}>
+            <Stack gap={1}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                textAlign={"center"}
+                sx={{ mt: 2, color: "red", fontWeight: "bold" }}
               >
-                Admin
-              </Button>
-            </Tooltip>
+                For development only
+              </Typography>
+              <Tooltip title="Admin">
+                <Button
+                  fullWidth
+                  variant="contained"
+                  color="success"
+                  size="small"
+                  startIcon={<Login />}
+                  onClick={() => superLogin("admin", "Password1@")}
+                  sx={{ borderRadius: 3, textTransform: "none" }}
+                >
+                  Admin
+                </Button>
+              </Tooltip>
 
-            <Tooltip title="Manager">
-              <Button
-                fullWidth
-                variant="contained"
-                color="success"
-                size="small"
-                startIcon={<Login />}
-                onClick={() => superLogin("manager", "Password1@")}
-                sx={{
-                  borderRadius: 3,
-                  textTransform: "none",
-                }}
-              >
-                Manager
-              </Button>
-            </Tooltip>
+              <Tooltip title="Manager">
+                <Button
+                  fullWidth
+                  variant="contained"
+                  color="success"
+                  size="small"
+                  startIcon={<Login />}
+                  onClick={() => superLogin("manager", "Password1@")}
+                  sx={{
+                    borderRadius: 3,
+                    textTransform: "none",
+                  }}
+                >
+                  Manager
+                </Button>
+              </Tooltip>
 
-            <Tooltip title="Frontdesk">
-              <Button
-                fullWidth
-                variant="contained"
-                color="success"
-                size="small"
-                startIcon={<Login />}
-                onClick={() => superLogin("frontdesk", "Password1@")}
-                sx={{ borderRadius: 3, textTransform: "none" }}
-              >
-                Frontdesk
-              </Button>
-            </Tooltip>
+              <Tooltip title="Frontdesk">
+                <Button
+                  fullWidth
+                  variant="contained"
+                  color="success"
+                  size="small"
+                  startIcon={<Login />}
+                  onClick={() => superLogin("frontdesk", "Password1@")}
+                  sx={{ borderRadius: 3, textTransform: "none" }}
+                >
+                  Frontdesk
+                </Button>
+              </Tooltip>
 
-            <Tooltip title="Kitchen">
-              <Button
-                fullWidth
-                variant="contained"
-                color="success"
-                size="small"
-                startIcon={<Login />}
-                onClick={() => superLogin("kitchen", "Password1@")}
-                sx={{ borderRadius: 3, textTransform: "none" }}
-              >
-                Kitchen
-              </Button>
-            </Tooltip>
+              <Tooltip title="Kitchen">
+                <Button
+                  fullWidth
+                  variant="contained"
+                  color="success"
+                  size="small"
+                  startIcon={<Login />}
+                  onClick={() => superLogin("kitchen", "Password1@")}
+                  sx={{ borderRadius: 3, textTransform: "none" }}
+                >
+                  Kitchen
+                </Button>
+              </Tooltip>
 
-            <Tooltip title="Waiter">
-              <Button
-                fullWidth
-                variant="contained"
-                color="success"
-                size="small"
-                startIcon={<Login />}
-                onClick={() => superLogin("waiter", "Password1@")}
-                sx={{ borderRadius: 3, textTransform: "none" }}
-              >
-                Waiter
-              </Button>
-            </Tooltip>
-            <Tooltip title="Housekeeper">
-              <Button
-                fullWidth
-                variant="contained"
-                color="success"
-                size="small"
-                startIcon={<Login />}
-                onClick={() => superLogin("housekeeping", "Password1@")}
-                sx={{ borderRadius: 3, textTransform: "none" }}
-              >
-                Housekeeper
-              </Button>
-            </Tooltip>
-          </Stack>
-        </Card>
+              <Tooltip title="Waiter">
+                <Button
+                  fullWidth
+                  variant="contained"
+                  color="success"
+                  size="small"
+                  startIcon={<Login />}
+                  onClick={() => superLogin("waiter", "Password1@")}
+                  sx={{ borderRadius: 3, textTransform: "none" }}
+                >
+                  Waiter
+                </Button>
+              </Tooltip>
+              <Tooltip title="Housekeeper">
+                <Button
+                  fullWidth
+                  variant="contained"
+                  color="success"
+                  size="small"
+                  startIcon={<Login />}
+                  onClick={() => superLogin("housekeeping", "Password1@")}
+                  sx={{ borderRadius: 3, textTransform: "none" }}
+                >
+                  Housekeeper
+                </Button>
+              </Tooltip>
+            </Stack>
+          </Card>
+        )}
       </Box>
     </Box>
   );
