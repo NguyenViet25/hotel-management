@@ -156,65 +156,75 @@ const BookingInvoiceDialog: React.FC<Props> = ({
   >({});
 
   useEffect(() => {
+    console.log("booking?.bookingRoomTypes?", booking?.bookingRoomTypes);
+
     const loadDailyPrices = async () => {
       if (!open || !booking?.bookingRoomTypes?.length) return;
       const result: Record<string, { date: string; price: number }[]> = {};
       await Promise.all(
-        (booking.bookingRoomTypes || []).map(async (rt) => {
-          try {
-            const [qRes, rtRes] = await Promise.all([
-              pricingApi.quote({
-                roomTypeId: rt.roomTypeId,
-                checkInDate: dayjs(rt.startDate).format("YYYY-MM-DD"),
-                checkOutDate: dayjs(rt.endDate).format("YYYY-MM-DD"),
-              }),
-              roomTypesApi.getRoomTypeById(rt.roomTypeId),
-            ]);
-            const rawQuote: PricingQuoteResponse | null =
-              ((qRes as any).data || (qRes as any).data?.data || qRes.data) ??
-              null;
-            const rtDetails = ((rtRes as any).data ||
-              (rtRes as any).data?.data ||
-              rtRes.data) as any;
-            const overrides = (rtDetails?.priceByDates || []).map((d: any) =>
-              dayjs(d.date).format("YYYY-MM-DD")
-            );
-            const overrideSet = new Set(overrides);
-            const inputPrice = rt.price || rtDetails?.priceFrom || 0;
+        (booking.bookingRoomTypes || []).flatMap((rt) =>
+          (rt.bookingRooms || []).map(async (br) => {
+            try {
+              const [qRes, rtRes] = await Promise.all([
+                pricingApi.quote({
+                  roomTypeId: rt.roomTypeId,
+                  checkInDate: dayjs(br.actualCheckInAt || rt.startDate).format(
+                    "YYYY-MM-DD"
+                  ),
+                  checkOutDate: dayjs(
+                    br.actualCheckOutAt || br.extendedDate || rt.endDate
+                  ).format("YYYY-MM-DD"),
+                }),
+                roomTypesApi.getRoomTypeById(rt.roomTypeId),
+              ]);
+              const rawQuote: PricingQuoteResponse | null =
+                ((qRes as any).data || (qRes as any).data?.data || qRes.data) ??
+                null;
+              const rtDetails = ((rtRes as any).data ||
+                (rtRes as any).data?.data ||
+                rtRes.data) as any;
+              const overrides = (rtDetails?.priceByDates || []).map((d: any) =>
+                dayjs(d.date).format("YYYY-MM-DD")
+              );
+              const overrideSet = new Set(overrides);
+              const inputPrice = rt.price || rtDetails?.priceFrom || 0;
 
-            const start = dayjs(rt.startDate);
-            const end = dayjs(rt.endDate);
+              const start = dayjs(br.actualCheckInAt || rt.startDate);
+              const end = dayjs(
+                br.actualCheckOutAt || br.extendedDate || rt.endDate
+              );
 
-            let items =
-              rawQuote?.items && rawQuote.items.length ? rawQuote.items : [];
-            if ((!items || items.length === 0) && start.isBefore(end)) {
-              const temp: { date: string; price: number }[] = [];
-              let cursor = start.clone();
-              while (cursor.isBefore(end)) {
-                const dateStr = cursor.format("YYYY-MM-DD");
-                const overridePrice = rtDetails?.priceByDates?.find(
-                  (p: any) => dayjs(p.date).format("YYYY-MM-DD") === dateStr
-                )?.price;
-                temp.push({
-                  date: dateStr,
-                  price: overridePrice ?? inputPrice,
+              let items =
+                rawQuote?.items && rawQuote.items.length ? rawQuote.items : [];
+              if ((!items || items.length === 0) && start.isBefore(end)) {
+                const temp: { date: string; price: number }[] = [];
+                let cursor = start.clone();
+                while (cursor.isBefore(end)) {
+                  const dateStr = cursor.format("YYYY-MM-DD");
+                  const overridePrice = rtDetails?.priceByDates?.find(
+                    (p: any) => dayjs(p.date).format("YYYY-MM-DD") === dateStr
+                  )?.price;
+                  temp.push({
+                    date: dateStr,
+                    price: overridePrice ?? inputPrice,
+                  });
+                  cursor = cursor.add(1, "day");
+                }
+                items = temp as any;
+              } else {
+                items = items.map((it: any) => {
+                  const d = dayjs(it.date).format("YYYY-MM-DD");
+                  const isOverride = overrideSet.has(d);
+                  return {
+                    date: d,
+                    price: isOverride ? it.price : inputPrice,
+                  };
                 });
-                cursor = cursor.add(1, "day");
               }
-              items = temp as any;
-            } else {
-              items = items.map((it: any) => {
-                const d = dayjs(it.date).format("YYYY-MM-DD");
-                const isOverride = overrideSet.has(d);
-                return {
-                  date: d,
-                  price: isOverride ? it.price : inputPrice,
-                };
-              });
-            }
-            result[rt.bookingRoomTypeId] = items as any;
-          } catch {}
-        })
+              result[br.bookingRoomId] = items as any;
+            } catch {}
+          })
+        )
       );
       setPriceByDateMap(result);
     };
@@ -240,71 +250,89 @@ const BookingInvoiceDialog: React.FC<Props> = ({
       total: number;
     }[] = [];
     for (const rt of booking.bookingRoomTypes || []) {
-      const rooms = Math.max(rt.totalRoom, 1);
-      const daily = (priceByDateMap[rt.bookingRoomTypeId] || []).slice();
-      if (daily.length === 0) {
-        const start = dayjs(rt.startDate);
-        const end = dayjs(rt.endDate);
-        const nights = Math.max(1, end.diff(start, "day"));
-        rows.push({
-          label: `Phòng ${rt.roomTypeName}`,
-          dateRange:
-            nights > 1
-              ? `${start.format("DD/MM/YYYY")} - ${start
-                  .add(nights - 1, "day")
-                  .format("DD/MM/YYYY")}`
-              : `${start.format("DD/MM/YYYY")}`,
-          quantity: rooms,
-          nights,
-          unit: rt.price,
-          total: rt.price * rooms * nights,
-        });
-      } else {
-        daily.sort((a, b) => a.date.localeCompare(b.date));
-        let segStart = daily[0];
-        let segEnd = daily[0];
-        for (let i = 1; i < daily.length; i++) {
-          const cur = daily[i];
-          const prevDate = dayjs(segEnd.date);
-          const curDate = dayjs(cur.date);
-          const isConsecutive = curDate.diff(prevDate, "day") === 1;
-          const samePrice = cur.price === segEnd.price;
-          if (isConsecutive && samePrice) {
-            segEnd = cur;
-          } else {
-            const nights =
-              dayjs(segEnd.date).diff(dayjs(segStart.date), "day") + 1;
-            rows.push({
-              label: `Phòng ${rt.roomTypeName}`,
-              dateRange:
-                nights > 1
-                  ? `${dayjs(segStart.date).format("DD/MM/YYYY")} - ${dayjs(
-                      segEnd.date
-                    ).format("DD/MM/YYYY")}`
-                  : `${dayjs(segStart.date).format("DD/MM/YYYY")}`,
-              quantity: rooms,
-              nights,
-              unit: segEnd.price,
-              total: segEnd.price * rooms * nights,
-            });
-            segStart = cur;
-            segEnd = cur;
+      for (const br of rt.bookingRooms || []) {
+        const daily = (priceByDateMap[br.bookingRoomId] || []).slice();
+        if (daily.length === 0) {
+          const start = dayjs(br.actualCheckInAt || rt.startDate);
+          const end = dayjs(
+            br.actualCheckOutAt || br.extendedDate || rt.endDate
+          );
+          const nights = Math.max(1, end.diff(start, "day"));
+          rows.push({
+            label: `Phòng ${br.roomName || "—"} (${rt.roomTypeName})`,
+            dateRange:
+              nights > 1
+                ? `${start.add(1, "day").format("DD/MM/YYYY")} - ${start
+                    .add(nights - 1, "day")
+                    .format("DD/MM/YYYY")}`
+                : `${dayjs(start).format("DD/MM/YYYY")} - ${dayjs(end)
+                    .add(1, "day")
+                    .format("DD/MM/YYYY")}`,
+            quantity: 1,
+            nights: nights === 1 ? 1 : nights - 1,
+            unit: rt.price,
+            total: rt.price * nights,
+          });
+        } else {
+          daily.sort((a, b) => a.date.localeCompare(b.date));
+          let segStart = daily[0];
+          let segEnd = daily[0];
+          for (let i = 1; i < daily.length; i++) {
+            const cur = daily[i];
+            const prevDate = dayjs(segEnd.date);
+            const curDate = dayjs(cur.date);
+            const isConsecutive = curDate.diff(prevDate, "day") === 1;
+            const samePrice = cur.price === segEnd.price;
+            if (isConsecutive && samePrice) {
+              segEnd = cur;
+            } else {
+              const nights =
+                dayjs(segEnd.date).diff(dayjs(segStart.date), "day") + 1;
+              rows.push({
+                label: `Phòng ${br.roomName || "—"} (${rt.roomTypeName})`,
+                dateRange:
+                  nights > 1
+                    ? `${dayjs(segStart.date)
+                        .add(1, "day")
+                        .format("DD/MM/YYYY")} - ${dayjs(segEnd.date)
+                        .add(1, "day")
+                        .format("DD/MM/YYYY")}`
+                    : `${dayjs(segStart.date).format("DD/MM/YYYY")} - ${dayjs(
+                        segEnd.date
+                      )
+                        .add(1, "day")
+                        .format("DD/MM/YYYY")}`,
+                quantity: 1,
+                nights: nights === 1 ? 1 : nights - 1,
+                unit: segEnd.price,
+                total: segEnd.price * nights,
+              });
+              segStart = cur;
+              segEnd = cur;
+            }
           }
+          const nights =
+            dayjs(segEnd.date).diff(dayjs(segStart.date), "day") + 1;
+          rows.push({
+            label: `Phòng ${br.roomName || "—"} (${rt.roomTypeName})`,
+            dateRange:
+              nights > 1
+                ? `${dayjs(segStart.date)
+                    .add(1, "day")
+                    .format("DD/MM/YYYY")} - ${dayjs(segEnd.date)
+                    .add(1, "day")
+                    .format("DD/MM/YYYY")}`
+                : `${dayjs(segStart.date).format("DD/MM/YYYY")} - ${dayjs(
+                    segEnd.date
+                  )
+                    .add(1, "day")
+                    .format("DD/MM/YYYY")}`,
+            quantity: 1,
+            nights: nights === 1 ? 1 : nights - 1,
+            unit: segEnd.price,
+            total: segEnd.price * nights,
+          });
         }
-        const nights = dayjs(segEnd.date).diff(dayjs(segStart.date), "day") + 1;
-        rows.push({
-          label: `Phòng ${rt.roomTypeName}`,
-          dateRange:
-            nights > 1
-              ? `${dayjs(segStart.date).format("DD/MM/YYYY")} - ${dayjs(
-                  segEnd.date
-                ).format("DD/MM/YYYY")}`
-              : `${dayjs(segStart.date).format("DD/MM/YYYY")}`,
-          quantity: rooms,
-          nights,
-          unit: segEnd.price,
-          total: segEnd.price * rooms * nights,
-        });
       }
     }
 
@@ -367,7 +395,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
       .reduce((a, c) => a + c.total, 0);
     const discountAmt = Math.round((subtotal * (promotionValue || 0)) / 100);
     const deposit = booking?.depositAmount || 0;
-    const taxableAmount = subtotal - discountAmt + additionalBookingAmount;
+    const taxableAmount = subtotal - discountAmt;
     const vatAmt = Math.round(
       ((taxableAmount - additionalAmount) *
         (showVat ? vatPercentage || 0 : 0)) /
@@ -719,6 +747,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                         : ""
                     }
                     onChange={(e) => {
+                      console.log("e.target.value", e.target.value);
                       const raw = e.target.value.replace(/[^0-9]/g, "");
                       const num = raw ? Number(raw) : 0;
                       setAdditionalAmount(num);

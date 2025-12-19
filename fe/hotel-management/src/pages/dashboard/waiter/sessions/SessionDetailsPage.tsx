@@ -1034,17 +1034,19 @@ export default function SessionDetailsPage() {
                   </TableBody>
                 </Table>
 
-                <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-                  <Button
-                    variant="contained"
-                    color="success"
-                    size="small"
-                    startIcon={<CheckCircle />}
-                    onClick={() => setStatusDialogOpen(true)}
-                  >
-                    Đã phục vụ
-                  </Button>
-                </Box>
+                {isWaiter && (
+                  <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+                    <Button
+                      variant="contained"
+                      color="success"
+                      size="small"
+                      startIcon={<CheckCircle />}
+                      onClick={() => setStatusDialogOpen(true)}
+                    >
+                      Đã phục vụ
+                    </Button>
+                  </Box>
+                )}
               </Stack>
             )}
           </Box>

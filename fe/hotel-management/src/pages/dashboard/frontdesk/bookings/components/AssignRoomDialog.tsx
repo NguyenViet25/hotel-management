@@ -19,6 +19,7 @@ import bookingsApi, {
 import RoomCard from "./RoomCard";
 import { statusUiFromTimeline } from "../../../../../utils/room-status";
 import { Check, Info, Warning } from "@mui/icons-material";
+import { RoomStatus } from "../../../../../api/roomsApi";
 
 type Props = {
   open: boolean;
@@ -150,14 +151,19 @@ const AssignRoomDialog: React.FC<Props> = ({
                   );
                   const disabled =
                     !isAvailable(r) || alreadyAssigned || remaining === 0;
+
+                  const newUi = isAvailable(r)
+                    ? { label: "Trống", color: "#2e7d32" }
+                    : ui;
+
                   return (
                     <Grid key={r.roomId}>
                       <RoomCard
                         room={r}
                         selected={selected.includes(r.roomId)}
                         disabled={disabled}
-                        statusLabel={ui.label}
-                        statusColor={ui.color}
+                        statusLabel={newUi.label}
+                        statusColor={newUi.color}
                         onClick={() => toggleSelect(r.roomId)}
                       />
                     </Grid>

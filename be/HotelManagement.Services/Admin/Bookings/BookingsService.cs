@@ -438,35 +438,72 @@ public class BookingsService(
             foreach (var item in dtos)
             {
                 var roomTypes = await _bookingRoomTypeRepo.Query()
-                    .Include(x => x.RoomType).Where(x => x.BookingId == item.Id).ToListAsync();
+                    .Include(x => x.RoomType)
+                    .Include(x => x.BookingRooms)
+                    .Where(x => x.BookingId == item.Id).ToListAsync();
 
-
-                item.BookingRoomTypes = roomTypes.Select(rt => new BookingRoomTypeDto
+                var listRoomType = new List<BookingRoomTypeDto>();
+                foreach (var rt in roomTypes)
                 {
-                    BookingRoomTypeId = rt.BookingRoomTypeId,
-                    RoomTypeId = rt.RoomTypeId,
-                    RoomTypeName = rt.RoomTypeName,
-                    Capacity = rt.Capacity,
-                    Price = rt.Price,
-                    TotalRoom = rt.TotalRoom,
-                    StartDate = rt.StartDate,
-                    EndDate = rt.EndDate,
-                    BookingRooms = rt.BookingRooms.Select(r => new BookingRoomDto
+                    var bookingRooms = await _bookingRoomRepo.Query()
+                        .Include(x => x.HotelRoom)
+                        .Where(x => x.BookingRoomTypeId == rt.BookingRoomTypeId)
+                        .ToListAsync();
+
+                    var rtDto = new BookingRoomTypeDto()
                     {
-                        BookingRoomId = r.BookingRoomId,
-                        RoomId = r.RoomId,
-                        RoomName = r.RoomName,
-                        StartDate = r.StartDate,
-                        EndDate = r.ExtendedDate.HasValue ? r.ExtendedDate.Value : r.EndDate,
-                        BookingStatus = r.BookingStatus,
-                        Guests = new List<BookingGuestDto>()
-                    }).ToList()
-                }).ToList();
+                        BookingRoomTypeId = rt.BookingRoomTypeId,
+                        RoomTypeId = rt.RoomTypeId,
+                        RoomTypeName = rt.RoomTypeName,
+                        Capacity = rt.Capacity,
+                        Price = rt.Price,
+                        TotalRoom = rt.TotalRoom,
+                        StartDate = rt.StartDate,
+                        EndDate = rt.EndDate,
+                    };
+
+                    var listBookingRoomDto = new List<BookingRoomDto>();
+                    foreach (BookingRoom br in bookingRooms)
+                    {
+                        var bookingGuests = await _bookingGuestRepo.Query()
+                            .Include(x => x.BookingRoom)
+                            .Include(x => x.Guest)
+                            .Where(x => x.BookingRoomId == br.BookingRoomId).ToListAsync();
+
+                        var bookingRoomDto = new BookingRoomDto
+                        {
+                            BookingRoomId = br.BookingRoomId,
+                            RoomId = br.RoomId,
+                            RoomName = br.RoomName,
+                            StartDate = br.StartDate,
+                            EndDate = br.ExtendedDate.HasValue ? br.ExtendedDate.Value : br.EndDate,
+                            BookingStatus = br.BookingStatus,
+                            ActualCheckInAt = br.ActualCheckInAt,
+                            ActualCheckOutAt = br.ActualCheckOutAt,
+                            ExtendedDate = br.ExtendedDate,
+                            Guests = [.. bookingGuests.Select(x => new BookingGuestDto()
+                        {
+                            GuestId = x.GuestId,
+                            Fullname = x.Guest?.FullName,
+                            Email = x.Guest?.Email,
+                            Phone = x.Guest?.Phone,
+                            IdCard = x.Guest?.IdCard,
+                            IdCardBackImageUrl = x.Guest?.IdCardBackImageUrl,
+                            IdCardFrontImageUrl = x.Guest?.IdCardFrontImageUrl
+                        })]
+                        };
+
+                        listBookingRoomDto.Add(bookingRoomDto);
+                    }
+                    rtDto.BookingRooms = listBookingRoomDto;
+
+                    listRoomType.Add(rtDto);
+
+                }
+                item.BookingRoomTypes = listRoomType;
 
                 list.Add(item);
             }
-
-
             return ApiResponse<List<BookingDetailsDto>>.Ok(list, meta: new { total, page = query.Page, pageSize = query.PageSize });
         }
         catch (Exception ex)

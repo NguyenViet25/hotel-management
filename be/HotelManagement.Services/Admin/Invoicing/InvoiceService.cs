@@ -248,12 +248,9 @@ public class InvoiceService : IInvoiceService
 
     public async Task<RevenueStatsDto> GetRevenueAsync(RevenueQueryDto query)
     {
-        var bookingQuery = _bookingRepository.Query().Where(x => x.HotelId == query.HotelId);
     
-        bookingQuery.Where(x => x.Status == BookingStatus.Completed);
 
-        var bookings = await bookingQuery.Select(x => x.Id).ToListAsync();
-        var q = _invoiceRepository.Query().Where(x => x.BookingId != null && bookings.Contains((Guid)x.BookingId)).AsQueryable();
+        var q = _invoiceRepository.Query().Where(x => x.BookingId != null).AsQueryable();
 
         q = q.Where(i => i.HotelId == query.HotelId);
         q = q.Where(i => i.Status != InvoiceStatus.Cancelled);
