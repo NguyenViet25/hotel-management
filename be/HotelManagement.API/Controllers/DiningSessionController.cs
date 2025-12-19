@@ -148,7 +148,7 @@ public class DiningSessionController : ControllerBase
     }
 
 
-    [HttpPost]
+    [HttpPost("assign-waiter")]
     public async Task<IActionResult> AssignWaiterAsync(AssignWaiterRequest request)
     {
         var response = await _diningSessionService.AssignWaiterAsync(request);

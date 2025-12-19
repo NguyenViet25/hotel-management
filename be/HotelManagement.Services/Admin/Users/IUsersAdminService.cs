@@ -15,4 +15,5 @@ public interface IUsersAdminService
     Task<bool> ResetPasswordAsync(Guid id, ResetPasswordAdminDto dto);
     Task<UserPropertyRoleDto?> AssignPropertyRoleAsync(Guid id, AssignPropertyRoleDto dto);
     Task<bool> RemovePropertyRoleAsync(Guid id, Guid propertyRoleId);
+    Task<string> GetWaiterRoleId();
 }

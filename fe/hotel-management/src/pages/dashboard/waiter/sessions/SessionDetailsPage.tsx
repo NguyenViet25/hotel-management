@@ -80,6 +80,7 @@ import PageTitle from "../../../../components/common/PageTitle";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
 import AssignMultipleTableDialog from "./components/AssignMultipleTableDialog";
 import AssignOrderDialog from "./components/AssignOrderDialog";
+import userService, { type User } from "../../../../api/userService";
 
 export default function SessionDetailsPage() {
   const { id } = useParams();
@@ -107,6 +108,10 @@ export default function SessionDetailsPage() {
   const [deleteReqId, setDeleteReqId] = useState<string | null>(null);
   const [reload, setReload] = useState<number>(0);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [assignWaiterOpen, setAssignWaiterOpen] = useState(false);
+  const [waiters, setWaiters] = useState<User[]>([]);
+  const [waitersLoading, setWaitersLoading] = useState(false);
+  const [selectedWaiterId, setSelectedWaiterId] = useState<string>("");
 
   const requestTypes = useMemo(
     () => [
@@ -456,6 +461,30 @@ export default function SessionDetailsPage() {
                   Ghi chú: {session.notes}
                 </Typography>
               </Stack>
+            )}
+          </Stack>
+          <Stack
+            direction="row"
+            spacing={1}
+            alignItems="center"
+            sx={{ px: 2, pb: 1 }}
+          >
+            <Person fontSize="small" color="disabled" />
+            <Typography variant="caption" color="text.secondary">
+              {session.waiterName
+                ? `Phục vụ: ${session.waiterName}`
+                : "Chưa gán nhân viên phục vụ"}
+            </Typography>
+            {!isWaiter && (
+              <Button
+                size="small"
+                variant="outlined"
+                sx={{ ml: 1 }}
+                onClick={() => setAssignWaiterOpen(true)}
+                disabled={session?.status !== "Open"}
+              >
+                Gán nhân viên
+              </Button>
             )}
           </Stack>
 
@@ -1198,6 +1227,71 @@ export default function SessionDetailsPage() {
           }}
         />
       )}
+
+      <Dialog
+        open={assignWaiterOpen}
+        onClose={() => setAssignWaiterOpen(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>Gán nhân viên phục vụ</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Nhân viên phục vụ</InputLabel>
+              <Select
+                label="Nhân viên phục vụ"
+                value={selectedWaiterId}
+                onOpen={async () => {
+                  try {
+                    setWaitersLoading(true);
+                    const res = await userService.listWaiters();
+                    setWaiters(res.data || []);
+                  } catch {
+                  } finally {
+                    setWaitersLoading(false);
+                  }
+                }}
+                onChange={(e) => setSelectedWaiterId(String(e.target.value))}
+              >
+                {waiters.map((w) => (
+                  <MenuItem key={w.id} value={w.id}>
+                    {w.fullname || w.userName}{" "}
+                    {w.phoneNumber ? `• ${w.phoneNumber}` : ""}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAssignWaiterOpen(false)}>Đóng</Button>
+          <Button
+            variant="contained"
+            disabled={!selectedWaiterId || waitersLoading || !id}
+            onClick={async () => {
+              try {
+                const res = await diningSessionsApi.assignWaiter({
+                  waiterId: selectedWaiterId,
+                  sessionId: id!,
+                });
+                if (res.isSuccess) {
+                  toast.success(res.data || "Đã gán nhân viên phục vụ");
+                  setAssignWaiterOpen(false);
+                  setSelectedWaiterId("");
+                  await mutateSession();
+                } else {
+                  toast.error(res.message || "Gán nhân viên thất bại");
+                }
+              } catch {
+                toast.error("Đã xảy ra lỗi");
+              }
+            }}
+          >
+            Xác nhận
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Dialog open={!!deleteReqId} onClose={() => setDeleteReqId(null)}>
         <DialogTitle>Xóa yêu cầu</DialogTitle>

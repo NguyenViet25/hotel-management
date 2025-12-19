@@ -54,6 +54,11 @@ export interface ListResponse<T> {
   data: T;
 }
 
+export interface AssignWaiterRequest {
+  waiterId: string;
+  sessionId: string;
+}
+
 const diningSessionsApi = {
   async createSession(
     payload: CreateDiningSessionRequest
@@ -146,6 +151,10 @@ const diningSessionsApi = {
     sessionId: string
   ): Promise<ListResponse<SessionTableDto[]>> {
     const res = await axios.get(`/dining-sessions/${sessionId}/tables`);
+    return res.data;
+  },
+  async assignWaiter(payload: AssignWaiterRequest): Promise<ItemResponse<string>> {
+    const res = await axios.post(`/dining-sessions/assign-waiter`, payload);
     return res.data;
   },
 };

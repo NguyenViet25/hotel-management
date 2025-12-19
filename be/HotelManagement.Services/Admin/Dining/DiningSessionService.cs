@@ -1,4 +1,4 @@
-﻿using HotelManagement.Domain;
+using HotelManagement.Domain;
 using HotelManagement.Domain.Entities;
 using HotelManagement.Domain.Repositories;
 using HotelManagement.Repository.Common;
@@ -578,19 +578,21 @@ public class DiningSessionService : IDiningSessionService
 
     public async Task<(bool, string)> AssignWaiterAsync(AssignWaiterRequest request)
     {
+        var session = await _diningSessionRepository.FindAsync(request.SessionId);
+        if (session == null) return (false, "Không tìm thấy phiên phục vụ");
 
-        var item = _diningSessionRepository.Query().Where(x => x.Id == request.SessionId).FirstOrDefaultAsync();
-        if (item is null) return (false, "Không tìm thấy phiên phục vụ");
-
-        // TODO: check max 3 
-        var isWaiterAvailable = (await _diningSessionRepository
+        var openAssignedCount = await _diningSessionRepository
             .Query()
             .Where(x => x.WaiterUserId == request.WaiterId)
             .Where(x => x.Status == DiningSessionStatus.Open)
-            .CountAsync()) <= 3;
+            .CountAsync();
 
-        if (isWaiterAvailable)
-            return (false, "Mỗi nhân viên phục vụ chỉ được chỉ định tối đa 3 bàn cùng lúc.");
+        if (openAssignedCount >= 3)
+            return (false, "Mỗi nhân viên phục vụ chỉ được chỉ định tối đa 3 phiên đang mở.");
+
+        session.WaiterUserId = request.WaiterId;
+        await _diningSessionRepository.UpdateAsync(session);
+        await _diningSessionRepository.SaveChangesAsync();
 
         return (true, "Gán nhân viên phục vụ thành công");
     }

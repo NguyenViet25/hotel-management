@@ -1,241 +1,203 @@
+import { Email, Person, Phone } from "@mui/icons-material";
 import {
-  Alert,
-  Box,
   Card,
   CardContent,
+  CardHeader,
   Chip,
-  Divider,
   Stack,
   Typography,
 } from "@mui/material";
-import PersonIcon from "@mui/icons-material/Person";
-import PhoneIcon from "@mui/icons-material/Phone";
-import EmailIcon from "@mui/icons-material/Email";
-import CreditCardIcon from "@mui/icons-material/CreditCard";
-import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
-import AssignmentIcon from "@mui/icons-material/Assignment";
-import { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-import DataTable, { type Column } from "../../../../components/common/DataTable";
 import PageTitle from "../../../../components/common/PageTitle";
-import customersApi, {
-  type CustomerDetailsDto,
-} from "../../../../api/customersApi";
-import type { BookingSummaryDto } from "../../../../api/bookingsApi";
-import type { OrderSummaryDto } from "../../../../api/ordersApi";
+import guestsApi, { type GuestDto } from "../../../../api/guestsApi";
+import bookingsApi, {
+  type BookingDetailsDto,
+  type BookingSummaryDto,
+} from "../../../../api/bookingsApi";
+import ordersApi, {
+  type OrderSummaryDto,
+  type ListResponse,
+} from "../../../../api/ordersApi";
+import DataTable, {
+  type Column,
+} from "../../../../components/common/DataTable";
+import { useStore, type StoreState } from "../../../../hooks/useStore";
 
 const CustomerDetailsPage: React.FC = () => {
-  const { id } = useParams();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [data, setData] = useState<CustomerDetailsDto | null>(null);
+  const { id } = useParams<{ id: string }>();
+  const { user } = useStore<StoreState>((s) => s);
+  const hotelId = user?.hotelId || "";
+
+  const [loading, setLoading] = useState(true);
+  const [guest, setGuest] = useState<GuestDto | null>(null);
+  const [bookings, setBookings] = useState<BookingDetailsDto[]>([]);
+  const [orders, setOrders] = useState<OrderSummaryDto[]>([]);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const run = async () => {
       if (!id) return;
       setLoading(true);
-      setError(null);
       try {
-        const res = await customersApi.getDetails(id);
-        if (res.isSuccess) {
-          setData(res.data);
-        } else {
-          setError(res.message || "Không thể tải dữ liệu khách hàng");
-        }
-      } catch (e: any) {
-        setError(
-          e?.message || "Không thể tải dữ liệu khách hàng. Vui lòng thử lại."
-        );
+        const gi = await guestsApi.getById(id);
+        const g = gi.data;
+        setGuest(g);
+
+        const allBookings = await bookingsApi.getAll({ hotelId });
+        const filteredBookings =
+          allBookings.filter(
+            (b) =>
+              (b.phoneNumber && g.phone && b.phoneNumber === g.phone) ||
+              (b.primaryGuestName &&
+                g.fullName &&
+                b.primaryGuestName.toLowerCase() === g.fullName.toLowerCase())
+          ) || [];
+        setBookings(filteredBookings);
+
+        const or: ListResponse<OrderSummaryDto> = await ordersApi.listOrders({
+          hotelId,
+          search: g.phone || g.fullName,
+          page: 1,
+          pageSize: 50,
+        });
+        setOrders(or.data || []);
+      } catch {
       } finally {
         setLoading(false);
       }
     };
-    fetchData();
-  }, [id]);
+    run();
+  }, [id, hotelId]);
 
-  const bookingColumns: Column<BookingSummaryDto>[] = [
-    { id: "id", label: "Mã", minWidth: 120 },
-    {
-      id: "roomNumber",
-      label: "Phòng",
-      minWidth: 100,
-      format: (v) => v || "—",
-    },
-    {
-      id: "roomTypeName",
-      label: "Loại phòng",
-      minWidth: 140,
-      format: (v) => v || "—",
-    },
-    {
-      id: "startDate",
-      label: "Từ ngày",
-      minWidth: 120,
-      format: (v) => (v ? new Date(v).toLocaleDateString("vi-VN") : "—"),
-    },
-    {
-      id: "endDate",
-      label: "Đến ngày",
-      minWidth: 120,
-      format: (v) => (v ? new Date(v).toLocaleDateString("vi-VN") : "—"),
-    },
-    {
-      id: "status",
-      label: "Trạng thái",
-      minWidth: 120,
-      format: (v) => String(v),
-    },
-    {
-      id: "depositAmount",
-      label: "Tiền cọc",
-      minWidth: 120,
-      format: (v) =>
-        typeof v === "number"
-          ? new Intl.NumberFormat("vi-VN").format(v)
-          : "—",
-    },
-  ];
+  const bookingColumns = useMemo<Column<BookingDetailsDto>[]>(() => {
+    return [
+      { id: "id", label: "Mã", minWidth: 120 },
+      {
+        id: "primaryGuestName",
+        label: "Khách",
+        minWidth: 160,
+      },
+      {
+        id: "phoneNumber",
+        label: "SĐT",
+        minWidth: 120,
+      },
+      {
+        id: "status",
+        label: "Trạng thái",
+        minWidth: 120,
+        render: (row) => <Chip size="small" label={String(row.status)} />,
+      },
+      {
+        id: "totalAmount",
+        label: "Tổng tiền",
+        minWidth: 120,
+        format: (v) =>
+          typeof v === "number"
+            ? new Intl.NumberFormat("vi-VN").format(v)
+            : "—",
+      },
+      {
+        id: "createdAt",
+        label: "Tạo lúc",
+        minWidth: 160,
+        format: (v) => (v ? new Date(v).toLocaleString() : "—"),
+      },
+    ];
+  }, []);
 
-  const orderColumns: Column<OrderSummaryDto>[] = [
-    { id: "id", label: "Mã", minWidth: 120 },
-    {
-      id: "status",
-      label: "Trạng thái",
-      minWidth: 120,
-      format: (v) => String(v),
-    },
-    {
-      id: "itemsCount",
-      label: "SL món",
-      minWidth: 80,
-      format: (v) => String(v ?? 0),
-    },
-    {
-      id: "itemsTotal",
-      label: "Tổng tiền",
-      minWidth: 120,
-      format: (v) =>
-        typeof v === "number"
-          ? new Intl.NumberFormat("vi-VN").format(v)
-          : "—",
-    },
-    {
-      id: "createdAt",
-      label: "Tạo lúc",
-      minWidth: 140,
-      format: (v) => (v ? new Date(v).toLocaleString("vi-VN") : "—"),
-    },
-    {
-      id: "servingDate",
-      label: "Ngày phục vụ",
-      minWidth: 140,
-      format: (v) => (v ? new Date(v).toLocaleString("vi-VN") : "—"),
-    },
-  ];
+  const orderColumns = useMemo<Column<OrderSummaryDto>[]>(() => {
+    return [
+      { id: "id", label: "Mã", minWidth: 120 },
+      { id: "customerName", label: "Khách", minWidth: 160 },
+      { id: "customerPhone", label: "SĐT", minWidth: 120 },
+      {
+        id: "status",
+        label: "Trạng thái",
+        minWidth: 120,
+        render: (row) => <Chip size="small" label={String(row.status)} />,
+      },
+      {
+        id: "itemsTotal",
+        label: "Tổng món",
+        minWidth: 120,
+        format: (v) =>
+          typeof v === "number"
+            ? new Intl.NumberFormat("vi-VN").format(v)
+            : "—",
+      },
+      {
+        id: "createdAt",
+        label: "Tạo lúc",
+        minWidth: 160,
+        format: (v) => (v ? new Date(v).toLocaleString() : "—"),
+      },
+    ];
+  }, []);
 
-  const customer = data?.customer;
+  const header = (
+    <Stack spacing={1}>
+      <Stack direction="row" alignItems="center" spacing={1}>
+        <Person color="primary" />
+        <Typography variant="subtitle1" fontWeight={700}>
+          {guest?.fullName || "Khách hàng"}
+        </Typography>
+      </Stack>
+      <Stack direction="row" spacing={2}>
+        <Stack direction="row" spacing={1} alignItems="center">
+          <Phone fontSize="small" color="action" />
+          <Typography variant="body2">{guest?.phone || "—"}</Typography>
+        </Stack>
+        <Stack direction="row" spacing={1} alignItems="center">
+          <Email fontSize="small" color="action" />
+          <Typography variant="body2">{guest?.email || "—"}</Typography>
+        </Stack>
+      </Stack>
+    </Stack>
+  );
 
   return (
-    <Box>
-      <PageTitle title="Chi tiết khách hàng" subtitle="Thông tin, booking, order" />
-      {error && (
-        <Alert
-          severity="error"
-          sx={{ my: 2, color: "error.main", fontSize: 13 }}
-        >
-          {error}
-        </Alert>
-      )}
-      <Stack spacing={2}>
-        <Card variant="outlined" sx={{ borderRadius: 2 }}>
-          <CardContent>
-            <Stack direction="row" alignItems="center" spacing={1.5}>
-              <PersonIcon color="primary" />
-              <Typography variant="h6" fontWeight={700}>
-                Thông tin khách hàng
-              </Typography>
-            </Stack>
-            <Divider sx={{ my: 1.5 }} />
-            {!customer ? (
-              <Typography color="text.secondary">
-                {loading ? "Đang tải..." : "Không có dữ liệu khách hàng"}
-              </Typography>
-            ) : (
-              <Stack
-                spacing={1.5}
-                direction={{ xs: "column", sm: "row" }}
-                flexWrap="wrap"
-              >
-                <Chip
-                  icon={<PersonIcon />}
-                  label={customer.fullName || "—"}
-                  variant="outlined"
-                />
-                <Chip
-                  icon={<PhoneIcon />}
-                  label={customer.phone || "—"}
-                  variant="outlined"
-                />
-                <Chip
-                  icon={<EmailIcon />}
-                  label={customer.email || "—"}
-                  variant="outlined"
-                />
-                <Chip
-                  icon={<CreditCardIcon />}
-                  label={customer.idCard || "—"}
-                  variant="outlined"
-                />
-              </Stack>
-            )}
-          </CardContent>
-        </Card>
+    <Stack spacing={2}>
+      <PageTitle
+        title="Chi tiết khách hàng"
+        subtitle="Thông tin cơ bản, lịch sử đặt phòng và đặt món"
+      />
 
-        <Card variant="outlined" sx={{ borderRadius: 2 }}>
-          <CardContent>
-            <Stack direction="row" alignItems="center" spacing={1.5}>
-              <AssignmentIcon color="primary" />
-              <Typography variant="h6" fontWeight={700}>
-                Booking
+      <Card variant="outlined">
+        <CardHeader title={header} />
+        <CardContent>
+          <Stack direction={{ xs: "column", lg: "row" }} spacing={2}>
+            <Stack sx={{ flex: 1 }}>
+              <Typography variant="subtitle2" fontWeight={700}>
+                Lịch sử đặt phòng
               </Typography>
+              <DataTable<BookingDetailsDto>
+                columns={bookingColumns}
+                data={bookings}
+                title=""
+                loading={loading}
+                getRowId={(row) => row.id}
+                actionColumn={false}
+              />
             </Stack>
-            <Divider sx={{ my: 1.5 }} />
-            <DataTable<BookingSummaryDto>
-              columns={bookingColumns}
-              data={(data?.bookings || []).map((b) => ({
-                ...b,
-              }))}
-              loading={loading}
-              getRowId={(row) => row.id}
-              actionColumn={false}
-              borderRadius={2}
-            />
-          </CardContent>
-        </Card>
-
-        <Card variant="outlined" sx={{ borderRadius: 2 }}>
-          <CardContent>
-            <Stack direction="row" alignItems="center" spacing={1.5}>
-              <ReceiptLongIcon color="primary" />
-              <Typography variant="h6" fontWeight={700}>
-                Order
+            <Stack sx={{ flex: 1 }}>
+              <Typography variant="subtitle2" fontWeight={700}>
+                Lịch sử đặt món
               </Typography>
+              <DataTable<OrderSummaryDto>
+                columns={orderColumns}
+                data={orders}
+                title=""
+                loading={loading}
+                getRowId={(row) => row.id}
+                actionColumn={false}
+              />
             </Stack>
-            <Divider sx={{ my: 1.5 }} />
-            <DataTable<OrderSummaryDto>
-              columns={orderColumns}
-              data={(data?.orders || []).map((o) => ({ ...o }))}
-              loading={loading}
-              getRowId={(row) => row.id}
-              actionColumn={false}
-              borderRadius={2}
-            />
-          </CardContent>
-        </Card>
-      </Stack>
-    </Box>
+          </Stack>
+        </CardContent>
+      </Card>
+    </Stack>
   );
 };
 
 export default CustomerDetailsPage;
-

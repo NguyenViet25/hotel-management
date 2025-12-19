@@ -44,6 +44,23 @@ public class UsersAdminController : ControllerBase
         return Ok(ApiResponse<IEnumerable<UserSummaryDto>>.Ok(items));
     }
 
+    [HttpGet("waiters")]
+    public async Task<ActionResult<ApiResponse<IEnumerable<UserSummaryDto>>>> ListWaiter()
+    {
+        var hotelIdClaim = User.FindFirst("hotelId")?.Value;
+
+        if (hotelIdClaim == null)
+            return BadRequest("HotelId not found in user claims");
+
+        Guid hotelId = Guid.Parse(hotelIdClaim);
+
+        var waiterRoleId = await _svc.GetWaiterRoleId();
+        var query = new UserByRoleQuery(hotelId, waiterRoleId);
+
+        var items = await _svc.ListByRoleAsync(query, hotelId);
+        return Ok(ApiResponse<IEnumerable<UserSummaryDto>>.Ok(items));
+    }
+
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<ApiResponse<UserDetailsDto>>> Get(Guid id)
