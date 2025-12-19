@@ -9,7 +9,7 @@ public interface IGuestsService
 {
     Task<(IEnumerable<GuestDetailsDto> Items, int Total)> ListAsync(GuestsQueryDto query, Guid hotelId);
     Task<GuestDetailsDto?> GetAsync(Guid id);
-    Task<ApiResponse<GuestDetailsDto>> CreateAsync(CreateGuestDto dto);
+    Task<ApiResponse<GuestDetailsDto>> CreateAsync(CreateGuestDto dto, Guid hotelId);
     Task<ApiResponse<GuestDetailsDto>> UpdateAsync(Guid id, UpdateGuestDto dto);
 }
 
@@ -75,7 +75,7 @@ public class GuestsService : IGuestsService
         };
     }
 
-    public async Task<ApiResponse<GuestDetailsDto>> CreateAsync(CreateGuestDto dto)
+    public async Task<ApiResponse<GuestDetailsDto>> CreateAsync(CreateGuestDto dto, Guid hotelId)
     {
         if (string.IsNullOrWhiteSpace(dto.FullName)) return ApiResponse<GuestDetailsDto>.Fail("FullName is required");
         if (string.IsNullOrWhiteSpace(dto.Phone)) return ApiResponse<GuestDetailsDto>.Fail("Phone is required");
@@ -92,7 +92,8 @@ public class GuestsService : IGuestsService
             IdCard = dto.IdCard,
             Email = dto.Email,
             IdCardFrontImageUrl = dto.IdCardFrontImageUrl,
-            IdCardBackImageUrl = dto.IdCardBackImageUrl
+            IdCardBackImageUrl = dto.IdCardBackImageUrl,
+            HotelId = hotelId
         };
         _db.Guests.Add(entity);
         await _db.SaveChangesAsync();

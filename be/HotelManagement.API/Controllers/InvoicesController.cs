@@ -174,7 +174,9 @@ public class InvoicesController : ControllerBase
             CheckoutTime = request.CheckoutTime,
             AdditionalAmount = request.AdditionalAmount,
             AdditionalNotes = request.AdditionalNotes,
-            Notes = request.Notes
+            Notes = request.Notes,
+            AdditionalBookingAmount = request.AdditionalBookingAmount,
+            AdditionalBookingNotes = request.AdditionalNotes
         };
 
         var result = await _bookingsService.CheckOutAsync(request.BookingId, checkoutDto);
@@ -212,6 +214,8 @@ public class CreateBookingInvoiceRequest
     public string? Notes { get; set; }
     public string? AdditionalNotes { get; set; }
     public decimal? AdditionalAmount { get; set; }
+    public decimal? AdditionalBookingAmount { get; set; }
+    public string? AdditionalBookingNotes { get; set; }
     public PaymentDto? FinalPayment { get; set; }
     public DateTime? CheckoutTime { get; set; }
 }

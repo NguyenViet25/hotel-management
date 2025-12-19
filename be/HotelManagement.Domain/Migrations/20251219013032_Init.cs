@@ -313,12 +313,14 @@ namespace HotelManagement.Domain.Migrations
                     TotalAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     LeftAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     AdditionalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    AdditionalBookingAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     AdditionalNotes = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     PromotionCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     PromotionValue = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     HotelId1 = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AdditionalBookingNotes = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {

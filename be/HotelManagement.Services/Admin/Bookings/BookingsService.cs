@@ -250,6 +250,8 @@ public class BookingsService(
                 CreatedAt = b.CreatedAt,
                 PromotionCode = b.PromotionCode,
                 PromotionValue = b.PromotionValue,
+                AdditionalBookingAmount = b.AdditionalBookingAmount ?? 0,
+                AdditionalBookingNotes = b.AdditionalBookingNotes,
                 CallLogs = b.CallLogs?.OrderByDescending(c => c.CallTime).Select(c => new CallLogDto
                 {
                     Id = c.Id,
@@ -1613,6 +1615,8 @@ public class BookingsService(
             //booking.Status = BookingStatus.Completed;
             booking.AdditionalNotes = dto.AdditionalNotes;
             booking.AdditionalAmount = dto.AdditionalAmount ?? 0;
+            booking.AdditionalBookingNotes = dto.AdditionalBookingNotes;
+            booking.AdditionalBookingAmount = dto.AdditionalBookingAmount ?? 0;
 
             await _bookingRepo.UpdateAsync(booking);
             await _bookingRepo.SaveChangesAsync();

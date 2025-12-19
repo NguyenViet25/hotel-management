@@ -37,7 +37,13 @@ public class GuestsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<ApiResponse<GuestDetailsDto>>> Create([FromBody] CreateGuestDto request)
     {
-        var resp = await _svc.CreateAsync(request);
+        var hotelIdClaim = User.FindFirst("hotelId")?.Value;
+
+        if (hotelIdClaim == null)
+            return BadRequest("HotelId not found in user claims");
+
+        Guid hotelId = Guid.Parse(hotelIdClaim);
+        var resp = await _svc.CreateAsync(request, hotelId);
         return Ok(resp);
     }
 

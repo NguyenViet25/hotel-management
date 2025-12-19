@@ -1,12 +1,13 @@
-using Microsoft.EntityFrameworkCore;
-using HotelManagement.Repository;
 using HotelManagement.Domain;
 using HotelManagement.Domain.Entities;
+using HotelManagement.Repository;
 using Microsoft.AspNetCore.Identity;
-using System.Security.Claims;
-using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using System.Globalization;
+using System.Linq;
+using System.Security.Claims;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace HotelManagement.Api.Infrastructure;
 
@@ -788,7 +789,7 @@ public static class DatabaseInitializationExtensions
         {
             var seed = (cat + "-" + name).Replace(" ", "-");
             var tags = tagMap.TryGetValue(cat, out var t) ? t : "food";
-            return $"https://loremflickr.com/seed/{seed}/600/400/{tags}";
+            return $"https://image.similarpng.com/file/similarpng/original-picture/2021/09/Good-food-logo-design-on-transparent-background-PNG.png";
         }
 
         var data = raw.Select(d => (cat: d.cat, name: d.name, min: d.min, max: d.max, desc: d.desc, imageSrc: ImgOf(d.cat, d.name))).ToList();
@@ -852,6 +853,7 @@ public static class DatabaseInitializationExtensions
         var s480_2 = string.Join("\n", new[] { "Nộm hải sản", "Ghẹ hấp", "Tôm nướng", "Mực trứng hấp", "Bề bề rang muối", "Sò nướng mỡ hành", "Cá thu sốt cà chua", "Canh cua mùng tơi", "Rau xào", "Cơm tám + cà pháo", "Hoa quả tráng miệng" });
 
         var allNew = new List<MenuItem>();
+        var defaultImg = "https://png.pngtree.com/png-clipart/20240701/original/pngtree-a-plate-with-variety-of-food-on-it-depicted-in-clipart-png-image_15452710.png";
         foreach (var h in hotels)
         {
             var exists = await dbContext.Set<MenuItem>().AnyAsync(mi => mi.HotelId == h.Id && mi.Category == "Set");
@@ -859,28 +861,28 @@ public static class DatabaseInitializationExtensions
 
             allNew.AddRange(new[]
             {
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 200.000đ/người - Set 1", Description = s200_1, UnitPrice = 200000, ImageUrl = "", Status = 0, IsActive = true },
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 200.000đ/người - Set 2", Description = s200_2, UnitPrice = 200000, ImageUrl = "", Status = 0, IsActive = true },
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 200.000đ/người - Set 3", Description = s200_3, UnitPrice = 200000, ImageUrl = "", Status = 0, IsActive = true },
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 200.000đ/người - Set 4", Description = s200_4, UnitPrice = 200000, ImageUrl = "", Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 200.000đ/người - Set 1", Description = s200_1, UnitPrice = 200000, ImageUrl = defaultImg, Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 200.000đ/người - Set 2", Description = s200_2, UnitPrice = 200000, ImageUrl = defaultImg, Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 200.000đ/người - Set 3", Description = s200_3, UnitPrice = 200000, ImageUrl = defaultImg, Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 200.000đ/người - Set 4", Description = s200_4, UnitPrice = 200000, ImageUrl = defaultImg, Status = 0, IsActive = true },
 
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 250.000đ/người - Set 1", Description = s250_1, UnitPrice = 250000, ImageUrl = "", Status = 0, IsActive = true },
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 250.000đ/người - Set 2", Description = s250_2, UnitPrice = 250000, ImageUrl = "", Status = 0, IsActive = true },
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 250.000đ/người - Set 3", Description = s250_3, UnitPrice = 250000, ImageUrl = "", Status = 0, IsActive = true },
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 250.000đ/người - Set 4", Description = s250_4, UnitPrice = 250000, ImageUrl = "", Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 250.000đ/người - Set 1", Description = s250_1, UnitPrice = 250000, ImageUrl = defaultImg, Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 250.000đ/người - Set 2", Description = s250_2, UnitPrice = 250000, ImageUrl = defaultImg, Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 250.000đ/người - Set 3", Description = s250_3, UnitPrice = 250000, ImageUrl = defaultImg, Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 250.000đ/người - Set 4", Description = s250_4, UnitPrice = 250000, ImageUrl = defaultImg, Status = 0, IsActive = true },
 
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 300.000đ/người - Set 1", Description = s300_1, UnitPrice = 300000, ImageUrl = "", Status = 0, IsActive = true },
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 300.000đ/người - Set 2", Description = s300_2, UnitPrice = 300000, ImageUrl = "", Status = 0, IsActive = true },
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 300.000đ/người - Set 3", Description = s300_3, UnitPrice = 300000, ImageUrl = "", Status = 0, IsActive = true },
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 300.000đ/người - Set 4", Description = s300_4, UnitPrice = 300000, ImageUrl = "", Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 300.000đ/người - Set 1", Description = s300_1, UnitPrice = 300000, ImageUrl = defaultImg, Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 300.000đ/người - Set 2", Description = s300_2, UnitPrice = 300000, ImageUrl = defaultImg, Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 300.000đ/người - Set 3", Description = s300_3, UnitPrice = 300000, ImageUrl = defaultImg, Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 300.000đ/người - Set 4", Description = s300_4, UnitPrice = 300000, ImageUrl = defaultImg, Status = 0, IsActive = true },
 
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 350.000đ/người - Set 1", Description = s350_1, UnitPrice = 350000, ImageUrl = "", Status = 0, IsActive = true },
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 350.000đ/người - Set 2", Description = s350_2, UnitPrice = 350000, ImageUrl = "", Status = 0, IsActive = true },
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 350.000đ/người - Set 3", Description = s350_3, UnitPrice = 350000, ImageUrl = "", Status = 0, IsActive = true },
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 350.000đ/người - Set 4", Description = s350_4, UnitPrice = 350000, ImageUrl = "", Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 350.000đ/người - Set 1", Description = s350_1, UnitPrice = 350000, ImageUrl = defaultImg, Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 350.000đ/người - Set 2", Description = s350_2, UnitPrice = 350000, ImageUrl = defaultImg, Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 350.000đ/người - Set 3", Description = s350_3, UnitPrice = 350000, ImageUrl = defaultImg, Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 350.000đ/người - Set 4", Description = s350_4, UnitPrice = 350000, ImageUrl = defaultImg, Status = 0, IsActive = true },
 
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 480.000đ/người - Set 1", Description = s480_1, UnitPrice = 480000, ImageUrl = "", Status = 0, IsActive = true },
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 480.000đ/người - Set 2", Description = s480_2, UnitPrice = 480000, ImageUrl = "", Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 480.000đ/người - Set 1", Description = s480_1, UnitPrice = 480000, ImageUrl = defaultImg, Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 480.000đ/người - Set 2", Description = s480_2, UnitPrice = 480000, ImageUrl = defaultImg, Status = 0, IsActive = true },
             });
         }
 
@@ -1315,6 +1317,37 @@ public static class DatabaseInitializationExtensions
         await dbContext.SaveChangesAsync();
     }
 
+    private static string VietnameseNameToEmail(string fullName)
+    {
+        if (string.IsNullOrWhiteSpace(fullName))
+            return string.Empty;
+
+        // Normalize and remove Vietnamese accents
+        string normalized = fullName.Normalize(NormalizationForm.FormD);
+        var sb = new StringBuilder();
+
+        foreach (char c in normalized)
+        {
+            var unicodeCategory = Char.GetUnicodeCategory(c);
+            if (unicodeCategory != UnicodeCategory.NonSpacingMark)
+            {
+                sb.Append(c);
+            }
+        }
+
+        string noAccent = sb.ToString()
+            .Normalize(NormalizationForm.FormC)
+            .ToLower();
+
+        // Remove special characters, keep letters & numbers only
+        noAccent = Regex.Replace(noAccent, @"[^a-z0-9\s]", "");
+
+        // Remove spaces
+        noAccent = noAccent.Replace(" ", "");
+
+        return noAccent;
+    }
+
     public static async Task SeedBookingsAsync(DbContext dbContext)
     {
         var hotelId = DEFAULT_HOTEL_ID;
@@ -1327,20 +1360,20 @@ public static class DatabaseInitializationExtensions
 
         var seeds = new[]
         {
-            (name: "Nguyễn Trung Hưng", phone: "0366225777", guests: 16, roomsCount: 4, url: "https://drive.google.com/file/d/1NJoI3LyWmx-KMB02q8FjJ6XzpKX7mtsm/view?usp=sharing"),
-            (name: "Nguyễn Văn Thành", phone: "0983440891", guests: 4, roomsCount: 1, url: "https://drive.google.com/file/d/1Xh1Fju79Si5divfvIVOt03TIK_xafWdA/view?usp=sharing"),
-            (name: "Ngô Tiến Mạnh", phone: "0965291988", guests: 8, roomsCount: 2, url: "https://drive.google.com/file/d/1d4pfs50iQsDG9q7GIuui0dDqsRu4PKPn/view?usp=sharing"),
-            (name: "Đặng Thị Hương", phone: "0975297928", guests: 7, roomsCount: 2, url: "https://drive.google.com/file/d/1loTp4Xo1JULqmUvhr_wJr_RHDnM3driE/view?usp=sharing"),
-            (name: "Nguyễn Thị Vân Anh", phone: "0399131811", guests: 12, roomsCount: 3, url: "https://drive.google.com/file/d/1kuVu1mEXInrtpF-MiQ-806YuQyiUo0cc/view?usp=sharing"),
-            (name: "Phạm Thị Minh", phone: "0356208925", guests: 4, roomsCount: 1, url: "https://drive.google.com/file/d/1G-zp7dRk2aNp4WMqP3qhVOg36HXd3dF3/view?usp=sharing"),
-            (name: "Đặng Thành Trung", phone: "0985546541", guests: 24, roomsCount: 6, url: "https://drive.google.com/file/d/165xMdOy8O7kFQw11QWF0JmHykPp4n7HQ/view?usp=sharing"),
-            (name: "Vũ Thanh Huyền", phone: "0974099087", guests: 78, roomsCount: 20, url: "https://drive.google.com/file/d/1RBmOd1FSl0ouLK2txTsqMQHKMn5EVaM1/view?usp=sharing"),
-            (name: "Đỗ Thanh Huyền", phone: "0364977608", guests: 12, roomsCount: 3, url: "https://drive.google.com/file/d/10OtJcCBqjzCnz4eY7xCch07J4UpyMfZm/view?usp=sharing"),
-            (name: "Đỗ Thị Thanh Thủy", phone: "0369105238", guests: 4, roomsCount: 1, url: "https://drive.google.com/file/d/1uxTz_B7VQr1LOlmwD2etQEfdhqS_eFGZ/view?usp=sharing"),
-            (name: "Đỗ Thị Cương", phone: "0989200919", guests: 22, roomsCount: 6, url: "https://drive.google.com/file/d/1rNyFd5EFqsgingghDMnQBfQcBJKlVra0/view?usp=sharing"),
-            (name: "Phạm Thị Trà My", phone: "0973100791", guests: 18, roomsCount: 5, url: "https://drive.google.com/file/d/1Dd_4275d3vragbzeB0fAQGs4UI6u5dXP/view?usp=sharing"),
-            (name: "Đỗ Văn Dũng", phone: "0964056989", guests: 32, roomsCount: 8, url: "https://drive.google.com/file/d/1WXrqh1Y1SygE_ZkWJnPs_18uCsgnEd0I/view?usp=sharing"),
-            (name: "Phạm Thanh Mai", phone: "0327652433", guests: 14, roomsCount: 4, url: "https://drive.google.com/file/d/1e3X73q1Tqx4mloN99Unc9hZoBTADPWk3/view?usp=sharing")
+            (name: "Nguyễn Trung Hưng", phone: "0366225777", guests: 16, roomsCount: 4, url: "https://drive.google.com/uc?export=view&id=1NJoI3LyWmx-KMB02q8FjJ6XzpKX7mtsm"),
+            (name: "Nguyễn Văn Thành", phone: "0983440891", guests: 4, roomsCount: 1, url: "https://drive.google.com/uc?export=view&id=1Xh1Fju79Si5divfvIVOt03TIK_xafWdA"),
+            (name: "Ngô Tiến Mạnh", phone: "0965291988", guests: 8, roomsCount: 2, url: "https://drive.google.com/uc?export=view&id=1d4pfs50iQsDG9q7GIuui0dDqsRu4PKPn"),
+            (name: "Đặng Thị Hương", phone: "0975297928", guests: 7, roomsCount: 2, url: "https://drive.google.com/uc?export=view&id=1loTp4Xo1JULqmUvhr_wJr_RHDnM3driE"),
+            (name: "Nguyễn Thị Vân Anh", phone: "0399131811", guests: 12, roomsCount: 3, url: "https://drive.google.com/uc?export=view&id=1kuVu1mEXInrtpF-MiQ-806YuQyiUo0cc"),
+            (name: "Phạm Thị Minh", phone: "0356208925", guests: 4, roomsCount: 1, url: "https://drive.google.com/uc?export=view&id=1G-zp7dRk2aNp4WMqP3qhVOg36HXd3dF3"),
+            (name: "Đặng Thành Trung", phone: "0985546541", guests: 24, roomsCount: 6, url: "https://drive.google.com/uc?export=view&id=165xMdOy8O7kFQw11QWF0JmHykPp4n7HQ"),
+            (name: "Vũ Thanh Huyền", phone: "0974099087", guests: 78, roomsCount: 20, url: "https://drive.google.com/uc?export=view&id=1RBmOd1FSl0ouLK2txTsqMQHKMn5EVaM1"),
+            (name: "Đỗ Thanh Huyền", phone: "0364977608", guests: 12, roomsCount: 3, url: "https://drive.google.com/uc?export=view&id=10OtJcCBqjzCnz4eY7xCch07J4UpyMfZm"),
+            (name: "Đỗ Thị Thanh Thủy", phone: "0369105238", guests: 4, roomsCount: 1, url: "https://drive.google.com/uc?export=view&id=1uxTz_B7VQr1LOlmwD2etQEfdhqS_eFGZ"),
+            (name: "Đỗ Thị Cương", phone: "0989200919", guests: 22, roomsCount: 6, url: "https://drive.google.com/uc?export=view&id=1rNyFd5EFqsgingghDMnQBfQcBJKlVra0"),
+            (name: "Phạm Thị Trà My", phone: "0973100791", guests: 18, roomsCount: 5, url: "https://drive.google.com/uc?export=view&id=1Dd_4275d3vragbzeB0fAQGs4UI6u5dXP"),
+            (name: "Đỗ Văn Dũng", phone: "0964056989", guests: 32, roomsCount: 8, url: "https://drive.google.com/uc?export=view&id=1WXrqh1Y1SygE_ZkWJnPs_18uCsgnEd0I"),
+            (name: "Phạm Thanh Mai", phone: "0327652433", guests: 14, roomsCount: 4, url: "https://drive.google.io/uc?export=view&id=1e3X73q1Tqx4mloN99Unc9hZoBTADPWk3")
         };
 
         DateTime start = DateTime.Today.AddDays(1);
@@ -1356,10 +1389,11 @@ public static class DatabaseInitializationExtensions
                 Id = Guid.NewGuid(),
                 FullName = s.name,
                 Phone = s.phone,
-                IdCard = string.Empty,
-                IdCardFrontImageUrl = s.url,
-                IdCardBackImageUrl = null,
-                Email = null
+                IdCard = Random.Shared.NextInt64(100000000000, 999999999999).ToString(),
+                IdCardFrontImageUrl = "https://cdn.tgdd.vn/Files/2021/04/19/1344608/7_800x450.jpg",
+                IdCardBackImageUrl = "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:format(webp):quality(75)/doi_cccd_het_han_online_12_48804bb731.jpeg",
+                Email = $"{VietnameseNameToEmail(s.name)}-{Random.Shared.NextInt64(100000000000, 999999999999)}",
+                HotelId = DEFAULT_HOTEL_ID
             };
             dbContext.Set<Guest>().Add(g);
             await dbContext.SaveChangesAsync();

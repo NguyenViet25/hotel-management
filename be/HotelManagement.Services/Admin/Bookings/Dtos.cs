@@ -146,7 +146,9 @@ public class BookingDetailsDto
     public decimal TotalAmount { get; set; }
     public decimal LeftAmount { get; set; }
     public decimal AdditionalAmount { get; set; }
+    public decimal AdditionalBookingAmount { get; set; }
     public string? AdditionalNotes { get; set; }
+    public string? AdditionalBookingNotes { get; set; }
     public string? PromotionCode { get; set; } 
     public decimal PromotionValue { get; set; }
     public DateTime CreatedAt { get; set; }
@@ -280,7 +282,9 @@ public class CheckoutRequestDto
     public string? DiscountCode { get; set; }
     public string? Notes { get; set; }
     public string? AdditionalNotes { get; set; }
+    public string? AdditionalBookingNotes { get; set; }
     public decimal? AdditionalAmount { get; set; } = 0;
+    public decimal? AdditionalBookingAmount { get; set; } = 0;
     public PaymentDto? FinalPayment { get; set; }
     public DateTime? CheckoutTime { get; set; }
 }

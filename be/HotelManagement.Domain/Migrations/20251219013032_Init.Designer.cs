@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelManagement.Domain.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251218151411_Init")]
+    [Migration("20251219013032_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -64,6 +64,12 @@ namespace HotelManagement.Domain.Migrations
 
                     b.Property<decimal>("AdditionalAmount")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("AdditionalBookingAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("AdditionalBookingNotes")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("AdditionalNotes")
                         .HasColumnType("nvarchar(max)");

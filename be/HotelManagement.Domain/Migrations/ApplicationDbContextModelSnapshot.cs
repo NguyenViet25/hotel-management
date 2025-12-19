@@ -62,6 +62,12 @@ namespace HotelManagement.Domain.Migrations
                     b.Property<decimal>("AdditionalAmount")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<decimal?>("AdditionalBookingAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("AdditionalBookingNotes")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("AdditionalNotes")
                         .HasColumnType("nvarchar(max)");
 
