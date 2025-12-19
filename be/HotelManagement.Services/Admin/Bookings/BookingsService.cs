@@ -1726,28 +1726,36 @@ public class BookingsService(
 
     public async Task<ApiResponse> RecordMinibarConsumptionAsync(Guid bookingId, MinibarConsumptionDto dto)
     {
-      
-        foreach (var item in dto.Items)
+
+        try
         {
-            var minibar = await _minibarRepo.FindAsync(item.MinibarId);
-            if (minibar == null) continue;
-
-            var consumed = Math.Max(0, item.Quantity);
-
-            var mb = new MinibarBooking
+            foreach (var item in dto.Items)
             {
-                Id = Guid.NewGuid(),
-                BookingId = bookingId,
-                HouseKeepingTaskId = dto.HouseKeepingTaskId,
-                MinibarId = item.MinibarId,
-                ComsumedQuantity = consumed,
-                OriginalQuantity = minibar.Quantity,
-                MinibarBookingStatus = consumed == minibar.Quantity ? MinibarBookingStatus.Full : MinibarBookingStatus.Missing
-            };
-            await _minibarBookingRepo.AddAsync(mb);
-            await _minibarBookingRepo.SaveChangesAsync();
-        }
+                var minibar = await _minibarRepo.FindAsync(item.MinibarId);
+                if (minibar == null) continue;
 
-        return ApiResponse.Ok("Đã ghi nhận minibar");
+                var consumed = Math.Max(0, item.Quantity);
+
+                var mb = new MinibarBooking
+                {
+                    Id = Guid.NewGuid(),
+                    HouseKeepingTaskId = bookingId,
+                    MinibarId = item.MinibarId,
+                    ComsumedQuantity = consumed,
+                    OriginalQuantity = minibar.Quantity,
+                    MinibarBookingStatus = consumed == minibar.Quantity ? MinibarBookingStatus.Full : MinibarBookingStatus.Missing
+                };
+                await _minibarBookingRepo.AddAsync(mb);
+                await _minibarBookingRepo.SaveChangesAsync();
+            }
+
+            return ApiResponse.Ok("Đã ghi nhận minibar");
+        }
+        catch (Exception ex)
+        {
+
+            return ApiResponse.Fail(ex.Message);
+
+        }
     }
 }

@@ -853,10 +853,7 @@ namespace HotelManagement.Domain.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("BookingId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("BookingId1")
+                    b.Property<Guid?>("BookingId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("ComsumedQuantity")
@@ -880,8 +877,6 @@ namespace HotelManagement.Domain.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("BookingId");
-
-                    b.HasIndex("BookingId1");
 
                     b.HasIndex("MinibarId");
 
@@ -1099,6 +1094,9 @@ namespace HotelManagement.Domain.Migrations
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
+
+                    b.Property<Guid>("TaskId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("datetime2");
@@ -1655,15 +1653,9 @@ namespace HotelManagement.Domain.Migrations
 
             modelBuilder.Entity("HotelManagement.Domain.MinibarBooking", b =>
                 {
-                    b.HasOne("HotelManagement.Domain.Booking", null)
-                        .WithMany()
-                        .HasForeignKey("BookingId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("HotelManagement.Domain.Booking", "Booking")
                         .WithMany()
-                        .HasForeignKey("BookingId1");
+                        .HasForeignKey("BookingId");
 
                     b.HasOne("HotelManagement.Domain.Minibar", null)
                         .WithMany()

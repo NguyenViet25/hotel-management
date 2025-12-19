@@ -268,17 +268,15 @@ export default function RoomNeedCleaningPage() {
       });
     }
 
-    if (minibarBookingId) {
-      const items = minibarItems
-        .filter((x) => x.qty > 0)
-        .map((x) => ({ minibarId: x.item.id, quantity: x.qty }));
-      if (items.length) {
-        const hasDiscrepancy = minibarItems.some(
-          (x) => x.qty > x.item.quantity
-        );
-        if (hasDiscrepancy) return;
-        await bookingsApi.recordMinibarConsumption(minibarBookingId, { items });
-      }
+    const items = minibarItems.map((x) => ({
+      minibarId: x.item.id,
+      quantity: x.qty,
+    }));
+
+    if (items.length) {
+      const hasDiscrepancy = minibarItems.some((x) => x.qty > x.item.quantity);
+      if (hasDiscrepancy) return;
+      await bookingsApi.recordMinibarConsumption(completeTaskId, { items });
     }
     await housekeepingApi.updateRoomStatus({
       roomId: completeRoom.id,

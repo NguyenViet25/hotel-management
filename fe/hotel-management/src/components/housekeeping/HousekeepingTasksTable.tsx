@@ -3,6 +3,13 @@ import {
   Box,
   Button,
   Chip,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  TableContainer,
+  TextField,
   Dialog,
   DialogActions,
   DialogContent,
@@ -51,7 +58,7 @@ export default function HousekeepingTasksTable({
       minWidth: 140,
       format: (v) => v || "—",
     },
-    { id: "notes", label: "Ghi chú", minWidth: 180, format: (v) => v || "—" },
+    // { id: "notes", label: "Ghi chú", minWidth: 180, format: (v) => v || "—" },
     {
       id: "createdAt",
       label: "Tạo lúc",
@@ -190,7 +197,7 @@ export default function HousekeepingTasksTable({
                     minHeight: 48,
                   }}
                 >
-                  {selected.notes || "Không có ghi chú"}
+                  {selected.roomStatusLogs?.[0]?.notes || "Không có ghi chú"}
                 </Typography>
               </Stack>
 
@@ -201,19 +208,53 @@ export default function HousekeepingTasksTable({
                 <Typography variant="subtitle1" fontWeight={600}>
                   📸 Ảnh minh chứng
                 </Typography>
-                // TODO: show images
-                <Stack
-                  spacing={1}
-                  sx={{
-                    bgcolor: "grey.50",
-                    p: 1.5,
-                    borderRadius: 2,
-                  }}
-                >
-                  <Typography variant="caption" color="text.secondary">
-                    Không có dữ liệu ảnh minh chứng
-                  </Typography>
-                </Stack>
+                {(() => {
+                  const urls =
+                    (selected.roomStatusLogs || [])
+                      .flatMap((l) => l.evidenceUrls || [])
+                      .filter((u): u is string => !!u) || [];
+                  if (!urls.length) {
+                    return (
+                      <Stack
+                        spacing={1}
+                        sx={{ bgcolor: "grey.50", p: 1.5, borderRadius: 2 }}
+                      >
+                        <Typography variant="caption" color="text.secondary">
+                          Không có dữ liệu ảnh minh chứng
+                        </Typography>
+                      </Stack>
+                    );
+                  }
+                  return (
+                    <Box
+                      sx={{
+                        display: "grid",
+                        gridTemplateColumns: {
+                          xs: "repeat(2, 1fr)",
+                          sm: "repeat(3, 1fr)",
+                          md: "repeat(4, 1fr)",
+                        },
+                        gap: 1.5,
+                        bgcolor: "grey.50",
+                        p: 1.5,
+                        borderRadius: 2,
+                      }}
+                    >
+                      {urls.map((url, idx) => (
+                        <Box
+                          key={`${url}-${idx}`}
+                          sx={{ display: "flex", justifyContent: "center" }}
+                        >
+                          <img
+                            src={url}
+                            alt="Evidence"
+                            style={{ width: "100%", borderRadius: 8 }}
+                          />
+                        </Box>
+                      ))}
+                    </Box>
+                  );
+                })()}
               </Stack>
 
               <Divider />
@@ -223,7 +264,82 @@ export default function HousekeepingTasksTable({
                 <Typography variant="subtitle1" fontWeight={600}>
                   🛒 Minibar
                 </Typography>
-                // TODO: show table minibar booking
+                {selected.minibarBookings && selected.minibarBookings.length ? (
+                  <TableContainer>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell align="center" sx={{ width: "8%" }}>
+                            #
+                          </TableCell>
+                          <TableCell sx={{ width: "32%" }}>Minibar</TableCell>
+                          <TableCell align="right" sx={{ width: "20%" }}>
+                            SL gốc
+                          </TableCell>
+                          <TableCell align="right" sx={{ width: "20%" }}>
+                            SL tiêu thụ
+                          </TableCell>
+                          <TableCell align="center" sx={{ width: "20%" }}>
+                            Trạng thái
+                          </TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {selected.minibarBookings.map((b, idx) => {
+                          const isFull =
+                            b.comsumedQuantity === b.originalQuantity;
+                          return (
+                            <TableRow key={b.id}>
+                              <TableCell align="center">{idx + 1}</TableCell>
+                              <TableCell>
+                                <Typography variant="body2">
+                                  {b.minibarId}
+                                </Typography>
+                              </TableCell>
+                              <TableCell align="right">
+                                <Typography variant="body2">
+                                  {b.originalQuantity}
+                                </Typography>
+                              </TableCell>
+                              <TableCell align="right">
+                                <TextField
+                                  type="number"
+                                  size="small"
+                                  value={b.comsumedQuantity}
+                                  inputProps={{
+                                    min: 0,
+                                    max: b.originalQuantity,
+                                    readOnly: true,
+                                  }}
+                                  sx={{ width: 100 }}
+                                />
+                              </TableCell>
+                              <TableCell align="center">
+                                {isFull ? (
+                                  <Chip
+                                    label="Đầy đủ"
+                                    color="success"
+                                    size="small"
+                                  />
+                                ) : (
+                                  <Chip
+                                    label="Thiếu"
+                                    color="warning"
+                                    size="small"
+                                  />
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                ) : (
+                  <Typography variant="caption" color="text.secondary">
+                    Không có dữ liệu minibar
+                  </Typography>
+                )}
               </Stack>
             </Stack>
           )}

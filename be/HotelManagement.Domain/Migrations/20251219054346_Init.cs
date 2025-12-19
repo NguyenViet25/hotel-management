@@ -644,12 +644,11 @@ namespace HotelManagement.Domain.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     MinibarId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    BookingId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     HouseKeepingTaskId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ComsumedQuantity = table.Column<int>(type: "int", nullable: false),
                     OriginalQuantity = table.Column<int>(type: "int", nullable: false),
                     MinibarBookingStatus = table.Column<int>(type: "int", nullable: false),
-                    BookingId1 = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    BookingId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     MinibarId1 = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
                 constraints: table =>
@@ -658,12 +657,6 @@ namespace HotelManagement.Domain.Migrations
                     table.ForeignKey(
                         name: "FK_MinibarBookings_Bookings_BookingId",
                         column: x => x.BookingId,
-                        principalTable: "Bookings",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_MinibarBookings_Bookings_BookingId1",
-                        column: x => x.BookingId1,
                         principalTable: "Bookings",
                         principalColumn: "Id");
                     table.ForeignKey(
@@ -760,6 +753,7 @@ namespace HotelManagement.Domain.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     HotelId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     RoomId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TaskId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -1212,11 +1206,6 @@ namespace HotelManagement.Domain.Migrations
                 name: "IX_MinibarBookings_BookingId",
                 table: "MinibarBookings",
                 column: "BookingId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_MinibarBookings_BookingId1",
-                table: "MinibarBookings",
-                column: "BookingId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_MinibarBookings_MinibarId",

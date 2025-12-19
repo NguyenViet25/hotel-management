@@ -142,12 +142,6 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
         minibar.Property(s => s.Price).HasPrecision(18, 2);
 
         builder.Entity<MinibarBooking>()
-            .HasOne<Booking>()
-            .WithMany()
-            .HasForeignKey(mb => mb.BookingId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.Entity<MinibarBooking>()
             .HasOne<Minibar>()
             .WithMany()
             .HasForeignKey(mb => mb.MinibarId)
