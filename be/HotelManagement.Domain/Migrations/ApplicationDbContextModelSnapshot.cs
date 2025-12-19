@@ -1079,6 +1079,9 @@ namespace HotelManagement.Domain.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("EvidenceUrls")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<Guid>("HotelId")
                         .HasColumnType("uniqueidentifier");
 

@@ -62,7 +62,7 @@ export default function HousekeepingTasksTable({
       minWidth: 140,
       format: (v) => v || "—",
     },
-    { id: "notes", label: "Ghi chú", minWidth: 220, format: (v) => v || "—" },
+    { id: "notes", label: "Ghi chú", minWidth: 180, format: (v) => v || "—" },
     {
       id: "createdAt",
       label: "Tạo lúc",

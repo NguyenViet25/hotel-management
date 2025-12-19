@@ -30,6 +30,13 @@ public class HousekeepingTasksController : ControllerBase
         var res = await _service.ListAsync(query);
         return Ok(res);
     }
+    
+    [HttpGet("{id:guid}")]
+    public async Task<IActionResult> Get(Guid id)
+    {
+        var res = await _service.GetByIdAsync(id);
+        return Ok(res);
+    }
 
     [HttpPut("assign")]
     public async Task<IActionResult> Assign([FromBody] AssignHousekeeperRequest req)

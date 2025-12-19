@@ -10,6 +10,7 @@ public class HousekeepingTaskDto
     public Guid RoomId { get; set; }
     public string RoomNumber { get; set; } = string.Empty;
     public int Floor { get; set; }
+    public string ImageSrc { get; set; } = string.Empty;
     public Guid? AssignedToUserId { get; set; }
     public string? AssignedToName { get; set; }
     public string? Notes { get; set; }
