@@ -70,7 +70,7 @@ const OrdersManagementPage: React.FC = () => {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmOrderOpen, setConfirmOrderOpen] = useState(false);
 
-  const [startDate, setStartDate] = useState(dayjs());
+  const [startDate, setStartDate] = useState(dayjs().add(-30, "day"));
   const [endDate, setEndDate] = useState(dayjs());
 
   const filteredOrders = React.useMemo(() => {

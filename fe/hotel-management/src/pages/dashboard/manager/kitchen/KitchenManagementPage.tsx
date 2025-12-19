@@ -102,7 +102,7 @@ export default function KitchenManagementPage() {
     {}
   );
 
-  const [startDate, setStartDate] = useState<Dayjs>(dayjs());
+  const [startDate, setStartDate] = useState<Dayjs>(dayjs().add(-30, "day"));
   const [endDate, setEndDate] = useState<Dayjs>(dayjs());
 
   const getNextOrderStatus = (s: number): number | null => {
