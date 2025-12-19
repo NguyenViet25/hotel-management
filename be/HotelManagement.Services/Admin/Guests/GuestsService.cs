@@ -107,7 +107,7 @@ public class GuestsService : IGuestsService
         var g = await _db.Guests.FirstOrDefaultAsync(x => x.Id == id);
         if (g == null) return ApiResponse<GuestDetailsDto>.Fail("Guest not found");
 
-        var exists = await _db.Guests.AnyAsync(g => g.Phone == dto.Phone || g.IdCard == dto.IdCard);
+        var exists = await _db.Guests.AnyAsync(g => (g.Phone == dto.Phone || g.IdCard == dto.IdCard) && id != g.Id);
         if (exists) return ApiResponse<GuestDetailsDto>.Fail("Đã tồn tại khách với số điện thoại hoặc CMND/CCCD");
 
         if (dto.FullName != null) g.FullName = dto.FullName;

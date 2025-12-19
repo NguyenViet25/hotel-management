@@ -216,9 +216,11 @@ const BookingDetailsPage: React.FC = () => {
                       r.actualCheckOutAt === undefined ||
                       r.actualCheckOutAt === null
                   ) ||
-                  !data?.bookingRoomTypes?.every(
-                    (x) => x.bookingRooms.length > 0
-                  )) ??
+                  !data?.bookingRoomTypes?.every((x) => {
+                    const assigned = x.bookingRooms?.length || 0;
+                    const required = x.totalRoom || 0;
+                    return assigned >= required && required > 0;
+                  })) ??
                 false
               }
               aria-label="Xác nhận booking"
