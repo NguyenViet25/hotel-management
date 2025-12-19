@@ -862,6 +862,12 @@ namespace HotelManagement.Domain.Migrations
                     b.Property<int>("ComsumedQuantity")
                         .HasColumnType("int");
 
+                    b.Property<Guid>("HouseKeepingTaskId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("MinibarBookingStatus")
+                        .HasColumnType("int");
+
                     b.Property<Guid>("MinibarId")
                         .HasColumnType("uniqueidentifier");
 

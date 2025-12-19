@@ -1208,78 +1208,70 @@ public static class DatabaseInitializationExtensions
 
     public static async Task SeedMinibarsAsync(DbContext dbContext)
     {
-        var hotelId = DEFAULT_HOTEL_ID;
+        var allExisting = await dbContext.Set<Minibar>().ToListAsync();
+        if (allExisting.Count > 0)
+        {
+            dbContext.Set<Minibar>().RemoveRange(allExisting);
+            await dbContext.SaveChangesAsync();
+        }
 
-        // Get all room types for this hotel
-        var roomTypes = await dbContext.Set<RoomType>()
-            .Where(rt => rt.HotelId == hotelId)
-            .ToListAsync();
+        var roomTypes = await dbContext.Set<RoomType>().ToListAsync();
+        if (!roomTypes.Any()) return;
 
-        if (!roomTypes.Any())
-            return; // No room types → nothing to seed
+        var names = new[]
+        {
+            "Tivi",
+            "Tủ lạnh",
+            "Điều khiển tivi",
+            "Điều khiển điều hòa",
+            "Móc treo quần áo",
+            "Bàn là",
+            "Máy sấy tóc",
+            "Ấm siêu tốc",
+            "Quạt treo tường",
+            "Khăn tắm",
+            "Gương"
+        };
 
         foreach (var roomType in roomTypes)
         {
-            // Check if minibar items already seeded for this room type
-            bool exists = await dbContext.Set<Minibar>()
-                .AnyAsync(m => m.RoomTypeId == roomType.Id);
-
-            if (exists)
-                continue;
-
-            var items = new List<Minibar>
-        {
-            new Minibar
+            var items = names.Select(n =>
             {
-                Id = Guid.NewGuid(),
-                HotelId = hotelId,
-                RoomTypeId = roomType.Id,
-                Name = "Nước suối Aquafina",
-                ImageUrl = "https://thanhhaphat.vn/wp-content/uploads/2020/08/nuoc-tinh-khiet-aquafina-350ml-chai.png",
-                Price = 10000,
-                Quantity = 2
-            },
-            new Minibar
-            {
-                Id = Guid.NewGuid(),
-                HotelId = hotelId,
-                RoomTypeId = roomType.Id,
-                Name = "Coca-Cola",
-                ImageUrl = "https://shopstocktc.com/cdn/shop/products/stock_coca_cola_800x.png?v=1631722202",
-                Price = 15000,
-                Quantity = 2
-            },
-            new Minibar
-            {
-                Id = Guid.NewGuid(),
-                HotelId = hotelId,
-                RoomTypeId = roomType.Id,
-                Name = "Snack khoai tây",
-                ImageUrl = "https://orion.vn/media/u1ldttkf/orion-post-new-26.png",
-                Price = 20000,
-                Quantity = 1
-            },
-            new Minibar
-            {
-                Id = Guid.NewGuid(),
-                HotelId = hotelId,
-                RoomTypeId = roomType.Id,
-                Name = "Bia Heineken",
-                ImageUrl = "https://boozy.ph/cdn/shop/files/2024_-_2nd_Platforms_-_Product_Image_Template_11_grande.png?v=1727745062",
-                Price = 25000,
-                Quantity = 2
-            },
-            new Minibar
-            {
-                Id = Guid.NewGuid(),
-                HotelId = hotelId,
-                RoomTypeId = roomType.Id,
-                Name = "Trà xanh Không Độ",
-                ImageUrl = "https://www.thp.com.vn/wp-content/uploads/2017/01/slider-zero5.png",
-                Price = 12000,
-                Quantity = 1
-            }
-        };
+                var key = n.ToLowerInvariant();
+                var price = key switch
+                {
+                    "tivi" => Random.Shared.Next(3000000, 6000001),
+                    "tủ lạnh" => Random.Shared.Next(2500000, 5000001),
+                    "điều khiển tivi" => Random.Shared.Next(50000, 150001),
+                    "điều khiển điều hòa" => Random.Shared.Next(50000, 150001),
+                    "móc treo quần áo" => Random.Shared.Next(20000, 50001),
+                    "bàn là" => Random.Shared.Next(200000, 500001),
+                    "máy sấy tóc" => Random.Shared.Next(200000, 500001),
+                    "ấm siêu tốc" => Random.Shared.Next(200000, 500001),
+                    "quạt treo tường" => Random.Shared.Next(400000, 900001),
+                    "khăn tắm" => Random.Shared.Next(30000, 100001),
+                    "gương" => Random.Shared.Next(200000, 500001),
+                    _ => Random.Shared.Next(20000, 100001)
+                };
+                var qty = key switch
+                {
+                    "khăn tắm" => Random.Shared.Next(2, 7),
+                    "móc treo quần áo" => Random.Shared.Next(4, 11),
+                    "điều khiển tivi" => Random.Shared.Next(1, 3),
+                    "điều khiển điều hòa" => Random.Shared.Next(1, 3),
+                    _ => 1
+                };
+                return new Minibar
+                {
+                    Id = Guid.NewGuid(),
+                    HotelId = roomType.HotelId,
+                    RoomTypeId = roomType.Id,
+                    Name = n,
+                    ImageUrl = string.Empty,
+                    Price = (decimal)price,
+                    Quantity = qty
+                };
+            }).ToList();
 
             dbContext.Set<Minibar>().AddRange(items);
         }

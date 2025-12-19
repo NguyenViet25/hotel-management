@@ -645,8 +645,10 @@ namespace HotelManagement.Domain.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     MinibarId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     BookingId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    HouseKeepingTaskId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ComsumedQuantity = table.Column<int>(type: "int", nullable: false),
                     OriginalQuantity = table.Column<int>(type: "int", nullable: false),
+                    MinibarBookingStatus = table.Column<int>(type: "int", nullable: false),
                     BookingId1 = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     MinibarId1 = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },

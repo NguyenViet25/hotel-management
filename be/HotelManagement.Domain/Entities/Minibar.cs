@@ -28,7 +28,6 @@ public class MinibarBooking
 
 public enum MinibarBookingStatus
 {
-    NeedEvaluation = 0,
     Missing = 1,
     Full = 2,
 }
