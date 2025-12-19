@@ -19,6 +19,8 @@ export interface MinibarBooking {
   comsumedQuantity: number;
   originalQuantity: number;
   minibarBookingStatus: number;
+  minibarName: string;
+  minibarPrice: number;
 }
 
 // HousekeepingTaskDto

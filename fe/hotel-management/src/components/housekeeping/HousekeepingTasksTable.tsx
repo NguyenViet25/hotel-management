@@ -293,7 +293,7 @@ export default function HousekeepingTasksTable({
                               <TableCell align="center">{idx + 1}</TableCell>
                               <TableCell>
                                 <Typography variant="body2">
-                                  {b.minibarId}
+                                  {b.minibarName}
                                 </Typography>
                               </TableCell>
                               <TableCell align="right">

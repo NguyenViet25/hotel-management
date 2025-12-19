@@ -1741,6 +1741,8 @@ public class BookingsService(
                     Id = Guid.NewGuid(),
                     HouseKeepingTaskId = bookingId,
                     MinibarId = item.MinibarId,
+                    MinibarName = minibar.Name,
+                    MinibarPrice = minibar.Price,
                     ComsumedQuantity = consumed,
                     OriginalQuantity = minibar.Quantity,
                     MinibarBookingStatus = consumed == minibar.Quantity ? MinibarBookingStatus.Full : MinibarBookingStatus.Missing

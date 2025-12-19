@@ -644,6 +644,8 @@ namespace HotelManagement.Domain.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     MinibarId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    MinibarName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    MinibarPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     HouseKeepingTaskId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ComsumedQuantity = table.Column<int>(type: "int", nullable: false),
                     OriginalQuantity = table.Column<int>(type: "int", nullable: false),

@@ -871,6 +871,12 @@ namespace HotelManagement.Domain.Migrations
                     b.Property<Guid?>("MinibarId1")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("MinibarName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal?>("MinibarPrice")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<int>("OriginalQuantity")
                         .HasColumnType("int");
 
