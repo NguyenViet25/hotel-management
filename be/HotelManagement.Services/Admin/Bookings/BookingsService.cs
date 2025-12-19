@@ -722,7 +722,9 @@ public class BookingsService(
             {
                 foreach (var roomType in booking.BookingRoomTypes)
                 {
-                    foreach (var r in roomType.BookingRooms)
+                    var bookingRooms = await _bookingRoomRepo.Query().Where(x => x.BookingRoomTypeId == roomType.BookingRoomTypeId).ToListAsync();
+
+                    foreach (var r in bookingRooms)
                     {
                         var room = await _roomRepo.Query().Where(x => x.Id == r.RoomId).FirstOrDefaultAsync();
                         if (room == null) continue;
