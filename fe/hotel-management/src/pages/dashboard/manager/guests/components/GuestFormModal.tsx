@@ -17,6 +17,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
+import { phoneSchema } from "../../../../../validation/phone";
 import {
   type CreateGuestRequest,
   type GuestDto,
@@ -43,11 +44,7 @@ type Props =
     };
 const createSchema = z.object({
   fullName: z.string().trim().min(2, "Họ tên tối thiểu 2 ký tự"),
-  phone: z
-    .string()
-    .trim()
-    .min(8, "Số điện thoại không hợp lệ")
-    .max(20, "Số điện thoại quá dài"),
+  phone: phoneSchema,
   email: z.string().email("Email không hợp lệ").optional().or(z.literal("")),
   idCard: z.string().trim().min(6, "CMND/CCCD không hợp lệ"),
   idCardFrontImageUrl: z.string().optional().or(z.literal("")),
@@ -55,12 +52,7 @@ const createSchema = z.object({
 });
 const updateSchema = z.object({
   fullName: z.string().trim().min(2, "Họ tên tối thiểu 2 ký tự").optional(),
-  phone: z
-    .string()
-    .trim()
-    .min(8, "Số điện thoại không hợp lệ")
-    .max(20, "Số điện thoại quá dài")
-    .optional(),
+  phone: phoneSchema.optional(),
   email: z.string().email("Email không hợp lệ").optional().or(z.literal("")),
   idCard: z.string().trim().min(6, "CMND/CCCD không hợp lệ").optional(),
   idCardFrontImageUrl: z.string().optional(),
