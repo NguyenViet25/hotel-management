@@ -95,6 +95,9 @@ const BookingDetailsPage = lazy(
 const CustomerDetailsPage = lazy(
   () => import("../pages/dashboard/frontdesk/customers/CustomerDetailsPage")
 );
+const OrderDetailsPage = lazy(
+  () => import("../pages/dashboard/waiter/orders/OrderDetailsPage")
+);
 // Loading component
 const LoadingFallback = () => (
   <Box
@@ -379,6 +382,14 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<div>Loading...</div>}>
             <OrdersManagementPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "orders/:id",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <OrderDetailsPage />
           </Suspense>
         ),
       },

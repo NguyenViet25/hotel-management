@@ -1,5 +1,5 @@
-import { Receipt, RemoveRedEye } from "@mui/icons-material";
-import { Button, Chip, Stack } from "@mui/material";
+import { Print, RemoveRedEye } from "@mui/icons-material";
+import { Chip, IconButton, Stack } from "@mui/material";
 import React from "react";
 import type { OrderSummaryDto } from "../../../../../api/ordersApi";
 import DataTable, {
@@ -21,6 +21,7 @@ interface OrdersTableProps {
   onSelectPromotion?: (record: OrderSummaryDto) => void;
   invoiceMap?: Record<string, { id: string; invoiceNumber?: string }>;
   onPrintInvoice?: (record: OrderSummaryDto, invoiceId: string) => void;
+  onView?: (record: OrderSummaryDto) => void;
 }
 
 const formatCurrency = (value: number) =>
@@ -43,6 +44,7 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
   onSelectPromotion,
   invoiceMap,
   onPrintInvoice,
+  onView,
 }) => {
   const columns: Column<OrderSummaryDto>[] = [
     {
@@ -118,45 +120,9 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
     },
     {
       id: "createdAt",
-      label: "Tạo lúc",
+      label: "Thời gian phục vụ",
       format: (v: string) => new Date(v).toLocaleString("vi-VN"),
       minWidth: 180,
-    },
-    {
-      id: "invoiceActions",
-      label: "Hóa đơn",
-      minWidth: 260,
-      render: (row) => {
-        if (!row.isWalkIn) return <span>—</span>;
-        const existing = invoiceMap?.[row.id];
-        return (
-          <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
-            {existing ? (
-              <Button
-                startIcon={<RemoveRedEye />}
-                size="small"
-                variant="contained"
-                color="success"
-                onClick={() => onPrintInvoice?.(row, existing.id)}
-              >
-                Xem hóa đơn
-              </Button>
-            ) : (
-              <>
-                <Button
-                  startIcon={<Receipt />}
-                  size="small"
-                  variant="contained"
-                  onClick={() => onCreateInvoice?.(row)}
-                  disabled={row.status === "2" || row.status === "3"}
-                >
-                  Xuất hóa đơn
-                </Button>
-              </>
-            )}
-          </Stack>
-        );
-      },
     },
   ];
 
@@ -174,9 +140,37 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
       }}
       onAdd={onAddOrder}
       onEdit={onEdit}
-      onDelete={onCancel}
+      onDelete={undefined}
+      onView={onView}
       getRowId={(row) => row.id}
       actionColumn
+      renderActions={(row) => {
+        if (!row.isWalkIn) return null;
+        const existing = invoiceMap?.[row.id];
+        if (existing && onPrintInvoice) {
+          return (
+            <IconButton
+              size="small"
+              color="success"
+              onClick={() => onPrintInvoice(row, existing.id)}
+              aria-label="view invoice"
+            >
+              <RemoveRedEye fontSize="small" />
+            </IconButton>
+          );
+        }
+        return (
+          <IconButton
+            size="small"
+            color="success"
+            onClick={() => onCreateInvoice?.(row)}
+            aria-label="create invoice"
+            disabled={row.status === 6}
+          >
+            <Print fontSize="small" />
+          </IconButton>
+        );
+      }}
       onSearch={onSearch}
       borderRadius={0}
     />
