@@ -15,6 +15,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import React from "react";
 import { Controller } from "react-hook-form";
 import type { RoomType } from "../../../../../api/roomTypesApi";
+import dayjs from "dayjs";
 
 type Props = {
   index: number;
@@ -38,7 +39,11 @@ const RoomBookingSection: React.FC<Props> = ({
   return (
     <Stack spacing={2}>
       {!hideHeader && (
-        <Stack direction="row" alignItems="center" justifyContent="space-between">
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+        >
           <Typography variant="subtitle2" fontWeight={700}>
             Mục #{index + 1}
           </Typography>
@@ -182,6 +187,7 @@ const RoomBookingSection: React.FC<Props> = ({
           rules={{ required: true }}
           render={({ field }) => (
             <DatePicker
+              minDate={dayjs()}
               label="Từ ngày"
               value={field.value}
               onChange={(date) => {
@@ -211,6 +217,7 @@ const RoomBookingSection: React.FC<Props> = ({
           rules={{ required: true }}
           render={({ field }) => (
             <DatePicker
+              minDate={dayjs().add(1, "day")}
               label="Đến ngày"
               value={field.value}
               onChange={(date) => {

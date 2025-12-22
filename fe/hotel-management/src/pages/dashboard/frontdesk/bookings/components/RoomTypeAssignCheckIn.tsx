@@ -117,6 +117,7 @@ const RoomTypeBlock: React.FC<{
   const [moveGuestOpen, setMoveGuestOpen] = useState(false);
   const [movingGuest, setMovingGuest] = useState<BookingGuestDto | null>(null);
   const [movingFromRoomId, setMovingFromRoomId] = useState<string | null>(null);
+  const [reload, setReload] = useState(0);
 
   const openAddGuest = (roomId: string) => {
     setGuestRoomId(roomId);
@@ -693,6 +694,8 @@ const RoomTypeBlock: React.FC<{
                   open: true,
                   message: info.isEarly
                     ? `Check-in early ${info.days}d ${info.hours}h ${info.minutes}m`
+                    : info.isLate
+                    ? `Late check-in ${info.days}d ${info.hours}h ${info.minutes}m`
                     : "Check-in thành công",
                   severity: "success",
                 });
@@ -720,6 +723,7 @@ const RoomTypeBlock: React.FC<{
           scheduledStart={activeRoom?.startDate || undefined}
           defaultCheckInTime={checkIn ?? undefined}
           defaultCheckOutTime={checkOut ?? undefined}
+          reload={reload}
           extendedDate={activeRoom?.extendedDate}
           onClose={() => setCheckOutOpen(false)}
           onConfirm={async (iso, info) => {
@@ -812,7 +816,9 @@ const RoomTypeBlock: React.FC<{
                   severity: "success",
                 });
                 setExtendOpen(false);
+                setActiveRoom((p) => ({ ...p, endDate: newEndIso }));
                 await onRefresh?.();
+                setReload((v) => v + 1);
               } else {
                 setSnackbar({
                   open: true,
@@ -882,6 +888,8 @@ const RoomTypeBlock: React.FC<{
                   open: true,
                   message: info.isEarly
                     ? `Check-in early ${info.days}d ${info.hours}h ${info.minutes}m`
+                    : info.isLate
+                    ? `Late check-in ${info.days}d ${info.hours}h ${info.minutes}m`
                     : "Cập nhật Check-in thành công",
                   severity: "success",
                 });

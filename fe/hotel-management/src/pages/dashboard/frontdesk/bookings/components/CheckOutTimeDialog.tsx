@@ -24,6 +24,7 @@ type Props = {
     selectedIso: string,
     info: { isLate: boolean; days: number; hours: number; minutes: number }
   ) => void;
+  reload?: number;
 };
 
 export default function CheckOutTimeDialog({
@@ -35,6 +36,7 @@ export default function CheckOutTimeDialog({
   defaultCheckOutTime,
   onClose,
   onConfirm,
+  reload,
 }: Props) {
   const [value, setValue] = useState<Dayjs>(dayjs());
 
@@ -66,9 +68,9 @@ export default function CheckOutTimeDialog({
         .millisecond(0);
     }
     return base;
-  }, [scheduledEnd, defaultCheckOutTime]);
+  }, [scheduledEnd, defaultCheckOutTime, reload]);
   useEffect(() => {
-    if (open) setValue(displayScheduledEnd || dayjs());
+    if (open) setValue(dayjs());
   }, [open, displayScheduledEnd]);
 
   const { isLate, days, hours, minutes } = useMemo(() => {
@@ -107,7 +109,8 @@ export default function CheckOutTimeDialog({
           <DateTimePicker
             label="Thời gian check-out"
             value={value}
-            minDate={dayjs(scheduledStart)}
+            minDateTime={dayjs()}
+            maxDateTime={dayjs(displayScheduledEnd).add(1, "minute")}
             onChange={(v) => v && setValue(v)}
           />
           <Stack direction="row" spacing={1} alignItems="center">
