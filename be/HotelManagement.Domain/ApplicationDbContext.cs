@@ -42,6 +42,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
     public DbSet<MinibarBooking> MinibarBookings => Set<MinibarBooking>();
     public DbSet<Media> Media => Set<Media>();
     public DbSet<ServiceRequest> ServiceRequests => Set<ServiceRequest>();
+    public DbSet<RoomTypePriceHistory> RoomTypePriceHistories => Set<RoomTypePriceHistory>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -140,6 +141,15 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
 
         var minibar = builder.Entity<Minibar>();
         minibar.Property(s => s.Price).HasPrecision(18, 2);
+
+        var roomTypePriceHistory = builder.Entity<RoomTypePriceHistory>();
+        roomTypePriceHistory.Property(s => s.Price).HasPrecision(18, 2);
+        roomTypePriceHistory.HasIndex(h => new { h.RoomTypeId, h.Date });
+        roomTypePriceHistory
+            .HasOne<RoomType>()
+            .WithMany()
+            .HasForeignKey(h => h.RoomTypeId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<MinibarBooking>()
             .HasOne<Minibar>()

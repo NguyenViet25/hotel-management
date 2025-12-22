@@ -52,7 +52,11 @@ public class RoomTypesController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var result = await _roomTypeService.UpdateAsync(id, dto);
+        var userIdStr = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        Guid? userId = null;
+        if (Guid.TryParse(userIdStr, out var parsed)) userId = parsed;
+        var userName = User?.Identity?.Name;
+        var result = await _roomTypeService.UpdateAsync(id, dto, userId, userName);
         
         if (result.IsSuccess)
         {
@@ -157,6 +161,26 @@ public class RoomTypesController : ControllerBase
             return Ok(result);
         }
 
+        return BadRequest(result);
+    }
+
+    [HttpGet("{id}/price-history")]
+    public async Task<IActionResult> GetPriceHistory(Guid id, [FromQuery] DateTime? from, [FromQuery] DateTime? to)
+    {
+        var result = await _roomTypeService.GetPriceHistoryAsync(id, from, to);
+        if (result.IsSuccess) return Ok(result);
+        return BadRequest(result);
+    }
+
+    [HttpPost("{id}/prices/by-date")]
+    public async Task<IActionResult> UpdatePriceByDate(Guid id, [FromBody] UpdatePriceByDateDto dto)
+    {
+        var userIdStr = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        Guid? userId = null;
+        if (Guid.TryParse(userIdStr, out var parsed)) userId = parsed;
+        var userName = User?.Identity?.Name;
+        var result = await _roomTypeService.UpdatePriceByDateAsync(id, dto, userId, userName);
+        if (result.IsSuccess) return Ok(result);
         return BadRequest(result);
     }
 }

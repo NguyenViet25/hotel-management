@@ -65,6 +65,21 @@ export interface ItemResponse<T> {
   data: T;
 }
 
+export interface RoomTypePriceHistoryItem {
+  id: string;
+  roomTypeId: string;
+  date: string;
+  price: number;
+  updatedAt: string;
+  updatedByUserId?: string;
+  updatedByUserName?: string;
+}
+
+export interface UpdatePriceByDateRequest {
+  date: string;
+  price: number;
+}
+
 const roomTypesApi = {
   getRoomTypes: async (
     params: RoomTypeQueryParams = {}
@@ -96,6 +111,30 @@ const roomTypesApi = {
     payload: UpdateRoomTypeRequest
   ): Promise<ItemResponse<RoomType>> => {
     const res = await axios.put(`/room-types/${id}`, payload);
+    return res.data;
+  },
+
+  getPriceHistory: async (
+    id: string,
+    from?: string,
+    to?: string
+  ): Promise<ItemResponse<RoomTypePriceHistoryItem[]>> => {
+    const qp = new URLSearchParams();
+    if (from) qp.append("from", from);
+    if (to) qp.append("to", to);
+    const url =
+      qp.toString().length > 0
+        ? `/room-types/${id}/price-history?${qp.toString()}`
+        : `/room-types/${id}/price-history`;
+    const res = await axios.get(url);
+    return res.data;
+  },
+
+  updatePriceByDate: async (
+    id: string,
+    payload: UpdatePriceByDateRequest
+  ): Promise<ItemResponse<RoomType>> => {
+    const res = await axios.post(`/room-types/${id}/prices/by-date`, payload);
     return res.data;
   },
 
