@@ -5,9 +5,10 @@ import {
   Alert,
   Box,
   Button,
-  CircularProgress,
   Chip,
   Divider,
+  IconButton,
+  Pagination,
   Snackbar,
   Stack,
   Typography,
@@ -18,9 +19,9 @@ import { useNavigate } from "react-router-dom";
 import bookingsApi, {
   EBookingStatus,
   type BookingDetailsDto,
+  type BookingRoomTypeDto,
   type BookingsQueryDto,
   type BookingStatus,
-  type BookingRoomTypeDto,
 } from "../../../../api/bookingsApi";
 import roomTypesApi, { type RoomType } from "../../../../api/roomTypesApi";
 import EmptyState from "../../../../components/common/EmptyState";
@@ -37,18 +38,22 @@ import {
   Hotel,
   Info,
   Phone,
+  Print,
   ReceiptLong,
   RemoveRedEye,
 } from "@mui/icons-material";
 import PersonIcon from "@mui/icons-material/Person";
+import DataTable, {
+  type Column,
+} from "../../../../components/common/DataTable";
+import Loading from "../../../../components/common/Loading";
 import BookingInvoiceDialog from "./components/BookingInvoiceDialog";
 import FiltersBar, {
   type StatusOption as FiltersStatusOption,
 } from "./components/FiltersBar";
+import PriceCalendarDialog from "./components/PriceCalendarDialog";
 import RoomMapDialog from "./components/RoomMapDialog";
 import TopBarControls from "./components/TopBarControls";
-import PriceCalendarDialog from "./components/PriceCalendarDialog";
-import Loading from "../../../../components/common/Loading";
 
 type StatusOption = { value: BookingStatus | ""; label: string };
 
@@ -68,6 +73,8 @@ const BookingManagementPage: React.FC = () => {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [pageSize] = useState(100);
+
+  const [viewMode, setViewMode] = useState<"card" | "table">("table");
 
   // Filters
   const { user } = useStore<StoreState>((state) => state);
@@ -238,6 +245,8 @@ const BookingManagementPage: React.FC = () => {
         onGuestNameChange={setGuestName}
         onRoomNumberChange={setRoomNumber}
         statusOptions={STATUS_OPTIONS as FiltersStatusOption[]}
+        viewMode={viewMode}
+        setViewMode={setViewMode}
       />
 
       <Stack spacing={2} sx={{ mt: 2 }}>
@@ -268,6 +277,141 @@ const BookingManagementPage: React.FC = () => {
                         </Button>
                       </Stack>
                     }
+                  />
+                );
+              }
+              if (viewMode === "table") {
+                const columns: Column<BookingDetailsDto>[] = [
+                  { id: "primaryGuestName", label: "Khách", minWidth: 180 },
+                  { id: "phoneNumber", label: "SĐT", minWidth: 140 },
+                  {
+                    id: "bookingRoomTypes",
+                    label: "Tổng phòng",
+                    minWidth: 120,
+                    render: (row) => {
+                      const totalRooms = (row.bookingRoomTypes || []).reduce(
+                        (sum, rt) =>
+                          sum + (rt.totalRoom || rt.bookingRooms?.length || 0),
+                        0
+                      );
+                      return <Typography>{totalRooms}</Typography>;
+                    },
+                  },
+                  {
+                    id: "roomTypeCounts",
+                    label: "Tổng phòng x loại",
+                    minWidth: 240,
+                    render: (row) => {
+                      const items =
+                        (row.bookingRoomTypes || []).map((rt) => {
+                          const count =
+                            rt.totalRoom || rt.bookingRooms?.length || 0;
+                          const name = rt.roomTypeName || "—";
+                          return `${count} x ${name}`;
+                        }) || [];
+                      const text = items.filter(Boolean).join(", ");
+                      return (
+                        <Typography color="text.secondary">
+                          {text || "—"}
+                        </Typography>
+                      );
+                    },
+                  },
+                  {
+                    id: "status",
+                    label: "Trạng thái",
+                    minWidth: 140,
+                    render: (row) => {
+                      const statusColor =
+                        row.status === 3
+                          ? "success"
+                          : row.status === 4
+                          ? "error"
+                          : row.status === 1
+                          ? "primary"
+                          : "default";
+                      const statusLabel =
+                        row.status === 0
+                          ? "Chờ duyệt"
+                          : row.status === 1
+                          ? "Đã xác nhận"
+                          : row.status === 2
+                          ? "Đã hoàn thành"
+                          : row.status === 3
+                          ? "Đã hoàn thành"
+                          : row.status === 4
+                          ? "Đã hủy"
+                          : String(row.status);
+                      return (
+                        <Chip color={statusColor as any} label={statusLabel} />
+                      );
+                    },
+                  },
+                  {
+                    id: "totalAmount",
+                    label: "Tổng",
+                    minWidth: 140,
+                    align: "right",
+                    format: (v) => `${Number(v || 0).toLocaleString()} đ`,
+                  },
+                  {
+                    id: "leftAmount",
+                    label: "Còn lại",
+                    minWidth: 140,
+                    align: "right",
+                    render: (row) => {
+                      const total =
+                        (row.totalAmount || 0) + (row.additionalAmount ?? 0);
+                      const discountAmount =
+                        ((row.promotionValue || 0) / 100) * total;
+                      const leftAmount =
+                        (row.leftAmount || 0) -
+                        discountAmount +
+                        (row.additionalAmount ?? 0);
+                      return (
+                        <Typography fontWeight={"bold"}>
+                          {leftAmount.toLocaleString()} đ
+                        </Typography>
+                      );
+                    },
+                  },
+                ];
+                return (
+                  <DataTable<BookingDetailsDto>
+                    title="Danh sách yêu cầu đặt phòng"
+                    columns={columns}
+                    data={listData}
+                    loading={loading}
+                    getRowId={(row) => row.id}
+                    onView={(row) => navigate(`/frontdesk/bookings/${row.id}`)}
+                    onEdit={(row) => openEditModal(row as any)}
+                    renderActions={(row) => (
+                      <IconButton
+                        size="small"
+                        color="success"
+                        disabled={
+                          row.status === EBookingStatus.Pending ||
+                          row.status === EBookingStatus.Cancelled
+                        }
+                        onClick={() => {
+                          setInvoiceBooking(row as any);
+                          setOpenBookingInvoice(true);
+                        }}
+                        aria-label="print invoice"
+                      >
+                        <Print fontSize="small" />
+                      </IconButton>
+                    )}
+                    pagination={{
+                      page,
+                      pageSize,
+                      total,
+                      onPageChange: (p) => {
+                        setPage(p);
+                        fetchList(p);
+                      },
+                    }}
+                    borderRadius={2}
                   />
                 );
               }
@@ -581,43 +725,60 @@ const BookingManagementPage: React.FC = () => {
                 );
               });
             })()}
-            <Divider sx={{ my: 2 }} />
-            <Stack
-              direction={{ xs: "column", sm: "row" }}
-              spacing={2}
-              alignItems={{ xs: "flex-start", sm: "center" }}
-              justifyContent="space-between"
-              sx={{ mt: 1 }}
-            >
-              {(() => {
-                const totalBookingsDisplayed = rows.length;
-                const totalRoomsDisplayed = rows.reduce((sum, b) => {
-                  const rooms = (b.bookingRoomTypes || []).reduce(
-                    (s, rt) =>
-                      s + (rt.totalRoom || rt.bookingRooms?.length || 0),
-                    0
-                  );
-                  return sum + rooms;
-                }, 0);
-                return (
-                  <>
-                    <Stack direction="row" spacing={2} alignItems="center">
-                      <Chip
-                        color="primary"
-                        label={`Tổng số booking: ${totalBookingsDisplayed.toLocaleString()}`}
-                      />
-                      <Chip
-                        color="secondary"
-                        label={`Tổng số phòng: ${totalRoomsDisplayed.toLocaleString()}`}
-                      />
-                    </Stack>
-                    <Typography variant="body2" color="text.secondary">
-                      Hiển thị theo bộ lọc hiện tại
-                    </Typography>
-                  </>
-                );
-              })()}
-            </Stack>
+            {viewMode === "card" && total > pageSize && (
+              <Box sx={{ p: 1, display: "flex", justifyContent: "flex-end" }}>
+                <Pagination
+                  count={Math.ceil(total / pageSize)}
+                  page={page}
+                  onChange={(_, p) => {
+                    fetchList(p);
+                  }}
+                  color="primary"
+                  showFirstButton
+                  showLastButton
+                />
+              </Box>
+            )}
+            {rows.length > 0 && (
+              <>
+                <Stack
+                  direction={{ xs: "column", sm: "row" }}
+                  spacing={2}
+                  alignItems={{ xs: "flex-start", sm: "center" }}
+                  justifyContent="space-between"
+                  sx={{ mt: 1 }}
+                >
+                  {(() => {
+                    const totalBookingsDisplayed = rows.length;
+                    const totalRoomsDisplayed = rows.reduce((sum, b) => {
+                      const rooms = (b.bookingRoomTypes || []).reduce(
+                        (s, rt) =>
+                          s + (rt.totalRoom || rt.bookingRooms?.length || 0),
+                        0
+                      );
+                      return sum + rooms;
+                    }, 0);
+                    return (
+                      <>
+                        <Stack direction="row" spacing={2} alignItems="center">
+                          <Chip
+                            color="primary"
+                            label={`Tổng số booking: ${totalBookingsDisplayed.toLocaleString()}`}
+                          />
+                          <Chip
+                            color="secondary"
+                            label={`Tổng số phòng: ${totalRoomsDisplayed.toLocaleString()}`}
+                          />
+                        </Stack>
+                        <Typography variant="body2" color="text.secondary">
+                          Hiển thị theo bộ lọc hiện tại
+                        </Typography>
+                      </>
+                    );
+                  })()}
+                </Stack>
+              </>
+            )}
           </>
         )}
       </Stack>
