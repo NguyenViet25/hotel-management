@@ -147,14 +147,16 @@ const BookingDetailsPage: React.FC = () => {
   const formatCurrency = (v?: number) =>
     typeof v === "number" ? `${v.toLocaleString()} đ` : "—";
 
+  const zeroMoney =
+    data?.status === EBookingStatus.Cancelled || data?.status === 5;
   const bookingSummary: IBookingSummary = {
     primaryGuestName: data?.primaryGuestName || "—",
     phoneNumber: data?.phoneNumber || "—",
     email: data?.email || "—",
-    totalAmount: data?.totalAmount || 0,
-    discountAmount: data?.discountAmount || 0,
+    totalAmount: zeroMoney ? 0 : data?.totalAmount || 0,
+    discountAmount: zeroMoney ? 0 : data?.discountAmount || 0,
     depositAmount: data?.depositAmount || 0,
-    leftAmount: data?.leftAmount || 0,
+    leftAmount: zeroMoney ? 0 : data?.leftAmount || 0,
     createdAt: data?.createdAt || "—",
     notes: data?.notes || "—",
   };
@@ -192,28 +194,29 @@ const BookingDetailsPage: React.FC = () => {
           {statusChip}
         </Stack>
         <Stack direction="row" spacing={1}>
-          {data?.status !== EBookingStatus.Completed && (
-            <>
-              <Button
-                variant="outlined"
-                color="primary"
-                startIcon={<Edit />}
-                onClick={() => setOpenEdit(true)}
-                aria-label="Chỉnh sửa booking"
-              >
-                Chỉnh sửa
-              </Button>
-              <Button
-                variant="outlined"
-                color="error"
-                startIcon={<CancelIcon />}
-                onClick={() => setOpenCancel(true)}
-                aria-label="Hủy booking"
-              >
-                Hủy
-              </Button>
-            </>
-          )}
+          {data?.status !== EBookingStatus.Completed &&
+            data?.status !== EBookingStatus.Cancelled && (
+              <>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  startIcon={<Edit />}
+                  onClick={() => setOpenEdit(true)}
+                  aria-label="Chỉnh sửa booking"
+                >
+                  Chỉnh sửa
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  startIcon={<CancelIcon />}
+                  onClick={() => setOpenCancel(true)}
+                  aria-label="Hủy booking"
+                >
+                  Hủy
+                </Button>
+              </>
+            )}
 
           {data?.status === EBookingStatus.Pending && (
             <Button

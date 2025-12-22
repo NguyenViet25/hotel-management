@@ -8,11 +8,13 @@ import CalendarPriceSetup from "./CalendarPriceSetup";
 export interface DateRangeSectionProps {
   control: Control<any>;
   errors: Record<string, any>;
+  roomTypeId?: string;
 }
 
 const RoomTypeFormSectionDateRange: React.FC<DateRangeSectionProps> = ({
   control,
   errors: _errors,
+  roomTypeId,
 }) => {
   return (
     <Box sx={{ borderRadius: 2 }}>
@@ -50,6 +52,7 @@ const RoomTypeFormSectionDateRange: React.FC<DateRangeSectionProps> = ({
                   }));
                   onChange(list);
                 }}
+                roomTypeId={roomTypeId}
               />
             );
           }}

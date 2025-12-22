@@ -855,7 +855,8 @@ const BookingFormModal: React.FC<Props> = ({
                         </Box>
                       ) : null}
                       {quotesByIndex[idx]?.items?.length ? (
-                        <Stack spacing={0.5} sx={{ mt: 2 }}>
+                        <>
+                          {/* <Stack spacing={0.5} sx={{ mt: 2 }}>
                           <Typography variant="subtitle2" fontWeight={700}>
                             Bảng giá theo ngày
                           </Typography>
@@ -919,7 +920,8 @@ const BookingFormModal: React.FC<Props> = ({
                             )}{" "}
                             đ
                           </Typography>
-                        </Stack>
+                        </Stack> */}
+                        </>
                       ) : null}
                     </Collapse>
                   </CardContent>
