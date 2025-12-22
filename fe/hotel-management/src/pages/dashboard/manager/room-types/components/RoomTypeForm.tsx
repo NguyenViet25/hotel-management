@@ -400,6 +400,7 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
             <RoomTypeFormSectionDateRange
               control={control}
               errors={errors as any}
+              roomTypeId={initialData?.id}
             />
           )}
         </Stack>
