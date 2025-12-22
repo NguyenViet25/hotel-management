@@ -22,6 +22,8 @@ import HotelSettingsPage from "../pages/dashboard/manager/hotels/HotelSettingsPa
 import FrontDeskTimelinePage from "../pages/dashboard/frontdesk/orders/FrontDeskTimelinePage";
 import ManagerUserManagement from "../pages/dashboard/manager/user-management";
 import GuestsManagementPage from "../pages/dashboard/manager/guests/GuestsManagementPage";
+import RoomMap from "../pages/dashboard/manager/rooms/designer/RoomMap";
+import PageTitle from "../components/common/PageTitle";
 
 // Role-aware layout wrapper for standalone pages like /profile
 const RoleAwareLayout = () => {
@@ -112,11 +114,7 @@ const ManagerDashboard = () => <ManagerDashboardPage />;
 const FrontDeskDashboardPage = lazy(
   () => import("../pages/dashboard/frontdesk")
 );
-const FrontDeskDashboard = () => (
-  <Suspense fallback={<LoadingFallback />}>
-    <FrontDeskDashboardPage />
-  </Suspense>
-);
+
 const KitchenDashboardPage = lazy(() => import("../pages/dashboard/kitchen"));
 const KitchenDashboard = () => (
   <Suspense fallback={<LoadingFallback />}>
@@ -231,6 +229,7 @@ const router = createBrowserRouter([
         path: "",
         element: <Navigate to="/manager/dashboard" replace />,
       },
+
       {
         path: "dashboard",
         element: <ManagerDashboard />,
@@ -248,6 +247,14 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<div>Loading...</div>}>
             <ManagerRoomTypesPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "bookings",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <BookingManagementPage />
           </Suspense>
         ),
       },
@@ -342,6 +349,18 @@ const router = createBrowserRouter([
       {
         path: "",
         element: <Navigate to="/frontdesk/dashboard" replace />,
+      },
+      {
+        path: "room-map",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <PageTitle
+              title="Danh sách phòng"
+              subtitle="Quản lý phòng theo dạng danh sách trực quan"
+            ></PageTitle>
+            <RoomMap allowAddNew={false} />
+          </Suspense>
+        ),
       },
       {
         path: "dashboard",

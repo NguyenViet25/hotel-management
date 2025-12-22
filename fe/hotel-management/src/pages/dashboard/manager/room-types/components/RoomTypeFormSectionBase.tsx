@@ -26,13 +26,14 @@ const RoomTypeFormSectionBase: React.FC<BaseSectionProps> = ({
         variant="h6"
         sx={{ mb: 0.5, display: "flex", alignItems: "center", gap: 1 }}
       >
-        Khoảng giá base
-        <Tooltip title="Giá cơ bản áp dụng mặc định cho mỗi đêm">
+        Giá ngày thường và cuối tuần
+        <Tooltip title="Cài đặt giá ngày thường và cuối tuần. Các giá theo ngày sẽ ghi đè khi có.">
           <InfoOutlinedIcon fontSize="small" color="action" />
         </Tooltip>
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Thiết lập khoảng giá mặc định. Các giá theo ngày sẽ ghi đè khi có.
+        Thiết lập giá ngày thường và cuối tuần. Các giá theo ngày sẽ ghi đè khi
+        có.
       </Typography>
       <Divider sx={{ mb: 2 }} />
       <Stack direction={"row"} spacing={2}>
@@ -43,7 +44,7 @@ const RoomTypeFormSectionBase: React.FC<BaseSectionProps> = ({
             <Tooltip title="Nhập giá cơ bản theo VNĐ">
               <TextField
                 name="basePriceFrom"
-                label="Giá từ (VND)"
+                label="Giá ngày thường (T2-T6)"
                 type="text"
                 fullWidth
                 margin="normal"
@@ -75,7 +76,7 @@ const RoomTypeFormSectionBase: React.FC<BaseSectionProps> = ({
           render={({ field }) => (
             <Tooltip title="Nhập giá cơ bản theo VNĐ">
               <TextField
-                label="Giá đến (VND)"
+                label="Giá cuối tuần (T6-CN)"
                 type="text"
                 fullWidth
                 margin="normal"

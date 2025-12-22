@@ -285,45 +285,52 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
                   <ImageIcon fontSize="small" />
                 </InputAdornment>
               ),
+              endAdornment: (
+                <InputAdornment position="end">
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <IconButton
+                      component="label"
+                      disabled={uploading}
+                      size="small"
+                    >
+                      <PhotoCamera fontSize="small" />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        hidden
+                        onChange={async (e) => {
+                          const f = e.target.files?.[0];
+                          if (!f) return;
+                          try {
+                            setUploading(true);
+                            const res = await mediaApi.upload(f);
+                            if (res?.isSuccess && res.data?.fileUrl) {
+                              setValue("imageUrl", res.data.fileUrl, {
+                                shouldValidate: true,
+                              });
+                            }
+                          } catch {
+                          } finally {
+                            setUploading(false);
+                          }
+                          e.currentTarget.value = "";
+                        }}
+                      />
+                    </IconButton>
+                    <Button
+                      size="small"
+                      onClick={() => setImagePreviewOpen(true)}
+                      disabled={!watch("imageUrl")}
+                    >
+                      Xem ảnh
+                    </Button>
+                  </Stack>
+                </InputAdornment>
+              ),
             }}
             error={!!errors.imageUrl}
             helperText={
-              <Stack direction="row" spacing={1} alignItems="center">
-                {errors.imageUrl?.message ||
-                  "Dán liên kết ảnh hoặc tải ảnh lên"}
-                <IconButton component="label" disabled={uploading}>
-                  <PhotoCamera fontSize="small" />
-                  <input
-                    type="file"
-                    accept="image/*"
-                    hidden
-                    onChange={async (e) => {
-                      const f = e.target.files?.[0];
-                      if (!f) return;
-                      try {
-                        setUploading(true);
-                        const res = await mediaApi.upload(f);
-                        if (res?.isSuccess && res.data?.fileUrl) {
-                          setValue("imageUrl", res.data.fileUrl, {
-                            shouldValidate: true,
-                          });
-                        }
-                      } catch {
-                      } finally {
-                        setUploading(false);
-                      }
-                      e.currentTarget.value = "";
-                    }}
-                  />
-                </IconButton>
-                <Button
-                  size="small"
-                  onClick={() => setImagePreviewOpen(true)}
-                  disabled={!watch("imageUrl")}
-                >
-                  Xem ảnh
-                </Button>
-              </Stack>
+              errors.imageUrl?.message || "Dán liên kết ảnh hoặc tải ảnh lên"
             }
           />
         </Tooltip>
@@ -379,7 +386,7 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
             onChange={(_, v) => setTabIndex(v)}
             variant="fullWidth"
           >
-            <Tab label="Khoảng giá base" />
+            <Tab label="Giá ngày thường và cuối tuần" />
             <Tab label="Giá theo ngày" />
           </Tabs>
         </Paper>
