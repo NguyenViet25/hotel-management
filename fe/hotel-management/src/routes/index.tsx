@@ -22,6 +22,8 @@ import HotelSettingsPage from "../pages/dashboard/manager/hotels/HotelSettingsPa
 import FrontDeskTimelinePage from "../pages/dashboard/frontdesk/orders/FrontDeskTimelinePage";
 import ManagerUserManagement from "../pages/dashboard/manager/user-management";
 import GuestsManagementPage from "../pages/dashboard/manager/guests/GuestsManagementPage";
+import RoomMap from "../pages/dashboard/manager/rooms/designer/RoomMap";
+import PageTitle from "../components/common/PageTitle";
 
 // Role-aware layout wrapper for standalone pages like /profile
 const RoleAwareLayout = () => {
@@ -90,6 +92,12 @@ const BookingManagementPage = lazy(
 const BookingDetailsPage = lazy(
   () => import("../pages/dashboard/frontdesk/bookings/BookingDetailsPage")
 );
+const CustomerDetailsPage = lazy(
+  () => import("../pages/dashboard/frontdesk/customers/CustomerDetailsPage")
+);
+const OrderDetailsPage = lazy(
+  () => import("../pages/dashboard/waiter/orders/OrderDetailsPage")
+);
 // Loading component
 const LoadingFallback = () => (
   <Box
@@ -109,11 +117,7 @@ const ManagerDashboard = () => <ManagerDashboardPage />;
 const FrontDeskDashboardPage = lazy(
   () => import("../pages/dashboard/frontdesk")
 );
-const FrontDeskDashboard = () => (
-  <Suspense fallback={<LoadingFallback />}>
-    <FrontDeskDashboardPage />
-  </Suspense>
-);
+
 const KitchenDashboardPage = lazy(() => import("../pages/dashboard/kitchen"));
 const KitchenDashboard = () => (
   <Suspense fallback={<LoadingFallback />}>
@@ -228,6 +232,7 @@ const router = createBrowserRouter([
         path: "",
         element: <Navigate to="/manager/dashboard" replace />,
       },
+
       {
         path: "dashboard",
         element: <ManagerDashboard />,
@@ -245,6 +250,14 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<div>Loading...</div>}>
             <ManagerRoomTypesPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "bookings",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <BookingManagementPage />
           </Suspense>
         ),
       },
@@ -341,6 +354,18 @@ const router = createBrowserRouter([
         element: <Navigate to="/frontdesk/dashboard" replace />,
       },
       {
+        path: "room-map",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <PageTitle
+              title="Danh sách phòng"
+              subtitle="Quản lý phòng theo dạng danh sách trực quan"
+            ></PageTitle>
+            <RoomMap allowAddNew={false} />
+          </Suspense>
+        ),
+      },
+      {
         path: "dashboard",
         element: <FrontDeskDashboardPage />,
       },
@@ -357,6 +382,14 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<div>Loading...</div>}>
             <OrdersManagementPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "orders/:id",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <OrderDetailsPage />
           </Suspense>
         ),
       },
@@ -405,6 +438,14 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<div>Loading...</div>}>
             <BookingDetailsPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "customers/:id",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <CustomerDetailsPage />
           </Suspense>
         ),
       },

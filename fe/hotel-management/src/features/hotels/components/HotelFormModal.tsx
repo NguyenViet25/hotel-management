@@ -24,6 +24,7 @@ import {
 import React, { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
+import { phoneSchema } from "../../../validation/phone";
 import type { Hotel } from "../../../api/hotelService";
 import { useHotels } from "../hooks/useHotels";
 
@@ -38,20 +39,14 @@ const createSchema = z.object({
   code: z.string().min(3, "Mã cơ sở phải có ít nhất 3 ký tự"),
   name: z.string().min(3, "Tên cơ sở phải có ít nhất 3 ký tự"),
   address: z.string().min(5, "Địa chỉ phải có ít nhất 5 ký tự"),
-  phone: z
-    .string()
-    .regex(/^[0-9+\-\s]{8,15}$/i, "Số điện thoại không hợp lệ")
-    .optional(),
+  phone: phoneSchema.optional(),
   email: z.string().email("Email không hợp lệ").optional(),
 });
 
 const updateSchema = z.object({
   name: z.string().min(3, "Tên cơ sở phải có ít nhất 3 ký tự"),
   address: z.string().min(5, "Địa chỉ phải có ít nhất 5 ký tự"),
-  phone: z
-    .string()
-    .regex(/^[0-9+\-\s]{8,15}$/i, "Số điện thoại không hợp lệ")
-    .optional(),
+  phone: phoneSchema.optional(),
   email: z.string().email("Email không hợp lệ").optional(),
   isActive: z.boolean().optional(),
 });

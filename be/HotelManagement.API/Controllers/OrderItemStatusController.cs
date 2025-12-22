@@ -7,7 +7,7 @@ namespace HotelManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/order-items")]
-[Authorize(Roles = "Admin,Manager,Kitchen,Waiter")]
+//[Authorize(Roles = "Admin,Manager,Kitchen,Waiter")]
 public class OrderItemStatusController : ControllerBase
 {
     private readonly IOrderItemStatusService _orderItemStatusService;

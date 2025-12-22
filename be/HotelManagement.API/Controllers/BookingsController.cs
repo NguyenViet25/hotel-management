@@ -10,7 +10,7 @@ namespace HotelManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/bookings")]
-[Authorize]
+//[Authorize]
 public class BookingsController(IBookingsService bookingsService, IWebHostEnvironment env, IMediaService service) : ControllerBase
 {
     private readonly IBookingsService _bookingsService = bookingsService;

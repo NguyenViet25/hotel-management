@@ -25,7 +25,7 @@ import CreateUserDialog from "../../admin/user-management/dialogs/CreateUserDial
 import EditUserDialog from "../../admin/user-management/dialogs/EditUserDialog";
 import LockUserDialog from "../../admin/user-management/dialogs/LockUserDialog";
 import ResetPasswordDialog from "../../admin/user-management/dialogs/ResetPasswordDialog";
-import { isEmpty } from "lodash";
+import { isPhone } from "../../../../validation/phone";
 
 const ManagerUserManagement: React.FC = () => {
   // State for user list
@@ -200,9 +200,8 @@ const ManagerUserManagement: React.FC = () => {
       errors.fullName = "Họ và tên không được để trống";
     }
 
-    // TODO: help me check valid phone number (phone number is potional field)
     if (formData.phoneNumber) {
-      if (!/^[0-9]{10,11}$/.test(formData.phoneNumber)) {
+      if (!isPhone(formData.phoneNumber)) {
         errors.phoneNumber = "Số điện thoại không hợp lệ";
       }
     }

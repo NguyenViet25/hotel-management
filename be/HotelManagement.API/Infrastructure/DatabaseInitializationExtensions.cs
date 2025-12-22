@@ -1,12 +1,14 @@
-using Microsoft.EntityFrameworkCore;
-using HotelManagement.Repository;
 using HotelManagement.Domain;
 using HotelManagement.Domain.Entities;
+using HotelManagement.Repository;
 using Microsoft.AspNetCore.Identity;
-using System.Security.Claims;
-using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using System.Globalization;
+using System.Linq;
+using System.Security.Claims;
 using System.Text;
+using System.Text.RegularExpressions;
+using static System.Net.WebRequestMethods;
 
 namespace HotelManagement.Api.Infrastructure;
 
@@ -36,7 +38,7 @@ public static class DatabaseInitializationExtensions
             SeedPromotionsAsync(dbContext).GetAwaiter().GetResult();
             SeedMinibarsAsync(dbContext).GetAwaiter().GetResult();
             SeedTablesAsync(dbContext).GetAwaiter().GetResult();
-            SeedBookingsAsync(dbContext).GetAwaiter().GetResult();
+            //SeedBookingsAsync(dbContext).GetAwaiter().GetResult();
             //SeedHousekeepingTasksAsync(dbContext).GetAwaiter().GetResult();
         }
 
@@ -79,21 +81,19 @@ public static class DatabaseInitializationExtensions
                 .ToListAsync();
             if (legacyRoomTypes.Any())
             {
+
+
                 var mappingLegacy = new Dictionary<string, string[]>
-                {
                     {
-                        "Phòng Superior Có Giường Cỡ Queen",
-                        new[] { "101", "102", "203", "204", "205", "206", "207", "208", "209", "210", "211", "303", "304", "305", "306", "307", "308", "309", "310", "311", "403", "404", "405", "406", "407", "408", "409", "410", "411", "503", "504", "505", "506", "507", "508", "509", "510", "511", "603", "604", "605", "606", "607", "608", "609", "610", "611" }
-                    },
-                    {
-                        "Phòng Deluxe nhìn ra biển",
-                        new[] { "201", "202", "301", "302", "401", "402", "501", "502", "601", "602" }
-                    },
-                    {
-                        "Studio nhìn ra quang cảnh đại dương",
-                        new[] { "701", "702", "703", "704", "705" }
-                    }
-                };
+                        {
+                            "Phòng Gia Đình Có Ban Công view Resort",
+                            new[] { "301", "302", "303", "306", "401", "402", "403", "406", "501", "502", "503", "506", "604" }
+                        },
+                        {
+                            "Phòng Deluxe nhìn ra biển",
+                            new[] { "204", "205", "206", "304", "305", "404", "405", "504", "505", "601", "602", "603" }
+                        }
+                    };
 
                 foreach (var kv in mappingLegacy)
                 {
@@ -126,17 +126,25 @@ public static class DatabaseInitializationExtensions
                     .ToListAsync();
                 if (tts1RoomTypes.Any())
                 {
+
                     var mappingTts1 = new Dictionary<string, string[]>
                     {
                         {
                             "Phòng Superior Có Giường Cỡ Queen",
-                            new[] { "201", "202", "203", "204", "205", "206", "301", "302", "303", "304", "305", "306", "401", "402", "403", "404", "405", "406", "501", "502", "503", "504", "505", "506", "601", "602", "603", "604", "605", "606", "701", "702", "703", "704", "705", "706", "801", "802", "803", "804", "805", "806", "901", "902", "903", "904", "905", "906" }
+                            new[] { "101", "102", "203", "204", "205", "206", "207", "208", "209", "210", "211", "303", "304", "305", "306", "307", "308", "309", "310", "311", "403", "404", "405", "406", "407", "408", "409", "410", "411", "503", "504", "505", "506", "507", "508", "509", "510", "511", "603", "604", "605", "606", "607", "608", "609", "610", "611" }
                         },
                         {
                             "Phòng Deluxe nhìn ra biển",
-                            new[] { "207", "208", "307", "308", "407", "408", "507", "508", "607", "608", "707", "708", "807", "808", "907", "908" }
+                            new[] { "201", "202", "301", "302", "401", "402", "501", "502", "601", "602" }
+                        },
+                        {
+                            "Studio nhìn ra quang cảnh đại dương",
+                            new[] { "701", "702", "703", "704", "705" }
                         }
                     };
+
+
+                  
 
                     foreach (var kv in mappingTts1)
                     {
@@ -173,12 +181,12 @@ public static class DatabaseInitializationExtensions
                     var mappingTts2 = new Dictionary<string, string[]>
                     {
                         {
-                            "Phòng Gia Đình Có Ban Công view Resort",
-                            new[] { "301", "302", "303", "306", "401", "402", "403", "406", "501", "502", "503", "506", "604" }
+                            "Phòng Superior Có Giường Cỡ Queen",
+                            new[] { "201", "202", "203", "204", "205", "206", "301", "302", "303", "304", "305", "306", "401", "402", "403", "404", "405", "406", "501", "502", "503", "504", "505", "506", "601", "602", "603", "604", "605", "606", "701", "702", "703", "704", "705", "706", "801", "802", "803", "804", "805", "806", "901", "902", "903", "904", "905", "906" }
                         },
                         {
                             "Phòng Deluxe nhìn ra biển",
-                            new[] { "204", "205", "206", "304", "305", "404", "405", "504", "505", "601", "602", "603" }
+                            new[] { "207", "208", "307", "308", "407", "408", "507", "508", "607", "608", "707", "708", "807", "808", "907", "908" }
                         }
                     };
 
@@ -348,7 +356,7 @@ public static class DatabaseInitializationExtensions
                 }
             });
 
-              
+
             }
         }
 
@@ -385,7 +393,7 @@ public static class DatabaseInitializationExtensions
                     }
                 });
 
-              
+
             }
         }
 
@@ -788,7 +796,7 @@ public static class DatabaseInitializationExtensions
         {
             var seed = (cat + "-" + name).Replace(" ", "-");
             var tags = tagMap.TryGetValue(cat, out var t) ? t : "food";
-            return $"https://loremflickr.com/seed/{seed}/600/400/{tags}";
+            return $"https://image.similarpng.com/file/similarpng/original-picture/2021/09/Good-food-logo-design-on-transparent-background-PNG.png";
         }
 
         var data = raw.Select(d => (cat: d.cat, name: d.name, min: d.min, max: d.max, desc: d.desc, imageSrc: ImgOf(d.cat, d.name))).ToList();
@@ -852,6 +860,7 @@ public static class DatabaseInitializationExtensions
         var s480_2 = string.Join("\n", new[] { "Nộm hải sản", "Ghẹ hấp", "Tôm nướng", "Mực trứng hấp", "Bề bề rang muối", "Sò nướng mỡ hành", "Cá thu sốt cà chua", "Canh cua mùng tơi", "Rau xào", "Cơm tám + cà pháo", "Hoa quả tráng miệng" });
 
         var allNew = new List<MenuItem>();
+        var defaultImg = "https://png.pngtree.com/png-clipart/20240701/original/pngtree-a-plate-with-variety-of-food-on-it-depicted-in-clipart-png-image_15452710.png";
         foreach (var h in hotels)
         {
             var exists = await dbContext.Set<MenuItem>().AnyAsync(mi => mi.HotelId == h.Id && mi.Category == "Set");
@@ -859,28 +868,28 @@ public static class DatabaseInitializationExtensions
 
             allNew.AddRange(new[]
             {
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 200.000đ/người - Set 1", Description = s200_1, UnitPrice = 200000, ImageUrl = "", Status = 0, IsActive = true },
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 200.000đ/người - Set 2", Description = s200_2, UnitPrice = 200000, ImageUrl = "", Status = 0, IsActive = true },
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 200.000đ/người - Set 3", Description = s200_3, UnitPrice = 200000, ImageUrl = "", Status = 0, IsActive = true },
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 200.000đ/người - Set 4", Description = s200_4, UnitPrice = 200000, ImageUrl = "", Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 200.000đ/người - Set 1", Description = s200_1, UnitPrice = 200000, ImageUrl = defaultImg, Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 200.000đ/người - Set 2", Description = s200_2, UnitPrice = 200000, ImageUrl = defaultImg, Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 200.000đ/người - Set 3", Description = s200_3, UnitPrice = 200000, ImageUrl = defaultImg, Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 200.000đ/người - Set 4", Description = s200_4, UnitPrice = 200000, ImageUrl = defaultImg, Status = 0, IsActive = true },
 
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 250.000đ/người - Set 1", Description = s250_1, UnitPrice = 250000, ImageUrl = "", Status = 0, IsActive = true },
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 250.000đ/người - Set 2", Description = s250_2, UnitPrice = 250000, ImageUrl = "", Status = 0, IsActive = true },
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 250.000đ/người - Set 3", Description = s250_3, UnitPrice = 250000, ImageUrl = "", Status = 0, IsActive = true },
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 250.000đ/người - Set 4", Description = s250_4, UnitPrice = 250000, ImageUrl = "", Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 250.000đ/người - Set 1", Description = s250_1, UnitPrice = 250000, ImageUrl = defaultImg, Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 250.000đ/người - Set 2", Description = s250_2, UnitPrice = 250000, ImageUrl = defaultImg, Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 250.000đ/người - Set 3", Description = s250_3, UnitPrice = 250000, ImageUrl = defaultImg, Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 250.000đ/người - Set 4", Description = s250_4, UnitPrice = 250000, ImageUrl = defaultImg, Status = 0, IsActive = true },
 
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 300.000đ/người - Set 1", Description = s300_1, UnitPrice = 300000, ImageUrl = "", Status = 0, IsActive = true },
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 300.000đ/người - Set 2", Description = s300_2, UnitPrice = 300000, ImageUrl = "", Status = 0, IsActive = true },
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 300.000đ/người - Set 3", Description = s300_3, UnitPrice = 300000, ImageUrl = "", Status = 0, IsActive = true },
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 300.000đ/người - Set 4", Description = s300_4, UnitPrice = 300000, ImageUrl = "", Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 300.000đ/người - Set 1", Description = s300_1, UnitPrice = 300000, ImageUrl = defaultImg, Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 300.000đ/người - Set 2", Description = s300_2, UnitPrice = 300000, ImageUrl = defaultImg, Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 300.000đ/người - Set 3", Description = s300_3, UnitPrice = 300000, ImageUrl = defaultImg, Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 300.000đ/người - Set 4", Description = s300_4, UnitPrice = 300000, ImageUrl = defaultImg, Status = 0, IsActive = true },
 
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 350.000đ/người - Set 1", Description = s350_1, UnitPrice = 350000, ImageUrl = "", Status = 0, IsActive = true },
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 350.000đ/người - Set 2", Description = s350_2, UnitPrice = 350000, ImageUrl = "", Status = 0, IsActive = true },
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 350.000đ/người - Set 3", Description = s350_3, UnitPrice = 350000, ImageUrl = "", Status = 0, IsActive = true },
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 350.000đ/người - Set 4", Description = s350_4, UnitPrice = 350000, ImageUrl = "", Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 350.000đ/người - Set 1", Description = s350_1, UnitPrice = 350000, ImageUrl = defaultImg, Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 350.000đ/người - Set 2", Description = s350_2, UnitPrice = 350000, ImageUrl = defaultImg, Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 350.000đ/người - Set 3", Description = s350_3, UnitPrice = 350000, ImageUrl = defaultImg, Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 350.000đ/người - Set 4", Description = s350_4, UnitPrice = 350000, ImageUrl = defaultImg, Status = 0, IsActive = true },
 
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 480.000đ/người - Set 1", Description = s480_1, UnitPrice = 480000, ImageUrl = "", Status = 0, IsActive = true },
-                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 480.000đ/người - Set 2", Description = s480_2, UnitPrice = 480000, ImageUrl = "", Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 480.000đ/người - Set 1", Description = s480_1, UnitPrice = 480000, ImageUrl = defaultImg, Status = 0, IsActive = true },
+                new MenuItem { Id = Guid.NewGuid(), HotelId = h.Id, Category = "Set", Name = "Suất 480.000đ/người - Set 2", Description = s480_2, UnitPrice = 480000, ImageUrl = defaultImg, Status = 0, IsActive = true },
             });
         }
 
@@ -1206,78 +1215,88 @@ public static class DatabaseInitializationExtensions
 
     public static async Task SeedMinibarsAsync(DbContext dbContext)
     {
-        var hotelId = DEFAULT_HOTEL_ID;
+        var allExisting = await dbContext.Set<Minibar>().ToListAsync();
+        if (allExisting.Count > 0)
+        {
+            dbContext.Set<Minibar>().RemoveRange(allExisting);
+            await dbContext.SaveChangesAsync();
+        }
 
-        // Get all room types for this hotel
-        var roomTypes = await dbContext.Set<RoomType>()
-            .Where(rt => rt.HotelId == hotelId)
-            .ToListAsync();
+        var roomTypes = await dbContext.Set<RoomType>().ToListAsync();
+        if (!roomTypes.Any()) return;
 
-        if (!roomTypes.Any())
-            return; // No room types → nothing to seed
+        var names = new[]
+        {
+            "Tivi",
+            "Tủ lạnh",
+            "Điều khiển tivi",
+            "Điều khiển điều hòa",
+            "Móc treo quần áo",
+            "Bàn là",
+            "Máy sấy tóc",
+            "Ấm siêu tốc",
+            "Quạt treo tường",
+            "Khăn tắm",
+            "Gương"
+        };
 
         foreach (var roomType in roomTypes)
         {
-            // Check if minibar items already seeded for this room type
-            bool exists = await dbContext.Set<Minibar>()
-                .AnyAsync(m => m.RoomTypeId == roomType.Id);
+            var items = names.Select(n =>
+            {
+                var key = n.ToLowerInvariant();
+                var price = key switch
+                {
+                    "tivi" => Random.Shared.Next(3000000, 6000001),
+                    "tủ lạnh" => Random.Shared.Next(2500000, 5000001),
+                    "điều khiển tivi" => Random.Shared.Next(50000, 150001),
+                    "điều khiển điều hòa" => Random.Shared.Next(50000, 150001),
+                    "móc treo quần áo" => Random.Shared.Next(20000, 50001),
+                    "bàn là" => Random.Shared.Next(200000, 500001),
+                    "máy sấy tóc" => Random.Shared.Next(200000, 500001),
+                    "ấm siêu tốc" => Random.Shared.Next(200000, 500001),
+                    "quạt treo tường" => Random.Shared.Next(400000, 900001),
+                    "khăn tắm" => Random.Shared.Next(30000, 100001),
+                    "gương" => Random.Shared.Next(200000, 500001),
+                    _ => Random.Shared.Next(20000, 100001)
+                };
+                var qty = key switch
+                {
+                    "khăn tắm" => Random.Shared.Next(2, 7),
+                    "móc treo quần áo" => Random.Shared.Next(4, 11),
+                    "điều khiển tivi" => Random.Shared.Next(1, 3),
+                    "điều khiển điều hòa" => Random.Shared.Next(1, 3),
+                    _ => 1
+                };
 
-            if (exists)
-                continue;
 
-            var items = new List<Minibar>
-        {
-            new Minibar
-            {
-                Id = Guid.NewGuid(),
-                HotelId = hotelId,
-                RoomTypeId = roomType.Id,
-                Name = "Nước suối Aquafina",
-                ImageUrl = "https://thanhhaphat.vn/wp-content/uploads/2020/08/nuoc-tinh-khiet-aquafina-350ml-chai.png",
-                Price = 10000,
-                Quantity = 2
-            },
-            new Minibar
-            {
-                Id = Guid.NewGuid(),
-                HotelId = hotelId,
-                RoomTypeId = roomType.Id,
-                Name = "Coca-Cola",
-                ImageUrl = "https://shopstocktc.com/cdn/shop/products/stock_coca_cola_800x.png?v=1631722202",
-                Price = 15000,
-                Quantity = 2
-            },
-            new Minibar
-            {
-                Id = Guid.NewGuid(),
-                HotelId = hotelId,
-                RoomTypeId = roomType.Id,
-                Name = "Snack khoai tây",
-                ImageUrl = "https://orion.vn/media/u1ldttkf/orion-post-new-26.png",
-                Price = 20000,
-                Quantity = 1
-            },
-            new Minibar
-            {
-                Id = Guid.NewGuid(),
-                HotelId = hotelId,
-                RoomTypeId = roomType.Id,
-                Name = "Bia Heineken",
-                ImageUrl = "https://boozy.ph/cdn/shop/files/2024_-_2nd_Platforms_-_Product_Image_Template_11_grande.png?v=1727745062",
-                Price = 25000,
-                Quantity = 2
-            },
-            new Minibar
-            {
-                Id = Guid.NewGuid(),
-                HotelId = hotelId,
-                RoomTypeId = roomType.Id,
-                Name = "Trà xanh Không Độ",
-                ImageUrl = "https://www.thp.com.vn/wp-content/uploads/2017/01/slider-zero5.png",
-                Price = 12000,
-                Quantity = 1
-            }
-        };
+                var imageMap = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase)
+                {
+                    { "tivi", "https://pngimg.com/d/tv_PNG39274.png" },
+                    { "tủ lạnh", "https://png.pngtree.com/png-vector/20250214/ourmid/pngtree-d-isolated-render-of-fridge-icon-on-white-background-for-appliance-vector-png-image_15464759.png" },
+                    { "điều khiển tivi", "https://png.pngtree.com/png-clipart/20240810/original/pngtree-tv-remote-controller-png-image_15738768.png" },
+                    { "điều khiển điều hòa", "https://png.pngtree.com/png-vector/20250717/ourmid/pngtree-3d-air-conditioner-remote-control-isolated-on-transparent-background-png-image_16782911.webp" },
+                    { "móc treo quần áo", "https://png.pngtree.com/png-clipart/20231017/original/pngtree-hanger-household-isolated-fashion-picture-image_13176405.png" },
+                    { "bàn là", "https://png.pngtree.com/png-clipart/20240927/original/pngtree-electric-iron-picture-transparent-free-png-image_16099533.png" },
+                    { "máy sấy tóc", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrlS_ypbUqxd-PtLANywNAmxkSwpvF5GXm6A&s" },
+                    { "ấm siêu tốc", "https://goldsun.vn/pic/ProductItem/EK-GBB121_637121896997421007.png" },
+                    { "quạt treo tường", "https://thietbipanasonic.vn/wp-content/uploads/2020/02/Quat-treo-tuong-Panasonic-F409M1.png" },
+                    { "khăn tắm", "https://png.pngtree.com/png-clipart/20210314/original/pngtree-white-bath-towel-clean-cotton-towel-roll-png-image_6088364.jpg" },
+                    { "gương", "https://png.pngtree.com/png-clipart/20241222/original/pngtree-stand-mirror-isolated-on-white-transparent-background-png-image_18128768.png" }
+                };
+
+                var imageUrl = imageMap.ContainsKey(key) ? imageMap[key] : $"https://via.placeholder.com/256?text={Uri.EscapeDataString(n)}";
+                return new Minibar
+                {
+                    Id = Guid.NewGuid(),
+                    HotelId = roomType.HotelId,
+                    RoomTypeId = roomType.Id,
+                    Name = n,
+                    ImageUrl = imageUrl,
+                    Price = (decimal)price,
+                    Quantity = qty
+                };
+            }).ToList();
 
             dbContext.Set<Minibar>().AddRange(items);
         }
@@ -1315,6 +1334,37 @@ public static class DatabaseInitializationExtensions
         await dbContext.SaveChangesAsync();
     }
 
+    private static string VietnameseNameToEmail(string fullName)
+    {
+        if (string.IsNullOrWhiteSpace(fullName))
+            return string.Empty;
+
+        // Normalize and remove Vietnamese accents
+        string normalized = fullName.Normalize(NormalizationForm.FormD);
+        var sb = new StringBuilder();
+
+        foreach (char c in normalized)
+        {
+            var unicodeCategory = Char.GetUnicodeCategory(c);
+            if (unicodeCategory != UnicodeCategory.NonSpacingMark)
+            {
+                sb.Append(c);
+            }
+        }
+
+        string noAccent = sb.ToString()
+            .Normalize(NormalizationForm.FormC)
+            .ToLower();
+
+        // Remove special characters, keep letters & numbers only
+        noAccent = Regex.Replace(noAccent, @"[^a-z0-9\s]", "");
+
+        // Remove spaces
+        noAccent = noAccent.Replace(" ", "");
+
+        return noAccent;
+    }
+
     public static async Task SeedBookingsAsync(DbContext dbContext)
     {
         var hotelId = DEFAULT_HOTEL_ID;
@@ -1327,20 +1377,20 @@ public static class DatabaseInitializationExtensions
 
         var seeds = new[]
         {
-            (name: "Nguyễn Trung Hưng", phone: "0366225777", guests: 16, roomsCount: 4, url: "https://drive.google.com/file/d/1NJoI3LyWmx-KMB02q8FjJ6XzpKX7mtsm/view?usp=sharing"),
-            (name: "Nguyễn Văn Thành", phone: "0983440891", guests: 4, roomsCount: 1, url: "https://drive.google.com/file/d/1Xh1Fju79Si5divfvIVOt03TIK_xafWdA/view?usp=sharing"),
-            (name: "Ngô Tiến Mạnh", phone: "0965291988", guests: 8, roomsCount: 2, url: "https://drive.google.com/file/d/1d4pfs50iQsDG9q7GIuui0dDqsRu4PKPn/view?usp=sharing"),
-            (name: "Đặng Thị Hương", phone: "0975297928", guests: 7, roomsCount: 2, url: "https://drive.google.com/file/d/1loTp4Xo1JULqmUvhr_wJr_RHDnM3driE/view?usp=sharing"),
-            (name: "Nguyễn Thị Vân Anh", phone: "0399131811", guests: 12, roomsCount: 3, url: "https://drive.google.com/file/d/1kuVu1mEXInrtpF-MiQ-806YuQyiUo0cc/view?usp=sharing"),
-            (name: "Phạm Thị Minh", phone: "0356208925", guests: 4, roomsCount: 1, url: "https://drive.google.com/file/d/1G-zp7dRk2aNp4WMqP3qhVOg36HXd3dF3/view?usp=sharing"),
-            (name: "Đặng Thành Trung", phone: "0985546541", guests: 24, roomsCount: 6, url: "https://drive.google.com/file/d/165xMdOy8O7kFQw11QWF0JmHykPp4n7HQ/view?usp=sharing"),
-            (name: "Vũ Thanh Huyền", phone: "0974099087", guests: 78, roomsCount: 20, url: "https://drive.google.com/file/d/1RBmOd1FSl0ouLK2txTsqMQHKMn5EVaM1/view?usp=sharing"),
-            (name: "Đỗ Thanh Huyền", phone: "0364977608", guests: 12, roomsCount: 3, url: "https://drive.google.com/file/d/10OtJcCBqjzCnz4eY7xCch07J4UpyMfZm/view?usp=sharing"),
-            (name: "Đỗ Thị Thanh Thủy", phone: "0369105238", guests: 4, roomsCount: 1, url: "https://drive.google.com/file/d/1uxTz_B7VQr1LOlmwD2etQEfdhqS_eFGZ/view?usp=sharing"),
-            (name: "Đỗ Thị Cương", phone: "0989200919", guests: 22, roomsCount: 6, url: "https://drive.google.com/file/d/1rNyFd5EFqsgingghDMnQBfQcBJKlVra0/view?usp=sharing"),
-            (name: "Phạm Thị Trà My", phone: "0973100791", guests: 18, roomsCount: 5, url: "https://drive.google.com/file/d/1Dd_4275d3vragbzeB0fAQGs4UI6u5dXP/view?usp=sharing"),
-            (name: "Đỗ Văn Dũng", phone: "0964056989", guests: 32, roomsCount: 8, url: "https://drive.google.com/file/d/1WXrqh1Y1SygE_ZkWJnPs_18uCsgnEd0I/view?usp=sharing"),
-            (name: "Phạm Thanh Mai", phone: "0327652433", guests: 14, roomsCount: 4, url: "https://drive.google.com/file/d/1e3X73q1Tqx4mloN99Unc9hZoBTADPWk3/view?usp=sharing")
+            (name: "Nguyễn Trung Hưng", phone: "0366225777", guests: 16, roomsCount: 4, url: "https://drive.google.com/uc?export=view&id=1NJoI3LyWmx-KMB02q8FjJ6XzpKX7mtsm"),
+            (name: "Nguyễn Văn Thành", phone: "0983440891", guests: 4, roomsCount: 1, url: "https://drive.google.com/uc?export=view&id=1Xh1Fju79Si5divfvIVOt03TIK_xafWdA"),
+            (name: "Ngô Tiến Mạnh", phone: "0965291988", guests: 8, roomsCount: 2, url: "https://drive.google.com/uc?export=view&id=1d4pfs50iQsDG9q7GIuui0dDqsRu4PKPn"),
+            (name: "Đặng Thị Hương", phone: "0975297928", guests: 7, roomsCount: 2, url: "https://drive.google.com/uc?export=view&id=1loTp4Xo1JULqmUvhr_wJr_RHDnM3driE"),
+            (name: "Nguyễn Thị Vân Anh", phone: "0399131811", guests: 12, roomsCount: 3, url: "https://drive.google.com/uc?export=view&id=1kuVu1mEXInrtpF-MiQ-806YuQyiUo0cc"),
+            (name: "Phạm Thị Minh", phone: "0356208925", guests: 4, roomsCount: 1, url: "https://drive.google.com/uc?export=view&id=1G-zp7dRk2aNp4WMqP3qhVOg36HXd3dF3"),
+            (name: "Đặng Thành Trung", phone: "0985546541", guests: 24, roomsCount: 6, url: "https://drive.google.com/uc?export=view&id=165xMdOy8O7kFQw11QWF0JmHykPp4n7HQ"),
+            (name: "Vũ Thanh Huyền", phone: "0974099087", guests: 78, roomsCount: 20, url: "https://drive.google.com/uc?export=view&id=1RBmOd1FSl0ouLK2txTsqMQHKMn5EVaM1"),
+            (name: "Đỗ Thanh Huyền", phone: "0364977608", guests: 12, roomsCount: 3, url: "https://drive.google.com/uc?export=view&id=10OtJcCBqjzCnz4eY7xCch07J4UpyMfZm"),
+            (name: "Đỗ Thị Thanh Thủy", phone: "0369105238", guests: 4, roomsCount: 1, url: "https://drive.google.com/uc?export=view&id=1uxTz_B7VQr1LOlmwD2etQEfdhqS_eFGZ"),
+            (name: "Đỗ Thị Cương", phone: "0989200919", guests: 22, roomsCount: 6, url: "https://drive.google.com/uc?export=view&id=1rNyFd5EFqsgingghDMnQBfQcBJKlVra0"),
+            (name: "Phạm Thị Trà My", phone: "0973100791", guests: 18, roomsCount: 5, url: "https://drive.google.com/uc?export=view&id=1Dd_4275d3vragbzeB0fAQGs4UI6u5dXP"),
+            (name: "Đỗ Văn Dũng", phone: "0964056989", guests: 32, roomsCount: 8, url: "https://drive.google.com/uc?export=view&id=1WXrqh1Y1SygE_ZkWJnPs_18uCsgnEd0I"),
+            (name: "Phạm Thanh Mai", phone: "0327652433", guests: 14, roomsCount: 4, url: "https://drive.google.io/uc?export=view&id=1e3X73q1Tqx4mloN99Unc9hZoBTADPWk3")
         };
 
         DateTime start = DateTime.Today.AddDays(1);
@@ -1356,10 +1406,11 @@ public static class DatabaseInitializationExtensions
                 Id = Guid.NewGuid(),
                 FullName = s.name,
                 Phone = s.phone,
-                IdCard = string.Empty,
-                IdCardFrontImageUrl = s.url,
-                IdCardBackImageUrl = null,
-                Email = null
+                IdCard = Random.Shared.NextInt64(100000000000, 999999999999).ToString(),
+                IdCardFrontImageUrl = "https://cdn.tgdd.vn/Files/2021/04/19/1344608/7_800x450.jpg",
+                IdCardBackImageUrl = "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:format(webp):quality(75)/doi_cccd_het_han_online_12_48804bb731.jpeg",
+                Email = $"{VietnameseNameToEmail(s.name)}-{Random.Shared.NextInt64(100000000000, 999999999999)}@gmail.com",
+                HotelId = DEFAULT_HOTEL_ID,
             };
             dbContext.Set<Guest>().Add(g);
             await dbContext.SaveChangesAsync();

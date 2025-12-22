@@ -286,6 +286,9 @@ export default function SessionBoardPage() {
 
   const filteredSessions = useMemo(() => {
     return (sessions || []).filter((s) => {
+      const byWaiter =
+        !isWaiter ||
+        (s.waiterUserId || "").toLowerCase() === (user?.id || "").toLowerCase();
       const bySearch =
         !searchText ||
         (s.waiterName || "").toLowerCase().includes(searchText.toLowerCase()) ||
@@ -294,9 +297,9 @@ export default function SessionBoardPage() {
       const byFrom =
         !fromDate || d.isSame(fromDate, "day") || d.isAfter(fromDate);
       const byTo = !toDate || d.isSame(toDate, "day") || d.isBefore(toDate);
-      return bySearch && byFrom && byTo;
+      return byWaiter && bySearch && byFrom && byTo;
     });
-  }, [sessions, searchText, fromDate, toDate]);
+  }, [sessions, searchText, fromDate, toDate, isWaiter, user?.id]);
 
   const sessionsLoading = !sessionsRes;
 
@@ -431,7 +434,7 @@ export default function SessionBoardPage() {
         >
           <Typography variant="h6">Danh sách phiên</Typography>
           <Chip
-            label={`Đang mở: ${sessions.length}`}
+            label={`Đang mở: ${filteredSessions.length}`}
             color="primary"
             size="small"
           />

@@ -10,12 +10,15 @@ public class HousekeepingTaskDto
     public Guid RoomId { get; set; }
     public string RoomNumber { get; set; } = string.Empty;
     public int Floor { get; set; }
+    public string ImageSrc { get; set; } = string.Empty;
     public Guid? AssignedToUserId { get; set; }
     public string? AssignedToName { get; set; }
     public string? Notes { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? StartedAt { get; set; }
     public DateTime? CompletedAt { get; set; }
+    public List<RoomStatusLog> RoomStatusLogs { get; set; } = [];
+    public List<MinibarBooking> MinibarBookings { get; set; } = [];
 }
 
 public class CreateHousekeepingTaskRequest

@@ -9,7 +9,8 @@ namespace HotelManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/pricing")]
-[Authorize]
+//[Authorize]
+
 public class PricingController : ControllerBase
 {
     private readonly IPricingService _pricingService;

@@ -8,6 +8,7 @@ using HotelManagement.Services.Admin.Invoicing.Dtos;
 using HotelManagement.Services.Admin.Orders;
 using HotelManagement.Services.Common;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,7 +16,7 @@ namespace HotelManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/invoices")]
-[Authorize]
+//[Authorize]
 public class InvoicesController : ControllerBase
 {
     private readonly IInvoiceService _invoiceService;
@@ -92,7 +93,7 @@ public class InvoicesController : ControllerBase
             return BadRequest(ApiResponse<InvoiceDto>.Fail(orderRes.Message ?? "Order not found"));
         }
         var order = orderRes.Data;
-       
+
         var lines = new List<CreateInvoiceLineDto>();
         foreach (var it in order.Items)
         {
@@ -136,7 +137,8 @@ public class InvoicesController : ControllerBase
                     PromotionValue = promo.Value,
                     PromotionCode = promo.Code
                 });
-            } else
+            }
+            else
             {
                 await _ordersService.UpdateWalkPromotionAsync(request.OrderId, new Services.Admin.Orders.Dtos.UpdateWalkInPromotionDto()
                 {
@@ -160,8 +162,29 @@ public class InvoicesController : ControllerBase
         var uidClaim = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         Guid.TryParse(uidClaim, out var userId);
 
-        var invoice = await _invoiceService.CreateInvoiceAsync(createDto, userId);
-        return Ok(ApiResponse<InvoiceDto>.Ok(invoice, "Created"));
+
+
+        if (createDto.OrderId.HasValue && await _invoiceService.AllowAddOrderInvoiceAsync((Guid)createDto.OrderId))
+        {
+            await _invoiceService.RemoveLastOrderInvoiceAsync((Guid)createDto.OrderId);
+            var invoice = await _invoiceService.CreateInvoiceAsync(createDto, userId);
+        }
+
+
+        var inv = await _invoiceRepository.Query()
+            .Where(i => i.OrderId == request.OrderId)
+            .OrderByDescending(i => i.CreatedAt)
+            .FirstOrDefaultAsync();
+
+
+        if (inv != null)
+        {
+            var dto = await _invoiceService.GetInvoiceAsync(inv.Id);
+            return Ok(ApiResponse<InvoiceDto>.Ok(dto, "Created"));
+        }
+
+        return Ok();
+
     }
 
     [HttpPost("booking")]
@@ -174,8 +197,12 @@ public class InvoicesController : ControllerBase
             CheckoutTime = request.CheckoutTime,
             AdditionalAmount = request.AdditionalAmount,
             AdditionalNotes = request.AdditionalNotes,
-            Notes = request.Notes
+            Notes = request.Notes,
+            AdditionalBookingAmount = request.AdditionalBookingAmount,
+            AdditionalBookingNotes = request.AdditionalNotes,
+            TotalAmount = request.TotalAmount
         };
+
 
         var result = await _bookingsService.CheckOutAsync(request.BookingId, checkoutDto);
         if (!result.IsSuccess)
@@ -183,20 +210,30 @@ public class InvoicesController : ControllerBase
             return BadRequest(ApiResponse<InvoiceDto>.Fail(result.Message ?? "Checkout failed"));
         }
 
-        var inv = await _invoiceRepository.Query()
-            .Where(i => i.BookingId == request.BookingId)
-            .OrderByDescending(i => i.CreatedAt)
-            .FirstOrDefaultAsync();
-        if (inv is null)
+
+
+        if (await _invoiceService.AllowAddBookingInvoiceAsync(request.BookingId))
         {
-            return NotFound(ApiResponse<InvoiceDto>.Fail("Invoice not found after checkout"));
+            await _invoiceService.RemoveLastBookingInvoiceAsync(request.BookingId);
+            await _bookingsService.AddBookingInvoiceAsync(request.BookingId, checkoutDto);
+
         }
 
-        var dto = await _invoiceService.GetInvoiceAsync(inv.Id);
-        return Ok(ApiResponse<InvoiceDto>.Ok(dto, "Created"));
+        var inv = await _invoiceRepository.Query()
+             .Where(i => i.BookingId == request.BookingId)
+             .OrderByDescending(i => i.CreatedAt)
+             .FirstOrDefaultAsync();
+
+
+        if (inv != null)
+        {
+            var dto = await _invoiceService.GetInvoiceAsync(inv.Id);
+            return Ok(ApiResponse<InvoiceDto>.Ok(dto, "Created"));
+        }
+
+        return Ok();
     }
 
-    
 }
 
 public class CreateWalkInInvoiceRequest
@@ -212,6 +249,9 @@ public class CreateBookingInvoiceRequest
     public string? Notes { get; set; }
     public string? AdditionalNotes { get; set; }
     public decimal? AdditionalAmount { get; set; }
+    public decimal? AdditionalBookingAmount { get; set; }
+    public string? AdditionalBookingNotes { get; set; }
+    public decimal? TotalAmount { get; set; }
     public PaymentDto? FinalPayment { get; set; }
     public DateTime? CheckoutTime { get; set; }
 }

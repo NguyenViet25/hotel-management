@@ -36,12 +36,28 @@ import React, { useEffect, useMemo, useState } from "react";
 import kitchenApi, {
   type FoodsByDayItem,
   type GetFoodsByWeekResponse,
+  QualityStatus,
   type ShoppingItemDto,
   ShoppingOrderStatus,
 } from "../../../../api/kitchenApi";
 import PageTitle from "../../../../components/common/PageTitle";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
 import { getExactVNDate } from "../../../../utils/date-helper";
+const qualityLabel = (q: QualityStatus) => {
+  if (q === QualityStatus.Good) return "Tốt";
+  if (q === QualityStatus.Acceptable) return "Chấp nhận";
+  if (q === QualityStatus.Poor) return "Kém";
+  if (q === QualityStatus.Expired) return "Hết hạn";
+  return "Chưa đánh giá";
+};
+
+const qualityColor = (q: QualityStatus) => {
+  if (q === QualityStatus.Good) return "success";
+  if (q === QualityStatus.Acceptable) return "warning";
+  if (q === QualityStatus.Poor) return "error";
+  if (q === QualityStatus.Expired) return "error";
+  return "info";
+};
 
 // Compute Monday → Sunday for the given date
 const getWeekRange = (date: Date) => {
@@ -299,17 +315,19 @@ const FoodTimeline: React.FC = () => {
                       {d.format("DD/MM/YYYY")}
                     </Typography>
                     <Stack gap={1}>
-                      <Button
-                        startIcon={<RemoveRedEye />}
-                        size="small"
-                        variant="contained"
-                        color="inherit"
-                        onClick={() =>
-                          openReviewIngredients(dayEntry?.shoppingOrderId)
-                        }
-                      >
-                        Xem và xác nhận yêu cầu mua nguyên liệu
-                      </Button>
+                      {dayEntry?.shoppingOrderId ? (
+                        <Button
+                          startIcon={<RemoveRedEye />}
+                          size="small"
+                          variant="contained"
+                          color="inherit"
+                          onClick={() =>
+                            openReviewIngredients(dayEntry?.shoppingOrderId)
+                          }
+                        >
+                          Xem và xác nhận yêu cầu mua nguyên liệu
+                        </Button>
+                      ) : null}
                     </Stack>
                   </Stack>
                   <List dense>
@@ -414,7 +432,27 @@ const FoodTimeline: React.FC = () => {
                       <TableCell align="center">{it.quantity}</TableCell>
                       <TableCell align="center">{it.unit}</TableCell>
                       <TableCell align="center">
-                        {it.qualityStatus ?? ""}
+                        {[
+                          QualityStatus.NotRated,
+                          QualityStatus.Good,
+                          QualityStatus.Acceptable,
+                          QualityStatus.Poor,
+                          QualityStatus.Expired,
+                        ].map((q) => {
+                          console.log("it", it);
+                          return (
+                            <Chip
+                              key={q}
+                              label={qualityLabel(q)}
+                              color={
+                                it.qualityStatus === q
+                                  ? qualityColor(it.qualityStatus)
+                                  : "default"
+                              }
+                              size="small"
+                            />
+                          );
+                        })}
                       </TableCell>
                     </TableRow>
                   ))}

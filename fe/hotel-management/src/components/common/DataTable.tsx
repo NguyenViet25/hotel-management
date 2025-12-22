@@ -60,12 +60,12 @@ export interface DataTableProps<T> {
   sortDirection?: "asc" | "desc";
   onSearch?: (searchText: string) => void;
   borderRadius?: number;
+  renderActions?: (row: T) => React.ReactNode;
 }
 
 const DataTable = <T extends object>({
   columns,
   data,
-  title,
   loading = false,
   pagination,
   onAdd,
@@ -81,6 +81,7 @@ const DataTable = <T extends object>({
   onSearch,
   sortDirection = "asc",
   borderRadius = 2,
+  renderActions,
 }: DataTableProps<T>) => {
   const handleSort = (property: string) => {
     if (onSort) {
@@ -287,6 +288,7 @@ const DataTable = <T extends object>({
                                 <KeyIcon fontSize="small" />
                               </IconButton>
                             )}
+                            {renderActions && renderActions(row)}
                           </Stack>
                         </TableCell>
                       )}

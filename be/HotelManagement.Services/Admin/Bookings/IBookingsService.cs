@@ -33,4 +33,6 @@ public interface IBookingsService
     Task<ApiResponse<BookingDetailsDto>> UpdateRoomActualTimesAsync(Guid bookingRoomId, DateTime? actualCheckInAt, DateTime? actualCheckOutAt);
     Task<ApiResponse<BookingDetailsDto>> MoveGuestAsync(Guid bookingRoomId, Guid guestId, Guid targetBookingRoomId);
     Task<ApiResponse<BookingDetailsDto>> SwapGuestsAsync(Guid bookingRoomId, Guid guestId, Guid targetBookingRoomId, Guid targetGuestId);
+
+    Task<ApiResponse<CheckoutResultDto>> AddBookingInvoiceAsync(Guid bookingId, CheckoutRequestDto dto);
 }

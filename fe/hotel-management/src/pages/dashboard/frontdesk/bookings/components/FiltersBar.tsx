@@ -1,8 +1,16 @@
-import { Box, MenuItem, Stack, TextField } from "@mui/material";
+import {
+  Box,
+  MenuItem,
+  Stack,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+} from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import type { Dayjs } from "dayjs";
 import React from "react";
 import type { BookingStatus } from "../../../../../api/bookingsApi";
+import { GridView, TableChart } from "@mui/icons-material";
 
 export interface StatusOption {
   value: BookingStatus | "";
@@ -21,6 +29,8 @@ export interface FiltersBarProps {
   onGuestNameChange: (value: string) => void;
   onRoomNumberChange: (value: string) => void;
   statusOptions: StatusOption[];
+  viewMode: "card" | "table";
+  setViewMode: (value: "card" | "table") => void;
 }
 
 const FiltersBar: React.FC<FiltersBarProps> = ({
@@ -33,10 +43,32 @@ const FiltersBar: React.FC<FiltersBarProps> = ({
   guestName,
   onGuestNameChange,
   statusOptions,
+  viewMode,
+  setViewMode,
 }) => {
   return (
     <Box>
       <Stack direction={{ xs: "column", lg: "row" }} spacing={2}>
+        <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
+          <ToggleButtonGroup
+            value={viewMode}
+            exclusive
+            onChange={(_, v) =>
+              setViewMode((v ?? viewMode) as "card" | "table")
+            }
+            size="small"
+            color="primary"
+          >
+            <ToggleButton value="table">
+              <TableChart sx={{ mr: 1 }} />
+              Bảng
+            </ToggleButton>
+            <ToggleButton value="card">
+              <GridView sx={{ mr: 1 }} />
+              Thẻ
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </Stack>
         <TextField
           label="Nhập tên khách, số điện thoại"
           value={guestName}

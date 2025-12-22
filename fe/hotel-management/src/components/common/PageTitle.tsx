@@ -13,9 +13,9 @@ export default function PageTitle({ title, subtitle }: IProps) {
           {title}
         </Typography>
       )}
-      <Typography variant="subtitle2" color="text.secondary">
+      {/* <Typography variant="subtitle2" color="text.secondary">
         {subtitle}
-      </Typography>
+      </Typography> */}
     </Stack>
   );
 }

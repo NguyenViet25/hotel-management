@@ -155,6 +155,15 @@ const userService = {
     return response.data;
   },
 
+  listWaiters: async (): Promise<{
+    isSuccess: boolean;
+    message: string | null;
+    data: User[];
+  }> => {
+    const response = await axios.get(`/users/waiters`);
+    return response.data;
+  },
+
   assignPropertyRole: async (
     id: string,
     propertyRole: PropertyRoleRequest

@@ -1,5 +1,6 @@
 using HotelManagement.Services.Admin.Dining;
 using HotelManagement.Services.Admin.Dining.Dtos;
+using HotelManagement.Services.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,7 +8,7 @@ namespace HotelManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/dining-sessions")]
-[Authorize]
+//[Authorize]
 public class DiningSessionController : ControllerBase
 {
     private readonly IDiningSessionService _diningSessionService;
@@ -120,7 +121,7 @@ public class DiningSessionController : ControllerBase
     public async Task<IActionResult> AssignOrder(Guid id, Guid orderId)
     {
         var response = await _diningSessionService.AssignOrderAsync(id, orderId);
-     
+
         return Ok(response);
     }
 
@@ -146,4 +147,15 @@ public class DiningSessionController : ControllerBase
         return Ok(response);
     }
 
+
+    [HttpPost("assign-waiter")]
+    public async Task<IActionResult> AssignWaiterAsync(AssignWaiterRequest request)
+    {
+        var response = await _diningSessionService.AssignWaiterAsync(request);
+        var success = ApiResponse<string>.Ok(response.Item2);
+        var failed = ApiResponse<string>.Fail(response.Item2);
+        return Ok(response.Item1 ? success : failed);
+    }
 }
+
+

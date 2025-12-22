@@ -19,4 +19,5 @@ public interface IDiningSessionService
     Task<ApiResponse<OrderDetailsDto>> GetOrderOfSessionAsync(Guid sessionId);
     Task<ApiResponse<OrderDetailsDto>> GetOrderOfTableAsync(Guid tableId);
     Task<ApiResponse<List<SessionTableDto>>> GetTablesBySessionAsync(Guid sessionId);
+    Task<(bool, string)> AssignWaiterAsync(AssignWaiterRequest request);
 }

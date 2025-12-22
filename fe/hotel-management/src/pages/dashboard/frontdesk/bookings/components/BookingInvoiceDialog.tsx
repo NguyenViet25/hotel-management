@@ -49,7 +49,6 @@ import PromotionDialog from "../../invoices/components/PromotionDialog";
 import { Close, Print } from "@mui/icons-material";
 import DiscountIcon from "@mui/icons-material/Discount";
 import PercentIcon from "@mui/icons-material/Percent";
-import Loading from "../../../../../components/common/Loading";
 
 type Props = {
   open: boolean;
@@ -71,13 +70,16 @@ const BookingInvoiceDialog: React.FC<Props> = ({
   const { user, hotelId } = useStore<StoreState>((state) => state);
   const [promotionCode, setPromotionCode] = useState("");
   const [promotionValue, setPromotionValue] = useState<number>(0);
-
+  const [totalAmount, setTotalAmount] = useState<number>(0);
   const [additionalNotes, setAdditionalNotes] = useState(
     booking?.additionalNotes ?? " "
   );
   const [additionalAmount, setAdditionalAmount] = useState<number>(
     booking?.additionalAmount ?? 0
   );
+
+  const [additionalBookingAmount, setAdditionalBookingAmount] =
+    useState<number>(booking?.additionalBookingAmount ?? 0);
 
   const [promoOpen, setPromoOpen] = useState(false);
   const [additional, setAdditional] = useState<AdditionalChargesDto | null>();
@@ -127,6 +129,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
       try {
         setAdditionalNotes(booking.additionalNotes ?? "");
         setAdditionalAmount(booking.additionalAmount || 0);
+        setAdditionalBookingAmount(booking.additionalBookingAmount || 0);
         setPromotionCode(booking.promotionCode || "");
         setPromotionValue(booking.promotionValue || 0);
       } catch {}
@@ -153,65 +156,75 @@ const BookingInvoiceDialog: React.FC<Props> = ({
   >({});
 
   useEffect(() => {
+    console.log("booking?.bookingRoomTypes?", booking?.bookingRoomTypes);
+
     const loadDailyPrices = async () => {
       if (!open || !booking?.bookingRoomTypes?.length) return;
       const result: Record<string, { date: string; price: number }[]> = {};
       await Promise.all(
-        (booking.bookingRoomTypes || []).map(async (rt) => {
-          try {
-            const [qRes, rtRes] = await Promise.all([
-              pricingApi.quote({
-                roomTypeId: rt.roomTypeId,
-                checkInDate: dayjs(rt.startDate).format("YYYY-MM-DD"),
-                checkOutDate: dayjs(rt.endDate).format("YYYY-MM-DD"),
-              }),
-              roomTypesApi.getRoomTypeById(rt.roomTypeId),
-            ]);
-            const rawQuote: PricingQuoteResponse | null =
-              ((qRes as any).data || (qRes as any).data?.data || qRes.data) ??
-              null;
-            const rtDetails = ((rtRes as any).data ||
-              (rtRes as any).data?.data ||
-              rtRes.data) as any;
-            const overrides = (rtDetails?.priceByDates || []).map((d: any) =>
-              dayjs(d.date).format("YYYY-MM-DD")
-            );
-            const overrideSet = new Set(overrides);
-            const inputPrice = rt.price || rtDetails?.priceFrom || 0;
+        (booking.bookingRoomTypes || []).flatMap((rt) =>
+          (rt.bookingRooms || []).map(async (br) => {
+            try {
+              const [qRes, rtRes] = await Promise.all([
+                pricingApi.quote({
+                  roomTypeId: rt.roomTypeId,
+                  checkInDate: dayjs(br.actualCheckInAt || rt.startDate).format(
+                    "YYYY-MM-DD"
+                  ),
+                  checkOutDate: dayjs(
+                    br.actualCheckOutAt || br.extendedDate || rt.endDate
+                  ).format("YYYY-MM-DD"),
+                }),
+                roomTypesApi.getRoomTypeById(rt.roomTypeId),
+              ]);
+              const rawQuote: PricingQuoteResponse | null =
+                ((qRes as any).data || (qRes as any).data?.data || qRes.data) ??
+                null;
+              const rtDetails = ((rtRes as any).data ||
+                (rtRes as any).data?.data ||
+                rtRes.data) as any;
+              const overrides = (rtDetails?.priceByDates || []).map((d: any) =>
+                dayjs(d.date).format("YYYY-MM-DD")
+              );
+              const overrideSet = new Set(overrides);
+              const inputPrice = rt.price || rtDetails?.priceFrom || 0;
 
-            const start = dayjs(rt.startDate);
-            const end = dayjs(rt.endDate);
+              const start = dayjs(br.actualCheckInAt || rt.startDate);
+              const end = dayjs(
+                br.actualCheckOutAt || br.extendedDate || rt.endDate
+              );
 
-            let items =
-              rawQuote?.items && rawQuote.items.length ? rawQuote.items : [];
-            if ((!items || items.length === 0) && start.isBefore(end)) {
-              const temp: { date: string; price: number }[] = [];
-              let cursor = start.clone();
-              while (cursor.isBefore(end)) {
-                const dateStr = cursor.format("YYYY-MM-DD");
-                const overridePrice = rtDetails?.priceByDates?.find(
-                  (p: any) => dayjs(p.date).format("YYYY-MM-DD") === dateStr
-                )?.price;
-                temp.push({
-                  date: dateStr,
-                  price: overridePrice ?? inputPrice,
+              let items =
+                rawQuote?.items && rawQuote.items.length ? rawQuote.items : [];
+              if ((!items || items.length === 0) && start.isBefore(end)) {
+                const temp: { date: string; price: number }[] = [];
+                let cursor = start.clone();
+                while (cursor.isBefore(end)) {
+                  const dateStr = cursor.format("YYYY-MM-DD");
+                  const overridePrice = rtDetails?.priceByDates?.find(
+                    (p: any) => dayjs(p.date).format("YYYY-MM-DD") === dateStr
+                  )?.price;
+                  temp.push({
+                    date: dateStr,
+                    price: overridePrice ?? inputPrice,
+                  });
+                  cursor = cursor.add(1, "day");
+                }
+                items = temp as any;
+              } else {
+                items = items.map((it: any) => {
+                  const d = dayjs(it.date).format("YYYY-MM-DD");
+                  const isOverride = overrideSet.has(d);
+                  return {
+                    date: d,
+                    price: isOverride ? it.price : inputPrice,
+                  };
                 });
-                cursor = cursor.add(1, "day");
               }
-              items = temp as any;
-            } else {
-              items = items.map((it: any) => {
-                const d = dayjs(it.date).format("YYYY-MM-DD");
-                const isOverride = overrideSet.has(d);
-                return {
-                  date: d,
-                  price: isOverride ? it.price : inputPrice,
-                };
-              });
-            }
-            result[rt.bookingRoomTypeId] = items as any;
-          } catch {}
-        })
+              result[br.bookingRoomId] = items as any;
+            } catch {}
+          })
+        )
       );
       setPriceByDateMap(result);
     };
@@ -237,71 +250,89 @@ const BookingInvoiceDialog: React.FC<Props> = ({
       total: number;
     }[] = [];
     for (const rt of booking.bookingRoomTypes || []) {
-      const rooms = Math.max(rt.totalRoom, 1);
-      const daily = (priceByDateMap[rt.bookingRoomTypeId] || []).slice();
-      if (daily.length === 0) {
-        const start = dayjs(rt.startDate);
-        const end = dayjs(rt.endDate);
-        const nights = Math.max(1, end.diff(start, "day"));
-        rows.push({
-          label: `Phòng ${rt.roomTypeName}`,
-          dateRange:
-            nights > 1
-              ? `${start.format("DD/MM/YYYY")} - ${start
-                  .add(nights - 1, "day")
-                  .format("DD/MM/YYYY")}`
-              : `${start.format("DD/MM/YYYY")}`,
-          quantity: rooms,
-          nights,
-          unit: rt.price,
-          total: rt.price * rooms * nights,
-        });
-      } else {
-        daily.sort((a, b) => a.date.localeCompare(b.date));
-        let segStart = daily[0];
-        let segEnd = daily[0];
-        for (let i = 1; i < daily.length; i++) {
-          const cur = daily[i];
-          const prevDate = dayjs(segEnd.date);
-          const curDate = dayjs(cur.date);
-          const isConsecutive = curDate.diff(prevDate, "day") === 1;
-          const samePrice = cur.price === segEnd.price;
-          if (isConsecutive && samePrice) {
-            segEnd = cur;
-          } else {
-            const nights =
-              dayjs(segEnd.date).diff(dayjs(segStart.date), "day") + 1;
-            rows.push({
-              label: `Phòng ${rt.roomTypeName}`,
-              dateRange:
-                nights > 1
-                  ? `${dayjs(segStart.date).format("DD/MM/YYYY")} - ${dayjs(
-                      segEnd.date
-                    ).format("DD/MM/YYYY")}`
-                  : `${dayjs(segStart.date).format("DD/MM/YYYY")}`,
-              quantity: rooms,
-              nights,
-              unit: segEnd.price,
-              total: segEnd.price * rooms * nights,
-            });
-            segStart = cur;
-            segEnd = cur;
+      for (const br of rt.bookingRooms || []) {
+        const daily = (priceByDateMap[br.bookingRoomId] || []).slice();
+        if (daily.length === 0) {
+          const start = dayjs(br.actualCheckInAt || rt.startDate);
+          const end = dayjs(
+            br.actualCheckOutAt || br.extendedDate || rt.endDate
+          );
+          const nights = Math.max(1, end.diff(start, "day"));
+          rows.push({
+            label: `Phòng ${br.roomName || "—"} (${rt.roomTypeName})`,
+            dateRange:
+              nights > 1
+                ? `${start.add(1, "day").format("DD/MM/YYYY")} - ${start
+                    .add(nights - 1, "day")
+                    .format("DD/MM/YYYY")}`
+                : `${dayjs(start).format("DD/MM/YYYY")} - ${dayjs(end)
+                    .add(1, "day")
+                    .format("DD/MM/YYYY")}`,
+            quantity: 1,
+            nights: nights,
+            unit: rt.price,
+            total: rt.price * nights,
+          });
+        } else {
+          daily.sort((a, b) => a.date.localeCompare(b.date));
+          let segStart = daily[0];
+          let segEnd = daily[0];
+          for (let i = 1; i < daily.length; i++) {
+            const cur = daily[i];
+            const prevDate = dayjs(segEnd.date);
+            const curDate = dayjs(cur.date);
+            const isConsecutive = curDate.diff(prevDate, "day") === 1;
+            const samePrice = cur.price === segEnd.price;
+            if (isConsecutive && samePrice) {
+              segEnd = cur;
+            } else {
+              const nights =
+                dayjs(segEnd.date).diff(dayjs(segStart.date), "day") + 1;
+              rows.push({
+                label: `Phòng ${br.roomName || "—"} (${rt.roomTypeName})`,
+                dateRange:
+                  nights > 1
+                    ? `${dayjs(segStart.date).format("DD/MM/YYYY")} - ${dayjs(
+                        segEnd.date
+                      )
+                        .add(1, "day")
+                        .format("DD/MM/YYYY")}`
+                    : `${dayjs(segStart.date).format("DD/MM/YYYY")} - ${dayjs(
+                        segEnd.date
+                      )
+                        .add(1, "day")
+                        .format("DD/MM/YYYY")}`,
+                quantity: 1,
+                nights: nights,
+                unit: segEnd.price,
+                total: segEnd.price * nights,
+              });
+              segStart = cur;
+              segEnd = cur;
+            }
           }
+          const nights =
+            dayjs(segEnd.date).diff(dayjs(segStart.date), "day") + 1;
+          rows.push({
+            label: `Phòng ${br.roomName || "—"} (${rt.roomTypeName})`,
+            dateRange:
+              nights > 1
+                ? `${dayjs(segStart.date).format("DD/MM/YYYY")} - ${dayjs(
+                    segEnd.date
+                  )
+                    .add(1, "day")
+                    .format("DD/MM/YYYY")}`
+                : `${dayjs(segStart.date).format("DD/MM/YYYY")} - ${dayjs(
+                    segEnd.date
+                  )
+                    .add(1, "day")
+                    .format("DD/MM/YYYY")}`,
+            quantity: 1,
+            nights: nights,
+            unit: segEnd.price,
+            total: segEnd.price * nights,
+          });
         }
-        const nights = dayjs(segEnd.date).diff(dayjs(segStart.date), "day") + 1;
-        rows.push({
-          label: `Phòng ${rt.roomTypeName}`,
-          dateRange:
-            nights > 1
-              ? `${dayjs(segStart.date).format("DD/MM/YYYY")} - ${dayjs(
-                  segEnd.date
-                ).format("DD/MM/YYYY")}`
-              : `${dayjs(segStart.date).format("DD/MM/YYYY")}`,
-          quantity: rooms,
-          nights,
-          unit: segEnd.price,
-          total: segEnd.price * rooms * nights,
-        });
       }
     }
 
@@ -314,24 +345,36 @@ const BookingInvoiceDialog: React.FC<Props> = ({
         total: l.amount,
       });
     }
+    if (additionalBookingAmount > 0) {
+      rows.push({
+        label: "Phụ thu thêm",
+        quantity: "—",
+        nights: undefined,
+        unit: additionalBookingAmount,
+        total: additionalBookingAmount,
+      });
+    }
+
     if (additionalAmount > 0) {
       rows.push({
         label:
           additionalNotes && additionalNotes.trim().length
-            ? `Phụ thu thêm: ${additionalNotes.trim()}`
-            : "Phụ thu thêm",
-        quantity: 1,
+            ? `Đền bù: ${additionalNotes.trim()}`
+            : "Đền bù",
+        quantity: "—",
         nights: undefined,
         unit: additionalAmount,
         total: additionalAmount,
       });
     }
+
     return rows;
   }, [
     open,
     additional,
     ordersTotal,
     additionalAmount,
+    additionalBookingAmount,
     additionalNotes,
     priceByDateMap,
   ]);
@@ -354,10 +397,15 @@ const BookingInvoiceDialog: React.FC<Props> = ({
     const deposit = booking?.depositAmount || 0;
     const taxableAmount = subtotal - discountAmt;
     const vatAmt = Math.round(
-      (taxableAmount * (showVat ? vatPercentage || 0 : 0)) / 100
+      ((taxableAmount - additionalAmount) *
+        (showVat ? vatPercentage || 0 : 0)) /
+        100
     );
     const finalNoVat = taxableAmount - deposit;
     const finalWithVat = taxableAmount + vatAmt - deposit;
+
+    setTotalAmount(finalNoVat);
+
     return {
       subtotal,
       discountAmt,
@@ -389,6 +437,8 @@ const BookingInvoiceDialog: React.FC<Props> = ({
         finalPayment: undefined,
         additionalNotes,
         additionalAmount,
+        additionalBookingAmount,
+        totalAmount,
       });
 
       if (res.isSuccess) {
@@ -411,6 +461,14 @@ const BookingInvoiceDialog: React.FC<Props> = ({
       toast.error("Đã xảy ra lỗi khi xuất hóa đơn");
     }
   };
+
+  function formatVND(value: number | null | undefined) {
+    if (value === null || value === undefined) return "";
+
+    const digits = value.toString();
+
+    return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  }
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
@@ -502,7 +560,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                       <b>Ngày</b>
                     </TableCell>
                     <TableCell align="center" sx={{ width: "8%" }}>
-                      <b>SL</b>
+                      <b>SL Phòng</b>
                     </TableCell>
                     <TableCell align="center" sx={{ width: "8%" }}>
                       <b>Đêm</b>
@@ -662,20 +720,21 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                   >
                     Chọn mã khuyến mãi
                   </Button>
+
                   <TextField
-                    type="number"
+                    type="text"
                     value={
-                      additionalAmount !== undefined &&
-                      additionalAmount !== null
+                      additionalBookingAmount !== undefined &&
+                      additionalBookingAmount !== null
                         ? new Intl.NumberFormat("vi-VN").format(
-                            Number(additionalAmount)
+                            additionalBookingAmount || 0
                           )
                         : ""
                     }
                     onChange={(e) => {
                       const raw = e.target.value.replace(/[^0-9]/g, "");
                       const num = raw ? Number(raw) : 0;
-                      setAdditionalAmount(num);
+                      setAdditionalBookingAmount(num);
                     }}
                     label="Phụ thu"
                     slotProps={{
@@ -688,9 +747,38 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                     placeholder="Nhập phụ thu"
                     fullWidth
                   />
+
+                  <TextField
+                    type="text"
+                    value={
+                      additionalAmount !== undefined &&
+                      additionalAmount !== null
+                        ? new Intl.NumberFormat("vi-VN").format(
+                            Number(additionalAmount)
+                          )
+                        : ""
+                    }
+                    onChange={(e) => {
+                      console.log("e.target.value", e.target.value);
+                      const raw = e.target.value.replace(/[^0-9]/g, "");
+                      const num = raw ? Number(raw) : 0;
+                      setAdditionalAmount(num);
+                    }}
+                    label="Đền bù"
+                    slotProps={{
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position="start">VND</InputAdornment>
+                        ),
+                      },
+                    }}
+                    placeholder="Nhập đền bù"
+                    fullWidth
+                  />
+
                   <TextField
                     value={additionalNotes}
-                    label="Ghi chú"
+                    label="Ghi chú đền bù"
                     onChange={(e) => setAdditionalNotes(e.target.value)}
                     placeholder="Nhập ghi chú"
                     fullWidth

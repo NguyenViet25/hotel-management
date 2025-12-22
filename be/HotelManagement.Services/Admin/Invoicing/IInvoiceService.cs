@@ -6,6 +6,10 @@ namespace HotelManagement.Services.Admin.Invoicing;
 public interface IInvoiceService
 {
     Task<InvoiceDto> CreateInvoiceAsync(CreateInvoiceDto request, Guid userId);
+    Task<bool> RemoveLastBookingInvoiceAsync(Guid targetId);
+    Task<bool> RemoveLastOrderInvoiceAsync(Guid targetId);
+    Task<bool> AllowAddBookingInvoiceAsync(Guid targetId);
+    Task<bool> AllowAddOrderInvoiceAsync(Guid targetId);
     Task<InvoiceDto> GetInvoiceAsync(Guid id);
     Task<InvoiceDto> UpdateInvoiceAsync(Guid id, UpdateInvoiceDto request);
     Task<InvoiceDto> IssueInvoiceAsync(Guid id);

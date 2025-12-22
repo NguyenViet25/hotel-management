@@ -1,7 +1,15 @@
+import { Info } from "@mui/icons-material";
 import {
   Box,
   Button,
   Chip,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  TableContainer,
+  TextField,
   Dialog,
   DialogActions,
   DialogContent,
@@ -10,12 +18,10 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import DataTable, { type Column } from "../common/DataTable";
+import { useState } from "react";
+import housekeepingApi from "../../api/housekeepingApi";
 import { type HousekeepingTaskDto } from "../../api/housekeepingTasksApi";
-import bookingsApi, { type BookingIntervalDto } from "../../api/bookingsApi";
-import React, { useState } from "react";
-import { Info } from "@mui/icons-material";
-import dayjs from "dayjs";
+import DataTable, { type Column } from "../common/DataTable";
 
 type Props = {
   title?: string;
@@ -30,26 +36,18 @@ export default function HousekeepingTasksTable({
 }: Props) {
   const [infoOpen, setInfoOpen] = useState(false);
   const [selected, setSelected] = useState<HousekeepingTaskDto | null>(null);
-  const [minibarBookingId, setMinibarBookingId] = useState<string>("");
+  const currency = (v?: number) =>
+    typeof v === "number" ? `${v.toLocaleString()}₫` : "—";
 
-  const openInfo = async (t: HousekeepingTaskDto) => {
-    setSelected(t);
-    setMinibarBookingId("");
+  const openInfo = async (id: string) => {
     try {
-      const from = new Date(t.startedAt || t.createdAt);
+      const from = new Date(selected?.startedAt!);
       from.setHours(0, 0, 0, 0);
-      const to = new Date(t.completedAt || t.startedAt || t.createdAt);
+      const to = new Date(selected?.completedAt!);
       to.setHours(23, 59, 59, 999);
-      const schedRes = await bookingsApi.roomSchedule(
-        t.roomId,
-        dayjs(from).format("YYYY-MM-DDTHH:mm:ss"),
-        dayjs(to).format("YYYY-MM-DDTHH:mm:ss")
-      );
-      const intervals = (schedRes.data || []) as BookingIntervalDto[];
-      setMinibarBookingId(intervals[0]?.bookingId || "");
-    } catch {
-      setMinibarBookingId("");
-    }
+      const houseKeepingTask = await housekeepingApi.getAsync(id);
+      setSelected(houseKeepingTask.data || null);
+    } catch {}
     setInfoOpen(true);
   };
 
@@ -62,7 +60,7 @@ export default function HousekeepingTasksTable({
       minWidth: 140,
       format: (v) => v || "—",
     },
-    { id: "notes", label: "Ghi chú", minWidth: 220, format: (v) => v || "—" },
+    // { id: "notes", label: "Ghi chú", minWidth: 180, format: (v) => v || "—" },
     {
       id: "createdAt",
       label: "Tạo lúc",
@@ -91,7 +89,7 @@ export default function HousekeepingTasksTable({
           startIcon={<Info fontSize="small" />}
           variant="outlined"
           size="small"
-          onClick={() => openInfo(row)}
+          onClick={() => openInfo(row.id)}
         >
           Xem chi tiết
         </Button>
@@ -116,7 +114,7 @@ export default function HousekeepingTasksTable({
       <Dialog
         open={infoOpen}
         onClose={() => setInfoOpen(false)}
-        maxWidth="sm"
+        maxWidth="md"
         fullWidth
       >
         <DialogTitle
@@ -201,7 +199,7 @@ export default function HousekeepingTasksTable({
                     minHeight: 48,
                   }}
                 >
-                  {selected.notes || "Không có ghi chú"}
+                  {selected.roomStatusLogs?.[0]?.notes || "Không có ghi chú"}
                 </Typography>
               </Stack>
 
@@ -212,20 +210,53 @@ export default function HousekeepingTasksTable({
                 <Typography variant="subtitle1" fontWeight={600}>
                   📸 Ảnh minh chứng
                 </Typography>
-
-                {/* Replace this when you have images */}
-                <Stack
-                  spacing={1}
-                  sx={{
-                    bgcolor: "grey.50",
-                    p: 1.5,
-                    borderRadius: 2,
-                  }}
-                >
-                  <Typography variant="caption" color="text.secondary">
-                    Không có dữ liệu ảnh minh chứng
-                  </Typography>
-                </Stack>
+                {(() => {
+                  const urls =
+                    (selected.roomStatusLogs || [])
+                      .flatMap((l) => l.evidenceUrls || [])
+                      .filter((u): u is string => !!u) || [];
+                  if (!urls.length) {
+                    return (
+                      <Stack
+                        spacing={1}
+                        sx={{ bgcolor: "grey.50", p: 1.5, borderRadius: 2 }}
+                      >
+                        <Typography variant="caption" color="text.secondary">
+                          Không có dữ liệu ảnh minh chứng
+                        </Typography>
+                      </Stack>
+                    );
+                  }
+                  return (
+                    <Box
+                      sx={{
+                        display: "grid",
+                        gridTemplateColumns: {
+                          xs: "repeat(2, 1fr)",
+                          sm: "repeat(3, 1fr)",
+                          md: "repeat(4, 1fr)",
+                        },
+                        gap: 1.5,
+                        bgcolor: "grey.50",
+                        p: 1.5,
+                        borderRadius: 2,
+                      }}
+                    >
+                      {urls.map((url, idx) => (
+                        <Box
+                          key={`${url}-${idx}`}
+                          sx={{ display: "flex", justifyContent: "center" }}
+                        >
+                          <img
+                            src={url}
+                            alt="Evidence"
+                            style={{ width: "100%", borderRadius: 8 }}
+                          />
+                        </Box>
+                      ))}
+                    </Box>
+                  );
+                })()}
               </Stack>
 
               <Divider />
@@ -235,16 +266,78 @@ export default function HousekeepingTasksTable({
                 <Typography variant="subtitle1" fontWeight={600}>
                   🛒 Minibar
                 </Typography>
-
-                {minibarBookingId ? (
-                  <Chip
-                    label={`Booking: ${minibarBookingId}`}
-                    color="primary"
-                    sx={{ width: "fit-content", fontWeight: 600 }}
-                  />
+                {selected.minibarBookings && selected.minibarBookings.length ? (
+                  <TableContainer>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell align="center" sx={{ width: "8%" }}>
+                            #
+                          </TableCell>
+                          <TableCell sx={{ width: "28%" }}>Minibar</TableCell>
+                          <TableCell align="right" sx={{ width: "16%" }}>
+                            SL
+                          </TableCell>
+                          <TableCell align="right" sx={{ width: "12%" }}>
+                            Đơn giá
+                          </TableCell>
+                          <TableCell align="right" sx={{ width: "16%" }}>
+                            SL trong phòng
+                          </TableCell>
+                          <TableCell align="center" sx={{ width: "20%" }}>
+                            Trạng thái
+                          </TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {selected.minibarBookings.map((b, idx) => {
+                          const isFull =
+                            b.comsumedQuantity === b.originalQuantity;
+                          return (
+                            <TableRow key={b.id}>
+                              <TableCell align="center">{idx + 1}</TableCell>
+                              <TableCell>
+                                <Typography variant="body2">
+                                  {b.minibarName}
+                                </Typography>
+                              </TableCell>
+                              <TableCell align="right">
+                                <Typography variant="body2">
+                                  {b.originalQuantity}
+                                </Typography>
+                              </TableCell>
+                              <TableCell align="right">
+                                <Typography variant="body2">
+                                  {currency((b as any).minibarPrice)}
+                                </Typography>
+                              </TableCell>
+                              <TableCell align="right">
+                                {b.comsumedQuantity}
+                              </TableCell>
+                              <TableCell align="center">
+                                {isFull ? (
+                                  <Chip
+                                    label="Đầy đủ"
+                                    color="success"
+                                    size="small"
+                                  />
+                                ) : (
+                                  <Chip
+                                    label="Thiếu"
+                                    color="warning"
+                                    size="small"
+                                  />
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
                 ) : (
                   <Typography variant="caption" color="text.secondary">
-                    Không có thông tin minibar
+                    Không có dữ liệu minibar
                   </Typography>
                 )}
               </Stack>

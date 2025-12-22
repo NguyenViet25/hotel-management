@@ -629,6 +629,11 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                       <Box
                         sx={{
                           overflow: "hidden",
+                          height: 180,
+                          width: "100%",
+                          bgcolor: "grey.100",
+                          borderTopLeftRadius: 3,
+                          borderTopRightRadius: 3,
                         }}
                       >
                         <img
@@ -641,6 +646,7 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                             width: "100%",
                             height: "100%",
                             borderRadius: 4,
+                            objectFit: "cover",
                           }}
                         />
                       </Box>

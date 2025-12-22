@@ -28,6 +28,7 @@ type Props = {
   onDelete?: () => void;
   disabledEdit?: boolean;
   disabledDelete?: boolean;
+  disabledChangeRoom?: boolean;
   onChangeRoom?: (guest: BookingGuestDto) => void;
   onExtendStay?: () => void;
 };
@@ -50,6 +51,7 @@ const GuestCard: React.FC<Props> = ({
   disabledEdit,
   disabledDelete,
   onChangeRoom,
+  disabledChangeRoom,
   onExtendStay,
 }) => {
   const [cccdOpen, setCccdOpen] = useState(false);
@@ -158,6 +160,7 @@ const GuestCard: React.FC<Props> = ({
             <IconButton
               color="primary"
               size="small"
+              disabled={disabledChangeRoom}
               onClick={() => onChangeRoom?.(guest)}
               aria-label="Chuyển khách"
             >

@@ -23,6 +23,12 @@ public class UpdateRoomTypeDto : CreateRoomTypeDto
 {
 }
 
+public class UpdatePriceByDateDto
+{
+    public DateTime Date { get; set; }
+    public decimal Price { get; set; }
+}
+
 public class RoomTypeQueryDto
 {
     public Guid? HotelId { get; set; }
@@ -82,4 +88,15 @@ public class DateRangePriceDto
     public DateTime EndDate { get; set; }
     public decimal Price { get; set; }
     public string Description { get; set; } = string.Empty;
+}
+
+public class RoomTypePriceHistoryDto
+{
+    public Guid Id { get; set; }
+    public Guid RoomTypeId { get; set; }
+    public DateTime Date { get; set; }
+    public decimal Price { get; set; }
+    public DateTime UpdatedAt { get; set; }
+    public Guid? UpdatedByUserId { get; set; }
+    public string? UpdatedByUserName { get; set; }
 }

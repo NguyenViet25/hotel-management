@@ -102,8 +102,8 @@ export default function KitchenManagementPage() {
     {}
   );
 
-  const [startDate, setStartDate] = useState<Dayjs>(dayjs());
-  const [endDate, setEndDate] = useState<Dayjs>(dayjs());
+  const [startDate, setStartDate] = useState<Dayjs>(dayjs().startOf("day"));
+  const [endDate, setEndDate] = useState<Dayjs>(dayjs().endOf("day"));
 
   const getNextOrderStatus = (s: number): number | null => {
     if (s === EOrderStatus.Draft) return EOrderStatus.NeedConfirmed;
@@ -449,7 +449,9 @@ export default function KitchenManagementPage() {
                         >
                           <AccessTime fontSize="small" color="action" />
                           <Typography variant="body2">
-                            {dayjs(order.servingDate).format("D/M/YYYY HH:mm")}
+                            {order.servingDate
+                              ? new Date(order.servingDate).toLocaleString()
+                              : "—"}
                           </Typography>
                         </Stack>
                         <Stack
@@ -469,7 +471,7 @@ export default function KitchenManagementPage() {
                         >
                           <Phone fontSize="small" color="action" />
                           <Typography variant="body2">
-                            SĐT: {order.customerName}
+                            SĐT: {order.customerPhone}
                           </Typography>
                         </Stack>
                         {(guestCount || order.guests) && (

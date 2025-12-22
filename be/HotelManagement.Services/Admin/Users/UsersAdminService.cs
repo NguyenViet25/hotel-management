@@ -86,7 +86,7 @@ public class UsersAdminService : IUsersAdminService
             rolesByUser.TryGetValue(u.Id, out var r) ? r : Array.Empty<string>(),
             propertyRoles = list.Where(x => x.Id == u.Id).ToList()
         )).Skip((page - 1) * pageSize).Take(pageSize);
-        var total =  items.Count();
+        var total = items.Count();
 
         return (items, total);
     }
@@ -448,4 +448,14 @@ public class UsersAdminService : IUsersAdminService
         return new string(requiredChars.OrderBy(x => random.Next()).ToArray());
     }
 
+    public async Task<string> GetWaiterRoleId()
+    {
+        var role = await _roles.FindByNameAsync("Admin"); // or FindByIdAsync
+        if (role != null)
+        {
+            return await _roles.GetRoleIdAsync(role);
+
+        }
+        return string.Empty;
+    }
 }

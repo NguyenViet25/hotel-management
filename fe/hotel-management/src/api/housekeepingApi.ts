@@ -1,4 +1,5 @@
 import axios from "./axios";
+import type { HousekeepingTaskDto } from "./housekeepingTasksApi";
 
 export interface UpdateRoomStatusRequest {
   roomId: string;
@@ -35,6 +36,11 @@ const housekeepingApi = {
     payload: UpdateRoomStatusRequest
   ): Promise<ApiResponse<{ id: string }>> {
     const res = await axios.put(`/room-status/update`, payload);
+    return res.data;
+  },
+
+  async getAsync(taskId: string): Promise<ApiResponse<HousekeepingTaskDto>> {
+    const res = await axios.get(`/housekeeping/tasks/${taskId}`);
     return res.data;
   },
 

@@ -62,6 +62,12 @@ namespace HotelManagement.Domain.Migrations
                     b.Property<decimal>("AdditionalAmount")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<decimal?>("AdditionalBookingAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("AdditionalBookingNotes")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("AdditionalNotes")
                         .HasColumnType("nvarchar(max)");
 
@@ -470,6 +476,9 @@ namespace HotelManagement.Domain.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid?>("HotelId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("IdCard")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -844,13 +853,16 @@ namespace HotelManagement.Domain.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("BookingId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("BookingId1")
+                    b.Property<Guid?>("BookingId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("ComsumedQuantity")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("HouseKeepingTaskId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("MinibarBookingStatus")
                         .HasColumnType("int");
 
                     b.Property<Guid>("MinibarId")
@@ -859,14 +871,18 @@ namespace HotelManagement.Domain.Migrations
                     b.Property<Guid?>("MinibarId1")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("MinibarName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal?>("MinibarPrice")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<int>("OriginalQuantity")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("BookingId");
-
-                    b.HasIndex("BookingId1");
 
                     b.HasIndex("MinibarId");
 
@@ -1070,6 +1086,9 @@ namespace HotelManagement.Domain.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("EvidenceUrls")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<Guid>("HotelId")
                         .HasColumnType("uniqueidentifier");
 
@@ -1081,6 +1100,9 @@ namespace HotelManagement.Domain.Migrations
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
+
+                    b.Property<Guid>("TaskId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("datetime2");
@@ -1135,6 +1157,38 @@ namespace HotelManagement.Domain.Migrations
                     b.HasIndex("HotelId");
 
                     b.ToTable("RoomTypes");
+                });
+
+            modelBuilder.Entity("HotelManagement.Domain.RoomTypePriceHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("RoomTypeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("UpdatedByUserName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoomTypeId", "Date");
+
+                    b.ToTable("RoomTypePriceHistories");
                 });
 
             modelBuilder.Entity("HotelManagement.Domain.ServiceRequest", b =>
@@ -1637,15 +1691,9 @@ namespace HotelManagement.Domain.Migrations
 
             modelBuilder.Entity("HotelManagement.Domain.MinibarBooking", b =>
                 {
-                    b.HasOne("HotelManagement.Domain.Booking", null)
-                        .WithMany()
-                        .HasForeignKey("BookingId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("HotelManagement.Domain.Booking", "Booking")
                         .WithMany()
-                        .HasForeignKey("BookingId1");
+                        .HasForeignKey("BookingId");
 
                     b.HasOne("HotelManagement.Domain.Minibar", null)
                         .WithMany()
@@ -1751,6 +1799,15 @@ namespace HotelManagement.Domain.Migrations
                         .IsRequired();
 
                     b.Navigation("Hotel");
+                });
+
+            modelBuilder.Entity("HotelManagement.Domain.RoomTypePriceHistory", b =>
+                {
+                    b.HasOne("HotelManagement.Domain.RoomType", null)
+                        .WithMany()
+                        .HasForeignKey("RoomTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("HotelManagement.Domain.SurchargeRule", b =>

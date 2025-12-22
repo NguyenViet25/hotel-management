@@ -7,7 +7,8 @@ namespace HotelManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/tables")]
-[Authorize]
+//[Authorize]
+
 public class TableController : ControllerBase
 {
     private readonly ITableService _tableService;

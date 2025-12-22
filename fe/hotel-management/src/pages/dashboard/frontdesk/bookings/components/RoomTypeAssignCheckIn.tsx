@@ -25,6 +25,7 @@ import {
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import bookingsApi, {
+  BookingRoomStatus,
   EBookingStatus,
   type BookingDetailsDto,
   type BookingGuestDto,
@@ -48,6 +49,7 @@ import GuestDialog from "./GuestDialog";
 import GuestList from "./GuestList";
 import MoveGuestDialog from "./MoveGuestDialog";
 import PlannedDatesDialog from "./PlannedDatesDialog";
+import { toast } from "react-toastify";
 
 type Props = {
   booking: BookingDetailsDto | null;
@@ -115,6 +117,7 @@ const RoomTypeBlock: React.FC<{
   const [moveGuestOpen, setMoveGuestOpen] = useState(false);
   const [movingGuest, setMovingGuest] = useState<BookingGuestDto | null>(null);
   const [movingFromRoomId, setMovingFromRoomId] = useState<string | null>(null);
+  const [reload, setReload] = useState(0);
 
   const openAddGuest = (roomId: string) => {
     setGuestRoomId(roomId);
@@ -320,6 +323,10 @@ const RoomTypeBlock: React.FC<{
                                   setActiveRoom(br);
                                   setChangeRoomOpen(true);
                                 }}
+                                disabled={
+                                  br.actualCheckOutAt !== undefined &&
+                                  br.actualCheckOutAt !== null
+                                }
                                 aria-label="Đổi cả phòng"
                               >
                                 <MoveUp fontSize="small" />
@@ -424,6 +431,10 @@ const RoomTypeBlock: React.FC<{
                               variant="outlined"
                               size="small"
                               color="primary"
+                              disabled={
+                                br.actualCheckOutAt !== undefined &&
+                                br.actualCheckOutAt !== null
+                              }
                               onClick={() => {
                                 setActiveRoom(br);
                                 setExtendOpen(true);
@@ -486,6 +497,10 @@ const RoomTypeBlock: React.FC<{
                                     setActiveRoom(br);
                                     setEditActualInOpen(true);
                                   }}
+                                  disabled={
+                                    br.actualCheckOutAt !== undefined &&
+                                    br.actualCheckOutAt !== null
+                                  }
                                 >
                                   <Edit fontSize="small" />
                                 </IconButton>
@@ -518,6 +533,10 @@ const RoomTypeBlock: React.FC<{
                                     setActiveRoom(br);
                                     setEditActualOutOpen(true);
                                   }}
+                                  disabled={
+                                    br.actualCheckOutAt !== undefined &&
+                                    br.actualCheckOutAt !== null
+                                  }
                                 >
                                   <Edit fontSize="small" />
                                 </IconButton>
@@ -533,7 +552,9 @@ const RoomTypeBlock: React.FC<{
                           onAddGuestClick={() => openAddGuest(br.bookingRoomId)}
                           title="Danh sách khách"
                           guests={br.guests || []}
-                          editable={true}
+                          editable={
+                            br.bookingStatus != BookingRoomStatus.CheckedOut
+                          }
                           onEdit={(idx, gi) =>
                             openEditGuest(br.bookingRoomId, idx, {
                               ...gi,
@@ -607,8 +628,12 @@ const RoomTypeBlock: React.FC<{
                             variant="contained"
                             color="success"
                             onClick={() => {
-                              setActiveRoom(br);
-                              setCheckOutOpen(true);
+                              if (br.guests.length > 0) {
+                                setActiveRoom(br);
+                                setCheckOutOpen(true);
+                              } else {
+                                toast.error("Thêm khách trước khi checkout");
+                              }
                             }}
                             disabled={
                               !br.actualCheckInAt ||
@@ -669,6 +694,8 @@ const RoomTypeBlock: React.FC<{
                   open: true,
                   message: info.isEarly
                     ? `Check-in early ${info.days}d ${info.hours}h ${info.minutes}m`
+                    : info.isLate
+                    ? `Late check-in ${info.days}d ${info.hours}h ${info.minutes}m`
                     : "Check-in thành công",
                   severity: "success",
                 });
@@ -696,6 +723,7 @@ const RoomTypeBlock: React.FC<{
           scheduledStart={activeRoom?.startDate || undefined}
           defaultCheckInTime={checkIn ?? undefined}
           defaultCheckOutTime={checkOut ?? undefined}
+          reload={reload}
           extendedDate={activeRoom?.extendedDate}
           onClose={() => setCheckOutOpen(false)}
           onConfirm={async (iso, info) => {
@@ -709,6 +737,8 @@ const RoomTypeBlock: React.FC<{
                   open: true,
                   message: info.isLate
                     ? `Late check-out ${info.days}d ${info.hours}h ${info.minutes}m`
+                    : info.isEarly
+                    ? `Early check-out ${info.days}d ${info.hours}h ${info.minutes}m`
                     : "Check-out thành công",
                   severity: "success",
                 });
@@ -788,7 +818,9 @@ const RoomTypeBlock: React.FC<{
                   severity: "success",
                 });
                 setExtendOpen(false);
+                setActiveRoom((p) => ({ ...p, endDate: newEndIso }));
                 await onRefresh?.();
+                setReload((v) => v + 1);
               } else {
                 setSnackbar({
                   open: true,
@@ -858,6 +890,8 @@ const RoomTypeBlock: React.FC<{
                   open: true,
                   message: info.isEarly
                     ? `Check-in early ${info.days}d ${info.hours}h ${info.minutes}m`
+                    : info.isLate
+                    ? `Late check-in ${info.days}d ${info.hours}h ${info.minutes}m`
                     : "Cập nhật Check-in thành công",
                   severity: "success",
                 });
@@ -936,6 +970,8 @@ const RoomTypeBlock: React.FC<{
                   open: true,
                   message: info.isLate
                     ? `Late check-out ${info.days}d ${info.hours}h ${info.minutes}m`
+                    : info.isEarly
+                    ? `Early check-out ${info.days}d ${info.hours}h ${info.minutes}m`
                     : "Cập nhật Check-out thành công",
                   severity: "success",
                 });

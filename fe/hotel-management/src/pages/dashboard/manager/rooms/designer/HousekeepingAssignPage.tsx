@@ -91,7 +91,7 @@ export default function HousekeepingAssignPage() {
     try {
       const res = await housekeepingTasksApi.list({
         hotelId,
-        onlyActive: true,
+        onlyActive: false,
       });
       if (res.isSuccess && Array.isArray(res.data)) setTasks(res.data);
     } finally {
@@ -130,27 +130,15 @@ export default function HousekeepingAssignPage() {
               >
                 <CardContent>
                   <Stack spacing={1.2}>
-                    <Stack
-                      direction="row"
-                      alignItems="center"
-                      justifyContent="space-between"
-                    >
-                      <Stack direction="row" spacing={1} alignItems="center">
+                    <Stack direction="row">
+                      <Stack spacing={1}>
                         <Chip
-                          label={`Phòng ${r.number}`}
+                          label={`Phòng ${r.number} - ${r.roomTypeName}`}
                           color="info"
                           icon={<KingBedIcon />}
                           sx={{
                             bgcolor: "primary.main",
                             color: "primary.contrastText",
-                            borderRadius: 2,
-                          }}
-                        />
-                        <Chip
-                          label={r.roomTypeName}
-                          sx={{
-                            bgcolor: HK.colors.chipGreyBg,
-                            color: HK.colors.chipGreyText,
                             borderRadius: 2,
                           }}
                         />

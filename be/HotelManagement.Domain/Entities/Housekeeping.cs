@@ -17,7 +17,10 @@ public class RoomStatusLog
     public Guid Id { get; set; }
     public Guid HotelId { get; set; }
     public Guid RoomId { get; set; }
+    public Guid TaskId { get; set; }
     public RoomStatus Status { get; set; }
     public DateTime Timestamp { get; set; } = DateTime.Now;
     public string? Notes { get; set; }
+    public List<string>? EvidenceUrls { get; set; }
+
 }

@@ -146,8 +146,10 @@ public class BookingDetailsDto
     public decimal TotalAmount { get; set; }
     public decimal LeftAmount { get; set; }
     public decimal AdditionalAmount { get; set; }
+    public decimal AdditionalBookingAmount { get; set; }
     public string? AdditionalNotes { get; set; }
-    public string? PromotionCode { get; set; } 
+    public string? AdditionalBookingNotes { get; set; }
+    public string? PromotionCode { get; set; }
     public decimal PromotionValue { get; set; }
     public DateTime CreatedAt { get; set; }
     public string? Notes { get; set; }
@@ -162,7 +164,7 @@ public class RoomMapItemDto
     public Guid RoomTypeId { get; set; }
     public string RoomTypeName { get; set; } = string.Empty;
     public int Floor { get; set; }
-    public RoomStatus Status { get; set; } 
+    public RoomStatus Status { get; set; }
     public List<RoomTimelineSegmentDto> Timeline { get; set; } = new();
 }
 
@@ -196,7 +198,7 @@ public class BookingsQueryDto
     public string? GuestName { get; set; }
     public string? RoomNumber { get; set; }
     public int Page { get; set; } = 1;
-    public int PageSize { get; set; } = 10;
+    public int PageSize { get; set; } = 100;
     public string? SortBy { get; set; }
     public string? SortDir { get; set; }
 }
@@ -243,8 +245,8 @@ public class PersonDto
 {
     public required string Name { get; set; }
     public required string Phone { get; set; }
-    public required string IdCardFrontImageUrl { get; set; }
-    public required string IdCardBackImageUrl { get; set; }
+    public string? IdCardFrontImageUrl { get; set; }
+    public string? IdCardBackImageUrl { get; set; }
     public required string IdCard { get; set; }
 }
 
@@ -280,7 +282,10 @@ public class CheckoutRequestDto
     public string? DiscountCode { get; set; }
     public string? Notes { get; set; }
     public string? AdditionalNotes { get; set; }
+    public string? AdditionalBookingNotes { get; set; }
     public decimal? AdditionalAmount { get; set; } = 0;
+    public decimal? AdditionalBookingAmount { get; set; } = 0;
+    public decimal? TotalAmount { get; set; } = 0;
     public PaymentDto? FinalPayment { get; set; }
     public DateTime? CheckoutTime { get; set; }
 }
@@ -329,6 +334,7 @@ public class MinibarConsumptionItemDto
 
 public class MinibarConsumptionDto
 {
+    public Guid HouseKeepingTaskId { get; set; }
     public List<MinibarConsumptionItemDto> Items { get; set; } = new();
 }
 

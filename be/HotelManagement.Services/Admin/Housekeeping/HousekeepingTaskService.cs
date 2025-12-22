@@ -16,6 +16,7 @@ public interface IHousekeepingTaskService
     Task<ApiResponse<List<HousekeepingTaskDto>>> ListAsync(ListHousekeepingTasksQuery query);
     Task<ApiResponse<HousekeepingTaskDto>> StartAsync(StartTaskRequest request);
     Task<ApiResponse<HousekeepingTaskDto>> CompleteAsync(CompleteTaskRequest request);
+    Task<ApiResponse<HousekeepingTaskDto>> GetByIdAsync(Guid id);
 }
 
 public class HousekeepingTaskService : IHousekeepingTaskService
@@ -25,12 +26,14 @@ public class HousekeepingTaskService : IHousekeepingTaskService
     private readonly IRepository<RoomStatusLog> _statusLogRepo;
     private readonly IRepository<AppUser> _userRepo;
     private readonly IUnitOfWork _uow;
+    private readonly IRepository<HotelManagement.Domain.MinibarBooking> _minibarBookingRepo;
 
     public HousekeepingTaskService(
         IRepository<HousekeepingTask> taskRepo,
         IRepository<HotelRoom> roomRepo,
         IRepository<RoomStatusLog> statusLogRepo,
         IRepository<AppUser> userRepo,
+        IRepository<HotelManagement.Domain.MinibarBooking> minibarBookingRepo,
         IUnitOfWork uow)
     {
         _taskRepo = taskRepo;
@@ -38,6 +41,7 @@ public class HousekeepingTaskService : IHousekeepingTaskService
         _statusLogRepo = statusLogRepo;
         _userRepo = userRepo;
         _uow = uow;
+        _minibarBookingRepo = minibarBookingRepo;
     }
 
     public async Task<ApiResponse<HousekeepingTaskDto>> CreateAsync(CreateHousekeepingTaskRequest request)
@@ -144,21 +148,17 @@ public class HousekeepingTaskService : IHousekeepingTaskService
 
         // Build notes with evidence
         var notes = request.Notes;
-        if (request.EvidenceUrls != null && request.EvidenceUrls.Count > 0)
-        {
-            var joined = string.Join(", ", request.EvidenceUrls);
-            notes = string.IsNullOrWhiteSpace(notes) ? $"Evidence: {joined}" : $"{notes} | Evidence: {joined}";
-        }
-
         room.Status = RoomStatus.Clean;
         await _statusLogRepo.AddAsync(new RoomStatusLog
         {
             Id = Guid.NewGuid(),
+            TaskId = request.TaskId,
             HotelId = room.HotelId,
             RoomId = room.Id,
             Status = RoomStatus.Clean,
             Timestamp = DateTime.Now,
-            Notes = notes
+            Notes = notes,
+            EvidenceUrls = request.EvidenceUrls
         });
 
         await _roomRepo.UpdateAsync(room);
@@ -168,9 +168,20 @@ public class HousekeepingTaskService : IHousekeepingTaskService
         return ApiResponse<HousekeepingTaskDto>.Success(await ToDto(task));
     }
 
+    public async Task<ApiResponse<HousekeepingTaskDto>> GetByIdAsync(Guid id)
+    {
+        var task = await _taskRepo.FindAsync(id);
+        if (task == null) return ApiResponse<HousekeepingTaskDto>.Fail("Task not found");
+        var dto = await ToDto(task);
+
+        dto.RoomStatusLogs = await _statusLogRepo.Query().Where(x => x.TaskId == id).ToListAsync();
+        dto.MinibarBookings = await _minibarBookingRepo.Query().Where(x => x.HouseKeepingTaskId == id).ToListAsync();
+        return ApiResponse<HousekeepingTaskDto>.Success(dto);
+    }
+
     private async Task<HousekeepingTaskDto> ToDto(HousekeepingTask t)
     {
-        var room = await _roomRepo.FindAsync(t.RoomId);
+        var room = await _roomRepo.Query().Include(r => r.RoomType).FirstOrDefaultAsync(r => r.Id == t.RoomId);
         string? assigneeName = null;
         if (t.AssignedToUserId.HasValue)
         {
@@ -184,6 +195,7 @@ public class HousekeepingTaskService : IHousekeepingTaskService
             RoomId = t.RoomId,
             RoomNumber = room?.Number ?? string.Empty,
             Floor = room?.Floor ?? 0,
+            ImageSrc = room?.RoomType?.ImageUrl ?? string.Empty,
             AssignedToUserId = t.AssignedToUserId,
             AssignedToName = assigneeName,
             Notes = t.Notes,

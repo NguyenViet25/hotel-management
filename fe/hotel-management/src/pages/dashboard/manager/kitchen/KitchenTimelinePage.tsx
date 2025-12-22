@@ -26,7 +26,7 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import "dayjs/locale/vi"; // make sure Vietnamese locale is imported
 import React, { useEffect, useMemo, useState } from "react";
 import kitchenApi, {
@@ -230,7 +230,7 @@ const FoodTimeline: React.FC = () => {
   };
 
   const handleShoppingSubmit = async (payload: {
-    orderDate: string;
+    orderDate: Dayjs;
     hotelId: string;
     notes?: string | null;
     shoppingItems?: { name: string; quantity: string; unit: string }[] | null;
@@ -238,9 +238,15 @@ const FoodTimeline: React.FC = () => {
     try {
       let res;
       if (modalMode === "create") {
-        res = await kitchenApi.generateShoppingList(payload);
+        res = await kitchenApi.generateShoppingList({
+          ...payload,
+          orderDate: dayjs(payload.orderDate).format("YYYY-MM-DDTHH:mm:ss"),
+        });
       } else {
-        res = await kitchenApi.updateShoppingList(payload);
+        res = await kitchenApi.updateShoppingList({
+          ...payload,
+          orderDate: dayjs(payload.orderDate).format("YYYY-MM-DDTHH:mm:ss"),
+        });
       }
       if (res.isSuccess) {
         setSnackbar({
@@ -349,15 +355,24 @@ const FoodTimeline: React.FC = () => {
                     </Typography>
                     <Stack gap={1}>
                       {!hasShoppingOrder ? (
-                        <Button
-                          startIcon={<Add />}
-                          size="small"
-                          variant="contained"
-                          color="primary"
-                          onClick={() => openCreateShopping(d)}
-                        >
-                          Tạo yêu cầu mua nguyên liệu
-                        </Button>
+                        <>
+                          {d.isBefore(today, "day") ? (
+                            <Alert severity="info" sx={{ mt: 1 }}>
+                              Ngày này đã qua và không có yêu cầu mua nguyên
+                              liệu.
+                            </Alert>
+                          ) : (
+                            <Button
+                              startIcon={<Add />}
+                              size="small"
+                              variant="contained"
+                              color="primary"
+                              onClick={() => openCreateShopping(d)}
+                            >
+                              Tạo yêu cầu mua nguyên liệu
+                            </Button>
+                          )}
+                        </>
                       ) : (
                         <Stack gap={1}>
                           <Button

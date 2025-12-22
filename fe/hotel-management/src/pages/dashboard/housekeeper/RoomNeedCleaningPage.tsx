@@ -231,7 +231,9 @@ export default function RoomNeedCleaningPage() {
         page: 1,
         pageSize: 200,
       });
-      setMinibarItems((res.data || []).map((it) => ({ item: it, qty: 0 })));
+      setMinibarItems(
+        (res.data || []).map((it) => ({ item: it, qty: it.quantity || 0 }))
+      );
     } catch {
       setMinibarItems([]);
     }
@@ -257,7 +259,7 @@ export default function RoomNeedCleaningPage() {
 
   const submitComplete = async () => {
     if (!completeRoom) return;
-    const urls = completeEvidence.map((m) => m.fileUrl).filter(Boolean);
+    const urls = completeEvidence.map((m) => m.fileUrl);
     if (completeTaskId) {
       await housekeepingTasksApi.complete({
         taskId: completeTaskId,
@@ -265,17 +267,16 @@ export default function RoomNeedCleaningPage() {
         evidenceUrls: urls,
       });
     }
-    if (minibarBookingId) {
-      const items = minibarItems
-        .filter((x) => x.qty > 0)
-        .map((x) => ({ minibarId: x.item.id, quantity: x.qty }));
-      if (items.length) {
-        const hasDiscrepancy = minibarItems.some(
-          (x) => x.qty > x.item.quantity
-        );
-        if (hasDiscrepancy) return;
-        await bookingsApi.recordMinibarConsumption(minibarBookingId, { items });
-      }
+
+    const items = minibarItems.map((x) => ({
+      minibarId: x.item.id,
+      quantity: x.qty,
+    }));
+
+    if (items.length) {
+      const hasDiscrepancy = minibarItems.some((x) => x.qty > x.item.quantity);
+      if (hasDiscrepancy) return;
+      await bookingsApi.recordMinibarConsumption(completeTaskId, { items });
     }
     await housekeepingApi.updateRoomStatus({
       roomId: completeRoom.id,
@@ -449,7 +450,7 @@ export default function RoomNeedCleaningPage() {
       <Dialog
         open={completeOpen}
         onClose={() => setCompleteOpen(false)}
-        maxWidth="sm"
+        maxWidth="md"
         fullWidth
       >
         <DialogTitle
@@ -579,15 +580,18 @@ export default function RoomNeedCleaningPage() {
                       color: "text.secondary",
                     }}
                   >
-                    <Typography sx={{ width: "40%" }}>Mặt hàng</Typography>
+                    <Typography sx={{ width: "35%" }}>Mặt hàng</Typography>
                     <Typography sx={{ width: "10%", textAlign: "center" }}>
                       SL
                     </Typography>
                     <Typography sx={{ width: "20%", textAlign: "right" }}>
                       Giá
                     </Typography>
-                    <Typography sx={{ width: "30%", textAlign: "right" }}>
-                      SL dùng
+                    <Typography sx={{ width: "20%", textAlign: "right" }}>
+                      SL trong phòng
+                    </Typography>
+                    <Typography sx={{ width: "15%", textAlign: "center" }}>
+                      Trạng thái
                     </Typography>
                   </Stack>
 
@@ -607,7 +611,7 @@ export default function RoomNeedCleaningPage() {
                       }}
                     >
                       {/* Name */}
-                      <Typography sx={{ width: "40%" }} fontWeight={500}>
+                      <Typography sx={{ width: "35%" }} fontWeight={500}>
                         {mi.item.name}
                       </Typography>
 
@@ -629,21 +633,25 @@ export default function RoomNeedCleaningPage() {
 
                       {/* Quantity Input */}
                       <Stack
-                        sx={{ width: "30%" }}
+                        sx={{ width: "20%" }}
                         justifyContent={"end"}
                         justifyItems={"end"}
                       >
                         <TextField
                           type="number"
                           size="small"
+                          defaultValue={mi.item.quantity}
                           sx={{ width: "70%", alignSelf: "end" }}
-                          inputProps={{ min: 0 }}
+                          inputProps={{ min: 0, max: mi.item.quantity }}
                           value={mi.qty}
                           onChange={(e) => {
                             const v = Number(e.target.value);
                             setMinibarItems((prev) => {
                               const arr = [...prev];
-                              arr[idx] = { ...arr[idx], qty: isNaN(v) ? 0 : v };
+                              const clamped = isNaN(v)
+                                ? 0
+                                : Math.min(v, mi.item.quantity);
+                              arr[idx] = { ...arr[idx], qty: clamped };
                               return arr;
                             });
                           }}
@@ -651,6 +659,13 @@ export default function RoomNeedCleaningPage() {
                       </Stack>
 
                       {/* Status */}
+                      <Stack sx={{ width: "15%" }} alignItems="center">
+                        {mi.qty === mi.item.quantity ? (
+                          <Chip label="Đầy đủ" color="success" size="small" />
+                        ) : (
+                          <Chip label="Thiếu" color="warning" size="small" />
+                        )}
+                      </Stack>
                     </Stack>
                   ))}
                 </Stack>

@@ -8,7 +8,8 @@ namespace HotelManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/users")]
-[Authorize]
+//[Authorize]
+
 public class UsersAdminController : ControllerBase
 {
     private readonly IUsersAdminService _svc;
@@ -42,6 +43,22 @@ public class UsersAdminController : ControllerBase
         Guid hotelId = Guid.Parse(hotelIdClaim);
         var items = await _svc.ListByRoleAsync(query, hotelId);
         return Ok(ApiResponse<IEnumerable<UserSummaryDto>>.Ok(items));
+    }
+
+    [HttpGet("waiters")]
+    public async Task<ActionResult<ApiResponse<IEnumerable<UserSummaryDto>>>> ListWaiter()
+    {
+        var hotelIdClaim = User.FindFirst("hotelId")?.Value;
+
+        if (hotelIdClaim == null)
+            return BadRequest("HotelId not found in user claims");
+
+        Guid hotelId = Guid.Parse(hotelIdClaim);
+
+        var query = new UsersQueryDto(1, 99999, null, "waiter", null, null);
+
+        var items = await _svc.ListByHotelAsync(query, hotelId);
+        return Ok(ApiResponse<IEnumerable<UserSummaryDto>>.Ok(items.Items));
     }
 
 

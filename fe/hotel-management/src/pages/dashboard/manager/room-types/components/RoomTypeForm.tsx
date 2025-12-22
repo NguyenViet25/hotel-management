@@ -19,6 +19,8 @@ import {
   TextField,
   Tooltip,
   Typography,
+  Box,
+  IconButton,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -34,6 +36,8 @@ import RoomTypeFormSectionBase from "./RoomTypeFormSectionBase";
 import RoomTypeFormSectionDateRange from "./RoomTypeFormSectionDateRange";
 import { useStore, type StoreState } from "../../../../../hooks/useStore";
 import dayjs from "dayjs";
+import mediaApi from "../../../../../api/mediaApi";
+import PhotoCamera from "@mui/icons-material/PhotoCamera";
 
 export interface RoomTypeFormProps {
   open: boolean;
@@ -95,6 +99,8 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
     formState: { errors, isSubmitting },
     reset,
     setError,
+    setValue,
+    watch,
   } = useForm<FormValues>({
     resolver: yupResolver(schema) as any,
     defaultValues: {
@@ -127,6 +133,9 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
       });
     }
   }, [isEdit, initialData, reset]);
+
+  const [uploading, setUploading] = useState(false);
+  const [imagePreviewOpen, setImagePreviewOpen] = useState(false);
 
   const submitHandler = async (values: FormValues) => {
     try {
@@ -263,9 +272,9 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
             </Tooltip>
           )}
         />
-        <Tooltip title="Nhập URL ảnh đại diện của loại phòng">
+        <Tooltip title="Nhập URL hoặc tải ảnh đại diện của loại phòng">
           <TextField
-            label="Image URL"
+            label="Ảnh loại phòng"
             fullWidth
             margin="normal"
             {...register("imageUrl")}
@@ -276,11 +285,97 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
                   <ImageIcon fontSize="small" />
                 </InputAdornment>
               ),
+              endAdornment: (
+                <InputAdornment position="end">
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <IconButton
+                      component="label"
+                      disabled={uploading}
+                      size="small"
+                    >
+                      <PhotoCamera fontSize="small" />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        hidden
+                        onChange={async (e) => {
+                          const f = e.target.files?.[0];
+                          if (!f) return;
+                          try {
+                            setUploading(true);
+                            const res = await mediaApi.upload(f);
+                            if (res?.isSuccess && res.data?.fileUrl) {
+                              setValue("imageUrl", res.data.fileUrl, {
+                                shouldValidate: true,
+                              });
+                            }
+                          } catch {
+                          } finally {
+                            setUploading(false);
+                          }
+                          e.currentTarget.value = "";
+                        }}
+                      />
+                    </IconButton>
+                    <Button
+                      size="small"
+                      onClick={() => setImagePreviewOpen(true)}
+                      disabled={!watch("imageUrl")}
+                    >
+                      Xem ảnh
+                    </Button>
+                  </Stack>
+                </InputAdornment>
+              ),
             }}
             error={!!errors.imageUrl}
-            helperText={errors.imageUrl?.message}
+            helperText={
+              errors.imageUrl?.message || "Dán liên kết ảnh hoặc tải ảnh lên"
+            }
           />
         </Tooltip>
+        <Dialog
+          open={imagePreviewOpen}
+          onClose={() => setImagePreviewOpen(false)}
+          fullWidth
+          maxWidth="sm"
+        >
+          <DialogTitle>Xem ảnh</DialogTitle>
+          <DialogContent>
+            <Box
+              sx={{
+                borderRadius: 1,
+                overflow: "hidden",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                width: "100%",
+                height: 360,
+              }}
+            >
+              {watch("imageUrl") ? (
+                <img
+                  src={watch("imageUrl")}
+                  alt="preview"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "contain",
+                  }}
+                />
+              ) : (
+                <Typography variant="body2" color="text.secondary">
+                  Chưa có ảnh
+                </Typography>
+              )}
+            </Box>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, py: 2 }}>
+            <Button onClick={() => setImagePreviewOpen(false)} color="inherit">
+              Đóng
+            </Button>
+          </DialogActions>
+        </Dialog>
         {/* Tabs for pricing sections */}
         <Paper
           variant="outlined"
@@ -291,7 +386,7 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
             onChange={(_, v) => setTabIndex(v)}
             variant="fullWidth"
           >
-            <Tab label="Khoảng giá base" />
+            <Tab label="Giá ngày thường và cuối tuần" />
             <Tab label="Giá theo ngày" />
           </Tabs>
         </Paper>
@@ -305,6 +400,7 @@ const RoomTypeForm: React.FC<RoomTypeFormProps> = ({
             <RoomTypeFormSectionDateRange
               control={control}
               errors={errors as any}
+              roomTypeId={initialData?.id}
             />
           )}
         </Stack>

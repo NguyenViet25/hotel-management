@@ -87,6 +87,8 @@ export interface CreateBookingInvoiceRequest {
   notes?: string;
   additionalNotes?: string;
   additionalAmount?: number;
+  additionalBookingAmount?: number;
+  totalAmount?: number;
 }
 
 const invoicesApi = {

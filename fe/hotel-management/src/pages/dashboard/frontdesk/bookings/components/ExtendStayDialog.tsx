@@ -7,7 +7,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { DateTimePicker } from "@mui/x-date-pickers";
+import { DatePicker, DateTimePicker } from "@mui/x-date-pickers";
 import dayjs, { Dayjs } from "dayjs";
 import { useEffect, useState } from "react";
 
@@ -48,9 +48,10 @@ export default function ExtendStayDialog({
       <DialogTitle>Gia hạn thời gian ở</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
-          <DateTimePicker
+          <DatePicker
             label="Kết thúc mới"
             value={value}
+            minDate={dayjs(currentEnd).add(1, "day")}
             onChange={(v) => v && setValue(v)}
           />
           {error && (

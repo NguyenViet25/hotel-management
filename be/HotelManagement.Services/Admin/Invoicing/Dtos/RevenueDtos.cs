@@ -53,7 +53,7 @@ public class RevenueDetailItemDto
     public DateTime CreatedAt { get; set; }
     public string Description { get; set; } = string.Empty;
     public decimal Amount { get; set; }
-    public InvoiceLineSourceType SourceType { get; set; }
+    public InvoiceSourceType SourceType { get; set; }
 }
 
 

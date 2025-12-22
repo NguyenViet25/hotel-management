@@ -1,4 +1,5 @@
 import axios from "./axios";
+import type { MinibarBooking, RoomStatusLog } from "./types";
 
 export interface HousekeepingTaskDto {
   id: string;
@@ -6,12 +7,15 @@ export interface HousekeepingTaskDto {
   roomId: string;
   roomNumber: string;
   floor: number;
-  assignedToUserId?: string | null;
-  assignedToName?: string | null;
-  notes?: string | null;
-  createdAt: string;
-  startedAt?: string | null;
-  completedAt?: string | null;
+  imageSrc: string;
+  assignedToUserId?: string;
+  assignedToName?: string;
+  notes?: string;
+  createdAt: string; // ISO date string
+  startedAt?: string;
+  completedAt?: string;
+  roomStatusLogs: RoomStatusLog[];
+  minibarBookings: MinibarBooking[];
 }
 
 export interface CreateHousekeepingTaskRequest {

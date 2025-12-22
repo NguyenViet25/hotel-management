@@ -1,4 +1,4 @@
-﻿using HotelManagement.Domain;
+using HotelManagement.Domain;
 using HotelManagement.Domain.Entities;
 using HotelManagement.Domain.Repositories;
 using HotelManagement.Repository.Common;
@@ -44,7 +44,6 @@ public class DiningSessionService : IDiningSessionService
             Id = Guid.NewGuid(),
             HotelId = request.HotelId,
             TableId = null,
-            WaiterUserId = request.WaiterUserId,
             StartedAt = request.StartedAt ?? DateTime.Now,
             Notes = request.Notes ?? string.Empty,
             TotalGuests = request.TotalGuests ?? 0,
@@ -372,7 +371,7 @@ public class DiningSessionService : IDiningSessionService
         {
             return ApiResponse<bool>.Fail("Hotel mismatch");
         }
-      
+
         order.DiningSessionId = sessionId;
 
         await _orderRepository.UpdateAsync(order);
@@ -419,10 +418,12 @@ public class DiningSessionService : IDiningSessionService
     private async Task<DiningSessionDto> MapToDto(DiningSession session)
     {
         string? waiterName = null;
+        string? wainterPhone = null;
         if (session.WaiterUserId.HasValue)
         {
             var waiter = await _userRepository.FindAsync(session.WaiterUserId.Value);
             waiterName = waiter?.Fullname;
+            wainterPhone = waiter?.PhoneNumber;
         }
 
         var links = await _diningSessionTableRepository.Query()
@@ -450,6 +451,7 @@ public class DiningSessionService : IDiningSessionService
             HotelId = session.HotelId,
             WaiterUserId = session.WaiterUserId,
             WaiterName = waiterName,
+            WaiterPhoneNumber = wainterPhone,
             StartedAt = session.StartedAt,
             EndedAt = session.EndedAt,
             Status = session.Status.ToString(),
@@ -571,5 +573,26 @@ public class DiningSessionService : IDiningSessionService
         {
             return ApiResponse<OrderDetailsDto>.Fail($"Error retrieving order: {ex.Message}");
         }
+    }
+
+    public async Task<(bool, string)> AssignWaiterAsync(AssignWaiterRequest request)
+    {
+        var session = await _diningSessionRepository.FindAsync(request.SessionId);
+        if (session == null) return (false, "Không tìm thấy phiên phục vụ");
+
+        var openAssignedCount = await _diningSessionRepository
+            .Query()
+            .Where(x => x.WaiterUserId == request.WaiterId)
+            .Where(x => x.Status == DiningSessionStatus.Open)
+            .CountAsync();
+
+        if (openAssignedCount >= 3)
+            return (false, "Mỗi nhân viên phục vụ chỉ được chỉ định tối đa 3 phiên đang mở.");
+
+        session.WaiterUserId = request.WaiterId;
+        await _diningSessionRepository.UpdateAsync(session);
+        await _diningSessionRepository.SaveChangesAsync();
+
+        return (true, "Gán nhân viên phục vụ thành công");
     }
 }

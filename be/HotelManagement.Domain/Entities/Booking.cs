@@ -13,6 +13,7 @@ public class Booking
     public decimal TotalAmount { get; set; }
     public decimal LeftAmount { get; set; }
     public decimal AdditionalAmount { get; set; }
+    public decimal? AdditionalBookingAmount { get; set; }
     public string? AdditionalNotes { get; set; }
     public string? PromotionCode { get; set; }
     public decimal PromotionValue { get; set; }
@@ -20,6 +21,7 @@ public class Booking
     public Hotel? Hotel { get; set; }
     public Guest? PrimaryGuest { get; set; }
     public string? Notes { get; set; }
+    public string? AdditionalBookingNotes { get; set; }
     public ICollection<BookingRoomType> BookingRoomTypes { get; set; } = new List<BookingRoomType>();
     public ICollection<CallLog>? CallLogs { get; set; } = new List<CallLog>();
 }

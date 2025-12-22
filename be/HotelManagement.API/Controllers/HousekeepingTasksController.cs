@@ -7,7 +7,7 @@ namespace HotelManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/housekeeping/tasks")]
-[Authorize]
+//[Authorize]
 public class HousekeepingTasksController : ControllerBase
 {
     private readonly IHousekeepingTaskService _service;
@@ -28,6 +28,13 @@ public class HousekeepingTasksController : ControllerBase
     public async Task<IActionResult> List([FromQuery] ListHousekeepingTasksQuery query)
     {
         var res = await _service.ListAsync(query);
+        return Ok(res);
+    }
+    
+    [HttpGet("{id:guid}")]
+    public async Task<IActionResult> Get(Guid id)
+    {
+        var res = await _service.GetByIdAsync(id);
         return Ok(res);
     }
 

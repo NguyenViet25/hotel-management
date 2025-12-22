@@ -18,6 +18,7 @@ import {
   LocalCafe,
   MonetizationOn,
   Person,
+  PersonAdd,
   Phone,
   PlayCircle,
   Power,
@@ -63,7 +64,7 @@ import {
 } from "@mui/material";
 import { DateTimePicker } from "@mui/x-date-pickers";
 import dayjs, { Dayjs } from "dayjs";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import useSWR from "swr";
@@ -80,6 +81,7 @@ import PageTitle from "../../../../components/common/PageTitle";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
 import AssignMultipleTableDialog from "./components/AssignMultipleTableDialog";
 import AssignOrderDialog from "./components/AssignOrderDialog";
+import userService, { type User } from "../../../../api/userService";
 
 export default function SessionDetailsPage() {
   const { id } = useParams();
@@ -107,6 +109,10 @@ export default function SessionDetailsPage() {
   const [deleteReqId, setDeleteReqId] = useState<string | null>(null);
   const [reload, setReload] = useState<number>(0);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [assignWaiterOpen, setAssignWaiterOpen] = useState(false);
+  const [waiters, setWaiters] = useState<User[]>([]);
+  const [waitersLoading, setWaitersLoading] = useState(false);
+  const [selectedWaiterId, setSelectedWaiterId] = useState<string>("");
 
   const requestTypes = useMemo(
     () => [
@@ -275,6 +281,19 @@ export default function SessionDetailsPage() {
     setEditStartedAt(dayjs(session.startedAt));
     setEditOpen(true);
   };
+
+  useEffect(() => {
+    async function loadWaiters() {
+      const res = await userService.listWaiters();
+      setWaiters(res.data || []);
+    }
+
+    if (session?.waiterUserId) {
+      setSelectedWaiterId(session?.waiterUserId);
+    }
+
+    loadWaiters();
+  }, [session]);
 
   const submitEdit = async () => {
     if (isWaiter) return;
@@ -458,6 +477,19 @@ export default function SessionDetailsPage() {
               </Stack>
             )}
           </Stack>
+          <Stack
+            direction="row"
+            spacing={1}
+            alignItems="center"
+            sx={{ px: 2, pb: 1 }}
+          >
+            <Person fontSize="small" color="disabled" />
+            <Typography variant="caption" color="text.secondary">
+              {session.waiterName
+                ? `Phục vụ: ${session.waiterName}`
+                : "Chưa gán nhân viên phục vụ"}
+            </Typography>
+          </Stack>
 
           {!isWaiter && (
             <Stack
@@ -475,6 +507,18 @@ export default function SessionDetailsPage() {
               >
                 Gắn bàn
               </Button>
+              {!isWaiter && (
+                <Button
+                  size="small"
+                  variant="contained"
+                  sx={{ backgroundColor: "gray", ml: 1 }}
+                  startIcon={<PersonAdd />}
+                  onClick={() => setAssignWaiterOpen(true)}
+                  disabled={session?.status !== "Open"}
+                >
+                  Gán nhân viên
+                </Button>
+              )}
               {session?.status !== "Open" && (
                 <Button
                   size="small"
@@ -507,7 +551,7 @@ export default function SessionDetailsPage() {
                   color="warning"
                   startIcon={<StopCircle />}
                   onClick={() => setEndConfirmOpen(true)}
-                  disabled={!isWaiter || session?.status !== "Open"}
+                  disabled={isWaiter || session?.status !== "Open"}
                 >
                   Kết thúc
                 </Button>
@@ -732,52 +776,54 @@ export default function SessionDetailsPage() {
       {tab === 2 && (
         <Box>
           <Typography variant="h6">Yêu cầu thêm</Typography>
-          <Box mt={1} display="flex" gap={1}>
-            <FormControl size="small" sx={{ minWidth: 160 }}>
-              <InputLabel>Loại</InputLabel>
-              <Select
-                label="Loại"
-                value={requestType}
-                onChange={(e) => setRequestType(String(e.target.value))}
+          {isWaiter && (
+            <Box mt={1} display="flex" gap={1}>
+              <FormControl size="small" sx={{ minWidth: 160 }}>
+                <InputLabel>Loại</InputLabel>
+                <Select
+                  label="Loại"
+                  value={requestType}
+                  onChange={(e) => setRequestType(String(e.target.value))}
+                  disabled={session?.status !== "Open"}
+                >
+                  {requestTypes.map((t) => (
+                    <MenuItem key={t.value} value={t.value}>
+                      {t.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <TextField
+                label="Mô tả"
+                value={requestDesc}
+                onChange={(e) => setRequestDesc(e.target.value)}
+                size="small"
+                fullWidth
                 disabled={session?.status !== "Open"}
+              />
+              <TextField
+                label="Số lượng"
+                type="number"
+                value={requestQty}
+                onChange={(e) =>
+                  setRequestQty(Math.max(1, Number(e.target.value || 1)))
+                }
+                size="small"
+                sx={{ width: 120 }}
+                inputProps={{ min: 1 }}
+                disabled={session?.status !== "Open"}
+              />
+              <Button
+                startIcon={<Send />}
+                variant="contained"
+                sx={{ minWidth: 120 }}
+                onClick={handleCreateRequest}
+                disabled={!isWaiter || session?.status !== "Open"}
               >
-                {requestTypes.map((t) => (
-                  <MenuItem key={t.value} value={t.value}>
-                    {t.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <TextField
-              label="Mô tả"
-              value={requestDesc}
-              onChange={(e) => setRequestDesc(e.target.value)}
-              size="small"
-              fullWidth
-              disabled={session?.status !== "Open"}
-            />
-            <TextField
-              label="Số lượng"
-              type="number"
-              value={requestQty}
-              onChange={(e) =>
-                setRequestQty(Math.max(1, Number(e.target.value || 1)))
-              }
-              size="small"
-              sx={{ width: 120 }}
-              inputProps={{ min: 1 }}
-              disabled={session?.status !== "Open"}
-            />
-            <Button
-              startIcon={<Send />}
-              variant="contained"
-              sx={{ minWidth: 120 }}
-              onClick={handleCreateRequest}
-              disabled={!isWaiter || session?.status !== "Open"}
-            >
-              Gửi
-            </Button>
-          </Box>
+                Gửi
+              </Button>
+            </Box>
+          )}
           <Grid container spacing={2} sx={{ mt: 2 }}>
             {requests.map((r) => (
               <Grid key={r.id} size={{ xs: 12, md: 6, lg: 4 }}>
@@ -1034,17 +1080,19 @@ export default function SessionDetailsPage() {
                   </TableBody>
                 </Table>
 
-                <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-                  <Button
-                    variant="contained"
-                    color="success"
-                    size="small"
-                    startIcon={<CheckCircle />}
-                    onClick={() => setStatusDialogOpen(true)}
-                  >
-                    Đã phục vụ
-                  </Button>
-                </Box>
+                {isWaiter && (
+                  <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+                    <Button
+                      variant="contained"
+                      color="success"
+                      size="small"
+                      startIcon={<CheckCircle />}
+                      onClick={() => setStatusDialogOpen(true)}
+                    >
+                      Đã phục vụ
+                    </Button>
+                  </Box>
+                )}
               </Stack>
             )}
           </Box>
@@ -1195,6 +1243,60 @@ export default function SessionDetailsPage() {
         />
       )}
 
+      <Dialog
+        open={assignWaiterOpen}
+        onClose={() => setAssignWaiterOpen(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>Gán nhân viên phục vụ</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Nhân viên phục vụ</InputLabel>
+              <Select
+                label="Nhân viên phục vụ"
+                value={selectedWaiterId}
+                onChange={(e) => setSelectedWaiterId(String(e.target.value))}
+              >
+                {waiters.map((w) => (
+                  <MenuItem key={w.id} value={w.id}>
+                    {w.fullname || w.userName}{" "}
+                    {w.phoneNumber ? `• ${w.phoneNumber}` : ""}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAssignWaiterOpen(false)}>Đóng</Button>
+          <Button
+            variant="contained"
+            disabled={!selectedWaiterId || waitersLoading || !id}
+            onClick={async () => {
+              try {
+                const res = await diningSessionsApi.assignWaiter({
+                  waiterId: selectedWaiterId,
+                  sessionId: id!,
+                });
+                if (res.isSuccess) {
+                  toast.success(res.data || "Đã gán nhân viên phục vụ");
+                  setAssignWaiterOpen(false);
+                  await mutateSession();
+                } else {
+                  toast.error(res.message || "Gán nhân viên thất bại");
+                }
+              } catch {
+                toast.error("Đã xảy ra lỗi");
+              }
+            }}
+          >
+            Xác nhận
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Dialog open={!!deleteReqId} onClose={() => setDeleteReqId(null)}>
         <DialogTitle>Xóa yêu cầu</DialogTitle>
         <DialogContent>
@@ -1226,7 +1328,7 @@ export default function SessionDetailsPage() {
             variant="contained"
             color="warning"
             onClick={confirmEndSession}
-            disabled={!isWaiter}
+            disabled={isWaiter || session?.status !== "Open"}
           >
             Kết thúc
           </Button>
