@@ -159,7 +159,12 @@ const PriceCalendarDialog: React.FC<Props> = ({ open, onClose, roomType }) => {
       const end = roomType.endDate ? dayjs(roomType.endDate) : null;
       let items =
         rawQuote?.items && rawQuote.items.length ? rawQuote.items : [];
-      if ((!items || items.length === 0) && start && end && start.isBefore(end)) {
+      if (
+        (!items || items.length === 0) &&
+        start &&
+        end &&
+        start.isBefore(end)
+      ) {
         const temp: { date: string; price: number }[] = [];
         let cursor = start.clone();
         while (cursor.isBefore(end)) {
@@ -196,7 +201,10 @@ const PriceCalendarDialog: React.FC<Props> = ({ open, onClose, roomType }) => {
 
   const handleDayClick = async (dateStr: string) => {
     setEditingDate(dateStr);
-    const cur = quote?.items?.find((it) => dayjs(it.date).format("YYYY-MM-DD") === dateStr)?.price || 0;
+    const cur =
+      quote?.items?.find(
+        (it) => dayjs(it.date).format("YYYY-MM-DD") === dateStr
+      )?.price || 0;
     setPriceInput(cur);
   };
 
@@ -267,7 +275,9 @@ const PriceCalendarDialog: React.FC<Props> = ({ open, onClose, roomType }) => {
                   right: "",
                 }}
                 height="auto"
-                dateClick={(info) => handleDayClick(dayjs(info.date).format("YYYY-MM-DD"))}
+                dateClick={(info) =>
+                  handleDayClick(dayjs(info.date).format("YYYY-MM-DD"))
+                }
               />
             </Box>
             <Stack direction="row" spacing={1}>
@@ -277,7 +287,9 @@ const PriceCalendarDialog: React.FC<Props> = ({ open, onClose, roomType }) => {
             </Stack>
             <Stack spacing={0.5}>
               {historyLoading ? (
-                <Typography color="text.secondary">Đang tải lịch sử...</Typography>
+                <Typography color="text.secondary">
+                  Đang tải lịch sử...
+                </Typography>
               ) : history.length ? (
                 <>
                   <Typography variant="subtitle2" fontWeight={700}>
@@ -296,8 +308,7 @@ const PriceCalendarDialog: React.FC<Props> = ({ open, onClose, roomType }) => {
                         <Typography variant="body2">
                           {new Intl.NumberFormat("vi-VN").format(h.price)} đ
                           {" • "}
-                          {h.updatedByUserName || "Hệ thống"}{" "}
-                          {" • "}
+                          {h.updatedByUserName || "Hệ thống"} {" • "}
                           {dayjs(h.updatedAt).format("DD/MM/YYYY HH:mm")}
                         </Typography>
                       </Stack>

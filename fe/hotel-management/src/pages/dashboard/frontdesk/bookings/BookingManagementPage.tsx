@@ -54,6 +54,7 @@ import FiltersBar, {
 import PriceCalendarDialog from "./components/PriceCalendarDialog";
 import RoomMapDialog from "./components/RoomMapDialog";
 import TopBarControls from "./components/TopBarControls";
+import { toast } from "react-toastify";
 
 type StatusOption = { value: BookingStatus | ""; label: string };
 
@@ -404,6 +405,14 @@ const BookingManagementPage: React.FC = () => {
                           row.status === EBookingStatus.Cancelled
                         }
                         onClick={() => {
+                          const hasRooms = (row.bookingRoomTypes || []).some(
+                            (rt) => (rt.bookingRooms?.length || 0) > 0
+                          );
+                          if (!hasRooms) {
+                            toast.warning("Vui lòng thêm phòng vào đơn");
+
+                            return;
+                          }
                           setInvoiceBooking(row as any);
                           setOpenBookingInvoice(true);
                         }}
@@ -569,6 +578,19 @@ const BookingManagementPage: React.FC = () => {
                                 b.status === EBookingStatus.Cancelled
                               }
                               onClick={() => {
+                                const hasRooms = (
+                                  b.bookingRoomTypes || []
+                                ).some(
+                                  (rt) => (rt.bookingRooms?.length || 0) > 0
+                                );
+                                if (!hasRooms) {
+                                  setSnackbar({
+                                    open: true,
+                                    message: "Vui lòng thêm phòng vào đơn",
+                                    severity: "error",
+                                  });
+                                  return;
+                                }
                                 setInvoiceBooking(b as any);
                                 setOpenBookingInvoice(true);
                               }}
