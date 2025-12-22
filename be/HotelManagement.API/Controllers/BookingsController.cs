@@ -180,6 +180,27 @@ public class BookingsController(IBookingsService bookingsService, IWebHostEnviro
         return Ok(result);
     }
 
+    [HttpGet("peak-days")]
+    public async Task<ActionResult<ApiResponse<List<PeakDayDto>>>> GetPeakDays([FromQuery] PeakDaysQueryDto query)
+    {
+        var result = await _bookingsService.GetPeakDaysAsync(query);
+        return Ok(result);
+    }
+
+    [HttpPost("no-shows/cancel")]
+    public async Task<ActionResult<ApiResponse<NoShowCancelResultDto>>> CancelNoShows([FromBody] NoShowCancelRequestDto request)
+    {
+        var result = await _bookingsService.CancelNoShowsAsync(request);
+        return Ok(result);
+    }
+
+    [HttpGet("{id}/early-checkout/quote")]
+    public async Task<ActionResult<ApiResponse<EarlyCheckoutFeeResponseDto>>> GetEarlyCheckoutQuote(Guid id, [FromQuery] DateTime checkoutDate)
+    {
+        var result = await _bookingsService.CalculateEarlyCheckoutFeeAsync(id, new EarlyCheckoutFeeRequestDto { CheckoutDate = checkoutDate });
+        return Ok(result);
+    }
+
     [HttpPut("rooms/{bookingRoomId}/guests/{guestId}")]
     public async Task<ActionResult<ApiResponse<BookingDetailsDto>>> UpdateGuestInRoom(Guid bookingRoomId, Guid guestId, [FromBody] UpdateGuestDto dto)
     {
