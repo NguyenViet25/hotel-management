@@ -5,6 +5,7 @@ import {
   Alert,
   Box,
   Button,
+  CircularProgress,
   Chip,
   Divider,
   Snackbar,
@@ -47,6 +48,7 @@ import FiltersBar, {
 import RoomMapDialog from "./components/RoomMapDialog";
 import TopBarControls from "./components/TopBarControls";
 import PriceCalendarDialog from "./components/PriceCalendarDialog";
+import Loading from "../../../../components/common/Loading";
 
 type StatusOption = { value: BookingStatus | ""; label: string };
 
@@ -72,9 +74,9 @@ const BookingManagementPage: React.FC = () => {
   const hotelId = user?.hotelId || "";
   const [status, setStatus] = useState<BookingStatus | " ">(" ");
   const [fromDate, setFromDate] = useState<Dayjs | null>(
-    dayjs().startOf("month")
+    dayjs().startOf("day")
   );
-  const [toDate, setToDate] = useState<Dayjs | null>(dayjs().endOf("month"));
+  const [toDate, setToDate] = useState<Dayjs | null>(dayjs().endOf("day"));
   const [guestName, setGuestName] = useState<string>("");
   const [roomNumber, setRoomNumber] = useState<string>("");
 
@@ -239,332 +241,385 @@ const BookingManagementPage: React.FC = () => {
       />
 
       <Stack spacing={2} sx={{ mt: 2 }}>
-        {(() => {
-          const listData = rows;
-          if (!loading && listData.length === 0) {
-            return (
-              <EmptyState
-                title="Không có yêu cầu đặt phòng"
-                description="Chưa có yêu cầu đặt phòng. Hãy thêm yêu cầu mới."
-                actions={
-                  <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-                    <Button
-                      variant="contained"
-                      onClick={() => {
-                        setOpenCreate(true);
-                      }}
-                      startIcon={<AddCircle />}
-                    >
-                      Thêm yêu cầu
-                    </Button>
-                  </Stack>
-                }
-              />
-            );
-          }
-          return listData.map((b, idx) => {
-            const totalRooms = (b.bookingRoomTypes || []).reduce(
-              (sum, rt) => sum + (rt.totalRoom || rt.bookingRooms?.length || 0),
-              0
-            );
-
-            const total = b.totalAmount + (b.additionalAmount ?? 0);
-            const discountAmount = ((b.promotionValue || 0) / 100) * total;
-
-            const leftAmount =
-              b.leftAmount - discountAmount + (b.additionalAmount ?? 0);
-
-            const statusColor =
-              b.status === 3
-                ? "success"
-                : b.status === 4
-                ? "error"
-                : b.status === 1
-                ? "primary"
-                : "default";
-            const statusLabel =
-              b.status === 0
-                ? "Chờ duyệt"
-                : b.status === 1
-                ? "Đã xác nhận"
-                : b.status === 2
-                ? "Đã hoàn thành"
-                : b.status === 3
-                ? "Đã hoàn thành"
-                : b.status === 4
-                ? "Đã hủy"
-                : String(b.status);
-            return (
-              <Accordion
-                key={b.id}
-                sx={{
-                  borderRadius: 2,
-                  boxShadow: 2,
-                  "&:not(.Mui-expanded)::before": { display: "none" },
-                }}
-              >
-                <AccordionSummary expandIcon={<ExpandMore />}>
-                  <Stack
-                    direction={{ xs: "column", lg: "row" }}
-                    justifyContent="space-between"
-                    alignItems={{ xs: "flex-start", lg: "center" }}
-                    sx={{ width: "100%" }}
-                    spacing={1}
-                  >
-                    <Stack
-                      spacing={1}
-                      direction={{ xs: "column", lg: "row" }}
-                      alignItems="center"
-                    >
-                      <Hotel color="primary" />
-                      <Typography
-                        fontWeight={700}
-                      >{`Yêu cầu đặt phòng: #${String(
-                        idx + 1
-                      ).toUpperCase()}`}</Typography>
-                      <Chip
-                        label={`Tổng số phòng: ${totalRooms}`}
-                        size="small"
-                      />
-                    </Stack>
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <Typography color="text.secondary">
-                        {new Date(b.createdAt).toLocaleString()}
-                      </Typography>
-                      <Chip color={statusColor as any} label={statusLabel} />
-                    </Stack>
-                  </Stack>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <Stack spacing={1.5}>
-                    <Divider />
-                    <Stack
-                      direction={{ xs: "column", lg: "row" }}
-                      justifyContent="space-between"
-                      spacing={1}
-                      sx={{ width: "100%" }}
-                    >
+        {loading ? (
+          <Loading label="Đang tải danh sách yêu cầu đặt phòng" />
+        ) : (
+          <>
+            {(() => {
+              const listData = rows;
+              if (!loading && listData.length === 0) {
+                return (
+                  <EmptyState
+                    title="Không có yêu cầu đặt phòng"
+                    description="Chưa có yêu cầu đặt phòng. Hãy thêm yêu cầu mới."
+                    actions={
                       <Stack
-                        direction={{ xs: "column", lg: "row" }}
-                        spacing={2}
-                      >
-                        <Stack
-                          direction={{ xs: "row" }}
-                          spacing={1}
-                          alignItems="center"
-                        >
-                          <PersonIcon color="action" />
-                          <Typography>
-                            Họ và tên: {b.primaryGuestName || "—"}
-                          </Typography>
-                        </Stack>
-                        <Stack direction="row" spacing={1} alignItems="center">
-                          <Phone color="action" />
-                          <Typography>SĐT: {b.phoneNumber || "—"}</Typography>
-                        </Stack>
-                      </Stack>
-                      <Stack
-                        direction={{ xs: "column", lg: "row" }}
+                        direction={{ xs: "column", sm: "row" }}
                         spacing={1}
                       >
                         <Button
-                          size="small"
-                          variant="outlined"
-                          startIcon={<Edit />}
-                          onClick={() => openEditModal(b as any)}
-                        >
-                          Sửa
-                        </Button>
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          startIcon={<Info />}
-                          onClick={() =>
-                            navigate(`/frontdesk/bookings/${b.id}`)
-                          }
-                        >
-                          Chi tiết
-                        </Button>
-                        <Button
-                          size="small"
                           variant="contained"
-                          startIcon={<ReceiptLong />}
-                          disabled={
-                            b.status === EBookingStatus.Pending ||
-                            b.status === EBookingStatus.Cancelled
-                          }
                           onClick={() => {
-                            setInvoiceBooking(b as any);
-                            setOpenBookingInvoice(true);
+                            setOpenCreate(true);
                           }}
+                          startIcon={<AddCircle />}
                         >
-                          Xuất hóa đơn
+                          Thêm yêu cầu
                         </Button>
                       </Stack>
-                    </Stack>
-                    <Stack spacing={1.5}>
-                      <Typography variant="subtitle2" fontWeight={700}>
-                        Danh sách phòng
-                      </Typography>
-                      {b.bookingRoomTypes?.length ? (
-                        b.bookingRoomTypes.map((rt) => (
-                          <Stack
-                            key={rt.bookingRoomTypeId}
-                            spacing={1}
-                            sx={{
-                              p: 1,
-                              borderRadius: 1,
-                              border: "1px solid #eee",
-                            }}
-                          >
-                            {(() => {
-                              const nights = Math.max(
-                                1,
-                                dayjs(rt.endDate).diff(
-                                  dayjs(rt.startDate),
-                                  "day"
-                                )
-                              );
-                              const rooms =
-                                rt.totalRoom || rt.bookingRooms?.length || 0;
-                              const perNight = rt.price || 0;
-                              const subtotal = perNight * nights * rooms;
-                              return (
-                                <Stack
-                                  direction={{ xs: "column", sm: "row" }}
-                                  justifyContent="space-between"
-                                  alignItems={{
-                                    xs: "flex-start",
-                                    sm: "center",
-                                  }}
-                                  spacing={1}
-                                >
-                                  <Stack
-                                    direction="row"
-                                    spacing={1}
-                                    alignItems="center"
-                                    sx={{ minWidth: 260 }}
-                                  >
-                                    <img
-                                      src={
-                                        roomTypeImgMap[rt.roomTypeId] ||
-                                        "/assets/logo.png"
-                                      }
-                                      alt={rt.roomTypeName || "Loại phòng"}
-                                      style={{
-                                        width: 56,
-                                        height: 56,
-                                        borderRadius: 8,
-                                        objectFit: "cover",
-                                        border: "1px solid #eee",
-                                      }}
-                                    />
-                                    <Stack>
-                                      <Typography fontWeight={700}>
-                                        {rt.roomTypeName || "—"}
-                                      </Typography>
-                                      <Typography color="text.secondary">
-                                        {new Date(
-                                          rt.startDate
-                                        ).toLocaleDateString()}{" "}
-                                        -{" "}
-                                        {new Date(
-                                          rt.endDate
-                                        ).toLocaleDateString()}{" "}
-                                        ({nights} đêm)
-                                      </Typography>
-                                      <Typography>Số phòng: {rooms}</Typography>
-                                    </Stack>
-                                  </Stack>
-                                  <Stack
-                                    sx={{
-                                      ml: "auto",
-                                      minWidth: 220,
-                                      textAlign: "right",
-                                    }}
-                                  >
-                                    <Typography color="text.secondary">
-                                      Giá cơ bản/đêm
-                                    </Typography>
-                                    <Typography fontWeight={700}>
-                                      {perNight.toLocaleString()} đ
-                                    </Typography>
+                    }
+                  />
+                );
+              }
+              return listData.map((b, idx) => {
+                const totalRooms = (b.bookingRoomTypes || []).reduce(
+                  (sum, rt) =>
+                    sum + (rt.totalRoom || rt.bookingRooms?.length || 0),
+                  0
+                );
 
-                                    <Box>
-                                      <Button
-                                        startIcon={<RemoveRedEye />}
-                                        variant="outlined"
-                                        size="small"
-                                        onClick={() => {
-                                          setPriceDialogRt(rt as any);
-                                          setPriceDialogOpen(true);
-                                        }}
-                                      >
-                                        Xem giá theo ngày
-                                      </Button>
-                                    </Box>
-                                  </Stack>
-                                </Stack>
-                              );
-                            })()}
-                          </Stack>
-                        ))
-                      ) : (
-                        <Typography color="text.secondary">
-                          Không có loại phòng
-                        </Typography>
-                      )}
-                    </Stack>
-                    <Stack alignItems="flex-end">
+                const total = b.totalAmount + (b.additionalAmount ?? 0);
+                const discountAmount = ((b.promotionValue || 0) / 100) * total;
+
+                const leftAmount =
+                  b.leftAmount - discountAmount + (b.additionalAmount ?? 0);
+
+                const statusColor =
+                  b.status === 3
+                    ? "success"
+                    : b.status === 4
+                    ? "error"
+                    : b.status === 1
+                    ? "primary"
+                    : "default";
+                const statusLabel =
+                  b.status === 0
+                    ? "Chờ duyệt"
+                    : b.status === 1
+                    ? "Đã xác nhận"
+                    : b.status === 2
+                    ? "Đã hoàn thành"
+                    : b.status === 3
+                    ? "Đã hoàn thành"
+                    : b.status === 4
+                    ? "Đã hủy"
+                    : String(b.status);
+                return (
+                  <Accordion
+                    key={b.id}
+                    sx={{
+                      borderRadius: 2,
+                      boxShadow: 2,
+                      "&:not(.Mui-expanded)::before": { display: "none" },
+                    }}
+                  >
+                    <AccordionSummary expandIcon={<ExpandMore />}>
                       <Stack
                         direction={{ xs: "column", lg: "row" }}
-                        spacing={3}
-                        alignItems={{ xs: "flex-end", sm: "flex-end" }}
+                        justifyContent="space-between"
+                        alignItems={{ xs: "flex-start", lg: "center" }}
+                        sx={{ width: "100%" }}
+                        spacing={1}
                       >
-                        <Stack alignItems="flex-end">
+                        <Stack
+                          spacing={1}
+                          direction={{ xs: "column", lg: "row" }}
+                          alignItems="center"
+                        >
+                          <Hotel color="primary" />
+                          <Typography
+                            fontWeight={700}
+                          >{`Yêu cầu đặt phòng: #${String(
+                            idx + 1
+                          ).toUpperCase()}`}</Typography>
+                          <Chip
+                            label={`Tổng số phòng: ${totalRooms}`}
+                            size="small"
+                          />
+                        </Stack>
+                        <Stack direction="row" spacing={1} alignItems="center">
                           <Typography color="text.secondary">
-                            Tổng cộng
+                            {new Date(b.createdAt).toLocaleString()}
                           </Typography>
-                          <Typography fontWeight={700}>
-                            {(b.totalAmount || 0).toLocaleString()} đ
-                          </Typography>
-                        </Stack>
-                        <Stack alignItems="flex-end">
-                          <Typography color="text.secondary">
-                            Phụ thu
-                          </Typography>
-                          <Typography fontWeight={700}>
-                            {(b.additionalAmount || 0).toLocaleString()} đ
-                          </Typography>
-                        </Stack>
-                        <Stack alignItems="flex-end">
-                          <Typography color="red">Cọc</Typography>
-                          <Typography color="red" fontWeight={700}>
-                            {(b.depositAmount || 0).toLocaleString()} đ
-                          </Typography>
-                        </Stack>
-                        <Stack alignItems="flex-end">
-                          <Typography color="red">Giảm giá</Typography>
-                          <Typography color="red" fontWeight={700}>
-                            {(discountAmount || 0).toLocaleString()} đ
-                          </Typography>
-                        </Stack>
-                        <Stack alignItems="flex-end">
-                          <Typography color="text.secondary">
-                            Còn lại
-                          </Typography>
-                          <Typography fontWeight={"bold"}>
-                            {(leftAmount || 0).toLocaleString()} đ
-                          </Typography>
+                          <Chip
+                            color={statusColor as any}
+                            label={statusLabel}
+                          />
                         </Stack>
                       </Stack>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <Stack spacing={1.5}>
+                        <Divider />
+                        <Stack
+                          direction={{ xs: "column", lg: "row" }}
+                          justifyContent="space-between"
+                          spacing={1}
+                          sx={{ width: "100%" }}
+                        >
+                          <Stack
+                            direction={{ xs: "column", lg: "row" }}
+                            spacing={2}
+                          >
+                            <Stack
+                              direction={{ xs: "row" }}
+                              spacing={1}
+                              alignItems="center"
+                            >
+                              <PersonIcon color="action" />
+                              <Typography>
+                                Họ và tên: {b.primaryGuestName || "—"}
+                              </Typography>
+                            </Stack>
+                            <Stack
+                              direction="row"
+                              spacing={1}
+                              alignItems="center"
+                            >
+                              <Phone color="action" />
+                              <Typography>
+                                SĐT: {b.phoneNumber || "—"}
+                              </Typography>
+                            </Stack>
+                          </Stack>
+                          <Stack
+                            direction={{ xs: "column", lg: "row" }}
+                            spacing={1}
+                          >
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              startIcon={<Edit />}
+                              onClick={() => openEditModal(b as any)}
+                            >
+                              Sửa
+                            </Button>
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              startIcon={<Info />}
+                              onClick={() =>
+                                navigate(`/frontdesk/bookings/${b.id}`)
+                              }
+                            >
+                              Chi tiết
+                            </Button>
+                            <Button
+                              size="small"
+                              variant="contained"
+                              startIcon={<ReceiptLong />}
+                              disabled={
+                                b.status === EBookingStatus.Pending ||
+                                b.status === EBookingStatus.Cancelled
+                              }
+                              onClick={() => {
+                                setInvoiceBooking(b as any);
+                                setOpenBookingInvoice(true);
+                              }}
+                            >
+                              Xuất hóa đơn
+                            </Button>
+                          </Stack>
+                        </Stack>
+                        <Stack spacing={1.5}>
+                          <Typography variant="subtitle2" fontWeight={700}>
+                            Danh sách phòng
+                          </Typography>
+                          {b.bookingRoomTypes?.length ? (
+                            b.bookingRoomTypes.map((rt) => (
+                              <Stack
+                                key={rt.bookingRoomTypeId}
+                                spacing={1}
+                                sx={{
+                                  p: 1,
+                                  borderRadius: 1,
+                                  border: "1px solid #eee",
+                                }}
+                              >
+                                {(() => {
+                                  const nights = Math.max(
+                                    1,
+                                    dayjs(rt.endDate).diff(
+                                      dayjs(rt.startDate),
+                                      "day"
+                                    )
+                                  );
+                                  const rooms =
+                                    rt.totalRoom ||
+                                    rt.bookingRooms?.length ||
+                                    0;
+                                  const perNight = rt.price || 0;
+                                  const subtotal = perNight * nights * rooms;
+                                  return (
+                                    <Stack
+                                      direction={{ xs: "column", sm: "row" }}
+                                      justifyContent="space-between"
+                                      alignItems={{
+                                        xs: "flex-start",
+                                        sm: "center",
+                                      }}
+                                      spacing={1}
+                                    >
+                                      <Stack
+                                        direction="row"
+                                        spacing={1}
+                                        alignItems="center"
+                                        sx={{ minWidth: 260 }}
+                                      >
+                                        <img
+                                          src={
+                                            roomTypeImgMap[rt.roomTypeId] ||
+                                            "/assets/logo.png"
+                                          }
+                                          alt={rt.roomTypeName || "Loại phòng"}
+                                          style={{
+                                            width: 56,
+                                            height: 56,
+                                            borderRadius: 8,
+                                            objectFit: "cover",
+                                            border: "1px solid #eee",
+                                          }}
+                                        />
+                                        <Stack>
+                                          <Typography fontWeight={700}>
+                                            {rt.roomTypeName || "—"}
+                                          </Typography>
+                                          <Typography color="text.secondary">
+                                            {new Date(
+                                              rt.startDate
+                                            ).toLocaleDateString()}{" "}
+                                            -{" "}
+                                            {new Date(
+                                              rt.endDate
+                                            ).toLocaleDateString()}{" "}
+                                            ({nights} đêm)
+                                          </Typography>
+                                          <Typography>
+                                            Số phòng: {rooms}
+                                          </Typography>
+                                        </Stack>
+                                      </Stack>
+                                      <Stack
+                                        sx={{
+                                          ml: "auto",
+                                          minWidth: 220,
+                                          textAlign: "right",
+                                        }}
+                                      >
+                                        <Box>
+                                          <Button
+                                            startIcon={<RemoveRedEye />}
+                                            variant="outlined"
+                                            size="small"
+                                            onClick={() => {
+                                              setPriceDialogRt(rt as any);
+                                              setPriceDialogOpen(true);
+                                            }}
+                                          >
+                                            Xem giá theo ngày
+                                          </Button>
+                                        </Box>
+                                      </Stack>
+                                    </Stack>
+                                  );
+                                })()}
+                              </Stack>
+                            ))
+                          ) : (
+                            <Typography color="text.secondary">
+                              Không có loại phòng
+                            </Typography>
+                          )}
+                        </Stack>
+                        <Stack alignItems="flex-end">
+                          <Stack
+                            direction={{ xs: "column", lg: "row" }}
+                            spacing={3}
+                            alignItems={{ xs: "flex-end", sm: "flex-end" }}
+                          >
+                            <Stack alignItems="flex-end">
+                              <Typography color="text.secondary">
+                                Tổng cộng
+                              </Typography>
+                              <Typography fontWeight={700}>
+                                {(b.totalAmount || 0).toLocaleString()} đ
+                              </Typography>
+                            </Stack>
+                            <Stack alignItems="flex-end">
+                              <Typography color="text.secondary">
+                                Phụ thu
+                              </Typography>
+                              <Typography fontWeight={700}>
+                                {(b.additionalAmount || 0).toLocaleString()} đ
+                              </Typography>
+                            </Stack>
+                            <Stack alignItems="flex-end">
+                              <Typography color="red">Cọc</Typography>
+                              <Typography color="red" fontWeight={700}>
+                                {(b.depositAmount || 0).toLocaleString()} đ
+                              </Typography>
+                            </Stack>
+                            <Stack alignItems="flex-end">
+                              <Typography color="red">Giảm giá</Typography>
+                              <Typography color="red" fontWeight={700}>
+                                {(discountAmount || 0).toLocaleString()} đ
+                              </Typography>
+                            </Stack>
+                            <Stack alignItems="flex-end">
+                              <Typography color="text.secondary">
+                                Còn lại
+                              </Typography>
+                              <Typography fontWeight={"bold"}>
+                                {(leftAmount || 0).toLocaleString()} đ
+                              </Typography>
+                            </Stack>
+                          </Stack>
+                        </Stack>
+                      </Stack>
+                    </AccordionDetails>
+                  </Accordion>
+                );
+              });
+            })()}
+            <Divider sx={{ my: 2 }} />
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={2}
+              alignItems={{ xs: "flex-start", sm: "center" }}
+              justifyContent="space-between"
+              sx={{ mt: 1 }}
+            >
+              {(() => {
+                const totalBookingsDisplayed = rows.length;
+                const totalRoomsDisplayed = rows.reduce((sum, b) => {
+                  const rooms = (b.bookingRoomTypes || []).reduce(
+                    (s, rt) =>
+                      s + (rt.totalRoom || rt.bookingRooms?.length || 0),
+                    0
+                  );
+                  return sum + rooms;
+                }, 0);
+                return (
+                  <>
+                    <Stack direction="row" spacing={2} alignItems="center">
+                      <Chip
+                        color="primary"
+                        label={`Tổng số booking: ${totalBookingsDisplayed.toLocaleString()}`}
+                      />
+                      <Chip
+                        color="secondary"
+                        label={`Tổng số phòng: ${totalRoomsDisplayed.toLocaleString()}`}
+                      />
                     </Stack>
-                  </Stack>
-                </AccordionDetails>
-              </Accordion>
-            );
-          });
-        })()}
+                    <Typography variant="body2" color="text.secondary">
+                      Hiển thị theo bộ lọc hiện tại
+                    </Typography>
+                  </>
+                );
+              })()}
+            </Stack>
+          </>
+        )}
       </Stack>
 
       {/* Create */}

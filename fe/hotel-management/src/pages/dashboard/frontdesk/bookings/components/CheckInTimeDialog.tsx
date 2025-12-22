@@ -21,7 +21,13 @@ type Props = {
   onClose: () => void;
   onConfirm: (
     selectedIso: string,
-    info: { isEarly: boolean; days: number; hours: number; minutes: number }
+    info: {
+      isEarly: boolean;
+      isLate: boolean;
+      days: number;
+      hours: number;
+      minutes: number;
+    }
   ) => void;
 };
 
@@ -65,18 +71,19 @@ export default function CheckInTimeDialog({
     return base;
   }, [scheduledEnd, defaultCheckOutTime]);
 
-  const { isEarly, days, hours, minutes } = useMemo(() => {
+  const { isEarly, isLate, days, hours, minutes } = useMemo(() => {
     const base = displayScheduledStart || scheduled;
     const early = value.isBefore(base);
+    const late = value.isAfter(base);
     const diff = Math.abs(value.diff(base, "minute"));
     const d = Math.floor(diff / 1440);
     const h = Math.floor((diff % 1440) / 60);
     const m = diff % 60;
-    return { isEarly: early, days: d, hours: h, minutes: m };
+    return { isEarly: early, isLate: late, days: d, hours: h, minutes: m };
   }, [value, scheduled, displayScheduledStart]);
 
   useEffect(() => {
-    if (open) setValue(displayScheduledStart || dayjs());
+    if (open) setValue(dayjs());
   }, [open, displayScheduledStart]);
 
   return (
@@ -105,7 +112,8 @@ export default function CheckInTimeDialog({
           <DateTimePicker
             label="Thời gian check-in"
             value={value}
-            maxDate={
+            minDateTime={dayjs()}
+            maxDateTime={
               displayScheduledEnd ||
               (scheduledEnd ? dayjs(scheduledEnd) : undefined)
             }
@@ -113,9 +121,13 @@ export default function CheckInTimeDialog({
           />
           <Stack direction="row" spacing={1} alignItems="center">
             <Chip
-              color={isEarly ? "warning" : "success"}
+              color={isEarly || isLate ? "warning" : "success"}
               label={
-                isEarly ? `Sớm ${days}d ${hours}h ${minutes}m` : `Đúng giờ`
+                isEarly
+                  ? `Sớm ${days}d ${hours}h ${minutes}m`
+                  : isLate
+                  ? `Muộn ${days}d ${hours}h ${minutes}m`
+                  : `Đúng giờ`
               }
             />
           </Stack>
@@ -128,6 +140,7 @@ export default function CheckInTimeDialog({
           onClick={() =>
             onConfirm(value.format("YYYY-MM-DDTHH:mm:ss"), {
               isEarly,
+              isLate,
               days,
               hours,
               minutes,

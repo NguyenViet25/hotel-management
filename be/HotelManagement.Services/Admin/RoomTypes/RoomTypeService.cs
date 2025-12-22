@@ -16,17 +16,20 @@ public class RoomTypeService : IRoomTypeService
     private readonly IRepository<Hotel> _hotelRepository;
     private readonly IRepository<HotelRoom> _roomRepository;
     private readonly IRepository<Booking> _bookingRepository;
+    private readonly IRepository<RoomTypePriceHistory> _historyRepository;
 
     public RoomTypeService(
         IRepository<RoomType> roomTypeRepository,
         IRepository<Hotel> hotelRepository,
         IRepository<HotelRoom> roomRepository,
-        IRepository<Booking> bookingRepository)
+        IRepository<Booking> bookingRepository,
+        IRepository<RoomTypePriceHistory> historyRepository)
     {
         _roomTypeRepository = roomTypeRepository;
         _hotelRepository = hotelRepository;
         _roomRepository = roomRepository;
         _bookingRepository = bookingRepository;
+        _historyRepository = historyRepository;
     }
 
     public async Task<ApiResponse<RoomTypeDto>> CreateAsync(CreateRoomTypeDto dto)
@@ -77,7 +80,7 @@ public class RoomTypeService : IRoomTypeService
         }
     }
 
-    public async Task<ApiResponse<RoomTypeDto>> UpdateAsync(Guid id, UpdateRoomTypeDto dto)
+    public async Task<ApiResponse<RoomTypeDto>> UpdateAsync(Guid id, UpdateRoomTypeDto dto, Guid? updatedByUserId = null, string? updatedByUserName = null)
     {
         try
         {
@@ -105,6 +108,8 @@ public class RoomTypeService : IRoomTypeService
 
 
             // Update room type
+            var previousOverrides = ParseOverrides(roomType.Prices);
+
             roomType.Name = dto.Name;
             roomType.Description = dto.Description;
             roomType.Capacity = dto.Capacity;
@@ -115,6 +120,8 @@ public class RoomTypeService : IRoomTypeService
 
             await _roomTypeRepository.UpdateAsync(roomType);
             await _roomTypeRepository.SaveChangesAsync();
+
+            await LogDiffs(roomType.Id, previousOverrides, dto.PriceByDates ?? new List<PriceByDate>(), updatedByUserId, updatedByUserName);
 
             return ApiResponse<RoomTypeDto>.Ok(await MapToRoomTypeDto(roomType));
         }
@@ -153,6 +160,108 @@ public class RoomTypeService : IRoomTypeService
         }
     }
 
+    public async Task<ApiResponse<List<RoomTypePriceHistoryDto>>> GetPriceHistoryAsync(Guid roomTypeId, DateTime? from, DateTime? to)
+    {
+        try
+        {
+            var q = _historyRepository.Query().Where(h => h.RoomTypeId == roomTypeId);
+            if (from.HasValue) q = q.Where(h => h.Date >= from.Value.Date);
+            if (to.HasValue) q = q.Where(h => h.Date <= to.Value.Date);
+            var items = await q.OrderByDescending(h => h.UpdatedAt).ThenByDescending(h => h.Date).ToListAsync();
+            var dtos = items.Select(h => new RoomTypePriceHistoryDto
+            {
+                Id = h.Id,
+                RoomTypeId = h.RoomTypeId,
+                Date = h.Date,
+                Price = h.Price,
+                UpdatedAt = h.UpdatedAt,
+                UpdatedByUserId = h.UpdatedByUserId,
+                UpdatedByUserName = h.UpdatedByUserName
+            }).ToList();
+            return ApiResponse<List<RoomTypePriceHistoryDto>>.Ok(dtos);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<List<RoomTypePriceHistoryDto>>.Fail($"Error retrieving price history: {ex.Message}");
+        }
+    }
+
+    public async Task<ApiResponse<RoomTypeDto>> UpdatePriceByDateAsync(Guid roomTypeId, UpdatePriceByDateDto dto, Guid? updatedByUserId = null, string? updatedByUserName = null)
+    {
+        try
+        {
+            var roomType = await _roomTypeRepository.Query().FirstOrDefaultAsync(rt => rt.Id == roomTypeId);
+            if (roomType == null) return ApiResponse<RoomTypeDto>.Fail("Room type not found");
+            var overrides = ParseOverrides(roomType.Prices);
+            var existing = overrides.FirstOrDefault(p => p.Date.Date == dto.Date.Date);
+            if (existing == null)
+            {
+                overrides.Add(new PriceByDate { Date = dto.Date.Date, Price = dto.Price });
+            }
+            else
+            {
+                existing.Price = dto.Price;
+            }
+            roomType.Prices = JsonSerializer.Serialize(overrides);
+            await _roomTypeRepository.UpdateAsync(roomType);
+            await _roomTypeRepository.SaveChangesAsync();
+
+            await _historyRepository.AddAsync(new RoomTypePriceHistory
+            {
+                Id = Guid.NewGuid(),
+                RoomTypeId = roomType.Id,
+                Date = dto.Date.Date,
+                Price = dto.Price,
+                UpdatedAt = DateTime.Now,
+                UpdatedByUserId = updatedByUserId,
+                UpdatedByUserName = updatedByUserName
+            });
+            await _historyRepository.SaveChangesAsync();
+
+            return ApiResponse<RoomTypeDto>.Ok(await MapToRoomTypeDto(roomType));
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<RoomTypeDto>.Fail($"Error updating price by date: {ex.Message}");
+        }
+    }
+
+    private static List<PriceByDate> ParseOverrides(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json)) return new List<PriceByDate>();
+        try
+        {
+            return JsonSerializer.Deserialize<List<PriceByDate>>(json) ?? new List<PriceByDate>();
+        }
+        catch
+        {
+            return new List<PriceByDate>();
+        }
+    }
+
+    private async Task LogDiffs(Guid roomTypeId, List<PriceByDate> previous, List<PriceByDate> current, Guid? userId, string? userName)
+    {
+        var prevMap = previous.ToDictionary(p => p.Date.Date, p => p.Price);
+        foreach (var item in current)
+        {
+            var dateKey = item.Date.Date;
+            var changed = !prevMap.TryGetValue(dateKey, out var oldPrice) || oldPrice != item.Price;
+            if (changed)
+            {
+                await _historyRepository.AddAsync(new RoomTypePriceHistory
+                {
+                    Id = Guid.NewGuid(),
+                    RoomTypeId = roomTypeId,
+                    Date = dateKey,
+                    Price = item.Price,
+                    UpdatedAt = DateTime.Now,
+                    UpdatedByUserId = userId,
+                    UpdatedByUserName = userName
+                });
+            }
+        }
+        await _historyRepository.SaveChangesAsync();
+    }
     public async Task<ApiResponse<RoomTypeDto>> GetByIdAsync(Guid id)
     {
         try

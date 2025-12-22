@@ -72,8 +72,7 @@ const roomItemSchema = z
     totalRooms: z.coerce
       .number("Số lượng phòng phải là số")
       .int("Số lượng phòng phải là số nguyên")
-      .min(1, "Tối thiểu 1 phòng")
-      .max(100, "Tối đa 100 phòng"),
+      .min(1, "Tối thiểu 1 phòng"),
     price: z.coerce.number("Giá phòng phải là số").min(1, "Giá tối thiểu là 1"),
     rooms: z.array(
       z
@@ -170,6 +169,9 @@ const BookingFormModal: React.FC<Props> = ({
   const [quotesByIndex, setQuotesByIndex] = useState<
     Record<number, PricingQuoteResponse | null>
   >({});
+  const [availabilityByIndex, setAvailabilityByIndex] = useState<
+    Record<number, number>
+  >({});
   const [itemOpen, setItemOpen] = useState<Record<number, boolean>>({});
 
   useEffect(() => {
@@ -257,9 +259,13 @@ const BookingFormModal: React.FC<Props> = ({
             const overridePrice = rt?.priceByDates?.find(
               (p) => dayjs(p.date).format("YYYY-MM-DD") === dateStr
             )?.price;
+            const weekend = cursor.day() === 5 || cursor.day() === 6;
+            const base = weekend
+              ? rt?.priceTo ?? inputPrice
+              : rt?.priceFrom ?? inputPrice;
             temp.push({
               date: dateStr,
-              price: overridePrice ?? inputPrice,
+              price: overridePrice ?? base,
             });
             cursor = cursor.add(1, "day");
           }
@@ -269,9 +275,14 @@ const BookingFormModal: React.FC<Props> = ({
           items = items.map((it) => {
             const d = dayjs(it.date).format("YYYY-MM-DD");
             const isOverride = overrideSet.has(d);
+            const dow = dayjs(d).day();
+            const weekend = dow === 5 || dow === 6;
+            const base = weekend
+              ? rt?.priceTo ?? inputPrice
+              : rt?.priceFrom ?? inputPrice;
             return {
               ...it,
-              price: isOverride ? it.price : inputPrice,
+              price: isOverride ? it.price : base,
             };
           });
         }
@@ -287,6 +298,35 @@ const BookingFormModal: React.FC<Props> = ({
         return sum + perRoomTotal * (r.totalRooms || 0);
       }, 0);
       setValue("totalAmount", total);
+      const availability: Record<number, number> = {};
+      await Promise.all(
+        roomsWatch.map(async (r, idx) => {
+          const roomTypeId = r.roomId;
+          const startDate = r.startDate;
+          const endDate = r.endDate;
+          if (
+            roomTypeId &&
+            startDate &&
+            endDate &&
+            dayjs(endDate).isAfter(dayjs(startDate))
+          ) {
+            try {
+              const a = await bookingsApi.roomAvailability({
+                hotelId,
+                from: dayjs(startDate).format("YYYY-MM-DD"),
+                to: dayjs(endDate).format("YYYY-MM-DD"),
+                typeId: roomTypeId,
+              });
+              availability[idx] = a?.data?.totalAvailable ?? 0;
+            } catch {
+              availability[idx] = 0;
+            }
+          } else {
+            availability[idx] = 0;
+          }
+        })
+      );
+      setAvailabilityByIndex(availability);
     };
     fetchQuotes();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -383,14 +423,7 @@ const BookingFormModal: React.FC<Props> = ({
           dynError = true;
         }
         if ((rt.totalRooms as any) > 100) {
-          setError(
-            `roomTypes.${idx}.totalRooms` as any,
-            {
-              type: "manual",
-              message: "Tối đa 100 phòng",
-            } as any
-          );
-          dynError = true;
+          // removed static max 100 validation; dynamic availability validation is below
         }
         if ((rt.totalRooms as any) < 1) {
           setError(
@@ -407,6 +440,43 @@ const BookingFormModal: React.FC<Props> = ({
         setSnackbar({
           open: true,
           message: "Vui lòng kiểm tra lỗi trong yêu cầu đặt phòng",
+          severity: "error",
+        });
+        return;
+      }
+      const availabilityResults = await Promise.all(
+        values.roomTypes.map(async (rt) => {
+          try {
+            const res = await bookingsApi.roomAvailability({
+              hotelId,
+              from: dayjs(rt.startDate as Dayjs).format("YYYY-MM-DD"),
+              to: dayjs(rt.endDate as Dayjs).format("YYYY-MM-DD"),
+              typeId: rt.roomId,
+            });
+            return res?.data?.totalAvailable ?? 0;
+          } catch {
+            return 0;
+          }
+        })
+      );
+      let availabilityError = false;
+      values.roomTypes.forEach((rt, idx) => {
+        const available = availabilityResults[idx] || 0;
+        if ((rt.totalRooms || 0) > available) {
+          setError(
+            `roomTypes.${idx}.totalRooms` as any,
+            {
+              type: "manual",
+              message: `Vượt quá số lượng phòng trống: còn ${available} phòng`,
+            } as any
+          );
+          availabilityError = true;
+        }
+      });
+      if (availabilityError) {
+        setSnackbar({
+          open: true,
+          message: "Số lượng phòng vượt quá số lượng còn trống",
           severity: "error",
         });
         return;
@@ -645,35 +715,30 @@ const BookingFormModal: React.FC<Props> = ({
                         <Typography variant="subtitle2" fontWeight={700}>
                           Mục #{idx + 1}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {roomTypes.find(
-                            (t) => t.id === roomsWatch[idx]?.roomId
-                          )?.name || "—"}
-                          {" • "}
-                          {roomsWatch[idx]?.startDate
-                            ? dayjs(roomsWatch[idx]?.startDate).format("DD/MM")
-                            : "—"}
-                          {" - "}
-                          {roomsWatch[idx]?.endDate
-                            ? dayjs(roomsWatch[idx]?.endDate).format("DD/MM")
-                            : "—"}
-                          {" • SL: "}
-                          {roomsWatch[idx]?.totalRooms || 0}
-                          {" • Đơn giá: "}
-                          {new Intl.NumberFormat("vi-VN").format(
-                            roomsWatch[idx]?.price ||
-                              roomTypes.find(
-                                (t) => t.id === roomsWatch[idx]?.roomId
-                              )?.priceFrom ||
-                              0
-                          )}{" "}
-                          đ{" • Tổng: "}
-                          {new Intl.NumberFormat("vi-VN").format(
-                            ((quotesByIndex[idx]?.total || 0) as number) *
-                              (roomsWatch[idx]?.totalRooms || 1)
-                          )}{" "}
-                          đ
-                        </Typography>
+                        {itemOpen[idx] === false && (
+                          <Typography variant="body2" color="text.secondary">
+                            {roomTypes.find(
+                              (t) => t.id === roomsWatch[idx]?.roomId
+                            )?.name || "—"}
+                            {" • "}
+                            {roomsWatch[idx]?.startDate
+                              ? dayjs(roomsWatch[idx]?.startDate).format(
+                                  "DD/MM"
+                                )
+                              : "—"}
+                            {" - "}
+                            {roomsWatch[idx]?.endDate
+                              ? dayjs(roomsWatch[idx]?.endDate).format("DD/MM")
+                              : "—"}
+                            {" • SL: "}
+                            {roomsWatch[idx]?.totalRooms || 0} {" • Tổng: "}
+                            {new Intl.NumberFormat("vi-VN").format(
+                              ((quotesByIndex[idx]?.total || 0) as number) *
+                                (roomsWatch[idx]?.totalRooms || 1)
+                            )}{" "}
+                            đ
+                          </Typography>
+                        )}
                       </Stack>
                       <Stack
                         direction="row"
@@ -719,35 +784,9 @@ const BookingFormModal: React.FC<Props> = ({
                         onRemove={() => remove(idx)}
                         hideHeader
                         setReloadCount={setReloadCount}
+                        availableRooms={availabilityByIndex[idx] ?? 0}
                       />
-                      <Stack sx={{ mt: 1 }}>
-                        <Typography variant="body2" color="text.secondary">
-                          Đơn giá:{" "}
-                          {new Intl.NumberFormat("vi-VN").format(
-                            roomsWatch[idx]?.price ||
-                              roomTypes.find(
-                                (t) => t.id === roomsWatch[idx]?.roomId
-                              )?.priceFrom ||
-                              0
-                          )}{" "}
-                          đ
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Giá cơ bản:{" "}
-                          {new Intl.NumberFormat("vi-VN").format(
-                            roomTypes.find(
-                              (t) => t.id === roomsWatch[idx]?.roomId
-                            )?.priceFrom || 0
-                          )}{" "}
-                          -{" "}
-                          {new Intl.NumberFormat("vi-VN").format(
-                            roomTypes.find(
-                              (t) => t.id === roomsWatch[idx]?.roomId
-                            )?.priceTo || 0
-                          )}{" "}
-                          đ
-                        </Typography>
-                      </Stack>
+
                       {quotesByIndex[idx]?.items?.length ? (
                         <Box
                           sx={{
@@ -763,6 +802,14 @@ const BookingFormModal: React.FC<Props> = ({
                               fontSize: "0.75rem",
                               display: "inline-block",
                               marginTop: "2px",
+                            },
+                            "& .fc .price-event.weekend": {
+                              backgroundColor: (theme) =>
+                                theme.palette.secondary.light,
+                            },
+                            "& .fc .price-event.weekday": {
+                              backgroundColor: (theme) =>
+                                theme.palette.primary.light,
                             },
                             "& .fc-daygrid-day": {
                               cursor: "pointer",
@@ -783,15 +830,21 @@ const BookingFormModal: React.FC<Props> = ({
                             ).toDate()}
                             selectable={false}
                             dayMaxEvents
-                            events={quotesByIndex[idx]!.items.map((it) => ({
-                              id: it.date,
-                              start: it.date,
-                              allDay: true,
-                              title: `₫${(it.price || 0).toLocaleString(
-                                "vi-VN"
-                              )}`,
-                              className: "price-event",
-                            }))}
+                            events={quotesByIndex[idx]!.items.map((it) => {
+                              const dow = dayjs(it.date).day();
+                              const weekend = dow === 5 || dow === 6;
+                              return {
+                                id: it.date,
+                                start: it.date,
+                                allDay: true,
+                                title: `₫${(it.price || 0).toLocaleString(
+                                  "vi-VN"
+                                )}`,
+                                className: `price-event ${
+                                  weekend ? "weekend" : "weekday"
+                                }`,
+                              };
+                            })}
                             headerToolbar={{
                               left: "prev,next today",
                               center: "title",
@@ -816,6 +869,8 @@ const BookingFormModal: React.FC<Props> = ({
                                   ? quotesByIndex[idx]!.items[i - 1].price
                                   : price;
                               const changed = price !== prev;
+                              const dow = dayjs(it.date).day();
+                              const weekend = dow === 5 || dow === 6;
                               return (
                                 <Stack
                                   key={`${it.date}-${i}`}
@@ -831,10 +886,10 @@ const BookingFormModal: React.FC<Props> = ({
                                   <Typography
                                     variant="body2"
                                     sx={{
-                                      color: changed
-                                        ? "warning.main"
+                                      color: weekend
+                                        ? "secondary.main"
                                         : "text.primary",
-                                      fontWeight: changed ? 700 : 500,
+                                      fontWeight: weekend ? 700 : 500,
                                     }}
                                   >
                                     {new Intl.NumberFormat("vi-VN").format(

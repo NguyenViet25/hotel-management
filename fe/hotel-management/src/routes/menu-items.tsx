@@ -1,8 +1,5 @@
 import {
   AccessTime,
-  AccessTimeFilled,
-  AccessTimeFilledOutlined,
-  AttachMoney,
   Bed,
   Category,
   CleanHands,
@@ -12,11 +9,12 @@ import {
   History,
   Hotel as HotelIcon,
   InsertEmoticon,
-  Money,
+  Map,
   People,
   Person as PersonIcon,
   Receipt as ReceiptIcon,
   Restaurant as RestaurantIcon,
+  Room,
   SensorsOutlined,
   Settings,
   ShoppingCart,
@@ -47,6 +45,7 @@ export const menuItems = {
     },
     { title: "Loại phòng", path: "/manager/room-types", icon: <Category /> },
     { title: "Phòng", path: "/manager/rooms", icon: <Bed /> },
+    { title: "Đặt phòng", path: "/manager/bookings", icon: <HotelIcon /> },
     { title: "Khách hàng", path: "/manager/guests", icon: <People /> },
     {
       title: "Mã giảm giá",
@@ -82,11 +81,7 @@ export const menuItems = {
     { title: "Khách hàng", path: "/frontdesk/guests", icon: <People /> },
     { title: "Đặt phòng", path: "/frontdesk/bookings", icon: <HotelIcon /> },
     { title: "Đặt món", path: "/frontdesk/orders", icon: <RestaurantIcon /> },
-    // {
-    //   title: "Lịch trình món ăn",
-    //   path: "/frontdesk/timeline",
-    //   icon: <AccessTime />,
-    // },
+
     {
       title: "Phiên phục vụ",
       path: "/frontdesk/sessions",
@@ -96,6 +91,11 @@ export const menuItems = {
       title: "Danh sách bàn",
       path: "/frontdesk/table-map",
       icon: <TableBar />,
+    },
+    {
+      title: "Danh sách phòng",
+      path: "/frontdesk/room-map",
+      icon: <Map />,
     },
   ],
   kitchen: [

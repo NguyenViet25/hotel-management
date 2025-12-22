@@ -34,7 +34,15 @@ import PageTitle from "../../../../components/common/PageTitle";
 import RoomTypeForm from "./components/RoomTypeForm";
 import RoomTypeTable from "./components/RoomTypeTable";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
-import { Add, Delete, Edit } from "@mui/icons-material";
+import {
+  Add,
+  AttachMoney,
+  Delete,
+  Edit,
+  MoneyOff,
+  MoneyOffCsred,
+  Tag,
+} from "@mui/icons-material";
 
 const RoomTypePage: React.FC = () => {
   const [items, setItems] = useState<RoomType[]>([]);
@@ -335,12 +343,26 @@ const RoomTypePage: React.FC = () => {
                           py: 0.25,
                         }}
                       >
-                        <MonetizationOnIcon fontSize="small" color="primary" />
+                        <Tag fontSize="small" color="primary" />
                         <Typography variant="body2">
-                          Giá:{" "}
-                          {`${(rt.priceFrom ?? 0).toLocaleString()}đ - ${(
-                            rt.priceTo ?? 0
-                          ).toLocaleString()}đ`}
+                          Giá ngày thường:{" "}
+                          {`${(rt.priceFrom ?? 0).toLocaleString()}đ`}
+                        </Typography>
+                      </Stack>
+                      <Stack
+                        direction="row"
+                        spacing={0.75}
+                        alignItems="center"
+                        sx={{
+                          borderRadius: 1,
+                          px: 0.75,
+                          py: 0.25,
+                        }}
+                      >
+                        <Tag fontSize="small" color="primary" />
+                        <Typography variant="body2">
+                          Giá cuối tuần:{" "}
+                          {`${(rt.priceTo ?? 0).toLocaleString()}đ`}
                         </Typography>
                       </Stack>
 

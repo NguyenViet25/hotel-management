@@ -12,9 +12,11 @@ import {
   Typography,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import React from "react";
+import React, { useState } from "react";
 import { Controller } from "react-hook-form";
 import type { RoomType } from "../../../../../api/roomTypesApi";
+import dayjs from "dayjs";
+import { isEmpty } from "lodash";
 
 type Props = {
   index: number;
@@ -24,6 +26,7 @@ type Props = {
   onRemove?: () => void;
   setReloadCount: (func: (prev: number) => number) => void;
   hideHeader?: boolean;
+  availableRooms?: number;
 };
 
 const RoomBookingSection: React.FC<Props> = ({
@@ -34,11 +37,17 @@ const RoomBookingSection: React.FC<Props> = ({
   onRemove,
   setReloadCount,
   hideHeader = false,
+  availableRooms = 0,
 }) => {
+  const [exceeded, setExceeded] = useState(false);
   return (
     <Stack spacing={2}>
       {!hideHeader && (
-        <Stack direction="row" alignItems="center" justifyContent="space-between">
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+        >
           <Typography variant="subtitle2" fontWeight={700}>
             Mục #{index + 1}
           </Typography>
@@ -89,8 +98,10 @@ const RoomBookingSection: React.FC<Props> = ({
                       {r.roomCount.toLocaleString()} người /phòng
                     </Typography>
                     <Typography color="text.secondary" variant="body2">
-                      {r.priceFrom.toLocaleString()} đ -{" "}
-                      {r.priceTo.toLocaleString()} đ
+                      * Giá ngày thường: {r.priceFrom.toLocaleString()} đ
+                    </Typography>
+                    <Typography color="text.secondary" variant="body2">
+                      * Giá cuối tuần: {r.priceTo.toLocaleString()} đ
                     </Typography>
                   </Stack>
                 </Stack>
@@ -101,7 +112,7 @@ const RoomBookingSection: React.FC<Props> = ({
       />
 
       <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-        <Controller
+        {/* <Controller
           name={`roomTypes.${index}.price`}
           control={control}
           render={({ field }) => (
@@ -140,7 +151,7 @@ const RoomBookingSection: React.FC<Props> = ({
               }}
             />
           )}
-        />
+        /> */}
 
         <Controller
           name={`roomTypes.${index}.totalRooms`}
@@ -148,27 +159,55 @@ const RoomBookingSection: React.FC<Props> = ({
           render={({ field }) => (
             <TextField
               label="Số lượng phòng"
-              type="number"
+              type="text"
               fullWidth
-              error={!!errors?.roomTypes?.[index]?.totalRooms}
-              helperText={errors?.roomTypes?.[index]?.totalRooms?.message}
+              error={
+                !!errors?.roomTypes?.[index]?.totalRooms ||
+                (exceeded && availableRooms > 0)
+              }
+              helperText={
+                errors?.roomTypes?.[index]?.totalRooms?.message ||
+                (exceeded && availableRooms > 0
+                  ? `Vượt quá số lượng phòng trống: còn ${availableRooms} phòng`
+                  : undefined)
+              }
+              value={
+                field.value !== undefined && field.value !== null
+                  ? new Intl.NumberFormat("vi-VN").format(Number(field.value))
+                  : ""
+              }
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
                     <RoomPreferencesIcon fontSize="small" />
                   </InputAdornment>
                 ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <Typography variant="body2" color="text.secondary">
+                      {`Còn: ${availableRooms} phòng`}
+                    </Typography>
+                  </InputAdornment>
+                ),
                 sx: { height: "100%" },
               }}
-              value={
-                field.value !== undefined && field.value !== null
-                  ? Number(field.value)
-                  : 1
-              }
               onChange={(e) => {
+                if (isEmpty(e.target.value)) {
+                  field.onChange(0);
+                  setExceeded(false);
+                  setReloadCount((prev) => prev + 1);
+                  return;
+                }
                 const raw = e.target.value;
                 const num = raw ? Number(raw) : 1;
+                if (num > 999) {
+                  field.onChange(999);
+                  setExceeded(!!availableRooms && 999 > availableRooms);
+                  setReloadCount((prev) => prev + 1);
+                  return;
+                }
                 field.onChange(num);
+                setExceeded(!!availableRooms && num > availableRooms);
                 setReloadCount((prev) => prev + 1);
               }}
             />
@@ -182,6 +221,7 @@ const RoomBookingSection: React.FC<Props> = ({
           rules={{ required: true }}
           render={({ field }) => (
             <DatePicker
+              minDate={dayjs()}
               label="Từ ngày"
               value={field.value}
               onChange={(date) => {
@@ -211,6 +251,7 @@ const RoomBookingSection: React.FC<Props> = ({
           rules={{ required: true }}
           render={({ field }) => (
             <DatePicker
+              minDate={dayjs().add(1, "day")}
               label="Đến ngày"
               value={field.value}
               onChange={(date) => {

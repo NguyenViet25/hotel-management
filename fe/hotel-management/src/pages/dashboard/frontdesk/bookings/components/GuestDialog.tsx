@@ -60,13 +60,7 @@ const GuestDialog: React.FC<Props> = ({ open, initial, onClose, onSubmit }) => {
   }, [guest.phone]);
 
   const allRequiredFilled = useMemo(() => {
-    return Boolean(
-      guest.name &&
-        guest.phone &&
-        guest.idCard &&
-        guest.idCardFrontImageUrl &&
-        guest.idCardBackImageUrl
-    );
+    return Boolean(guest.name && guest.phone && guest.idCard);
   }, [guest]);
 
   const submit = () => {

@@ -41,6 +41,7 @@ const BookingDetailsPage: React.FC = () => {
   const [openCheckout, setOpenCheckout] = useState(false);
   const [openConfirm, setOpenConfirm] = useState(false);
   const [openComplete, setOpenComplete] = useState(false);
+  const [autoCompleteTriggered, setAutoCompleteTriggered] = useState(false);
 
   const fetch = async () => {
     if (!id) return;
@@ -87,6 +88,32 @@ const BookingDetailsPage: React.FC = () => {
       }
     } catch {}
   };
+  useEffect(() => {
+    const readyToComplete =
+      data?.status === EBookingStatus.Confirmed &&
+      !!data?.bookingRoomTypes?.length &&
+      data.bookingRoomTypes
+        .flatMap((x) => x.bookingRooms)
+        .every(
+          (r) =>
+            r.actualCheckInAt !== undefined &&
+            r.actualCheckInAt !== null &&
+            r.actualCheckOutAt !== undefined &&
+            r.actualCheckOutAt !== null
+        ) &&
+      data.bookingRoomTypes.every((x) => {
+        const assigned = x.bookingRooms?.length || 0;
+        const required = x.totalRoom || 0;
+        return assigned >= required && required > 0;
+      });
+    if (readyToComplete && !autoCompleteTriggered) {
+      setAutoCompleteTriggered(true);
+      handleSetCompleteStatus();
+    }
+    if (data?.status === EBookingStatus.Completed) {
+      setAutoCompleteTriggered(true);
+    }
+  }, [data, autoCompleteTriggered]);
 
   const statusChip = useMemo(() => {
     const s = data?.status as number | undefined;
