@@ -287,6 +287,31 @@ export interface RoomStayHistoryDto {
   guests: BookingGuestDto[];
 }
 
+export interface PeakDaysQueryDto {
+  hotelId: string;
+  from: string;
+  to: string;
+}
+
+export interface PeakDayDto {
+  date: string;
+  totalRooms: number;
+  bookedRooms: number;
+  percentage: number;
+}
+
+export interface NoShowCancelRequestDto {
+  hotelId?: string;
+  date?: string;
+}
+
+export interface EarlyCheckoutFeeResponseDto {
+  availabilityPercent: number;
+  tier: string;
+  feePercentage: number;
+  feeAmount: number;
+}
+
 // Summary row used for the table display
 export interface BookingSummaryDto {
   id: string;
@@ -581,6 +606,36 @@ const bookingsApi = {
 
   async getCurrentBookingId(roomId: string): Promise<ApiResponse<string>> {
     const res = await axios.get(`/bookings/rooms/${roomId}/current-booking`);
+    return res.data;
+  },
+
+  async getPeakDays(
+    query: PeakDaysQueryDto
+  ): Promise<ApiResponse<PeakDayDto[]>> {
+    const qp = new URLSearchParams();
+    qp.append("hotelId", query.hotelId);
+    qp.append("from", query.from);
+    qp.append("to", query.to);
+    const res = await axios.get(`/bookings/peak-days?${qp.toString()}`);
+    return res.data;
+  },
+
+  async cancelNoShows(
+    payload: NoShowCancelRequestDto
+  ): Promise<ApiResponse<{ cancelledRooms: number; affectedBookings: number }>> {
+    const res = await axios.post(`/bookings/no-shows/cancel`, payload);
+    return res.data;
+  },
+
+  async getEarlyCheckoutQuote(
+    bookingId: string,
+    checkoutDate: string
+  ): Promise<ApiResponse<EarlyCheckoutFeeResponseDto>> {
+    const qp = new URLSearchParams();
+    qp.append("checkoutDate", checkoutDate);
+    const res = await axios.get(
+      `/bookings/${bookingId}/early-checkout/quote?${qp.toString()}`
+    );
     return res.data;
   },
 };

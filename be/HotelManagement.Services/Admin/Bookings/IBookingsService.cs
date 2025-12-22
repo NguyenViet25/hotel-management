@@ -35,4 +35,7 @@ public interface IBookingsService
     Task<ApiResponse<BookingDetailsDto>> SwapGuestsAsync(Guid bookingRoomId, Guid guestId, Guid targetBookingRoomId, Guid targetGuestId);
 
     Task<ApiResponse<CheckoutResultDto>> AddBookingInvoiceAsync(Guid bookingId, CheckoutRequestDto dto);
+    Task<ApiResponse<List<PeakDayDto>>> GetPeakDaysAsync(PeakDaysQueryDto query);
+    Task<ApiResponse<NoShowCancelResultDto>> CancelNoShowsAsync(NoShowCancelRequestDto request);
+    Task<ApiResponse<EarlyCheckoutFeeResponseDto>> CalculateEarlyCheckoutFeeAsync(Guid bookingId, EarlyCheckoutFeeRequestDto dto);
 }

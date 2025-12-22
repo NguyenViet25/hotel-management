@@ -1883,4 +1883,124 @@ public class BookingsService(
 
         }
     }
+
+    public async Task<ApiResponse<List<PeakDayDto>>> GetPeakDaysAsync(PeakDaysQueryDto query)
+    {
+        if (query.HotelId == Guid.Empty) return ApiResponse<List<PeakDayDto>>.Fail("HotelId is required");
+        var from = query.From.Date;
+        var to = query.To.Date;
+        if (to < from) return ApiResponse<List<PeakDayDto>>.Fail("Invalid date range");
+        var rooms = await _roomRepo.Query().Where(r => r.HotelId == query.HotelId).Select(r => r.Id).ToListAsync();
+        var totalRooms = rooms.Count;
+        if (totalRooms == 0) return ApiResponse<List<PeakDayDto>>.Ok([]);
+        var result = new List<PeakDayDto>();
+        for (var d = from; d <= to; d = d.AddDays(1))
+        {
+            var bookedRoomIds = await _bookingRoomRepo.Query()
+                .Where(br => rooms.Contains(br.RoomId) && br.BookingStatus != BookingRoomStatus.Cancelled)
+                .Where(br => d < br.EndDate.Date && d >= br.StartDate.Date)
+                .Select(br => br.RoomId)
+                .Distinct()
+                .ToListAsync();
+            var booked = bookedRoomIds.Count;
+            var pct = totalRooms == 0 ? 0 : (double)booked / totalRooms * 100.0;
+            if (pct >= 75.0)
+            {
+                result.Add(new PeakDayDto { Date = d, TotalRooms = totalRooms, BookedRooms = booked, Percentage = Math.Round(pct, 2) });
+            }
+        }
+        return ApiResponse<List<PeakDayDto>>.Ok(result);
+    }
+
+    public async Task<ApiResponse<NoShowCancelResultDto>> CancelNoShowsAsync(NoShowCancelRequestDto request)
+    {
+        var targetDate = (request.Date ?? DateTime.Now.Date).Date;
+        var roomsQuery = _bookingRoomRepo.Query()
+            .Include(br => br.BookingRoomType)
+            .Include(br => br.HotelRoom)
+            .Where(br => br.BookingStatus == BookingRoomStatus.Pending && br.ActualCheckInAt == null)
+            .Where(br => br.StartDate.Date == targetDate);
+        if (request.HotelId.HasValue)
+        {
+            roomsQuery = roomsQuery.Where(br => br.HotelRoom != null && br.HotelRoom.HotelId == request.HotelId.Value);
+        }
+        var rooms = await roomsQuery.ToListAsync();
+        var cancelledRooms = 0;
+        var affectedBookingIds = new HashSet<Guid>();
+        foreach (var br in rooms)
+        {
+            br.BookingStatus = BookingRoomStatus.Cancelled;
+            await _bookingRoomRepo.UpdateAsync(br);
+            cancelledRooms++;
+            var room = await _roomRepo.FindAsync(br.RoomId);
+            if (room != null)
+            {
+                room.Status = RoomStatus.Available;
+                await _roomRepo.UpdateAsync(room);
+            }
+            var bid = br.BookingRoomType?.BookingId ?? Guid.Empty;
+            if (bid != Guid.Empty) affectedBookingIds.Add(bid);
+        }
+        await _roomRepo.SaveChangesAsync();
+        await _bookingRoomRepo.SaveChangesAsync();
+        foreach (var bid in affectedBookingIds)
+        {
+            var booking = await _bookingRepo.Query().Include(b => b.BookingRoomTypes).ThenInclude(rt => rt.BookingRooms).FirstOrDefaultAsync(b => b.Id == bid);
+            if (booking == null) continue;
+            var allCancelled = booking.BookingRoomTypes.SelectMany(rt => rt.BookingRooms).All(r => r.BookingStatus == BookingRoomStatus.Cancelled);
+            if (allCancelled)
+            {
+                booking.Status = BookingStatus.Cancelled;
+                await _bookingRepo.UpdateAsync(booking);
+            }
+        }
+        await _bookingRepo.SaveChangesAsync();
+        return ApiResponse<NoShowCancelResultDto>.Ok(new NoShowCancelResultDto { CancelledRooms = cancelledRooms, AffectedBookings = affectedBookingIds.Count });
+    }
+
+    public async Task<ApiResponse<EarlyCheckoutFeeResponseDto>> CalculateEarlyCheckoutFeeAsync(Guid bookingId, EarlyCheckoutFeeRequestDto dto)
+    {
+        var booking = await _bookingRepo.Query().Include(b => b.BookingRoomTypes).ThenInclude(rt => rt.BookingRooms).FirstOrDefaultAsync(b => b.Id == bookingId);
+        if (booking == null) return ApiResponse<EarlyCheckoutFeeResponseDto>.Fail("Không tìm thấy booking");
+        var hotelId = booking.HotelId;
+        var allRooms = await _roomRepo.Query().Where(r => r.HotelId == hotelId).Select(r => r.Id).ToListAsync();
+        var totalRooms = allRooms.Count;
+        if (totalRooms == 0) return ApiResponse<EarlyCheckoutFeeResponseDto>.Ok(new EarlyCheckoutFeeResponseDto { AvailabilityPercent = 100, Tier = "81-100", FeePercentage = 0, FeeAmount = 0 });
+        var d = dto.CheckoutDate.Date;
+        var overlappingRoomIds = await _bookingRoomRepo.Query()
+            .Where(br => allRooms.Contains(br.RoomId) && br.BookingStatus != BookingRoomStatus.Cancelled)
+            .Where(br => d < br.EndDate.Date && d >= br.StartDate.Date)
+            .Select(br => br.RoomId)
+            .Distinct()
+            .ToListAsync();
+        var availableRooms = totalRooms - overlappingRoomIds.Count;
+        var availabilityPercent = (double)availableRooms / totalRooms * 100.0;
+        string tier;
+        double feePct;
+        if (availabilityPercent <= 40.0) { tier = "0-40"; feePct = 0.5; }
+        else if (availabilityPercent <= 80.0) { tier = "41-80"; feePct = 0.25; }
+        else { tier = "81-100"; feePct = 0.1; }
+        decimal feeAmount = 0;
+        foreach (var rt in booking.BookingRoomTypes)
+        {
+            var nightly = rt.Price;
+            foreach (var br in rt.BookingRooms)
+            {
+                if (br.ActualCheckOutAt.HasValue) continue;
+                if (d >= br.EndDate.Date) continue;
+                var remaining = (br.EndDate.Date - d).Days;
+                if (remaining <= 0) continue;
+                var baseAmount = nightly * remaining;
+                feeAmount += baseAmount * (decimal)feePct;
+            }
+        }
+        var resp = new EarlyCheckoutFeeResponseDto
+        {
+            AvailabilityPercent = Math.Round(availabilityPercent, 2),
+            Tier = tier,
+            FeePercentage = feePct * 100.0,
+            FeeAmount = Math.Round(feeAmount, 2)
+        };
+        return ApiResponse<EarlyCheckoutFeeResponseDto>.Ok(resp);
+    }
 }

@@ -602,6 +602,29 @@ namespace HotelManagement.Domain.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "RoomTypePriceHistories",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    RoomTypeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Price = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    UpdatedByUserName = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RoomTypePriceHistories", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RoomTypePriceHistories_RoomTypes_RoomTypeId",
+                        column: x => x.RoomTypeId,
+                        principalTable: "RoomTypes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "DiningSessions",
                 columns: table => new
                 {
@@ -1307,6 +1330,11 @@ namespace HotelManagement.Domain.Migrations
                 column: "RoomId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_RoomTypePriceHistories_RoomTypeId_Date",
+                table: "RoomTypePriceHistories",
+                columns: new[] { "RoomTypeId", "Date" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_RoomTypes_HotelId",
                 table: "RoomTypes",
                 column: "HotelId");
@@ -1387,6 +1415,9 @@ namespace HotelManagement.Domain.Migrations
 
             migrationBuilder.DropTable(
                 name: "RoomStatusLogs");
+
+            migrationBuilder.DropTable(
+                name: "RoomTypePriceHistories");
 
             migrationBuilder.DropTable(
                 name: "ServiceRequests");

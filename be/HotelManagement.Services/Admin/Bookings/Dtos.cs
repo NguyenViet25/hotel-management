@@ -350,3 +350,43 @@ public class AdditionalChargeLineDto
     public decimal Amount { get; set; }
     public InvoiceLineSourceType SourceType { get; set; }
 }
+
+public class PeakDaysQueryDto
+{
+    public Guid HotelId { get; set; }
+    public DateTime From { get; set; }
+    public DateTime To { get; set; }
+}
+
+public class PeakDayDto
+{
+    public DateTime Date { get; set; }
+    public int TotalRooms { get; set; }
+    public int BookedRooms { get; set; }
+    public double Percentage { get; set; }
+}
+
+public class NoShowCancelRequestDto
+{
+    public Guid? HotelId { get; set; }
+    public DateTime? Date { get; set; }
+}
+
+public class NoShowCancelResultDto
+{
+    public int CancelledRooms { get; set; }
+    public int AffectedBookings { get; set; }
+}
+
+public class EarlyCheckoutFeeRequestDto
+{
+    public DateTime CheckoutDate { get; set; }
+}
+
+public class EarlyCheckoutFeeResponseDto
+{
+    public double AvailabilityPercent { get; set; }
+    public string Tier { get; set; } = string.Empty;
+    public double FeePercentage { get; set; }
+    public decimal FeeAmount { get; set; }
+}
