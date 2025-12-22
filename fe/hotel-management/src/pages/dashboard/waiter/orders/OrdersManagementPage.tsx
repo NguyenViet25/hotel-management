@@ -260,8 +260,8 @@ const OrdersManagementPage: React.FC = () => {
         subtitle="Tạo yêu cầu đặt món khách vãng lai, khách đặt phòng, xem danh sách đang phục vụ/đã thanh toán"
       />
       <Stack
-        direction={{ xs: "column", sm: "row" }}
-        alignItems={{ xs: "flex-start", sm: "center" }}
+        direction={{ xs: "column", lg: "row" }}
+        alignItems={{ xs: "flex-start", lg: "center" }}
         sx={{ my: 1 }}
         spacing={1}
         justifyContent={"space-between"}
@@ -301,27 +301,31 @@ const OrdersManagementPage: React.FC = () => {
             />
           </Box>
           <Stack direction={{ xs: "column", lg: "row" }} spacing={1}>
-            <DatePicker
-              label="Từ ngày"
-              value={startDate}
-              slotProps={{
-                textField: {
-                  size: "small",
-                },
-              }}
-              onChange={(v) => setStartDate(v ?? dayjs())}
-            />
-            <DatePicker
-              label="Đến ngày"
-              value={endDate}
-              minDate={startDate}
-              slotProps={{
-                textField: {
-                  size: "small",
-                },
-              }}
-              onChange={(v) => setEndDate(v ?? dayjs())}
-            />
+            <Box sx={{ maxWidth: 200 }}>
+              <DatePicker
+                label="Từ ngày"
+                value={startDate}
+                slotProps={{
+                  textField: {
+                    size: "small",
+                  },
+                }}
+                onChange={(v) => setStartDate(v ?? dayjs())}
+              />
+            </Box>
+            <Box sx={{ maxWidth: 200 }}>
+              <DatePicker
+                label="Đến ngày"
+                value={endDate}
+                minDate={startDate}
+                slotProps={{
+                  textField: {
+                    size: "small",
+                  },
+                }}
+                onChange={(v) => setEndDate(v ?? dayjs())}
+              />
+            </Box>
           </Stack>
           <Box sx={{ width: { xs: "100%", lg: 200 }, minWidth: 200 }}>
             <CustomSelect

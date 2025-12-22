@@ -63,6 +63,7 @@ const STATUS_OPTIONS: StatusOption[] = [
   { value: 1 as BookingStatus, label: "Đã xác nhận" },
   { value: 3 as BookingStatus, label: "Đã hoàn thành" },
   { value: 4 as BookingStatus, label: "Đã hủy" },
+  { value: 5 as BookingStatus, label: "Vắng mặt" },
 ];
 
 const BookingManagementPage: React.FC = () => {
@@ -352,7 +353,13 @@ const BookingManagementPage: React.FC = () => {
                     label: "Tổng",
                     minWidth: 140,
                     align: "right",
-                    format: (v) => `${Number(v || 0).toLocaleString()} đ`,
+                    render: (row) => {
+                      const isZero =
+                        row.status === EBookingStatus.Cancelled ||
+                        row.status === 5;
+                      const v = isZero ? 0 : Number(row.totalAmount || 0);
+                      return `${v.toLocaleString()} đ`;
+                    },
                   },
                   {
                     id: "leftAmount",
@@ -360,6 +367,9 @@ const BookingManagementPage: React.FC = () => {
                     minWidth: 140,
                     align: "right",
                     render: (row) => {
+                      const isZero =
+                        row.status === EBookingStatus.Cancelled ||
+                        row.status === 5;
                       const total =
                         (row.totalAmount || 0) + (row.additionalAmount ?? 0);
                       const discountAmount =
@@ -370,7 +380,7 @@ const BookingManagementPage: React.FC = () => {
                         (row.additionalAmount ?? 0);
                       return (
                         <Typography fontWeight={"bold"}>
-                          {leftAmount.toLocaleString()} đ
+                          {(isZero ? 0 : leftAmount).toLocaleString()} đ
                         </Typography>
                       );
                     },
@@ -448,6 +458,8 @@ const BookingManagementPage: React.FC = () => {
                     : b.status === 4
                     ? "Đã hủy"
                     : String(b.status);
+                const zeroMoney =
+                  b.status === EBookingStatus.Cancelled || b.status === 5;
                 return (
                   <Accordion
                     key={b.id}
@@ -686,7 +698,11 @@ const BookingManagementPage: React.FC = () => {
                                 Tổng cộng
                               </Typography>
                               <Typography fontWeight={700}>
-                                {(b.totalAmount || 0).toLocaleString()} đ
+                                {(zeroMoney
+                                  ? 0
+                                  : b.totalAmount || 0
+                                ).toLocaleString()}{" "}
+                                đ
                               </Typography>
                             </Stack>
                             <Stack alignItems="flex-end">
@@ -694,7 +710,11 @@ const BookingManagementPage: React.FC = () => {
                                 Phụ thu
                               </Typography>
                               <Typography fontWeight={700}>
-                                {(b.additionalAmount || 0).toLocaleString()} đ
+                                {(zeroMoney
+                                  ? 0
+                                  : b.additionalAmount || 0
+                                ).toLocaleString()}{" "}
+                                đ
                               </Typography>
                             </Stack>
                             <Stack alignItems="flex-end">
@@ -706,7 +726,11 @@ const BookingManagementPage: React.FC = () => {
                             <Stack alignItems="flex-end">
                               <Typography color="red">Giảm giá</Typography>
                               <Typography color="red" fontWeight={700}>
-                                {(discountAmount || 0).toLocaleString()} đ
+                                {(zeroMoney
+                                  ? 0
+                                  : discountAmount || 0
+                                ).toLocaleString()}{" "}
+                                đ
                               </Typography>
                             </Stack>
                             <Stack alignItems="flex-end">
@@ -714,7 +738,11 @@ const BookingManagementPage: React.FC = () => {
                                 Còn lại
                               </Typography>
                               <Typography fontWeight={"bold"}>
-                                {(leftAmount || 0).toLocaleString()} đ
+                                {(zeroMoney
+                                  ? 0
+                                  : leftAmount || 0
+                                ).toLocaleString()}{" "}
+                                đ
                               </Typography>
                             </Stack>
                           </Stack>

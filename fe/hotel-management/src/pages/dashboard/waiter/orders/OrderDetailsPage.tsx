@@ -1,4 +1,13 @@
-import { Check, Close, Restaurant, ArrowBack } from "@mui/icons-material";
+import {
+  Check,
+  Close,
+  Restaurant,
+  ArrowBack,
+  Person,
+  Phone,
+  People,
+  Info,
+} from "@mui/icons-material";
 import {
   Alert,
   Box,
@@ -29,6 +38,7 @@ import ordersApi, {
 } from "../../../../api/ordersApi";
 import PageTitle from "../../../../components/common/PageTitle";
 import menusApi, { type MenuItemDto } from "../../../../api/menusApi";
+import ConfirmModal from "../../../../components/common/ConfirmModel";
 
 const getOrderPhase = (status: number): string => {
   if (status === EOrderStatus.Draft) return "Mới";
@@ -64,6 +74,8 @@ const OrderDetailsPage: React.FC = () => {
       >,
     [menuItems]
   );
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 
   const fetch = async () => {
     if (!id) return;
@@ -139,7 +151,7 @@ const OrderDetailsPage: React.FC = () => {
   return (
     <Box>
       <PageTitle
-        title="Chi tiết Order"
+        title="Chi tiết yêu cầu đặt món"
         subtitle="Xem và quyết định trạng thái order"
       />
       <Stack spacing={2}>
@@ -150,7 +162,6 @@ const OrderDetailsPage: React.FC = () => {
         >
           <Stack direction="row" spacing={1} alignItems="center">
             <Button
-              variant="outlined"
               startIcon={<ArrowBack />}
               onClick={() => navigate("/frontdesk/orders")}
             >
@@ -164,7 +175,7 @@ const OrderDetailsPage: React.FC = () => {
                   variant="contained"
                   color="primary"
                   startIcon={<Check />}
-                  onClick={confirmOrder}
+                  onClick={() => setConfirmDialogOpen(true)}
                 >
                   Xác nhận
                 </Button>
@@ -176,7 +187,7 @@ const OrderDetailsPage: React.FC = () => {
                   variant="contained"
                   color="error"
                   startIcon={<Close />}
-                  onClick={cancelOrder}
+                  onClick={() => setCancelDialogOpen(true)}
                 >
                   Hủy
                 </Button>
@@ -238,20 +249,32 @@ const OrderDetailsPage: React.FC = () => {
                   alignItems="center"
                   sx={{ px: 1, mb: 2 }}
                 >
-                  <Typography variant="body2">
-                    Họ tên: {data.customerName || "—"}
-                  </Typography>
-                  <Typography variant="body2">
-                    SĐT: {data.customerPhone || "—"}
-                  </Typography>
-                  {data.guests !== undefined && (
+                  <Stack direction="row" spacing={0.5} alignItems="center">
+                    <Person fontSize="small" color="primary" />
                     <Typography variant="body2">
-                      Số khách: {data.guests}
+                      Họ tên: {data.customerName || "—"}
                     </Typography>
+                  </Stack>
+                  <Stack direction="row" spacing={0.5} alignItems="center">
+                    <Phone fontSize="small" color="primary" />
+                    <Typography variant="body2">
+                      SĐT: {data.customerPhone || "—"}
+                    </Typography>
+                  </Stack>
+                  {data.guests !== undefined && (
+                    <Stack direction="row" spacing={0.5} alignItems="center">
+                      <People fontSize="small" color="primary" />
+                      <Typography variant="body2">
+                        Số khách: {data.guests}
+                      </Typography>
+                    </Stack>
                   )}
-                  <Typography variant="body2">
-                    Ghi chú: {data.notes || "—"}
-                  </Typography>
+                  <Stack direction="row" spacing={0.5} alignItems="center">
+                    <Info fontSize="small" color="primary" />
+                    <Typography variant="body2">
+                      Ghi chú: {data.notes || "—"}
+                    </Typography>
+                  </Stack>
                 </Stack>
 
                 <Stack spacing={1}>
@@ -372,6 +395,32 @@ const OrderDetailsPage: React.FC = () => {
           </Typography>
         )}
       </Stack>
+
+      <ConfirmModal
+        open={confirmDialogOpen}
+        onClose={() => setConfirmDialogOpen(false)}
+        title="Xác nhận đơn hàng"
+        message={<>Bạn có chắc chắn muốn xác nhận đơn hàng này?</>}
+        confirmIcon={<Check color="success" />}
+        confirmColor="success"
+        confirmText="Xác nhận"
+        onConfirm={confirmOrder}
+      />
+      <ConfirmModal
+        open={cancelDialogOpen}
+        onClose={() => setCancelDialogOpen(false)}
+        title="Hủy đơn hàng"
+        message={
+          <>
+            Bạn có chắc chắn muốn hủy đơn hàng này? Hành động này không thể hoàn
+            tác.
+          </>
+        }
+        confirmIcon={<Close color="error" />}
+        confirmColor="error"
+        confirmText="Xác nhận hủy"
+        onConfirm={cancelOrder}
+      />
 
       <Snackbar
         open={snackbar.open}

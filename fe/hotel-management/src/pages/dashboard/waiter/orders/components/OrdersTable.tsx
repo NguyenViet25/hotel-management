@@ -48,12 +48,6 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
 }) => {
   const columns: Column<OrderSummaryDto>[] = [
     {
-      id: "id",
-      label: "Mã đơn",
-      format: (v) => String(v).slice(0, 8).toUpperCase(),
-      minWidth: 100,
-    },
-    {
       id: "isWalkIn",
       label: "Loại khách",
       format: (row: string) => (

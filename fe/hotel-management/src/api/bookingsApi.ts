@@ -3,7 +3,7 @@ import type { RoomStatus } from "./roomsApi";
 
 // Booking API client aligned with fe/api-documentation/BookingsAPI.md
 
-export type BookingStatus = 0 | 1 | 2 | 3 | 4 | 5; // example: Pending=0, Confirmed=1, CheckedIn=2, Completed=3, Cancelled=4
+export type BookingStatus = 0 | 1 | 2 | 3 | 4 | 5; // example: Pending=0, Confirmed=1, CheckedIn=2, Completed=3, Cancelled=4, Missed=5
 export type PaymentType = 0 | 1 | 2 | 3; // example: Cash=0, Card=1, Transfer=2, Other=3
 export type CallResult = 0 | 1 | 2; // example: Confirmed=0, NoAnswer=1, Cancelled=2
 
