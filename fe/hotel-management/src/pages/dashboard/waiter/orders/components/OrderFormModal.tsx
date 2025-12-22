@@ -335,6 +335,7 @@ const OrderFormModal: React.FC<IProps> = ({
                 <DateTimePicker
                   label="Thời gian phục vụ"
                   value={field.value ? dayjs(field.value) : null}
+                  minDateTime={dayjs()}
                   onChange={(v) =>
                     field.onChange(
                       v ? v.format("YYYY-MM-DDTHH:mm:ss") : undefined

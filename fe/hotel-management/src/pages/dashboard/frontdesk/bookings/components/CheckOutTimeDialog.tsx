@@ -22,7 +22,13 @@ type Props = {
   onClose: () => void;
   onConfirm: (
     selectedIso: string,
-    info: { isLate: boolean; days: number; hours: number; minutes: number }
+    info: {
+      isEarly: boolean;
+      isLate: boolean;
+      days: number;
+      hours: number;
+      minutes: number;
+    }
   ) => void;
   reload?: number;
 };
@@ -73,15 +79,18 @@ export default function CheckOutTimeDialog({
     if (open) setValue(dayjs());
   }, [open, displayScheduledEnd]);
 
-  const { isLate, days, hours, minutes } = useMemo(() => {
+  const { isEarly, isLate, days, hours, minutes } = useMemo(() => {
     const base = displayScheduledEnd || scheduled;
+    const early = value.isBefore(base);
     const late = value.isAfter(base);
     const diff = Math.abs(value.diff(base, "minute"));
     const d = Math.floor(diff / 1440);
     const h = Math.floor((diff % 1440) / 60);
     const m = diff % 60;
-    return { isLate: late, days: d, hours: h, minutes: m };
+    return { isEarly: early, isLate: late, days: d, hours: h, minutes: m };
   }, [value, scheduled, displayScheduledEnd]);
+
+  // No auto-confirm; user must click 'Xác nhận'
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
@@ -110,14 +119,22 @@ export default function CheckOutTimeDialog({
             label="Thời gian check-out"
             value={value}
             minDateTime={dayjs()}
-            maxDateTime={dayjs(displayScheduledEnd).add(1, "minute")}
+            maxDateTime={
+              dayjs().isAfter(dayjs(displayScheduledEnd).add(1, "minute"))
+                ? dayjs(displayScheduledEnd).add(1, "minute")
+                : dayjs()
+            }
             onChange={(v) => v && setValue(v)}
           />
           <Stack direction="row" spacing={1} alignItems="center">
             <Chip
-              color={isLate ? "warning" : "success"}
+              color={isLate || isEarly ? "warning" : "success"}
               label={
-                isLate ? `Muộn ${days}d ${hours}h ${minutes}m` : `Đúng giờ`
+                isLate
+                  ? `Muộn ${days}d ${hours}h ${minutes}m`
+                  : isEarly
+                  ? `Sớm ${days}d ${hours}h ${minutes}m`
+                  : `Đúng giờ`
               }
             />
           </Stack>
@@ -129,6 +146,7 @@ export default function CheckOutTimeDialog({
           variant="contained"
           onClick={() =>
             onConfirm(value.format("YYYY-MM-DDTHH:mm:ss"), {
+              isEarly,
               isLate,
               days,
               hours,

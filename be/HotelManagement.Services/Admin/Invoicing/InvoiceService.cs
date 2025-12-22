@@ -78,7 +78,7 @@ public class InvoiceService : IInvoiceService
 
         var invoice = await _invoiceRepository.Query().Where(x => x.BookingId == targetId).FirstOrDefaultAsync();
 
-        return booking?.Status == BookingStatus.Completed && invoice is  null;
+        return (booking?.Status != BookingStatus.Cancelled || booking?.Status != BookingStatus.Pending)&& invoice is  null;
     }
 
     public async Task<bool> AllowAddOrderInvoiceAsync(Guid targetId)
@@ -86,7 +86,7 @@ public class InvoiceService : IInvoiceService
         var order = await _orderRepo.Query().Where(x => x.Id == targetId).FirstOrDefaultAsync();
         var invoice = await _invoiceRepository.Query().Where(x => x.OrderId == targetId).FirstOrDefaultAsync();
 
-        return order?.Status == OrderStatus.Completed && invoice is not null;
+        return (order?.Status != OrderStatus.Cancelled || order?.Status != OrderStatus.NeedConfirmed) && invoice is null;
     }
 
     public async Task<bool> RemoveLastBookingInvoiceAsync(Guid targetId)

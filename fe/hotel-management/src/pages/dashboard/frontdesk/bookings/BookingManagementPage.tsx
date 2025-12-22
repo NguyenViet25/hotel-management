@@ -72,9 +72,9 @@ const BookingManagementPage: React.FC = () => {
   const hotelId = user?.hotelId || "";
   const [status, setStatus] = useState<BookingStatus | " ">(" ");
   const [fromDate, setFromDate] = useState<Dayjs | null>(
-    dayjs().startOf("month")
+    dayjs().startOf("day")
   );
-  const [toDate, setToDate] = useState<Dayjs | null>(dayjs().endOf("month"));
+  const [toDate, setToDate] = useState<Dayjs | null>(dayjs().endOf("day"));
   const [guestName, setGuestName] = useState<string>("");
   const [roomNumber, setRoomNumber] = useState<string>("");
 

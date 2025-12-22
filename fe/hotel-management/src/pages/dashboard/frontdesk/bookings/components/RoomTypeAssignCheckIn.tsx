@@ -737,6 +737,8 @@ const RoomTypeBlock: React.FC<{
                   open: true,
                   message: info.isLate
                     ? `Late check-out ${info.days}d ${info.hours}h ${info.minutes}m`
+                    : info.isEarly
+                    ? `Early check-out ${info.days}d ${info.hours}h ${info.minutes}m`
                     : "Check-out thành công",
                   severity: "success",
                 });
@@ -968,6 +970,8 @@ const RoomTypeBlock: React.FC<{
                   open: true,
                   message: info.isLate
                     ? `Late check-out ${info.days}d ${info.hours}h ${info.minutes}m`
+                    : info.isEarly
+                    ? `Early check-out ${info.days}d ${info.hours}h ${info.minutes}m`
                     : "Cập nhật Check-out thành công",
                   severity: "success",
                 });
