@@ -483,13 +483,6 @@ const BookingManagementPage: React.FC = () => {
                                       textAlign: "right",
                                     }}
                                   >
-                                    <Typography color="text.secondary">
-                                      Giá cơ bản/đêm
-                                    </Typography>
-                                    <Typography fontWeight={700}>
-                                      {perNight.toLocaleString()} đ
-                                    </Typography>
-
                                     <Box>
                                       <Button
                                         startIcon={<RemoveRedEye />}
