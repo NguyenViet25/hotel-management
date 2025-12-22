@@ -560,6 +560,43 @@ const BookingManagementPage: React.FC = () => {
         })()}
       </Stack>
 
+      <Divider sx={{ my: 2 }} />
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={2}
+        alignItems={{ xs: "flex-start", sm: "center" }}
+        justifyContent="space-between"
+        sx={{ mt: 1 }}
+      >
+        {(() => {
+          const totalBookingsDisplayed = rows.length;
+          const totalRoomsDisplayed = rows.reduce((sum, b) => {
+            const rooms = (b.bookingRoomTypes || []).reduce(
+              (s, rt) => s + (rt.totalRoom || rt.bookingRooms?.length || 0),
+              0
+            );
+            return sum + rooms;
+          }, 0);
+          return (
+            <>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Chip
+                  color="primary"
+                  label={`Tổng số booking: ${totalBookingsDisplayed.toLocaleString()}`}
+                />
+                <Chip
+                  color="secondary"
+                  label={`Tổng số phòng: ${totalRoomsDisplayed.toLocaleString()}`}
+                />
+              </Stack>
+              <Typography variant="body2" color="text.secondary">
+                Hiển thị theo bộ lọc hiện tại
+              </Typography>
+            </>
+          );
+        })()}
+      </Stack>
+
       {/* Create */}
       <BookingFormModal
         open={openCreate}
