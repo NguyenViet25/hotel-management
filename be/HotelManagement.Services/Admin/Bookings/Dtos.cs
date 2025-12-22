@@ -149,7 +149,7 @@ public class BookingDetailsDto
     public decimal AdditionalBookingAmount { get; set; }
     public string? AdditionalNotes { get; set; }
     public string? AdditionalBookingNotes { get; set; }
-    public string? PromotionCode { get; set; } 
+    public string? PromotionCode { get; set; }
     public decimal PromotionValue { get; set; }
     public DateTime CreatedAt { get; set; }
     public string? Notes { get; set; }
@@ -164,7 +164,7 @@ public class RoomMapItemDto
     public Guid RoomTypeId { get; set; }
     public string RoomTypeName { get; set; } = string.Empty;
     public int Floor { get; set; }
-    public RoomStatus Status { get; set; } 
+    public RoomStatus Status { get; set; }
     public List<RoomTimelineSegmentDto> Timeline { get; set; } = new();
 }
 
@@ -245,8 +245,8 @@ public class PersonDto
 {
     public required string Name { get; set; }
     public required string Phone { get; set; }
-    public required string IdCardFrontImageUrl { get; set; }
-    public required string IdCardBackImageUrl { get; set; }
+    public string? IdCardFrontImageUrl { get; set; }
+    public string? IdCardBackImageUrl { get; set; }
     public required string IdCard { get; set; }
 }
 

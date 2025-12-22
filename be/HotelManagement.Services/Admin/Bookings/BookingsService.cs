@@ -1218,7 +1218,7 @@ public class BookingsService(
         }
 
         var bookingRoom = await _bookingRoomRepo.FindAsync(dto.RoomBookingId);
-        if (bookingRoom != null)
+        if (bookingRoom != null && bookingRoom.BookingStatus != BookingRoomStatus.CheckedIn)
         {
             bookingRoom.BookingStatus = BookingRoomStatus.CheckedIn;
             bookingRoom.ActualCheckInAt = dto.ActualCheckInAt ?? DateTime.Now;

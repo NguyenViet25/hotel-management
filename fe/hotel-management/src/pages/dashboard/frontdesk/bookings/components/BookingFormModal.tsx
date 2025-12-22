@@ -869,6 +869,8 @@ const BookingFormModal: React.FC<Props> = ({
                                   ? quotesByIndex[idx]!.items[i - 1].price
                                   : price;
                               const changed = price !== prev;
+                              const dow = dayjs(it.date).day();
+                              const weekend = dow === 5 || dow === 6;
                               return (
                                 <Stack
                                   key={`${it.date}-${i}`}
@@ -884,10 +886,10 @@ const BookingFormModal: React.FC<Props> = ({
                                   <Typography
                                     variant="body2"
                                     sx={{
-                                      color: changed
-                                        ? "warning.main"
+                                      color: weekend
+                                        ? "secondary.main"
                                         : "text.primary",
-                                      fontWeight: changed ? 700 : 500,
+                                      fontWeight: weekend ? 700 : 500,
                                     }}
                                   >
                                     {new Intl.NumberFormat("vi-VN").format(
