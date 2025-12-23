@@ -22,33 +22,37 @@ public static class DatabaseInitializationExtensions
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
             var env = scope.ServiceProvider.GetRequiredService<IHostEnvironment>();
-
-            try
+            var applied = dbContext.Database.GetAppliedMigrations();
+            var isFirstRun = !applied.Any();
+            if (isFirstRun)
             {
-                var pending = dbContext.Database.GetPendingMigrations();
-                if (pending.Any())
+                try
                 {
-                    dbContext.Database.Migrate();
+                    var pending = dbContext.Database.GetPendingMigrations();
+                    if (pending.Any())
+                    {
+                        dbContext.Database.Migrate();
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-            }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                }
 
-            SeedHotelsAsync(dbContext).GetAwaiter().GetResult();
-            SeedRoomTypesAsync(dbContext).GetAwaiter().GetResult();
-            SeedHotelRoomsAsync(dbContext).GetAwaiter().GetResult();
-            SeedRoles(roleManager).GetAwaiter().GetResult();
-            SeedUsers(userManager, dbContext).GetAwaiter().GetResult();
-            SeedMenuItemsAsync(dbContext).GetAwaiter().GetResult();
-            SeedMenuSetsAsync(dbContext).GetAwaiter().GetResult();
-            SeedPromotionsAsync(dbContext).GetAwaiter().GetResult();
-            SeedMinibarsAsync(dbContext).GetAwaiter().GetResult();
-            SeedTablesAsync(dbContext).GetAwaiter().GetResult();
-            SeedPeakDaysLastMonthAsync(dbContext).GetAwaiter().GetResult();
-            //SeedBookingsAsync(dbContext).GetAwaiter().GetResult();
-            //SeedHousekeepingTasksAsync(dbContext).GetAwaiter().GetResult();
+                SeedHotelsAsync(dbContext).GetAwaiter().GetResult();
+                SeedRoomTypesAsync(dbContext).GetAwaiter().GetResult();
+                SeedHotelRoomsAsync(dbContext).GetAwaiter().GetResult();
+                SeedRoles(roleManager).GetAwaiter().GetResult();
+                SeedUsers(userManager, dbContext).GetAwaiter().GetResult();
+                SeedMenuItemsAsync(dbContext).GetAwaiter().GetResult();
+                SeedMenuSetsAsync(dbContext).GetAwaiter().GetResult();
+                SeedPromotionsAsync(dbContext).GetAwaiter().GetResult();
+                SeedMinibarsAsync(dbContext).GetAwaiter().GetResult();
+                SeedTablesAsync(dbContext).GetAwaiter().GetResult();
+                SeedPeakDaysLastMonthAsync(dbContext).GetAwaiter().GetResult();
+                //SeedBookingsAsync(dbContext).GetAwaiter().GetResult();
+                //SeedHousekeepingTasksAsync(dbContext).GetAwaiter().GetResult();
+            }
         }
 
         return app;
@@ -153,7 +157,7 @@ public static class DatabaseInitializationExtensions
                     };
 
 
-                  
+
 
                     foreach (var kv in mappingTts1)
                     {

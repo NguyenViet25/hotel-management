@@ -82,6 +82,8 @@ public class BookingsService(
                 LeftAmount = dto.Left,
                 CreatedAt = DateTime.Now,
                 Notes = dto.Notes,
+                StartDate = dto.StartDate,
+                EndDate = dto.EndDate
             };
             await _bookingRepo.AddAsync(booking);
             await _bookingRepo.SaveChangesAsync();
@@ -352,9 +354,9 @@ public class BookingsService(
             if (query.Status.HasValue)
                 q = q.Where(b => b.Status == query.Status.Value);
             if (query.StartDate.HasValue)
-                q = q.Where(b => b.CreatedAt >= query.StartDate.Value);
+                q = q.Where(b => b.StartDate >= query.StartDate.Value);
             if (query.EndDate.HasValue)
-                q = q.Where(b => b.CreatedAt <= query.EndDate.Value);
+                q = q.Where(b => b.EndDate <= query.EndDate.Value);
             if (!string.IsNullOrWhiteSpace(query.GuestName))
             {
                 var gn = query.GuestName!.Trim();
@@ -712,6 +714,9 @@ public class BookingsService(
                 }
 
             }
+
+            booking.StartDate = dto.StartDate;
+            booking.EndDate = dto.EndDate;
             booking.TotalAmount = dto.Total;
             booking.LeftAmount = dto.Left;
             booking.DiscountAmount = dto.Discount;

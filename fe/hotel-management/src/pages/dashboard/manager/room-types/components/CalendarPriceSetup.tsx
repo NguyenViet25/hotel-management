@@ -293,9 +293,12 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
           "& .fc-daygrid-day": {
             cursor: "pointer",
           },
+          "& .fc-daygrid-day.peak-date ": {
+            backgroundColor: (theme) => theme.palette.error.light,
+          },
           "& .fc-daygrid-day.peak-date .fc-daygrid-day-number": {
-            color: (theme) => theme.palette.error.main,
             fontWeight: 700,
+            color: "white",
           },
           "& .fc-daygrid-day.selected-date": {
             backgroundColor: "transparent",

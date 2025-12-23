@@ -1,5 +1,4 @@
 import { MonetizationOn } from "@mui/icons-material";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
 import RoomPreferencesIcon from "@mui/icons-material/RoomPreferences";
@@ -11,11 +10,9 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import React, { useState } from "react";
 import { Controller } from "react-hook-form";
 import type { RoomType } from "../../../../../api/roomTypesApi";
-import dayjs from "dayjs";
 import { isEmpty } from "lodash";
 
 type Props = {
@@ -214,68 +211,7 @@ const RoomBookingSection: React.FC<Props> = ({
           )}
         />
       </Stack>
-      <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-        <Controller
-          name={`roomTypes.${index}.startDate`}
-          control={control}
-          rules={{ required: true }}
-          render={({ field }) => (
-            <DatePicker
-              minDate={dayjs()}
-              label="Từ ngày"
-              value={field.value}
-              onChange={(date) => {
-                field.onChange(date);
-                setReloadCount((prev) => prev + 1);
-              }}
-              slotProps={{
-                textField: {
-                  fullWidth: true,
-                  error: !!errors?.roomTypes?.[index]?.startDate,
-                  helperText: errors?.roomTypes?.[index]?.startDate?.message,
-                  InputProps: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <CalendarTodayIcon fontSize="small" />
-                      </InputAdornment>
-                    ),
-                  },
-                },
-              }}
-            />
-          )}
-        />
-        <Controller
-          name={`roomTypes.${index}.endDate`}
-          control={control}
-          rules={{ required: true }}
-          render={({ field }) => (
-            <DatePicker
-              minDate={dayjs().add(1, "day")}
-              label="Đến ngày"
-              value={field.value}
-              onChange={(date) => {
-                field.onChange(date);
-                setReloadCount((prev) => prev + 1);
-              }}
-              slotProps={{
-                textField: {
-                  fullWidth: true,
-                  error: !!errors?.roomTypes?.[index]?.endDate,
-                  helperText: errors?.roomTypes?.[index]?.endDate?.message,
-                  InputProps: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <CalendarTodayIcon fontSize="small" />
-                      </InputAdornment>
-                    ),
-                  },
-                },
-              }}
-            />
-          )}
-        />
-      </Stack>
+      {/* Date range is now global in BookingFormModal */}
     </Stack>
   );
 };

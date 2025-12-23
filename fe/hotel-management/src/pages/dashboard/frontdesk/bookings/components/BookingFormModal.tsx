@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AddCircle } from "@mui/icons-material";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import CloseIcon from "@mui/icons-material/Close";
@@ -49,6 +50,7 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import viLocale from "@fullcalendar/core/locales/vi";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
 type Props = {
   open: boolean;
@@ -64,50 +66,54 @@ const dayjsValidator = z.custom<Dayjs>((v) => dayjs.isDayjs(v) && v.isValid(), {
   message: "Ngày không hợp lệ",
 });
 
-const roomItemSchema = z
-  .object({
-    roomId: z.string().min(1, "Vui lòng chọn loại phòng"),
-    startDate: dayjsValidator.nullable(),
-    endDate: dayjsValidator.nullable(),
-    totalRooms: z.coerce
-      .number("Số lượng phòng phải là số")
-      .int("Số lượng phòng phải là số nguyên")
-      .min(1, "Tối thiểu 1 phòng"),
-    price: z.coerce.number("Giá phòng phải là số").min(1, "Giá tối thiểu là 1"),
-    rooms: z.array(
+const roomItemSchema = z.object({
+  roomId: z.string().min(1, "Vui lòng chọn loại phòng"),
+  totalRooms: z.coerce
+    .number("Số lượng phòng phải là số")
+    .int("Số lượng phòng phải là số nguyên")
+    .min(1, "Tối thiểu 1 phòng"),
+  price: z.coerce.number("Giá phòng phải là số").min(1, "Giá tối thiểu là 1"),
+  rooms: z
+    .array(
       z
         .object({
           roomId: z.string().min(1, "Vui lòng chọn phòng"),
         })
         .optional()
-    ),
+    )
+    .optional(),
+});
+
+const schema = z
+  .object({
+    guestName: z.string().min(2, "Họ tên phải có ít nhất 2 ký tự"),
+    guestPhone: phoneSchema,
+    guestEmail: z
+      .string()
+      .email("Email không hợp lệ")
+      .optional()
+      .or(z.literal("")),
+    checkInDate: dayjsValidator,
+    checkOutDate: dayjsValidator,
+    roomTypes: z.array(roomItemSchema).min(1, "Thêm ít nhất 1 phòng"),
+    depositAmount: z.coerce
+      .number("Tiền cọc phải là số")
+      .min(0, "Tiền cọc không âm"),
+    totalAmount: z.coerce
+      .number("Tổng tiền phải là số")
+      .min(0, "Không âm")
+      .optional(),
+    notes: z.string().optional(),
   })
   .refine(
     (data) =>
-      !!data.startDate &&
-      !!data.endDate &&
-      (data.endDate as Dayjs).isAfter(data.startDate as Dayjs),
-    { message: "Đến ngày phải sau Từ ngày", path: ["endDate"] }
+      !!data.checkInDate &&
+      !!data.checkOutDate &&
+      dayjs(data.checkOutDate as Dayjs).isAfter(
+        dayjs(data.checkInDate as Dayjs)
+      ),
+    { message: "Đến ngày phải sau Từ ngày", path: ["checkOutDate"] }
   );
-
-const schema = z.object({
-  guestName: z.string().min(2, "Họ tên phải có ít nhất 2 ký tự"),
-  guestPhone: phoneSchema,
-  guestEmail: z
-    .string()
-    .email("Email không hợp lệ")
-    .optional()
-    .or(z.literal("")),
-  roomTypes: z.array(roomItemSchema).min(1, "Thêm ít nhất 1 phòng"),
-  depositAmount: z.coerce
-    .number("Tiền cọc phải là số")
-    .min(0, "Tiền cọc không âm"),
-  totalAmount: z.coerce
-    .number("Tổng tiền phải là số")
-    .min(0, "Không âm")
-    .optional(),
-  notes: z.string().optional(),
-});
 
 type FormValues = z.infer<typeof schema>;
 
@@ -140,11 +146,11 @@ const BookingFormModal: React.FC<Props> = ({
       guestName: "",
       guestPhone: "",
       guestEmail: "",
+      checkInDate: dayjs(),
+      checkOutDate: dayjs().add(1, "day"),
       roomTypes: [
         {
           roomId: "",
-          startDate: dayjs(),
-          endDate: dayjs().add(1, "day"),
           totalRooms: 1,
           price: 0,
           rooms: [],
@@ -162,6 +168,8 @@ const BookingFormModal: React.FC<Props> = ({
   });
 
   const roomsWatch = watch("roomTypes") || [];
+  const globalStart = watch("checkInDate");
+  const globalEnd = watch("checkOutDate");
   const depositAmount = watch("depositAmount") || 0;
   const discountAmount = 0;
   const totalAmount = watch("totalAmount") || 0;
@@ -198,8 +206,8 @@ const BookingFormModal: React.FC<Props> = ({
       await Promise.all(
         roomsWatch.map(async (r, idx) => {
           const roomTypeId = r.roomId;
-          const startDate = r.startDate;
-          const endDate = r.endDate;
+          const startDate = globalStart;
+          const endDate = globalEnd;
           if (
             roomTypeId &&
             startDate &&
@@ -237,8 +245,8 @@ const BookingFormModal: React.FC<Props> = ({
         const overrideSet = new Set(overrides);
         const inputPrice = r.price || rt?.priceFrom || 0;
 
-        const start = r.startDate ? dayjs(r.startDate) : null;
-        const end = r.endDate ? dayjs(r.endDate) : null;
+        const start = globalStart ? dayjs(globalStart) : null;
+        const end = globalEnd ? dayjs(globalEnd) : null;
 
         // Build items either from API or locally if API not available
         let items =
@@ -302,8 +310,8 @@ const BookingFormModal: React.FC<Props> = ({
       await Promise.all(
         roomsWatch.map(async (r, idx) => {
           const roomTypeId = r.roomId;
-          const startDate = r.startDate;
-          const endDate = r.endDate;
+          const startDate = globalStart;
+          const endDate = globalEnd;
           if (
             roomTypeId &&
             startDate &&
@@ -371,14 +379,29 @@ const BookingFormModal: React.FC<Props> = ({
         const endDate = dayjs(rt.endDate);
         return {
           roomId: rt.roomTypeId,
-          startDate,
-          endDate,
           totalRooms: rt.totalRoom || rooms.length || 1,
           price: rt.price || 0,
           rooms,
         };
       });
       if (mapped.length > 0) setValue("roomTypes", mapped as any);
+      // Set global date range based on booking data
+      const minStart = brts
+        .map((rt) => dayjs(rt.startDate))
+        .reduce(
+          (min, d) => (min && min.isBefore(d) ? min : d),
+          dayjs(brts[0]?.startDate)
+        );
+      const maxEnd = brts
+        .map((rt) => dayjs(rt.endDate))
+        .reduce(
+          (max, d) => (max && max.isAfter(d) ? max : d),
+          dayjs(brts[0]?.endDate)
+        );
+      if (minStart && maxEnd) {
+        setValue("checkInDate", minStart as any);
+        setValue("checkOutDate", maxEnd as any);
+      }
 
       setValue("depositAmount", (bookingData as any).depositAmount || 0);
       setValue("notes", (bookingData as any).notes || "");
@@ -449,8 +472,8 @@ const BookingFormModal: React.FC<Props> = ({
           try {
             const res = await bookingsApi.roomAvailability({
               hotelId,
-              from: dayjs(rt.startDate as Dayjs).format("YYYY-MM-DD"),
-              to: dayjs(rt.endDate as Dayjs).format("YYYY-MM-DD"),
+              from: dayjs(globalStart as Dayjs).format("YYYY-MM-DD"),
+              to: dayjs(globalEnd as Dayjs).format("YYYY-MM-DD"),
               typeId: rt.roomId,
             });
             return res?.data?.totalAvailable ?? 0;
@@ -501,12 +524,12 @@ const BookingFormModal: React.FC<Props> = ({
             price: rt.price || 0,
             capacity: 0,
             totalRoom: rt.totalRooms || 0,
-            startDate: rt.startDate,
-            endDate: rt.endDate,
+            startDate: globalStart,
+            endDate: globalEnd,
             rooms: rt.rooms.map((r) => ({
               roomId: r?.roomId,
-              startDate: rt.startDate,
-              endDate: rt.endDate,
+              startDate: globalStart,
+              endDate: globalEnd,
               guests: [],
             })),
           })) as any,
@@ -534,12 +557,12 @@ const BookingFormModal: React.FC<Props> = ({
           price: rt.price || 0,
           capacity: 0,
           totalRoom: rt.totalRooms || 0,
-          startDate: dayjs(rt.startDate).format("YYYY-MM-DDTHH:mm:ss"),
-          endDate: dayjs(rt.endDate).format("YYYY-MM-DDTHH:mm:ss"),
+          startDate: dayjs(globalStart).format("YYYY-MM-DDTHH:mm:ss"),
+          endDate: dayjs(globalEnd).format("YYYY-MM-DDTHH:mm:ss"),
           rooms: rt.rooms.map((r) => ({
             roomId: r?.roomId,
-            startDate: dayjs(rt.startDate).format("YYYY-MM-DDTHH:mm:ss"),
-            endDate: dayjs(rt.endDate).format("YYYY-MM-DDTHH:mm:ss"),
+            startDate: dayjs(globalStart).format("YYYY-MM-DDTHH:mm:ss"),
+            endDate: dayjs(globalEnd).format("YYYY-MM-DDTHH:mm:ss"),
             guests: [],
           })),
         })) as any,
@@ -680,8 +703,6 @@ const BookingFormModal: React.FC<Props> = ({
                 onClick={() =>
                   append({
                     roomId: roomTypes[0]?.id || "",
-                    startDate: dayjs(),
-                    endDate: dayjs().add(1, "day"),
                     totalRooms: 1,
                     price: roomTypes[0]?.priceFrom || 0,
                     rooms: [],
@@ -690,6 +711,66 @@ const BookingFormModal: React.FC<Props> = ({
               >
                 Thêm mục
               </Button>
+            </Stack>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+              <Controller
+                name="checkInDate"
+                control={control}
+                render={({ field }) => (
+                  <DatePicker
+                    minDate={dayjs()}
+                    label="Từ ngày"
+                    value={field.value}
+                    onChange={(date) => {
+                      field.onChange(date);
+                      setReloadCount((prev) => prev + 1);
+                    }}
+                    slotProps={{
+                      textField: {
+                        fullWidth: true,
+                        error: !!errors?.checkInDate,
+                        helperText: (errors as any)?.checkInDate?.message,
+                        InputProps: {
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <CalendarTodayIcon fontSize="small" />
+                            </InputAdornment>
+                          ),
+                        },
+                      },
+                    }}
+                  />
+                )}
+              />
+              <Controller
+                name="checkOutDate"
+                control={control}
+                render={({ field }) => (
+                  <DatePicker
+                    minDate={dayjs().add(1, "day")}
+                    label="Đến ngày"
+                    value={field.value}
+                    onChange={(date) => {
+                      field.onChange(date);
+                      setReloadCount((prev) => prev + 1);
+                    }}
+                    slotProps={{
+                      textField: {
+                        fullWidth: true,
+                        error: !!errors?.checkOutDate,
+                        helperText: (errors as any)?.checkOutDate?.message,
+                        InputProps: {
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <CalendarTodayIcon fontSize="small" />
+                            </InputAdornment>
+                          ),
+                        },
+                      },
+                    }}
+                  />
+                )}
+              />
             </Stack>
 
             <Stack spacing={2}>
@@ -721,15 +802,11 @@ const BookingFormModal: React.FC<Props> = ({
                               (t) => t.id === roomsWatch[idx]?.roomId
                             )?.name || "—"}
                             {" • "}
-                            {roomsWatch[idx]?.startDate
-                              ? dayjs(roomsWatch[idx]?.startDate).format(
-                                  "DD/MM"
-                                )
+                            {globalStart
+                              ? dayjs(globalStart).format("DD/MM")
                               : "—"}
                             {" - "}
-                            {roomsWatch[idx]?.endDate
-                              ? dayjs(roomsWatch[idx]?.endDate).format("DD/MM")
-                              : "—"}
+                            {globalEnd ? dayjs(globalEnd).format("DD/MM") : "—"}
                             {" • SL: "}
                             {roomsWatch[idx]?.totalRooms || 0} {" • Tổng: "}
                             {new Intl.NumberFormat("vi-VN").format(
@@ -825,9 +902,7 @@ const BookingFormModal: React.FC<Props> = ({
                             locales={[viLocale]}
                             locale="vi"
                             initialView="dayGridMonth"
-                            initialDate={dayjs(
-                              roomsWatch[idx]?.startDate
-                            ).toDate()}
+                            initialDate={dayjs(globalStart).toDate()}
                             selectable={false}
                             dayMaxEvents
                             events={quotesByIndex[idx]!.items.map((it) => {

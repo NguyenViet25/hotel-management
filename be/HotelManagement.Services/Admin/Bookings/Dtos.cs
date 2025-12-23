@@ -68,6 +68,9 @@ public class CreateBookingDto
     [Required]
     public List<CreateBookingRoomTypeDto> RoomTypes { get; set; } = new();
     public string? Notes { get; set; }
+
+    public DateTime? StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
 }
 
 public class UpdateBookingDto : CreateBookingDto

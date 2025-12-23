@@ -11,6 +11,7 @@ import type { Dayjs } from "dayjs";
 import React from "react";
 import type { BookingStatus } from "../../../../../api/bookingsApi";
 import { GridView, TableChart } from "@mui/icons-material";
+import dayjs from "dayjs";
 
 export interface StatusOption {
   value: BookingStatus | "";
@@ -88,6 +89,7 @@ const FiltersBar: React.FC<FiltersBarProps> = ({
         <DatePicker
           label="Đến ngày"
           value={toDate}
+          maxDate={dayjs(fromDate)}
           onChange={onToDateChange}
           slotProps={{ textField: { size: "small", sx: { minWidth: 160 } } }}
         />

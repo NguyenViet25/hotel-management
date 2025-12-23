@@ -827,10 +827,6 @@ const BookingManagementPage: React.FC = () => {
                             color="primary"
                             label={`Tổng số booking: ${totalBookingsDisplayed.toLocaleString()}`}
                           />
-                          <Chip
-                            color="secondary"
-                            label={`Tổng số phòng đã book: ${totalRoomsDisplayed.toLocaleString()}`}
-                          />
                         </Stack>
                         <Typography variant="body2" color="text.secondary">
                           Hiển thị theo bộ lọc hiện tại
