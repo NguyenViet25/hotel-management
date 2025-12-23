@@ -18,6 +18,8 @@ public class Booking
     public string? PromotionCode { get; set; }
     public decimal PromotionValue { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime? StartDate { get; set; } = DateTime.Now;
+    public DateTime? EndDate { get; set; } = DateTime.Now;
     public Hotel? Hotel { get; set; }
     public Guest? PrimaryGuest { get; set; }
     public string? Notes { get; set; }

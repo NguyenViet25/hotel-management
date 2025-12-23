@@ -59,10 +59,11 @@ public class AuthService : IAuthService
         var hotelId = hotel?.HotelId.ToString() ?? string.Empty;
         var roles = await _userManager.GetRolesAsync(user);
 
+
         var extraClaims = new[]
         {
             new Claim("twoFactor", (await _userManager.GetTwoFactorEnabledAsync(user)).ToString()),
-            new Claim("hotelId", hotelId)    
+            new Claim("hotelId", hotelId)
         };
 
         var token = _tokenService.CreateAccessToken(
@@ -76,7 +77,32 @@ public class AuthService : IAuthService
     }
 
 
+    public async Task<bool> IsHotelLockedAsync(LoginRequestDto request)
+    {
+        var user = await _userManager.FindByNameAsync(request.Username) ?? await _userManager.FindByEmailAsync(request.Username);
+        if (user is null) return false;
+        var propertyRoles = await _db.UserPropertyRoles.AsNoTracking()
+            .Select(pr => new UserPropertyRoleDto(pr.UserId, pr.HotelId, pr.Role, "")).ToListAsync();
 
+        var hotel = propertyRoles.Where(x => x.Id == user.Id).FirstOrDefault();
+        var hotelId = hotel?.HotelId.ToString() ?? string.Empty;
+        var roles = await _userManager.GetRolesAsync(user);
+
+        return await _db.Hotels.AnyAsync(x => x.Id == hotel!.HotelId && x.IsActive == false);
+    }
+
+    public async Task<Guid> GetHotelIdAsync(LoginRequestDto request)
+    {
+        var user = await _userManager.FindByNameAsync(request.Username) ?? await _userManager.FindByEmailAsync(request.Username);
+        if (user is null) return Guid.Empty;
+        var propertyRoles = await _db.UserPropertyRoles.AsNoTracking()
+            .Select(pr => new UserPropertyRoleDto(pr.UserId, pr.HotelId, pr.Role, "")).ToListAsync();
+
+        var hotel = propertyRoles.Where(x => x.Id == user.Id).FirstOrDefault();
+        var hotelId = hotel?.HotelId ?? Guid.Empty;
+
+        return hotelId;
+    }
     public Task LogoutAsync(string userName)
     {
         // Stateless JWT logout is generally client-side; here we could add audit log or token blacklist.

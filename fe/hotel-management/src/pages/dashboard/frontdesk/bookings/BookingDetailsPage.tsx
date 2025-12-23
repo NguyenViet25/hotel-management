@@ -129,6 +129,7 @@ const BookingDetailsPage: React.FC = () => {
       2: { label: "Đã hoàn thành", color: "success" },
       3: { label: "Đã hoàn thành", color: "success" },
       4: { label: "Đã hủy", color: "error" },
+      5: { label: "Vắng mặt", color: "warning" },
     };
     if (s === undefined) return null;
     const m = mapping[s] || { label: String(s), color: "default" };
@@ -195,7 +196,8 @@ const BookingDetailsPage: React.FC = () => {
         </Stack>
         <Stack direction="row" spacing={1}>
           {data?.status !== EBookingStatus.Completed &&
-            data?.status !== EBookingStatus.Cancelled && (
+            data?.status !== EBookingStatus.Cancelled &&
+            data?.status !== EBookingStatus.VisitorMissed && (
               <>
                 <Button
                   variant="outlined"
@@ -297,6 +299,11 @@ const BookingDetailsPage: React.FC = () => {
                 color="primary"
                 startIcon={<PhoneIcon />}
                 onClick={() => setOpenCall(true)}
+                disabled={
+                  data?.status === EBookingStatus.Completed ||
+                  data?.status === EBookingStatus.Cancelled ||
+                  data?.status === EBookingStatus.VisitorMissed
+                }
               >
                 Gọi khách
               </Button>

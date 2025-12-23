@@ -161,10 +161,7 @@ const OrderDetailsPage: React.FC = () => {
           alignItems="center"
         >
           <Stack direction="row" spacing={1} alignItems="center">
-            <Button
-              startIcon={<ArrowBack />}
-              onClick={() => navigate("/frontdesk/orders")}
-            >
+            <Button startIcon={<ArrowBack />} onClick={() => navigate(-1)}>
               Quay lại danh sách
             </Button>
           </Stack>

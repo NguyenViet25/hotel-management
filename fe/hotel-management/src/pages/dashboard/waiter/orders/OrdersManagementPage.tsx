@@ -373,7 +373,7 @@ const OrdersManagementPage: React.FC = () => {
               setSelectedForInvoice(record);
               setInvoiceOpen(true);
             }}
-            onView={(record) => navigate(`/frontdesk/orders/${record.id}`)}
+            onView={(record) => navigate(`${record.id}`)}
           />
         ) : (
           (() => {

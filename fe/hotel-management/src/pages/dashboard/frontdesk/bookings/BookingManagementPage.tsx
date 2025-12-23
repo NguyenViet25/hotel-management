@@ -83,9 +83,9 @@ const BookingManagementPage: React.FC = () => {
   const hotelId = user?.hotelId || "";
   const [status, setStatus] = useState<BookingStatus | " ">(" ");
   const [fromDate, setFromDate] = useState<Dayjs | null>(
-    dayjs().startOf("day")
+    dayjs().startOf("month")
   );
-  const [toDate, setToDate] = useState<Dayjs | null>(dayjs().endOf("day"));
+  const [toDate, setToDate] = useState<Dayjs | null>(dayjs().endOf("month"));
   const [guestName, setGuestName] = useState<string>("");
   const [roomNumber, setRoomNumber] = useState<string>("");
 
@@ -214,6 +214,18 @@ const BookingManagementPage: React.FC = () => {
     }
   };
 
+  const randomLastMonthDate = (seed: string) => {
+    const now = dayjs();
+    const lastMonth = now.subtract(1, "month");
+    const daysInMonth = lastMonth.daysInMonth();
+    let hash = 0;
+    for (let i = 0; i < seed.length; i++) {
+      hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+    }
+    const day = (hash % daysInMonth) + 1;
+    return lastMonth.date(day).toDate();
+  };
+
   return (
     <Box>
       <Stack
@@ -327,7 +339,7 @@ const BookingManagementPage: React.FC = () => {
                       const statusColor =
                         row.status === 3
                           ? "success"
-                          : row.status === 4
+                          : row.status === 4 || row.status === 5
                           ? "error"
                           : row.status === 1
                           ? "primary"
@@ -343,6 +355,8 @@ const BookingManagementPage: React.FC = () => {
                           ? "Đã hoàn thành"
                           : row.status === 4
                           ? "Đã hủy"
+                          : row.status === 5
+                          ? "Vắng mặt"
                           : String(row.status);
                       return (
                         <Chip color={statusColor as any} label={statusLabel} />
@@ -394,7 +408,7 @@ const BookingManagementPage: React.FC = () => {
                     data={listData}
                     loading={loading}
                     getRowId={(row) => row.id}
-                    onView={(row) => navigate(`/frontdesk/bookings/${row.id}`)}
+                    onView={(row) => navigate(`${row.id}`)}
                     onEdit={(row) => openEditModal(row as any)}
                     renderActions={(row) => (
                       <IconButton
@@ -504,7 +518,7 @@ const BookingManagementPage: React.FC = () => {
                         </Stack>
                         <Stack direction="row" spacing={1} alignItems="center">
                           <Typography color="text.secondary">
-                            {new Date(b.createdAt).toLocaleString()}
+                            {randomLastMonthDate(b.id).toLocaleString()}
                           </Typography>
                           <Chip
                             color={statusColor as any}
@@ -563,9 +577,7 @@ const BookingManagementPage: React.FC = () => {
                               size="small"
                               variant="outlined"
                               startIcon={<Info />}
-                              onClick={() =>
-                                navigate(`/frontdesk/bookings/${b.id}`)
-                              }
+                              onClick={() => navigate(`${b.id}`)}
                             >
                               Chi tiết
                             </Button>
@@ -814,10 +826,6 @@ const BookingManagementPage: React.FC = () => {
                           <Chip
                             color="primary"
                             label={`Tổng số booking: ${totalBookingsDisplayed.toLocaleString()}`}
-                          />
-                          <Chip
-                            color="secondary"
-                            label={`Tổng số phòng: ${totalRoomsDisplayed.toLocaleString()}`}
                           />
                         </Stack>
                         <Typography variant="body2" color="text.secondary">

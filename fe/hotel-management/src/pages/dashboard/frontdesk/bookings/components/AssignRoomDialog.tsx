@@ -68,11 +68,8 @@ const AssignRoomDialog: React.FC<Props> = ({
     }
   }, [open]);
 
-  const isAvailable = (room: RoomMapItemDto) => {
-    const seg = room.timeline?.[0];
-    const s = (seg?.status || "").toLowerCase();
-    return s === "available";
-  };
+  const isAvailable = (room: RoomMapItemDto) =>
+    room.status === RoomStatus.Available;
 
   const statusUi = (room: RoomMapItemDto) => statusUiFromTimeline(room.status);
 
@@ -145,16 +142,22 @@ const AssignRoomDialog: React.FC<Props> = ({
               >{`Tầng ${floor}`}</Typography>
               <Grid container spacing={2}>
                 {group.map((r) => {
-                  const ui = statusUi(r);
                   const alreadyAssigned = assignedRooms.some(
                     (br) => br.roomId === r.roomId
                   );
+                  const available = r.status === RoomStatus.Available;
                   const disabled =
-                    !isAvailable(r) || alreadyAssigned || remaining === 0;
+                    !available || alreadyAssigned || remaining === 0;
 
-                  const newUi = isAvailable(r)
+                  const isMaintenance =
+                    r.status === RoomStatus.Maintenance ||
+                    r.status === RoomStatus.OutOfService;
+                  const baseUi = statusUi(r);
+                  const newUi = isMaintenance
+                    ? { label: "Bảo trì", color: "#7b1fa2" }
+                    : available
                     ? { label: "Trống", color: "#2e7d32" }
-                    : ui;
+                    : baseUi;
 
                   return (
                     <Grid key={r.roomId}>

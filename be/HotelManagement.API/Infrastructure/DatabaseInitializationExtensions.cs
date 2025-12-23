@@ -4,11 +4,8 @@ using HotelManagement.Repository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
-using System.Linq;
-using System.Security.Claims;
 using System.Text;
 using System.Text.RegularExpressions;
-using static System.Net.WebRequestMethods;
 
 namespace HotelManagement.Api.Infrastructure;
 
@@ -24,22 +21,38 @@ public static class DatabaseInitializationExtensions
             var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+            var env = scope.ServiceProvider.GetRequiredService<IHostEnvironment>();
+            var applied = dbContext.Database.GetAppliedMigrations();
+            var isFirstRun = !applied.Any();
+            if (isFirstRun)
+            {
+                try
+                {
+                    var pending = dbContext.Database.GetPendingMigrations();
+                    if (pending.Any())
+                    {
+                        dbContext.Database.Migrate();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                }
 
-            // Apply any pending migrations
-            dbContext.Database.Migrate();
-
-            SeedHotelsAsync(dbContext).GetAwaiter().GetResult();
-            SeedRoomTypesAsync(dbContext).GetAwaiter().GetResult();
-            SeedHotelRoomsAsync(dbContext).GetAwaiter().GetResult();
-            SeedRoles(roleManager).GetAwaiter().GetResult();
-            SeedUsers(userManager, dbContext).GetAwaiter().GetResult();
-            SeedMenuItemsAsync(dbContext).GetAwaiter().GetResult();
-            SeedMenuSetsAsync(dbContext).GetAwaiter().GetResult();
-            SeedPromotionsAsync(dbContext).GetAwaiter().GetResult();
-            SeedMinibarsAsync(dbContext).GetAwaiter().GetResult();
-            SeedTablesAsync(dbContext).GetAwaiter().GetResult();
-            //SeedBookingsAsync(dbContext).GetAwaiter().GetResult();
-            //SeedHousekeepingTasksAsync(dbContext).GetAwaiter().GetResult();
+                SeedHotelsAsync(dbContext).GetAwaiter().GetResult();
+                SeedRoomTypesAsync(dbContext).GetAwaiter().GetResult();
+                SeedHotelRoomsAsync(dbContext).GetAwaiter().GetResult();
+                SeedRoles(roleManager).GetAwaiter().GetResult();
+                SeedUsers(userManager, dbContext).GetAwaiter().GetResult();
+                SeedMenuItemsAsync(dbContext).GetAwaiter().GetResult();
+                SeedMenuSetsAsync(dbContext).GetAwaiter().GetResult();
+                SeedPromotionsAsync(dbContext).GetAwaiter().GetResult();
+                SeedMinibarsAsync(dbContext).GetAwaiter().GetResult();
+                SeedTablesAsync(dbContext).GetAwaiter().GetResult();
+                SeedPeakDaysLastMonthAsync(dbContext).GetAwaiter().GetResult();
+                //SeedBookingsAsync(dbContext).GetAwaiter().GetResult();
+                //SeedHousekeepingTasksAsync(dbContext).GetAwaiter().GetResult();
+            }
         }
 
         return app;
@@ -144,7 +157,7 @@ public static class DatabaseInitializationExtensions
                     };
 
 
-                  
+
 
                     foreach (var kv in mappingTts1)
                     {
@@ -1485,6 +1498,387 @@ public static class DatabaseInitializationExtensions
             b.LeftAmount = amount;
             dbContext.Set<Booking>().Update(b);
             await dbContext.SaveChangesAsync();
+        }
+    }
+
+    public static async Task SeedPeakDaysLastMonthAsync(DbContext dbContext)
+    {
+        var hotels = await dbContext.Set<Hotel>().ToListAsync();
+        if (hotels.Count == 0) return;
+        var today = DateTime.Today;
+        var m1Start = new DateTime(today.Year, today.Month, 1).AddMonths(-1);
+        var m1End = m1Start.AddMonths(1).AddDays(-1);
+        var m2Start = new DateTime(today.Year, today.Month, 1).AddMonths(-2);
+        var m2End = m2Start.AddMonths(1).AddDays(-1);
+        foreach (var h in hotels)
+        {
+            var rooms = await dbContext.Set<HotelRoom>().Where(r => r.HotelId == h.Id).ToListAsync();
+            if (rooms.Count == 0) continue;
+            var existing = await dbContext.Set<Booking>()
+                .Where(b => b.HotelId == h.Id && b.StartDate != null)
+                .AnyAsync(b =>
+                    (b.StartDate!.Value.Date >= m2Start && b.StartDate!.Value.Date <= m2End) ||
+                    (b.StartDate!.Value.Date >= m1Start && b.StartDate!.Value.Date <= m1End));
+            if (existing) continue;
+            var roomTypes = await dbContext.Set<RoomType>().Where(rt => rt.HotelId == h.Id).ToListAsync();
+            var occupancy = new HashSet<string>();
+            var rnd = Random.Shared;
+            int totalCreated = 0;
+            foreach (var (start, end) in new[] { (m2Start, m2End), (m1Start, m1End) })
+            {
+                var days = new List<DateTime>();
+                for (var d = start; d <= end; d = d.AddDays(1)) days.Add(d);
+                var peakDays = days.OrderBy(_ => Guid.NewGuid()).Take(3).ToList();
+                foreach (var pd in peakDays)
+                {
+                    var target = Math.Max(1, (int)Math.Round(rooms.Count * 0.8));
+                    var remaining = target;
+                    var createdThisDay = 0;
+                    while (remaining > 0 && createdThisDay < 2 && totalCreated < 20)
+                    {
+                        var rt = roomTypes.OrderBy(_ => Guid.NewGuid()).FirstOrDefault();
+                        if (rt == null) break;
+                        var availableRooms = rooms.Where(r => r.RoomTypeId == rt.Id && !occupancy.Contains($"{r.Id}:{pd:yyyyMMdd}")).ToList();
+                        if (availableRooms.Count == 0) break;
+                        var take = Math.Min(availableRooms.Count, Math.Max(3, remaining / 2));
+                        var selected = availableRooms.OrderBy(_ => Guid.NewGuid()).Take(take).ToList();
+                        var g = new Guest
+                        {
+                            Id = Guid.NewGuid(),
+                            FullName = $"Khách {pd:yyyyMMdd}-{rt.Name}",
+                            Phone = $"0{rnd.Next(100000000, 999999999)}",
+                            IdCard = rnd.NextInt64(100000000000, 999999999999).ToString(),
+                            Email = $"seed-{pd:yyyyMMdd}-{Guid.NewGuid().ToString()[..8]}@example.com",
+                            HotelId = h.Id
+                        };
+                        await dbContext.Set<Guest>().AddAsync(g);
+                        await dbContext.SaveChangesAsync();
+                        var b = new Booking
+                        {
+                            Id = Guid.NewGuid(),
+                            HotelId = h.Id,
+                            PrimaryGuestId = g.Id,
+                            Status = BookingStatus.Pending,
+                            DepositAmount = 0,
+                            DiscountAmount = 0,
+                            TotalAmount = 0,
+                            LeftAmount = 0,
+                            AdditionalAmount = 0,
+                            PromotionCode = null,
+                            PromotionValue = 0,
+                            CreatedAt = start.AddDays(rnd.Next(0, (pd - start).Days + 1)).AddHours(rnd.Next(0, 24)).AddMinutes(rnd.Next(0, 60)),
+                            StartDate = pd,
+                            EndDate = pd.AddDays(1),
+                            Notes = "Seeded-2Months"
+                        };
+                        await dbContext.Set<Booking>().AddAsync(b);
+                        await dbContext.SaveChangesAsync();
+                        var brt = new BookingRoomType
+                        {
+                            BookingRoomTypeId = Guid.NewGuid(),
+                            BookingId = b.Id,
+                            RoomTypeId = rt.Id,
+                            RoomTypeName = rt.Name,
+                            Capacity = rt.Capacity,
+                            Price = rt.BasePriceFrom,
+                            TotalRoom = selected.Count,
+                            StartDate = pd,
+                            EndDate = pd.AddDays(1)
+                        };
+                        await dbContext.Set<BookingRoomType>().AddAsync(brt);
+                        await dbContext.SaveChangesAsync();
+                        foreach (var r in selected)
+                        {
+                            var br = new BookingRoom
+                            {
+                                BookingRoomId = Guid.NewGuid(),
+                                BookingRoomTypeId = brt.BookingRoomTypeId,
+                                RoomId = r.Id,
+                                RoomName = r.Number,
+                                StartDate = pd,
+                                EndDate = pd.AddDays(1),
+                                BookingStatus = BookingRoomStatus.Pending
+                            };
+                            await dbContext.Set<BookingRoom>().AddAsync(br);
+                            await dbContext.SaveChangesAsync();
+                            await dbContext.Set<BookingGuest>().AddAsync(new BookingGuest
+                            {
+                                BookingGuestId = Guid.NewGuid(),
+                                BookingRoomId = br.BookingRoomId,
+                                GuestId = g.Id
+                            });
+                            await dbContext.SaveChangesAsync();
+                            var checkInHour = h.DefaultCheckInTime?.Hour ?? 12;
+                            var checkOutHour = h.DefaultCheckOutTime?.Hour ?? 11;
+                            var checkIn = pd.Date.AddHours(checkInHour);
+                            var checkOut = pd.AddDays(1).Date.AddHours(checkOutHour);
+                            br.ActualCheckInAt = checkIn;
+                            br.BookingStatus = BookingRoomStatus.CheckedIn;
+                            dbContext.Set<BookingRoom>().Update(br);
+                            await dbContext.SaveChangesAsync();
+                            r.Status = RoomStatus.Occupied;
+                            dbContext.Set<HotelRoom>().Update(r);
+                            await dbContext.SaveChangesAsync();
+                            await dbContext.Set<RoomStatusLog>().AddAsync(new RoomStatusLog
+                            {
+                                Id = Guid.NewGuid(),
+                                HotelId = h.Id,
+                                RoomId = r.Id,
+                                Status = RoomStatus.Occupied,
+                                Timestamp = checkIn
+                            });
+                            await dbContext.SaveChangesAsync();
+                            br.ActualCheckOutAt = checkOut;
+                            br.BookingStatus = BookingRoomStatus.CheckedOut;
+                            dbContext.Set<BookingRoom>().Update(br);
+                            await dbContext.SaveChangesAsync();
+                            r.Status = RoomStatus.Dirty;
+                            dbContext.Set<HotelRoom>().Update(r);
+                            await dbContext.SaveChangesAsync();
+                            await dbContext.Set<RoomStatusLog>().AddAsync(new RoomStatusLog
+                            {
+                                Id = Guid.NewGuid(),
+                                HotelId = h.Id,
+                                RoomId = r.Id,
+                                Status = RoomStatus.Dirty,
+                                Timestamp = checkOut
+                            });
+                            await dbContext.SaveChangesAsync();
+                            r.Status = RoomStatus.Available;
+                            dbContext.Set<HotelRoom>().Update(r);
+                            await dbContext.SaveChangesAsync();
+                            await dbContext.Set<RoomStatusLog>().AddAsync(new RoomStatusLog
+                            {
+                                Id = Guid.NewGuid(),
+                                HotelId = h.Id,
+                                RoomId = r.Id,
+                                Status = RoomStatus.Available,
+                                Timestamp = checkOut
+                            });
+                            await dbContext.SaveChangesAsync();
+                            occupancy.Add($"{r.Id}:{pd:yyyyMMdd}");
+                        }
+                        var amount = rt.BasePriceFrom * selected.Count;
+                        b.TotalAmount = amount;
+                        b.LeftAmount = 0;
+                        b.Status = BookingStatus.Completed;
+                        dbContext.Set<Booking>().Update(b);
+                        await dbContext.SaveChangesAsync();
+                        var anyUser = await dbContext.Set<AppUser>().FirstOrDefaultAsync();
+                        var vatPct = h.VAT ?? 0;
+                        var tax = Math.Round(amount * (vatPct / 100m), 2);
+                        var invoice = new Invoice
+                        {
+                            Id = Guid.NewGuid(),
+                            HotelId = h.Id,
+                            BookingId = b.Id,
+                            GuestId = b.PrimaryGuestId,
+                            IsWalkIn = false,
+                            InvoiceNumber = $"INV-{pd:yyyyMMdd}-{Guid.NewGuid().ToString()[..6]}",
+                            SubTotal = amount,
+                            TaxAmount = tax,
+                            DiscountAmount = b.DiscountAmount,
+                            AdditionalAmount = b.AdditionalAmount,
+                            TotalAmount = amount + tax - b.DiscountAmount,
+                            PaidAmount = amount + tax - b.DiscountAmount,
+                            VatIncluded = true,
+                            Status = InvoiceStatus.Paid,
+                            CreatedById = anyUser?.Id ?? Guid.NewGuid(),
+                            CreatedAt = pd,
+                            IssuedAt = pd,
+                            PaidAt = pd.AddDays(1),
+                            Notes = "Seeded-BookingInvoice"
+                        };
+                        await dbContext.Set<Invoice>().AddAsync(invoice);
+                        await dbContext.SaveChangesAsync();
+                        await dbContext.Set<InvoiceLine>().AddAsync(new InvoiceLine
+                        {
+                            Id = Guid.NewGuid(),
+                            InvoiceId = invoice.Id,
+                            Description = $"Room charge for {rt.Name}",
+                            Amount = amount,
+                            SourceType = InvoiceLineSourceType.RoomCharge,
+                            SourceId = b.Id
+                        });
+                        await dbContext.SaveChangesAsync();
+                        remaining -= selected.Count;
+                        createdThisDay++;
+                        totalCreated++;
+                    }
+                }
+                while (totalCreated < 20)
+                {
+                    var d = days.OrderBy(_ => Guid.NewGuid()).First();
+                    var rt = roomTypes.OrderBy(_ => Guid.NewGuid()).FirstOrDefault();
+                    if (rt == null) break;
+                    var availableRooms = rooms.Where(r => r.RoomTypeId == rt.Id && !occupancy.Contains($"{r.Id}:{d:yyyyMMdd}")).ToList();
+                    if (availableRooms.Count == 0) { days.Remove(d); if (!days.Any()) break; continue; }
+                    var take = Math.Min(availableRooms.Count, rnd.Next(3, 10));
+                    var selected = availableRooms.OrderBy(_ => Guid.NewGuid()).Take(take).ToList();
+                    var g = new Guest
+                    {
+                        Id = Guid.NewGuid(),
+                        FullName = $"Khách {d:yyyyMMdd}-{rt.Name}",
+                        Phone = $"0{rnd.Next(100000000, 999999999)}",
+                        IdCard = rnd.NextInt64(100000000000, 999999999999).ToString(),
+                        Email = $"seed-{d:yyyyMMdd}-{Guid.NewGuid().ToString()[..8]}@example.com",
+                        HotelId = h.Id
+                    };
+                    await dbContext.Set<Guest>().AddAsync(g);
+                    await dbContext.SaveChangesAsync();
+                    var b = new Booking
+                    {
+                        Id = Guid.NewGuid(),
+                        HotelId = h.Id,
+                        PrimaryGuestId = g.Id,
+                        Status = BookingStatus.Pending,
+                        DepositAmount = 0,
+                        DiscountAmount = 0,
+                        TotalAmount = 0,
+                        LeftAmount = 0,
+                        AdditionalAmount = 0,
+                        PromotionCode = null,
+                        PromotionValue = 0,
+                        CreatedAt = start.AddDays(rnd.Next(0, (d - start).Days + 1)).AddHours(rnd.Next(0, 24)).AddMinutes(rnd.Next(0, 60)),
+                        StartDate = d,
+                        EndDate = d.AddDays(1),
+                        Notes = "Seeded-2Months"
+                    };
+                    await dbContext.Set<Booking>().AddAsync(b);
+                    await dbContext.SaveChangesAsync();
+                    var brt = new BookingRoomType
+                    {
+                        BookingRoomTypeId = Guid.NewGuid(),
+                        BookingId = b.Id,
+                        RoomTypeId = rt.Id,
+                        RoomTypeName = rt.Name,
+                        Capacity = rt.Capacity,
+                        Price = rt.BasePriceFrom,
+                        TotalRoom = selected.Count,
+                        StartDate = d,
+                        EndDate = d.AddDays(1)
+                    };
+                    await dbContext.Set<BookingRoomType>().AddAsync(brt);
+                    await dbContext.SaveChangesAsync();
+                    foreach (var r in selected)
+                    {
+                        var br = new BookingRoom
+                        {
+                            BookingRoomId = Guid.NewGuid(),
+                            BookingRoomTypeId = brt.BookingRoomTypeId,
+                            RoomId = r.Id,
+                            RoomName = r.Number,
+                            StartDate = d,
+                            EndDate = d.AddDays(1),
+                            BookingStatus = BookingRoomStatus.Pending
+                        };
+                        await dbContext.Set<BookingRoom>().AddAsync(br);
+                        await dbContext.SaveChangesAsync();
+                        await dbContext.Set<BookingGuest>().AddAsync(new BookingGuest
+                        {
+                            BookingGuestId = Guid.NewGuid(),
+                            BookingRoomId = br.BookingRoomId,
+                            GuestId = g.Id
+                        });
+                        await dbContext.SaveChangesAsync();
+                        var checkInHour = h.DefaultCheckInTime?.Hour ?? 12;
+                        var checkOutHour = h.DefaultCheckOutTime?.Hour ?? 11;
+                        var checkIn = d.Date.AddHours(checkInHour);
+                        var checkOut = d.AddDays(1).Date.AddHours(checkOutHour);
+                        br.ActualCheckInAt = checkIn;
+                        br.BookingStatus = BookingRoomStatus.CheckedIn;
+                        dbContext.Set<BookingRoom>().Update(br);
+                        await dbContext.SaveChangesAsync();
+                        r.Status = RoomStatus.Occupied;
+                        dbContext.Set<HotelRoom>().Update(r);
+                        await dbContext.SaveChangesAsync();
+                        await dbContext.Set<RoomStatusLog>().AddAsync(new RoomStatusLog
+                        {
+                            Id = Guid.NewGuid(),
+                            HotelId = h.Id,
+                            RoomId = r.Id,
+                            Status = RoomStatus.Occupied,
+                            Timestamp = checkIn
+                        });
+                        await dbContext.SaveChangesAsync();
+                        br.ActualCheckOutAt = checkOut;
+                        br.BookingStatus = BookingRoomStatus.CheckedOut;
+                        dbContext.Set<BookingRoom>().Update(br);
+                        await dbContext.SaveChangesAsync();
+                        r.Status = RoomStatus.Dirty;
+                        dbContext.Set<HotelRoom>().Update(r);
+                        await dbContext.SaveChangesAsync();
+                        await dbContext.Set<RoomStatusLog>().AddAsync(new RoomStatusLog
+                        {
+                            Id = Guid.NewGuid(),
+                            HotelId = h.Id,
+                            RoomId = r.Id,
+                            Status = RoomStatus.Dirty,
+                            Timestamp = checkOut
+                        });
+                        await dbContext.SaveChangesAsync();
+                        r.Status = RoomStatus.Available;
+                        dbContext.Set<HotelRoom>().Update(r);
+                        await dbContext.SaveChangesAsync();
+                        await dbContext.Set<RoomStatusLog>().AddAsync(new RoomStatusLog
+                        {
+                            Id = Guid.NewGuid(),
+                            HotelId = h.Id,
+                            RoomId = r.Id,
+                            Status = RoomStatus.Available,
+                            Timestamp = checkOut
+                        });
+                        await dbContext.SaveChangesAsync();
+                        occupancy.Add($"{r.Id}:{d:yyyyMMdd}");
+                    }
+                    var amount = rt.BasePriceFrom * selected.Count;
+                    b.TotalAmount = amount;
+                    b.LeftAmount = 0;
+                    b.Status = BookingStatus.Completed;
+                    dbContext.Set<Booking>().Update(b);
+                    await dbContext.SaveChangesAsync();
+                    var anyUser = await dbContext.Set<AppUser>().FirstOrDefaultAsync();
+                    var vatPct = h.VAT ?? 0;
+                    var tax = Math.Round(amount * (vatPct / 100m), 2);
+                    var invoice = new Invoice
+                    {
+                        Id = Guid.NewGuid(),
+                        HotelId = h.Id,
+                        BookingId = b.Id,
+                        GuestId = b.PrimaryGuestId,
+                        IsWalkIn = false,
+                        InvoiceNumber = $"INV-{d:yyyyMMdd}-{Guid.NewGuid().ToString()[..6]}",
+                        SubTotal = amount,
+                        TaxAmount = tax,
+                        DiscountAmount = b.DiscountAmount,
+                        AdditionalAmount = b.AdditionalAmount,
+                        TotalAmount = amount + tax - b.DiscountAmount,
+                        PaidAmount = amount + tax - b.DiscountAmount,
+                        VatIncluded = true,
+                        Status = InvoiceStatus.Paid,
+                        CreatedById = anyUser?.Id ?? Guid.NewGuid(),
+                        CreatedAt = d,
+                        IssuedAt = d,
+                        PaidAt = d.AddDays(1),
+                        Notes = "Seeded-BookingInvoice"
+                    };
+                    await dbContext.Set<Invoice>().AddAsync(invoice);
+                    await dbContext.SaveChangesAsync();
+                    await dbContext.Set<InvoiceLine>().AddAsync(new InvoiceLine
+                    {
+                        Id = Guid.NewGuid(),
+                        InvoiceId = invoice.Id,
+                        Description = $"Room charge for {rt.Name}",
+                        Amount = amount,
+                        SourceType = InvoiceLineSourceType.RoomCharge,
+                        SourceId = b.Id
+                    });
+                    await dbContext.SaveChangesAsync();
+                    totalCreated++;
+                    if (totalCreated >= 20) break;
+                }
+                if (totalCreated >= 20) break;
+            }
         }
     }
 

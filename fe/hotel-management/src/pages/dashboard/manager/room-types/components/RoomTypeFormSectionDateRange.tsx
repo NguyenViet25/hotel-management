@@ -1,5 +1,5 @@
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import { Box, Divider, Tooltip, Typography } from "@mui/material";
+import { Box, Divider, Tooltip, Typography, Stack } from "@mui/material";
 import dayjs from "dayjs";
 import React from "react";
 import { Controller, type Control } from "react-hook-form";
@@ -27,9 +27,69 @@ const RoomTypeFormSectionDateRange: React.FC<DateRangeSectionProps> = ({
           <InfoOutlinedIcon fontSize="small" color="action" />
         </Tooltip>
       </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Ví dụ: Lễ/Tết hoặc mùa cao điểm.
-      </Typography>
+      <Stack direction="column" spacing={1.25} sx={{ mb: 2 }}>
+        <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Box
+              sx={{
+                width: 16,
+                height: 16,
+                borderRadius: 0.5,
+                backgroundColor: (theme) => theme.palette.primary.light,
+                border: (theme) => `1px solid ${theme.palette.primary.main}`,
+              }}
+            />
+            <Typography variant="body2" color="text.secondary">
+              Giá ngày thường (T2-T5)
+            </Typography>
+          </Stack>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Box
+              sx={{
+                width: 16,
+                height: 16,
+                borderRadius: 0.5,
+                backgroundColor: (theme) => theme.palette.secondary.light,
+                border: (theme) => `1px solid ${theme.palette.secondary.main}`,
+              }}
+            />
+            <Typography variant="body2" color="text.secondary">
+              Giá cuối tuần (T6-CN)
+            </Typography>
+          </Stack>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Box
+              sx={{
+                width: 16,
+                height: 16,
+                borderRadius: 0.5,
+                backgroundColor: (theme) => theme.palette.warning.light,
+                border: (theme) => `1px solid ${theme.palette.warning.main}`,
+              }}
+            />
+            <Typography variant="body2" color="text.secondary">
+              Giá ghi đè
+            </Typography>
+          </Stack>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Box
+              sx={{
+                width: 16,
+                height: 16,
+                borderRadius: 0.5,
+                backgroundColor: (theme) => theme.palette.error.light,
+                border: (theme) => `1px solid ${theme.palette.error.main}`,
+              }}
+            />
+            <Typography variant="body2" color="text.secondary">
+              Ngày cao điểm
+            </Typography>
+          </Stack>
+        </Stack>
+        <Typography variant="body2" color="red">
+          * Không thể ghi đè ngày trong quá khứ
+        </Typography>
+      </Stack>
       <Divider sx={{ mb: 2 }} />
       <Box sx={{ mb: 2 }}>
         <Controller

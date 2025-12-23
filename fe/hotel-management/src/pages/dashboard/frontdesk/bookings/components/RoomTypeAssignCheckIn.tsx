@@ -88,6 +88,11 @@ const RoomTypeBlock: React.FC<{
 }> = ({ booking, rt, onRefresh }) => {
   const { hotelId } = useStore<StoreState>((s) => s);
 
+  const isDisabled =
+    booking.status === EBookingStatus.Completed ||
+    booking.status === EBookingStatus.Cancelled ||
+    booking.status === EBookingStatus.VisitorMissed;
+
   const [assignOpen, setAssignOpen] = useState(false);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -283,7 +288,9 @@ const RoomTypeBlock: React.FC<{
                 variant="outlined"
                 onClick={() => setAssignOpen(true)}
                 disabled={
-                  remaining === 0 || booking.status !== EBookingStatus.Confirmed
+                  isDisabled ||
+                  remaining === 0 ||
+                  booking.status !== EBookingStatus.Confirmed
                 }
               >
                 Chọn phòng
@@ -324,8 +331,9 @@ const RoomTypeBlock: React.FC<{
                                   setChangeRoomOpen(true);
                                 }}
                                 disabled={
-                                  br.actualCheckOutAt !== undefined &&
-                                  br.actualCheckOutAt !== null
+                                  isDisabled ||
+                                  (br.actualCheckOutAt !== undefined &&
+                                    br.actualCheckOutAt !== null)
                                 }
                                 aria-label="Đổi cả phòng"
                               >
@@ -432,8 +440,9 @@ const RoomTypeBlock: React.FC<{
                               size="small"
                               color="primary"
                               disabled={
-                                br.actualCheckOutAt !== undefined &&
-                                br.actualCheckOutAt !== null
+                                isDisabled ||
+                                (br.actualCheckOutAt !== undefined &&
+                                  br.actualCheckOutAt !== null)
                               }
                               onClick={() => {
                                 setActiveRoom(br);
@@ -498,8 +507,9 @@ const RoomTypeBlock: React.FC<{
                                     setEditActualInOpen(true);
                                   }}
                                   disabled={
-                                    br.actualCheckOutAt !== undefined &&
-                                    br.actualCheckOutAt !== null
+                                    isDisabled ||
+                                    (br.actualCheckOutAt !== undefined &&
+                                      br.actualCheckOutAt !== null)
                                   }
                                 >
                                   <Edit fontSize="small" />
@@ -534,8 +544,9 @@ const RoomTypeBlock: React.FC<{
                                     setEditActualOutOpen(true);
                                   }}
                                   disabled={
-                                    br.actualCheckOutAt !== undefined &&
-                                    br.actualCheckOutAt !== null
+                                    isDisabled ||
+                                    (br.actualCheckOutAt !== undefined &&
+                                      br.actualCheckOutAt !== null)
                                   }
                                 >
                                   <Edit fontSize="small" />
@@ -555,6 +566,7 @@ const RoomTypeBlock: React.FC<{
                           editable={
                             br.bookingStatus != BookingRoomStatus.CheckedOut
                           }
+                          isDisabled={isDisabled}
                           onEdit={(idx, gi) =>
                             openEditGuest(br.bookingRoomId, idx, {
                               ...gi,
@@ -616,8 +628,9 @@ const RoomTypeBlock: React.FC<{
                               setCheckInOpen(true);
                             }}
                             disabled={
-                              br.actualCheckInAt !== undefined &&
-                              br.actualCheckInAt !== null
+                              isDisabled ||
+                              (br.actualCheckInAt !== undefined &&
+                                br.actualCheckInAt !== null)
                             }
                           >
                             Check in
@@ -636,6 +649,7 @@ const RoomTypeBlock: React.FC<{
                               }
                             }}
                             disabled={
+                              isDisabled ||
                               !br.actualCheckInAt ||
                               br.actualCheckInAt === null ||
                               br.actualCheckInAt === undefined ||

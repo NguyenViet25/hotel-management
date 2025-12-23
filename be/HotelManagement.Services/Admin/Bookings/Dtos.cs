@@ -68,6 +68,9 @@ public class CreateBookingDto
     [Required]
     public List<CreateBookingRoomTypeDto> RoomTypes { get; set; } = new();
     public string? Notes { get; set; }
+
+    public DateTime? StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
 }
 
 public class UpdateBookingDto : CreateBookingDto
@@ -95,6 +98,8 @@ public class BookingGuestDto
     public string? IdCardFrontImageUrl { get; set; }
     public string? IdCardBackImageUrl { get; set; }
 }
+
+public record BookingRoomStatusDto(BookingRoomStatus Status, DateTime StartDate);
 
 public class BookingRoomDto
 {
@@ -172,7 +177,7 @@ public class RoomTimelineSegmentDto
 {
     public DateTime Start { get; set; }
     public DateTime End { get; set; }
-    public string Status { get; set; } = string.Empty; // Available/Booked
+    public RoomStatus Status { get; set; }
     public Guid? BookingId { get; set; }
 }
 

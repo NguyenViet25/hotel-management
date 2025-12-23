@@ -385,6 +385,7 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
     setCreateOpen(true);
   };
   const openEdit = (room: RoomDto) => {
+    if (!allowAddNew) return;
     setEditingRoom(room);
     setEditOpen(true);
   };

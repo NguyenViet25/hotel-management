@@ -61,6 +61,7 @@ export interface DataTableProps<T> {
   onSearch?: (searchText: string) => void;
   borderRadius?: number;
   renderActions?: (row: T) => React.ReactNode;
+  disableEdit?: (row: T) => boolean;
 }
 
 const DataTable = <T extends object>({
@@ -82,6 +83,7 @@ const DataTable = <T extends object>({
   sortDirection = "asc",
   borderRadius = 2,
   renderActions,
+  disableEdit = (row: T) => false,
 }: DataTableProps<T>) => {
   const handleSort = (property: string) => {
     if (onSort) {
@@ -254,6 +256,7 @@ const DataTable = <T extends object>({
                                 color="primary"
                                 onClick={() => onEdit(row)}
                                 aria-label="edit"
+                                disabled={disableEdit(row)}
                               >
                                 <EditIcon fontSize="small" />
                               </IconButton>

@@ -5,6 +5,7 @@ using HotelManagement.Services.Admin.Bookings.Dtos;
 using HotelManagement.Services.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
+using System.Linq;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace HotelManagement.Services.Admin.Bookings;
@@ -81,6 +82,8 @@ public class BookingsService(
                 LeftAmount = dto.Left,
                 CreatedAt = DateTime.Now,
                 Notes = dto.Notes,
+                StartDate = dto.StartDate,
+                EndDate = dto.EndDate
             };
             await _bookingRepo.AddAsync(booking);
             await _bookingRepo.SaveChangesAsync();
@@ -351,9 +354,9 @@ public class BookingsService(
             if (query.Status.HasValue)
                 q = q.Where(b => b.Status == query.Status.Value);
             if (query.StartDate.HasValue)
-                q = q.Where(b => b.CreatedAt >= query.StartDate.Value);
+                q = q.Where(b => b.StartDate >= query.StartDate.Value);
             if (query.EndDate.HasValue)
-                q = q.Where(b => b.CreatedAt <= query.EndDate.Value);
+                q = q.Where(b => b.EndDate <= query.EndDate.Value);
             if (!string.IsNullOrWhiteSpace(query.GuestName))
             {
                 var gn = query.GuestName!.Trim();
@@ -711,6 +714,9 @@ public class BookingsService(
                 }
 
             }
+
+            booking.StartDate = dto.StartDate;
+            booking.EndDate = dto.EndDate;
             booking.TotalAmount = dto.Total;
             booking.LeftAmount = dto.Left;
             booking.DiscountAmount = dto.Discount;
@@ -881,6 +887,27 @@ public class BookingsService(
         {
             return ApiResponse<List<CallLogDto>>.Fail($"Error retrieving call logs: {ex.Message}");
         }
+    }
+
+    public async Task<int> GetBookedRoomByDateAsync(Guid hotelId, DateTime date)
+    {
+        var bookings = await _bookingRepo.Query()
+            .Where(x => x.HotelId == hotelId)
+            .Where(x => x.StartDate <= date && date <= x.EndDate)
+            .Where(x => x.Status != BookingStatus.Cancelled && x.Status != BookingStatus.Missing).ToListAsync();
+
+        var sum = 0;
+        foreach(var item in bookings)
+        {
+            sum += await _bookingRoomTypeRepo.Query().Where(x => x.BookingId == item.Id).Select(x => x.TotalRoom).SumAsync();
+        }
+
+        return sum;
+    }
+
+    public async Task<int> GetTotalRoomAsync(Guid hotelId)
+    {
+        return await _roomRepo.Query().CountAsync(x => x.HotelId == hotelId);
     }
 
     public async Task<ApiResponse<List<RoomMapItemDto>>> GetRoomMapAsync(RoomMapQueryDto query)
@@ -1144,7 +1171,7 @@ public class BookingsService(
             {
                 Start = start,
                 End = end,
-                Status = "Booked",
+                Status = RoomStatus.Occupied,
                 BookingId = null
             });
         }
@@ -1154,7 +1181,7 @@ public class BookingsService(
             {
                 Start = start,
                 End = end,
-                Status = "Available",
+                Status = RoomStatus.Available,
                 BookingId = null
             });
         }
@@ -2002,5 +2029,44 @@ public class BookingsService(
             FeeAmount = Math.Round(feeAmount, 2)
         };
         return ApiResponse<EarlyCheckoutFeeResponseDto>.Ok(resp);
+    }
+
+    public async Task<bool> AutoCancelBookingAsync(Guid hotelId)
+    {
+        try
+        {
+            var q = _bookingRepo.Query()
+                .Include(x => x.PrimaryGuest)
+                .Include(b => b.BookingRoomTypes)
+                .ThenInclude(rt => rt.BookingRooms)
+                .Where(x => x.HotelId == hotelId)
+                .Where(x => x.Status != BookingStatus.Completed && x.Status != BookingStatus.Cancelled);
+
+            var items = await q.ToListAsync();
+            foreach (var item in items)
+            {
+                var roomTypes = await _bookingRoomTypeRepo.Query().Where(x => x.BookingId == item.Id).ToListAsync();
+                foreach (var rt in roomTypes)
+                {
+                    var bookingRooms = await _bookingRoomRepo.Query()
+                        .Where(x => x.BookingRoomTypeId == rt.BookingRoomTypeId)
+                        .Select(x => new BookingRoomStatusDto(x.BookingStatus, rt.StartDate))
+                        .ToListAsync();
+
+                    if (bookingRooms.Any(x => x.StartDate.Date.AddDays(1).AddTicks(-1) <= DateTime.Now && x.Status == BookingRoomStatus.Pending))
+                    {
+                        item.Status = BookingStatus.Missing;
+                        await _bookingRepo.UpdateAsync(item);
+                        await _bookingRepo.SaveChangesAsync();
+                    }
+                }
+
+            }
+            return true;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
     }
 }

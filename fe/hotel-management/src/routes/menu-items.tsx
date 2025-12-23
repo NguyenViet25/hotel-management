@@ -46,6 +46,7 @@ export const menuItems = {
     { title: "Loại phòng", path: "/manager/room-types", icon: <Category /> },
     { title: "Phòng", path: "/manager/rooms", icon: <Bed /> },
     { title: "Đặt phòng", path: "/manager/bookings", icon: <HotelIcon /> },
+    { title: "Đặt món", path: "/manager/orders", icon: <RestaurantIcon /> },
     { title: "Khách hàng", path: "/manager/guests", icon: <People /> },
     {
       title: "Mã giảm giá",

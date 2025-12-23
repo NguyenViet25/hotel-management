@@ -1,4 +1,5 @@
-﻿using HotelManagement.Services.Auth;
+﻿using HotelManagement.Services.Admin.Bookings;
+using HotelManagement.Services.Auth;
 using HotelManagement.Services.Auth.Dtos;
 using HotelManagement.Services.Common;
 using Microsoft.AspNetCore.Authorization;
@@ -9,9 +10,10 @@ namespace HotelManagement.Api.Controllers;
 [ApiController]
 [Route("api/auth")]
 [AllowAnonymous]
-public class AuthController(IAuthService auth) : ControllerBase
+public class AuthController(IAuthService auth, IBookingsService bookingsService) : ControllerBase
 {
     private readonly IAuthService _auth = auth;
+    private readonly IBookingsService _bookingsService = bookingsService;
 
     [HttpPost("login")]
     [AllowAnonymous]
@@ -32,7 +34,16 @@ public class AuthController(IAuthService auth) : ControllerBase
             ));
         }
 
-        if (string.IsNullOrEmpty(result.AccessToken)) return Unauthorized(ApiResponse<LoginResponseDto>.Fail("Đăng nhập thất bại. Vui lòng kiểm tra thông tin đăng nhập."));
+        var lockedHotel = await _auth.IsHotelLockedAsync(request);
+        if (lockedHotel && request.Username != "admin")
+            return Unauthorized(ApiResponse<LoginResponseDto>.Fail($"Cơ sở của bạn đã ngừng hoạt động."));
+
+        if (string.IsNullOrEmpty(result.AccessToken))
+            return Unauthorized(ApiResponse<LoginResponseDto>.Fail("Đăng nhập thất bại. Vui lòng kiểm tra thông tin đăng nhập."));
+
+        var hotelId = await _auth.GetHotelIdAsync(request);
+        await _bookingsService.AutoCancelBookingAsync(hotelId);
+
         return Ok(ApiResponse<LoginResponseDto>.Ok(result, "Đăng nhập thành công"));
     }
 

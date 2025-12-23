@@ -44,6 +44,8 @@ export interface CreateBookingDto {
   primaryGuest: PrimaryGuestInfoDto;
   roomTypes: CreateBookingRoomTypeDto[];
   notes?: string;
+  startDate: string; // ISO string
+  endDate: string; // ISO string
 }
 
 export interface UpdateBookingDto extends CreateBookingDto {}
@@ -176,6 +178,7 @@ export enum EBookingStatus {
   Confirmed = 1,
   Completed = 3,
   Cancelled = 4,
+  VisitorMissed = 5,
 }
 
 export interface CheckInDto {
@@ -622,7 +625,9 @@ const bookingsApi = {
 
   async cancelNoShows(
     payload: NoShowCancelRequestDto
-  ): Promise<ApiResponse<{ cancelledRooms: number; affectedBookings: number }>> {
+  ): Promise<
+    ApiResponse<{ cancelledRooms: number; affectedBookings: number }>
+  > {
     const res = await axios.post(`/bookings/no-shows/cancel`, payload);
     return res.data;
   },

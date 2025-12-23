@@ -15,6 +15,7 @@ import BadgeIcon from "@mui/icons-material/Badge";
 import PhoneIcon from "@mui/icons-material/Phone";
 
 import UploadCCCD from "./UploadCCCD";
+import { toast } from "react-toastify";
 
 type GuestForm = {
   name: string;
@@ -65,6 +66,12 @@ const GuestDialog: React.FC<Props> = ({ open, initial, onClose, onSubmit }) => {
 
   const submit = () => {
     if (!allRequiredFilled || !isPhoneValid) return;
+
+    if (!guest.idCardFrontImageUrl) {
+      toast.warning("Vui lòng upload ảnh mặt trước");
+      return;
+    }
+
     onSubmit(guest);
   };
 
