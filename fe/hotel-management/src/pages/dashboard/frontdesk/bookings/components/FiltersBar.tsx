@@ -89,7 +89,7 @@ const FiltersBar: React.FC<FiltersBarProps> = ({
         <DatePicker
           label="Đến ngày"
           value={toDate}
-          maxDate={dayjs(fromDate)}
+          minDate={dayjs(fromDate)}
           onChange={onToDateChange}
           slotProps={{ textField: { size: "small", sx: { minWidth: 160 } } }}
         />

@@ -893,7 +893,7 @@ public class BookingsService(
     {
         var bookings = await _bookingRepo.Query()
             .Where(x => x.HotelId == hotelId)
-            .Where(x => x.CreatedAt.Day == date.Day)
+            .Where(x => x.StartDate <= date && date <= x.EndDate)
             .Where(x => x.Status != BookingStatus.Cancelled && x.Status != BookingStatus.Missing).ToListAsync();
 
         var sum = 0;

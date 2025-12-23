@@ -181,6 +181,8 @@ const BookingFormModal: React.FC<Props> = ({
     Record<number, number>
   >({});
   const [itemOpen, setItemOpen] = useState<Record<number, boolean>>({});
+  const [calViewStart, setCalViewStart] = useState<Date | null>(null);
+  const [calViewEnd, setCalViewEnd] = useState<Date | null>(null);
 
   useEffect(() => {
     if (roomTypes.length > 0 && mode === "create") {
@@ -552,6 +554,8 @@ const BookingFormModal: React.FC<Props> = ({
         total: values.totalAmount || 0,
         left: (values.totalAmount || 0) - (values.depositAmount || 0) - 0,
         notes: values.notes || undefined,
+        startDate: dayjs(globalStart).format("YYYY-MM-DD"),
+        endDate: dayjs(globalEnd).format("YYYY-MM-DD"),
         roomTypes: values.roomTypes.map((rt) => ({
           roomTypeId: rt.roomId,
           price: rt.price || 0,
@@ -864,71 +868,235 @@ const BookingFormModal: React.FC<Props> = ({
                         availableRooms={availabilityByIndex[idx] ?? 0}
                       />
 
-                      {quotesByIndex[idx]?.items?.length ? (
-                        <Box
-                          sx={{
-                            mt: 2,
-                            "& .fc .price-event": {
-                              backgroundColor: (theme) =>
-                                theme.palette.primary.light,
-                              border: "none",
-                              color: (theme) =>
-                                theme.palette.primary.contrastText,
-                              padding: "2px 6px",
+                      <Box
+                        sx={{
+                          mt: 2,
+                          mb: 1,
+                          "& .fc .price-event": {
+                            backgroundColor: (theme) =>
+                              theme.palette.primary.light,
+                            border: "none",
+                            color: (theme) =>
+                              theme.palette.primary.contrastText,
+                            padding: "2px 6px",
+                            borderRadius: 12,
+                            fontSize: "0.75rem",
+                            display: "inline-block",
+                            marginTop: "2px",
+                          },
+                          "& .fc .price-event.weekend": {
+                            backgroundColor: (theme) =>
+                              theme.palette.secondary.light,
+                          },
+                          "& .fc .price-event.override": {
+                            backgroundColor: (theme) =>
+                              theme.palette.warning.light,
+                            color: (theme) =>
+                              theme.palette.warning.contrastText,
+                          },
+                          "& .fc-daygrid-day": {
+                            cursor: "pointer",
+                          },
+                          "& .fc-daygrid-day.fc-day-today": {
+                            backgroundColor: (theme) =>
+                              theme.palette.action.hover,
+                          },
+                          "& .fc-daygrid-day.selected-date .fc-daygrid-day-number":
+                            {
+                              border: (theme) =>
+                                `2px solid ${theme.palette.primary.main}`,
                               borderRadius: 12,
-                              fontSize: "0.75rem",
+                              padding: "2px 6px",
+                              lineHeight: 1.2,
                               display: "inline-block",
-                              marginTop: "2px",
                             },
-                            "& .fc .price-event.weekend": {
-                              backgroundColor: (theme) =>
-                                theme.palette.secondary.light,
-                            },
-                            "& .fc .price-event.weekday": {
-                              backgroundColor: (theme) =>
-                                theme.palette.primary.light,
-                            },
-                            "& .fc-daygrid-day": {
-                              cursor: "pointer",
-                            },
-                            "& .fc-daygrid-day.fc-day-today": {
-                              backgroundColor: (theme) =>
-                                theme.palette.action.hover,
-                            },
-                          }}
+                        }}
+                      >
+                        <Stack
+                          direction="row"
+                          spacing={2}
+                          alignItems="center"
+                          flexWrap="wrap"
+                          sx={{ mb: 1 }}
                         >
-                          <FullCalendar
-                            plugins={[dayGridPlugin, interactionPlugin]}
-                            locales={[viLocale]}
-                            locale="vi"
-                            initialView="dayGridMonth"
-                            initialDate={dayjs(globalStart).toDate()}
-                            selectable={false}
-                            dayMaxEvents
-                            events={quotesByIndex[idx]!.items.map((it) => {
-                              const dow = dayjs(it.date).day();
-                              const weekend = dow === 5 || dow === 6;
-                              return {
-                                id: it.date,
-                                start: it.date,
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            alignItems="center"
+                          >
+                            <Box
+                              sx={{
+                                width: 16,
+                                height: 16,
+                                borderRadius: 0.5,
+                                backgroundColor: (theme) =>
+                                  theme.palette.primary.light,
+                                border: (theme) =>
+                                  `1px solid ${theme.palette.primary.main}`,
+                              }}
+                            />
+                            <Typography variant="body2" color="text.secondary">
+                              Giá ngày thường (T2-T5)
+                            </Typography>
+                          </Stack>
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            alignItems="center"
+                          >
+                            <Box
+                              sx={{
+                                width: 16,
+                                height: 16,
+                                borderRadius: 0.5,
+                                backgroundColor: (theme) =>
+                                  theme.palette.secondary.light,
+                                border: (theme) =>
+                                  `1px solid ${theme.palette.secondary.main}`,
+                              }}
+                            />
+                            <Typography variant="body2" color="text.secondary">
+                              Giá cuối tuần (T6-CN)
+                            </Typography>
+                          </Stack>
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            alignItems="center"
+                          >
+                            <Box
+                              sx={{
+                                width: 16,
+                                height: 16,
+                                borderRadius: 0.5,
+                                backgroundColor: (theme) =>
+                                  theme.palette.warning.light,
+                                border: (theme) =>
+                                  `1px solid ${theme.palette.warning.main}`,
+                              }}
+                            />
+                            <Typography variant="body2" color="text.secondary">
+                              Giá ghi đè
+                            </Typography>
+                          </Stack>
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            alignItems="center"
+                          >
+                            <Box
+                              sx={{
+                                width: 16,
+                                height: 16,
+                                borderRadius: 0.5,
+                                backgroundColor: "transparent",
+                                border: (theme) =>
+                                  `2px solid ${theme.palette.primary.main}`,
+                              }}
+                            />
+                            <Typography variant="body2" color="text.secondary">
+                              Ngày đã chọn
+                            </Typography>
+                          </Stack>
+                        </Stack>
+                        <FullCalendar
+                          plugins={[dayGridPlugin, interactionPlugin]}
+                          locales={[viLocale]}
+                          locale="vi"
+                          initialView="dayGridMonth"
+                          initialDate={dayjs(globalStart).toDate()}
+                          selectable={false}
+                          dayMaxEvents
+                          events={(() => {
+                            const rt = roomTypes.find(
+                              (t) => t.id === roomsWatch[idx]?.roomId
+                            );
+                            if (!rt || !calViewStart || !calViewEnd) return [];
+                            const start = dayjs(calViewStart);
+                            const end = dayjs(calViewEnd);
+                            const map = new Map<string, number>();
+                            (rt.priceByDates || []).forEach((p: any) => {
+                              map.set(
+                                dayjs(p.date).format("YYYY-MM-DD"),
+                                p.price
+                              );
+                            });
+                            const evs: any[] = [];
+                            for (
+                              let d = start;
+                              d.isBefore(end) || d.isSame(end, "day");
+                              d = d.add(1, "day")
+                            ) {
+                              const dateStr = d.format("YYYY-MM-DD");
+                              const weekend = d.day() === 5 || d.day() === 6;
+                              const base = weekend
+                                ? rt.priceTo || roomsWatch[idx]?.price || 0
+                                : rt.priceFrom || roomsWatch[idx]?.price || 0;
+                              const price = map.has(dateStr)
+                                ? map.get(dateStr) || 0
+                                : base;
+                              evs.push({
+                                id: dateStr,
+                                start: dateStr,
                                 allDay: true,
-                                title: `₫${(it.price || 0).toLocaleString(
+                                title: `₫${Number(price).toLocaleString(
                                   "vi-VN"
                                 )}`,
                                 className: `price-event ${
                                   weekend ? "weekend" : "weekday"
+                                } ${
+                                  Number(price) !== Number(base)
+                                    ? "override"
+                                    : ""
                                 }`,
-                              };
-                            })}
-                            headerToolbar={{
-                              left: "prev,next today",
-                              center: "title",
-                              right: "",
-                            }}
-                            height="auto"
-                          />
-                        </Box>
-                      ) : null}
+                              });
+                            }
+                            return evs;
+                          })()}
+                          datesSet={(arg: any) => {
+                            const s = dayjs(arg.view.activeStart);
+                            const e = dayjs(arg.view.activeEnd).subtract(
+                              1,
+                              "day"
+                            );
+                            const startChanged =
+                              !calViewStart ||
+                              !dayjs(calViewStart).isSame(s, "day");
+                            const endChanged =
+                              !calViewEnd ||
+                              !dayjs(calViewEnd).isSame(e, "day");
+                            if (startChanged && endChanged) {
+                              setCalViewStart(s.toDate());
+                              setCalViewEnd(e.toDate());
+                            }
+                          }}
+                          dayCellClassNames={(arg: any) => {
+                            const dateStr = dayjs(arg.date).format(
+                              "YYYY-MM-DD"
+                            );
+                            if (globalStart && globalEnd) {
+                              const s = dayjs(globalStart).startOf("day");
+                              const e = dayjs(globalEnd)
+                                .subtract(1, "day")
+                                .startOf("day");
+                              const d = dayjs(dateStr).startOf("day");
+                              if (
+                                (d.isAfter(s) || d.isSame(s)) &&
+                                (d.isBefore(e) || d.isSame(e))
+                              ) {
+                                return ["selected-date"];
+                              }
+                            }
+                            return [];
+                          }}
+                          headerToolbar={{
+                            left: "prev,next today",
+                            center: "title",
+                            right: "",
+                          }}
+                          height="auto"
+                        />
+                      </Box>
                       {quotesByIndex[idx]?.items?.length ? (
                         <>
                           {/* <Stack spacing={0.5} sx={{ mt: 2 }}>

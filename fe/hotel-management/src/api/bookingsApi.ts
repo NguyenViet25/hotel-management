@@ -44,6 +44,8 @@ export interface CreateBookingDto {
   primaryGuest: PrimaryGuestInfoDto;
   roomTypes: CreateBookingRoomTypeDto[];
   notes?: string;
+  startDate: string; // ISO string
+  endDate: string; // ISO string
 }
 
 export interface UpdateBookingDto extends CreateBookingDto {}

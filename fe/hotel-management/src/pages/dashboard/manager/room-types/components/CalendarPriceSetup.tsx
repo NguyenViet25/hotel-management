@@ -19,6 +19,7 @@ import roomTypesApi, {
   type RoomTypePriceHistoryItem,
 } from "../../../../../api/roomTypesApi";
 import SetPriceDialog from "./SetPriceDialog";
+import type { DatesSetArg } from "@fullcalendar/core/index.js";
 
 type PriceMap = Record<string, number>;
 
@@ -27,8 +28,6 @@ export interface CalendarPriceSetupProps {
   onChangePriceMap?: (map: PriceMap) => void;
   roomTypeId?: string;
 }
-
-const toKey = (d: Date) => dayjs(d).format("YYYY-MM-DD");
 
 const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
   value,
@@ -60,21 +59,51 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
   const [hoverOnPopover, setHoverOnPopover] = useState(false);
   const [peakDates, setPeakDates] = useState<Set<string>>(new Set());
   const [monthKey, setMonthKey] = useState<string | null>(null);
+  const [viewStart, setViewStart] = useState<Date | null>(null);
+  const [viewEnd, setViewEnd] = useState<Date | null>(null);
+  const [roomTypeBase, setRoomTypeBase] = useState<{
+    priceFrom: number;
+    priceTo: number;
+  } | null>(null);
+  const [eventsState, setEventsState] = useState<any[]>([]);
 
-  const events: any[] = useMemo(
-    () =>
-      Object.entries(priceMap).map(([date, price]) => ({
-        id: date,
-        start: date,
+  const rebuildEventsForMonth = (startDate: Date, endDate: Date) => {
+    if (!roomTypeBase) {
+      setEventsState([]);
+      return;
+    }
+    console.log("render");
+    const start = dayjs(startDate);
+    const end = dayjs(endDate);
+    const evs: any[] = [];
+    for (
+      let d = start;
+      d.isBefore(end) || d.isSame(end, "day");
+      d = d.add(1, "day")
+    ) {
+      const dateStr = d.format("YYYY-MM-DD");
+      const weekend = d.day() === 5 || d.day() === 6;
+      const base = weekend
+        ? roomTypeBase.priceTo || 0
+        : roomTypeBase.priceFrom || 0;
+      const hasSet = priceMap[dateStr] !== undefined;
+      const price = hasSet ? priceMap[dateStr] : base;
+      evs.push({
+        id: dateStr,
+        start: dateStr,
         allDay: true,
-        title: `₫${price.toLocaleString("vi-VN")}`,
-        className: "price-event",
-      })),
-    [priceMap]
-  );
+        title: `₫${Number(price).toLocaleString("vi-VN")}`,
+        className: `price-event ${weekend ? "weekend" : "weekday"} ${
+          hasSet && Number(price) !== Number(base) ? "override" : ""
+        }`,
+      });
+    }
+    setEventsState(evs);
+  };
 
   const handleSelectDate = (arg: any) => {
     const key = arg.format("YYYY-MM-DD");
+    if (dayjs(key).isBefore(dayjs().startOf("day"))) return;
     setSelectedDates((prev) => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
@@ -93,7 +122,9 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
       d.isBefore(endInclusive) || d.isSame(endInclusive, "day");
       d = d.add(1, "day")
     ) {
-      keys.push(d.format("YYYY-MM-DD"));
+      const k = d.format("YYYY-MM-DD");
+      if (dayjs(k).isBefore(dayjs().startOf("day"))) continue;
+      keys.push(k);
     }
     setSelectedDates((prev) => {
       const next = new Set(prev);
@@ -109,14 +140,47 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
     let next: PriceMap = {};
     setPriceMap((prev) => {
       next = { ...prev };
-      selectedDates.forEach((k) => {
-        next[k] = price;
+      Array.from(selectedDates).forEach((k) => {
+        if (!dayjs(k).isBefore(dayjs().startOf("day"))) {
+          next[k] = price;
+        }
       });
       return next;
     });
     setDialogOpen(false);
     if (onChangePriceMap) onChangePriceMap(next);
     setSelectedDates(new Set());
+    if (viewStart && viewEnd) {
+      setEventsState((prev) => {
+        const map = new Map(prev.map((e) => [e.id, e]));
+        Array.from(Object.keys(next)).forEach((k) => {
+          const ev = map.get(k);
+          const dow = dayjs(k).day();
+          const weekend = dow === 5 || dow === 6;
+          const p = next[k];
+          const updated = {
+            id: k,
+            start: k,
+            allDay: true,
+            title: `₫${Number(p).toLocaleString("vi-VN")}`,
+            className: `price-event ${weekend ? "weekend" : "weekday"} ${
+              roomTypeBase
+                ? Number(p) !==
+                  Number(
+                    weekend
+                      ? roomTypeBase.priceTo || 0
+                      : roomTypeBase.priceFrom || 0
+                  )
+                  ? "override"
+                  : ""
+                : ""
+            }`,
+          };
+          if (ev) map.set(k, updated);
+        });
+        return Array.from(map.values());
+      });
+    }
   };
 
   const handleClearPrices = () => {
@@ -130,6 +194,27 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
     });
     if (onChangePriceMap) onChangePriceMap(next);
     setSelectedDates(new Set());
+    if (viewStart && viewEnd && roomTypeBase) {
+      setEventsState((prev) => {
+        const map = new Map(prev.map((e) => [e.id, e]));
+        selectedDates.forEach((k) => {
+          const dow = dayjs(k).day();
+          const weekend = dow === 5 || dow === 6;
+          const p = weekend
+            ? roomTypeBase.priceTo || 0
+            : roomTypeBase.priceFrom || 0;
+          const updated = {
+            id: k,
+            start: k,
+            allDay: true,
+            title: `₫${Number(p).toLocaleString("vi-VN")}`,
+            className: `price-event ${weekend ? "weekend" : "weekday"}`,
+          };
+          if (map.has(k)) map.set(k, updated);
+        });
+        return Array.from(map.values());
+      });
+    }
   };
 
   React.useEffect(() => {
@@ -137,6 +222,31 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
       setPriceMap(value);
     }
   }, [value]);
+  React.useEffect(() => {
+    const loadRoomType = async () => {
+      if (!roomTypeId) {
+        setRoomTypeBase(null);
+        return;
+      }
+      try {
+        const res = await roomTypesApi.getRoomTypeById(roomTypeId);
+        const rt = (res as any).data || res.data;
+        setRoomTypeBase({
+          priceFrom: rt?.priceFrom ?? 0,
+          priceTo: rt?.priceTo ?? 0,
+        });
+      } catch {
+        setRoomTypeBase(null);
+      }
+    };
+    loadRoomType();
+  }, [roomTypeId]);
+  React.useEffect(() => {
+    if (viewStart && viewEnd && roomTypeBase && monthKey) {
+      rebuildEventsForMonth(viewStart, viewEnd);
+    }
+  }, [monthKey, roomTypeBase]);
+
   React.useEffect(() => {
     const load = async () => {
       if (!hotelId || !monthKey) {
@@ -290,6 +400,13 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
             display: "inline-block",
             marginTop: "2px",
           },
+          "& .fc .price-event.weekend": {
+            backgroundColor: (theme) => theme.palette.secondary.light,
+          },
+          "& .fc .price-event.override": {
+            backgroundColor: (theme) => theme.palette.warning.light,
+            color: (theme) => theme.palette.warning.contrastText,
+          },
           "& .fc-daygrid-day": {
             cursor: "pointer",
           },
@@ -323,18 +440,34 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
           selectable
           selectMirror={false}
           dayMaxEvents
-          events={events}
+          events={eventsState}
           dateClick={handleSelectDate}
           select={handleSelectRange}
-          datesSet={async (arg: any) => {
-            const start = dayjs(arg.start);
-            const month = start.format("YYYY-MM");
+          selectAllow={(info: any) => {
+            const startOk = !dayjs(info.start).isBefore(dayjs().startOf("day"));
+            const endInclusive = dayjs(info.end).subtract(1, "day");
+            const endOk = !endInclusive.isBefore(dayjs().startOf("day"));
+            return startOk && endOk;
+          }}
+          datesSet={async (arg: DatesSetArg) => {
+            const currentStart = dayjs(arg.view.currentStart);
+            const month = currentStart.format("YYYY-MM");
             if (!hotelId) {
               setPeakDates(new Set());
               return;
             }
             if (monthKey !== month) {
               setMonthKey(month);
+            }
+            const activeStart = dayjs(arg.view.activeStart);
+            const activeEnd = dayjs(arg.view.activeEnd).subtract(1, "day");
+            const startChanged =
+              !viewStart || !dayjs(viewStart).isSame(activeStart, "day");
+            const endChanged =
+              !viewEnd || !dayjs(viewEnd).isSame(activeEnd, "day");
+            if (startChanged && endChanged) {
+              setViewStart(activeStart.toDate());
+              setViewEnd(activeEnd.toDate());
             }
           }}
           dayCellDidMount={(info: any) => {
@@ -373,6 +506,8 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
               const classes: string[] = [];
               if (selectedDates.has(key)) classes.push("selected-date");
               if (peakDates.has(key)) classes.push("peak-date");
+              if (dayjs(key).isBefore(dayjs().startOf("day")))
+                classes.push("disabled-date");
               return classes;
             })()
           }
