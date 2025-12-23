@@ -16,6 +16,8 @@ using HotelManagement.Services.Admin.Invoicing.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using System.Linq;
+using HotelManagement.Domain;
 
 namespace HotelManagement.Api.Controllers;
 
@@ -65,7 +67,7 @@ public class DashboardController : ControllerBase
     }
 
     [HttpGet("admin/revenue")]
-    //[Authorize(Roles = "Admin")]
+
     public async Task<ActionResult<ApiResponse<RevenueStatsDto>>> GetAdminTotalRevenue([FromQuery] Guid? hotelId, [FromQuery] DateTime? fromDate, [FromQuery] DateTime? toDate, [FromQuery] string? granularity = "day", [FromQuery] bool includeIssued = true, [FromQuery] bool includePaid = true)
     {
         var uid = CurrentUserId();
@@ -118,7 +120,7 @@ public class DashboardController : ControllerBase
     public record AdminDashboardSummaryDto(int TotalHotels, int TotalUsers, int AuditCountLast24Hours);
 
     [HttpGet("admin/summary")]
-    //[Authorize(Roles = "Admin")]
+
     public async Task<ActionResult<ApiResponse<AdminDashboardSummaryDto>>> GetAdminSummary()
     {
         var uid = CurrentUserId();
@@ -144,7 +146,7 @@ public class DashboardController : ControllerBase
         int OccupiedRoomsCount);
 
     [HttpGet("manager/summary")]
-    //[Authorize(Roles = "Admin")]
+
     public async Task<ActionResult<ApiResponse<ManagerDashboardSummaryDto>>> GetManagerSummary([FromQuery] Guid? hotelId)
     {
         if (hotelId == null || hotelId == Guid.Empty)
@@ -166,7 +168,7 @@ public class DashboardController : ControllerBase
     public record FrontDeskDashboardSummaryDto(int PendingBookings, int ConfirmedBookings, int CompletedBookings);
 
     [HttpGet("frontdesk/summary")]
-    //[Authorize(Roles = "Admin")]
+
     public async Task<ActionResult<ApiResponse<FrontDeskDashboardSummaryDto>>> GetFrontDeskSummary([FromQuery] Guid? hotelId)
     {
         if (hotelId == null || hotelId == Guid.Empty)
@@ -187,7 +189,7 @@ public class DashboardController : ControllerBase
     public record WaiterDashboardSummaryDto(int OpenDiningSessions, int InProgressOrders);
 
     [HttpGet("waiter/summary")]
-    //[Authorize(Roles = "Admin")]
+
     public async Task<ActionResult<ApiResponse<WaiterDashboardSummaryDto>>> GetWaiterSummary([FromQuery] Guid? hotelId)
     {
         if (hotelId == null || hotelId == Guid.Empty)
@@ -203,19 +205,83 @@ public class DashboardController : ControllerBase
         return Ok(ApiResponse<WaiterDashboardSummaryDto>.Ok(dto));
     }
 
+    [HttpGet("rooms/in-use-today")]
+    public async Task<ActionResult<ApiResponse<object>>> GetRoomsInUseToday()
+    {
+        var hotelIdClaim = User.FindFirst("hotelId")?.Value;
+
+        if (hotelIdClaim == null)
+            return BadRequest("HotelId not found in user claims");
+
+        Guid hotelId = Guid.Parse(hotelIdClaim);
+
+        var summary = await _roomStatus.GetRoomStatusSummaryAsync(hotelId);
+        var dto = new { date = DateTime.Today, summary };
+        return Ok(ApiResponse<object>.Ok(dto));
+    }
+
+    public record RoomsUsageSummaryDto(DateTime Date, int TotalRooms, int BookedRooms, double Percentage, bool IsPeakDay);
+
+    [HttpGet("rooms/usage-summary-today")]
+    public async Task<ActionResult<ApiResponse<RoomsUsageSummaryDto>>> GetRoomsUsageSummaryToday([FromQuery] Guid? hotelId)
+    {
+        if (hotelId == null || hotelId == Guid.Empty)
+            return BadRequest(ApiResponse.Fail("HotelId is required"));
+
+        var date = DateTime.Today;
+        var roomMapRes = await _bookings.GetRoomMapAsync(new RoomMapQueryDto { Date = date, HotelId = hotelId.Value });
+        var totalRooms = roomMapRes.Data?.Count ?? 0;
+        var bookedRooms = roomMapRes.Data?.Count(x => x.Timeline.Any(s => s.Status == RoomStatus.Occupied)) ?? 0;
+        var percentage = totalRooms == 0 ? 0 : Math.Round((double)bookedRooms / totalRooms * 100.0, 2);
+        var isPeakDay = percentage >= 75.0;
+
+        var dto = new RoomsUsageSummaryDto(date, totalRooms, bookedRooms, percentage, isPeakDay);
+        return Ok(ApiResponse<RoomsUsageSummaryDto>.Ok(dto));
+    }
+
+    [HttpGet("rooms/usage-summary-by-month")]
+    public async Task<ActionResult<ApiResponse<List<RoomsUsageSummaryDto>>>> GetRoomsUsageSummaryByMonth([FromQuery] int? year, [FromQuery] int? month)
+    {
+        var hotelIdClaim = User.FindFirst("hotelId")?.Value;
+
+        if (hotelIdClaim == null)
+            return BadRequest("HotelId not found in user claims");
+
+        Guid hotelId = Guid.Parse(hotelIdClaim);
+      
+        var now = DateTime.Today;
+        var y = year ?? now.Year;
+        var m = month ?? now.Month;
+        if (m < 1 || m > 12)
+            return BadRequest(ApiResponse.Fail("Invalid month"));
+        var start = new DateTime(y, m, 1);
+        var end = start.AddMonths(1).AddDays(-1);
+        var list = new List<RoomsUsageSummaryDto>();
+        for (var d = start; d <= end; d = d.AddDays(1))
+        {
+            var totalRooms = await _bookings.GetTotalRoomAsync(hotelId);
+            var bookedRooms = await _bookings.GetBookedRoomByDateAsync(hotelId, d);
+            var percentage = totalRooms == 0 ? 0 : Math.Round((double)bookedRooms / totalRooms * 100.0, 2);
+            var isPeakDay = percentage >= 75.0;
+            list.Add(new RoomsUsageSummaryDto(d, totalRooms, bookedRooms, percentage, isPeakDay));
+        }
+        return Ok(ApiResponse<List<RoomsUsageSummaryDto>>.Ok(list));
+    }
+
     public record KitchenDashboardSummaryDto(int PendingOrderItems, int InProgressOrders, int ReadyOrders, int CompletedOrders);
 
     [HttpGet("kitchen/summary")]
-    //[Authorize(Roles = "Admin")]
+
     public async Task<ActionResult<ApiResponse<KitchenDashboardSummaryDto>>> GetKitchenSummary([FromQuery] Guid? hotelId)
     {
         if (hotelId == null || hotelId == Guid.Empty)
             return BadRequest(ApiResponse.Fail("HotelId is required"));
 
-        var orders = await _orders.ListAsync(new OrdersQueryDto { 
-            HotelId = hotelId.Value, 
-            Page = 1, 
-            PageSize = 1000 
+        var orders = await _orders.ListAsync(new OrdersQueryDto
+        {
+            HotelId = hotelId.Value,
+            Page = 1,
+            PageSize = 1000
         });
 
         var dto = new KitchenDashboardSummaryDto(
@@ -230,7 +296,7 @@ public class DashboardController : ControllerBase
     public record HousekeeperDashboardSummaryDto(int AssignedActiveTasks, int DirtyRoomsCount);
 
     [HttpGet("housekeeper/summary")]
-    //[Authorize(Roles = "Admin")]
+
     public async Task<ActionResult<ApiResponse<HousekeeperDashboardSummaryDto>>> GetHousekeeperSummary([FromQuery] Guid? hotelId)
     {
         var uid = CurrentUserId();

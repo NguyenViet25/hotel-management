@@ -1,4 +1,5 @@
 import axios from "./axios";
+import type { ApiResponse, RoomStatusSummaryDto } from "./housekeepingApi";
 
 export interface RoomDto {
   id: string; // GUID as string
@@ -127,6 +128,69 @@ const roomsApi = {
     const res = await axios.get(`/rooms/${id}/can-delete`);
     return res.data;
   },
+
+  async getRoomsInUseToday(): Promise<ApiResponse<RoomsInUseTodayDto>> {
+    const res = await axios.get(`/rooms/in-use-today`);
+    return res.data;
+  },
+
+  async getRoomsUsageSummaryByMonth(
+    month: number,
+    year: number
+  ): Promise<ApiResponse<MonthlyUsageDaySummaryDto[]>> {
+    const qp = new URLSearchParams();
+    qp.append("month", month.toString());
+    qp.append("year", year.toString());
+    const res = await axios.get(
+      `dashboard/rooms/usage-summary-by-month?${qp.toString()}`
+    );
+    return res.data;
+  },
 };
 
 export default roomsApi;
+
+export interface RoomsInUseTodayDto {
+  date: string;
+  summary: RoomStatusSummaryDto;
+}
+
+export function computeOccupancyDemand(summary: RoomStatusSummaryDto) {
+  const total = summary.totalRooms || 0;
+  const occupied = summary.occupiedRooms || 0;
+  const remaining = Math.max(0, total - occupied);
+  const remainingPercent = total > 0 ? (remaining / total) * 100 : 0;
+  const bookedPercent = total > 0 ? (occupied / total) * 100 : 0;
+  let tier = "0-40";
+  if (remainingPercent > 40 && remainingPercent <= 80) tier = "41-80";
+  else if (remainingPercent > 80) tier = "81-100";
+  const peakDay = bookedPercent >= 75;
+  return {
+    totalRooms: total,
+    occupiedRooms: occupied,
+    remainingRooms: remaining,
+    remainingPercent,
+    bookedPercent,
+    tier,
+    peakDay,
+  };
+}
+
+export interface MonthlyUsageDaySummaryDto {
+  date: string;
+  totalRooms?: number;
+  bookedRooms?: number;
+  percentage?: number;
+}
+
+export function isPeakUsageDay(s: MonthlyUsageDaySummaryDto): boolean {
+  const total = s.totalRooms ?? 0;
+  const booked = s.bookedRooms ?? 0;
+  const pct =
+    s.percentage !== undefined
+      ? s.percentage
+      : total > 0
+      ? (booked / total) * 100
+      : 0;
+  return pct >= 75;
+}

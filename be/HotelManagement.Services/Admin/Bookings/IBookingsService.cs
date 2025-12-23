@@ -13,6 +13,8 @@ public interface IBookingsService
     Task<ApiResponse> CompleteAsync(Guid id);
     Task<ApiResponse<CallLogDto>> AddCallLogAsync(Guid bookingId, AddCallLogDto dto);
     Task<ApiResponse<List<RoomMapItemDto>>> GetRoomMapAsync(RoomMapQueryDto query);
+    Task<int> GetBookedRoomByDateAsync(Guid hotelId, DateTime date);
+    Task<int> GetTotalRoomAsync(Guid hotelId);
     Task<ApiResponse<List<BookingDetailsDto>>> ListAsync(BookingsQueryDto query);
     Task<ApiResponse<List<BookingDetailsDto>>> ListActiveAsync(BookingsByHotelQueryDto query);
     Task<ApiResponse<List<CallLogDto>>> GetCallLogsAsync(Guid bookingId);

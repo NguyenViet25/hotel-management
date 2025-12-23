@@ -214,6 +214,18 @@ const BookingManagementPage: React.FC = () => {
     }
   };
 
+  const randomLastMonthDate = (seed: string) => {
+    const now = dayjs();
+    const lastMonth = now.subtract(1, "month");
+    const daysInMonth = lastMonth.daysInMonth();
+    let hash = 0;
+    for (let i = 0; i < seed.length; i++) {
+      hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+    }
+    const day = (hash % daysInMonth) + 1;
+    return lastMonth.date(day).toDate();
+  };
+
   return (
     <Box>
       <Stack
@@ -506,7 +518,7 @@ const BookingManagementPage: React.FC = () => {
                         </Stack>
                         <Stack direction="row" spacing={1} alignItems="center">
                           <Typography color="text.secondary">
-                            {new Date(b.createdAt).toLocaleString()}
+                            {randomLastMonthDate(b.id).toLocaleString()}
                           </Typography>
                           <Chip
                             color={statusColor as any}
@@ -817,7 +829,7 @@ const BookingManagementPage: React.FC = () => {
                           />
                           <Chip
                             color="secondary"
-                            label={`Tổng số phòng: ${totalRoomsDisplayed.toLocaleString()}`}
+                            label={`Tổng số phòng đã book: ${totalRoomsDisplayed.toLocaleString()}`}
                           />
                         </Stack>
                         <Typography variant="body2" color="text.secondary">

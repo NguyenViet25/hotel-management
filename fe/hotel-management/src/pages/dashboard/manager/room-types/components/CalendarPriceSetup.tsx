@@ -13,6 +13,8 @@ import {
 } from "@mui/material";
 import dayjs from "dayjs";
 import React, { useMemo, useState } from "react";
+import roomsApi, { isPeakUsageDay } from "../../../../../api/roomsApi";
+import { useStore } from "../../../../../hooks/useStore";
 import roomTypesApi, {
   type RoomTypePriceHistoryItem,
 } from "../../../../../api/roomTypesApi";
@@ -33,6 +35,7 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
   onChangePriceMap,
   roomTypeId,
 }) => {
+  const { hotelId } = useStore();
   const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
   const [priceMap, setPriceMap] = useState<PriceMap>({});
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -55,6 +58,8 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
     >
   >({});
   const [hoverOnPopover, setHoverOnPopover] = useState(false);
+  const [peakDates, setPeakDates] = useState<Set<string>>(new Set());
+  const [monthKey, setMonthKey] = useState<string | null>(null);
 
   const events: any[] = useMemo(
     () =>
@@ -132,6 +137,36 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
       setPriceMap(value);
     }
   }, [value]);
+  React.useEffect(() => {
+    const load = async () => {
+      if (!hotelId || !monthKey) {
+        setPeakDates(new Set());
+        return;
+      }
+      try {
+        const res = await roomsApi.getRoomsUsageSummaryByMonth(
+          Number(monthKey.split("-")[1]),
+          Number(monthKey.split("-")[0])
+        );
+        const list = ((res as any).data || res.data) ?? [];
+        const set = new Set<string>();
+        for (const it of list) {
+          const dateStr = dayjs(it.date).format("YYYY-MM-DD");
+          const peak = isPeakUsageDay({
+            date: dateStr,
+            totalRooms: it.totalRooms,
+            bookedRooms: it.bookedRooms,
+            percentage: it.percentage,
+          });
+          if (peak) set.add(dateStr);
+        }
+        setPeakDates(set);
+      } catch {
+        setPeakDates(new Set());
+      }
+    };
+    load();
+  }, [hotelId, monthKey]);
 
   const selectedCount = selectedDates.size;
   const handleClearSelection = () => setSelectedDates(new Set());
@@ -258,6 +293,10 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
           "& .fc-daygrid-day": {
             cursor: "pointer",
           },
+          "& .fc-daygrid-day.peak-date .fc-daygrid-day-number": {
+            color: (theme) => theme.palette.error.main,
+            fontWeight: 700,
+          },
           "& .fc-daygrid-day.selected-date": {
             backgroundColor: "transparent",
           },
@@ -275,8 +314,8 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
       >
         <FullCalendar
           plugins={[dayGridPlugin, interactionPlugin]}
-          locales={[viLocale]} // <-- Add all locale definitions here
-          locale="vi" // <-- Force Vietnamese
+          locales={[viLocale]}
+          locale="vi"
           initialView="dayGridMonth"
           selectable
           selectMirror={false}
@@ -284,6 +323,17 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
           events={events}
           dateClick={handleSelectDate}
           select={handleSelectRange}
+          datesSet={async (arg: any) => {
+            const start = dayjs(arg.start);
+            const month = start.format("YYYY-MM");
+            if (!hotelId) {
+              setPeakDates(new Set());
+              return;
+            }
+            if (monthKey !== month) {
+              setMonthKey(month);
+            }
+          }}
           dayCellDidMount={(info: any) => {
             info.el.addEventListener("mouseenter", () => {
               if (hoverHistoryMode)
@@ -315,9 +365,13 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
           noEventsText="Không có sự kiện để hiển thị"
           moreLinkText={(n) => `+${n} thêm`}
           dayCellClassNames={(arg) =>
-            selectedDates.has(dayjs(arg.date).format("YYYY-MM-DD"))
-              ? ["selected-date"]
-              : []
+            (() => {
+              const key = dayjs(arg.date).format("YYYY-MM-DD");
+              const classes: string[] = [];
+              if (selectedDates.has(key)) classes.push("selected-date");
+              if (peakDates.has(key)) classes.push("peak-date");
+              return classes;
+            })()
           }
           height="auto"
         />

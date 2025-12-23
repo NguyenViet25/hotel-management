@@ -5,6 +5,7 @@ using HotelManagement.Services.Admin.Bookings.Dtos;
 using HotelManagement.Services.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
+using System.Linq;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace HotelManagement.Services.Admin.Bookings;
@@ -883,6 +884,27 @@ public class BookingsService(
         }
     }
 
+    public async Task<int> GetBookedRoomByDateAsync(Guid hotelId, DateTime date)
+    {
+        var bookings = await _bookingRepo.Query()
+            .Where(x => x.HotelId == hotelId)
+            .Where(x => x.CreatedAt.Day == date.Day)
+            .Where(x => x.Status != BookingStatus.Cancelled && x.Status != BookingStatus.Missing).ToListAsync();
+
+        var sum = 0;
+        foreach(var item in bookings)
+        {
+            sum += await _bookingRoomTypeRepo.Query().Where(x => x.BookingId == item.Id).Select(x => x.TotalRoom).SumAsync();
+        }
+
+        return sum;
+    }
+
+    public async Task<int> GetTotalRoomAsync(Guid hotelId)
+    {
+        return await _roomRepo.Query().CountAsync(x => x.HotelId == hotelId);
+    }
+
     public async Task<ApiResponse<List<RoomMapItemDto>>> GetRoomMapAsync(RoomMapQueryDto query)
     {
         try
@@ -1144,7 +1166,7 @@ public class BookingsService(
             {
                 Start = start,
                 End = end,
-                Status = "Booked",
+                Status = RoomStatus.Occupied,
                 BookingId = null
             });
         }
@@ -1154,7 +1176,7 @@ public class BookingsService(
             {
                 Start = start,
                 End = end,
-                Status = "Available",
+                Status = RoomStatus.Available,
                 BookingId = null
             });
         }
@@ -2037,7 +2059,7 @@ public class BookingsService(
             }
             return true;
         }
-        catch (Exception )
+        catch (Exception)
         {
             return false;
         }
