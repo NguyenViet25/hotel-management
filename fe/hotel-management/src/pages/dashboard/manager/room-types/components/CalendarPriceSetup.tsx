@@ -1,25 +1,24 @@
 import viLocale from "@fullcalendar/core/locales/vi";
 import dayGridPlugin from "@fullcalendar/daygrid";
-import interactionPlugin from "@fullcalendar/interaction";
+import interactionPlugin, {
+  type DateClickArg,
+} from "@fullcalendar/interaction";
 import FullCalendar from "@fullcalendar/react";
-import {
-  Box,
-  Button,
-  FormControlLabel,
-  Popover,
-  Stack,
-  Switch,
-  Typography,
-} from "@mui/material";
+import { Box, Button, Popover, Stack, Typography } from "@mui/material";
 import dayjs from "dayjs";
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import roomsApi, { isPeakUsageDay } from "../../../../../api/roomsApi";
 import { useStore } from "../../../../../hooks/useStore";
 import roomTypesApi, {
   type RoomTypePriceHistoryItem,
 } from "../../../../../api/roomTypesApi";
 import SetPriceDialog from "./SetPriceDialog";
-import type { DatesSetArg } from "@fullcalendar/core/index.js";
+import type {
+  DateSelectArg,
+  DatesSetArg,
+  EventInput,
+} from "@fullcalendar/core/index.js";
+import { History } from "@mui/icons-material";
 
 type PriceMap = Record<string, number>;
 
@@ -38,7 +37,6 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
   const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
   const [priceMap, setPriceMap] = useState<PriceMap>({});
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [hoverHistoryMode, setHoverHistoryMode] = useState(false);
   const [hoverAnchorEl, setHoverAnchorEl] = useState<HTMLElement | null>(null);
   const [hoverDateStr, setHoverDateStr] = useState<string | null>(null);
   const [hoverLoading, setHoverLoading] = useState(false);
@@ -56,7 +54,6 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
       }
     >
   >({});
-  const [hoverOnPopover, setHoverOnPopover] = useState(false);
   const [peakDates, setPeakDates] = useState<Set<string>>(new Set());
   const [monthKey, setMonthKey] = useState<string | null>(null);
   const [viewStart, setViewStart] = useState<Date | null>(null);
@@ -65,7 +62,13 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
     priceFrom: number;
     priceTo: number;
   } | null>(null);
-  const [eventsState, setEventsState] = useState<any[]>([]);
+  const [eventsState, setEventsState] = useState<EventInput[]>([]);
+  const basePriceForDate = (dateStr: string | null) => {
+    if (!dateStr || !roomTypeBase) return 0;
+    const dow = dayjs(dateStr).day();
+    const weekend = dow === 5 || dow === 6;
+    return weekend ? roomTypeBase.priceTo || 0 : roomTypeBase.priceFrom || 0;
+  };
 
   const rebuildEventsForMonth = (startDate: Date, endDate: Date) => {
     if (!roomTypeBase) {
@@ -75,7 +78,7 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
     console.log("render");
     const start = dayjs(startDate);
     const end = dayjs(endDate);
-    const evs: any[] = [];
+    const evs: EventInput[] = [];
     for (
       let d = start;
       d.isBefore(end) || d.isSame(end, "day");
@@ -101,18 +104,9 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
     setEventsState(evs);
   };
 
-  const handleSelectDate = (arg: any) => {
-    const key = arg.format("YYYY-MM-DD");
-    if (dayjs(key).isBefore(dayjs().startOf("day"))) return;
-    setSelectedDates((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
-  };
+  const handleSelectDate = (_arg: DateClickArg) => {};
 
-  const handleSelectRange = (arg: any) => {
+  const handleSelectRange = (arg: DateSelectArg) => {
     const start = dayjs(arg.start);
     // In FullCalendar, end for all-day is exclusive; include end - 1 day
     const endInclusive = dayjs(arg.end).subtract(1, "day");
@@ -230,7 +224,9 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
       }
       try {
         const res = await roomTypesApi.getRoomTypeById(roomTypeId);
-        const rt = (res as any).data || res.data;
+        const rt =
+          (res as { data?: { priceFrom?: number; priceTo?: number } }).data ||
+          null;
         setRoomTypeBase({
           priceFrom: rt?.priceFrom ?? 0,
           priceTo: rt?.priceTo ?? 0,
@@ -258,7 +254,17 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
           Number(monthKey.split("-")[1]),
           Number(monthKey.split("-")[0])
         );
-        const list = ((res as any).data || res.data) ?? [];
+        const list =
+          (
+            res as {
+              data?: Array<{
+                date: string;
+                totalRooms: number;
+                bookedRooms: number;
+                percentage: number;
+              }>;
+            }
+          ).data ?? [];
         const set = new Set<string>();
         for (const it of list) {
           const dateStr = dayjs(it.date).format("YYYY-MM-DD");
@@ -282,7 +288,6 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
   const handleClearSelection = () => setSelectedDates(new Set());
 
   const openHoverHistory = async (date: Date, anchorEl: HTMLElement) => {
-    if (!hoverHistoryMode) return;
     const dateStr = dayjs(date).format("YYYY-MM-DD");
     setHoverAnchorEl(anchorEl);
     setHoverDateStr(dateStr);
@@ -305,8 +310,12 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
       const from = dayjs(`${lastYear}-01-01`).format("YYYY-MM-DD");
       const to = dayjs(`${curYear}-12-31`).format("YYYY-MM-DD");
       const res = await roomTypesApi.getPriceHistory(roomTypeId, from, to);
+      const primary = (res as { data?: unknown }).data as
+        | { data?: RoomTypePriceHistoryItem[] }
+        | RoomTypePriceHistoryItem[]
+        | undefined;
       const all =
-        ((res as any).data || (res as any).data?.data || res.data) ?? [];
+        (Array.isArray(primary) ? primary : primary?.data || []) ?? [];
       const lastYearDateStr = dayjs(date).year(lastYear).format("YYYY-MM-DD");
       const lastYearItems = all.filter(
         (it: RoomTypePriceHistoryItem) =>
@@ -355,15 +364,6 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
           Chọn các ngày để cài đặt giá
         </Typography>
         <Stack direction="row" spacing={1} alignItems="center">
-          <FormControlLabel
-            control={
-              <Switch
-                checked={hoverHistoryMode}
-                onChange={(e) => setHoverHistoryMode(e.target.checked)}
-              />
-            }
-            label="Xem lịch sử giá"
-          />
           {selectedCount > 0 && (
             <>
               <Button
@@ -409,6 +409,7 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
           },
           "& .fc-daygrid-day": {
             cursor: "pointer",
+            position: "relative",
           },
           "& .fc-daygrid-day.peak-date ": {
             backgroundColor: (theme) => theme.palette.error.light,
@@ -430,6 +431,25 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
           "& .fc-daygrid-day.fc-day-today": {
             backgroundColor: (theme) => theme.palette.action.hover,
           },
+          "& .fc-daygrid-day .price-history-icon": {
+            position: "absolute",
+            top: 4,
+            left: 4,
+            width: 22,
+            height: 22,
+            border: "none",
+            backgroundColor: "transparent",
+            borderRadius: "50%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: (theme) => theme.palette.text.secondary,
+            cursor: "pointer",
+            zIndex: 2,
+          },
+          "& .fc-daygrid-day .price-history-icon:hover": {
+            backgroundColor: (theme) => theme.palette.action.hover,
+          },
         }}
       >
         <FullCalendar
@@ -443,7 +463,7 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
           events={eventsState}
           dateClick={handleSelectDate}
           select={handleSelectRange}
-          selectAllow={(info: any) => {
+          selectAllow={(info: { start: Date; end: Date }) => {
             const startOk = !dayjs(info.start).isBefore(dayjs().startOf("day"));
             const endInclusive = dayjs(info.end).subtract(1, "day");
             const endOk = !endInclusive.isBefore(dayjs().startOf("day"));
@@ -470,20 +490,21 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
               setViewEnd(activeEnd.toDate());
             }
           }}
-          dayCellDidMount={(info: any) => {
-            info.el.addEventListener("mouseenter", () => {
-              if (hoverHistoryMode)
-                openHoverHistory(info.date, info.el as HTMLElement);
+          dayCellDidMount={(info: { date: Date; el: HTMLElement }) => {
+            const btn = document.createElement("button");
+            btn.className = "price-history-icon";
+            btn.type = "button";
+            btn.tabIndex = -1;
+            btn.style.outline = "none";
+            btn.setAttribute("aria-label", "Xem lịch sử giá");
+            btn.textContent = "🕓";
+            btn.addEventListener("mouseenter", (e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              openHoverHistory(info.date, btn as HTMLElement);
+              btn.blur();
             });
-            info.el.addEventListener("mouseleave", () => {
-              setTimeout(() => {
-                if (!hoverOnPopover) {
-                  setHoverAnchorEl(null);
-                  setHoverDateStr(null);
-                  setHoverLoading(false);
-                }
-              }, 150);
-            });
+            info.el.appendChild(btn);
           }}
           headerToolbar={{
             left: "prev,next today",
@@ -500,7 +521,7 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
           allDayText="Cả ngày"
           noEventsText="Không có sự kiện để hiển thị"
           moreLinkText={(n) => `+${n} thêm`}
-          dayCellClassNames={(arg) =>
+          dayCellClassNames={(arg: { date: Date }) =>
             (() => {
               const key = dayjs(arg.date).format("YYYY-MM-DD");
               const classes: string[] = [];
@@ -521,26 +542,31 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
         onConfirm={handleConfirmPrice}
       />
       <Popover
-        open={hoverHistoryMode && !!hoverAnchorEl}
+        open={!!hoverAnchorEl}
         anchorEl={hoverAnchorEl}
         onClose={() => setHoverAnchorEl(null)}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
         transformOrigin={{ vertical: "top", horizontal: "center" }}
+        disableAutoFocus
+        disableEnforceFocus
+        disableRestoreFocus
       >
         <Box
-          sx={{ p: 1.5, maxWidth: 320 }}
-          onMouseEnter={() => setHoverOnPopover(true)}
+          sx={{ p: 1.5, minWidth: 320 }}
           onMouseLeave={() => {
-            setHoverOnPopover(false);
             setHoverAnchorEl(null);
             setHoverDateStr(null);
             setHoverLoading(false);
           }}
         >
           <Stack spacing={0.5}>
-            <Typography variant="subtitle2">
-              {hoverDateStr ? dayjs(hoverDateStr).format("DD/MM/YYYY") : ""}
-            </Typography>
+            <Stack direction="row" alignItems="center" spacing={0.5}>
+              <History sx={{ width: 20, height: 20 }} color="action" />
+              <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
+                Lịch sử giá -{" "}
+                {hoverDateStr ? dayjs(hoverDateStr).format("DD/MM/YYYY") : ""}
+              </Typography>
+            </Stack>
             {hoverLoading ? (
               <Typography color="text.secondary">Đang tải...</Typography>
             ) : (
@@ -563,9 +589,12 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
                   <Typography variant="body2" fontWeight={700}>
                     Năm hiện tại
                   </Typography>
-                  {hoverCurrentYearList.length ? (
-                    <Stack spacing={0.25}>
-                      {hoverCurrentYearList.map((h) => (
+                  <Typography variant="body2" color="text.secondary">
+                    ₫{basePriceForDate(hoverDateStr).toLocaleString("vi-VN")}
+                  </Typography>
+                  <Stack spacing={0.25}>
+                    {hoverCurrentYearList.length ? (
+                      hoverCurrentYearList.map((h) => (
                         <Stack
                           key={h.id}
                           direction="row"
@@ -578,13 +607,13 @@ const CalendarPriceSetup: React.FC<CalendarPriceSetupProps> = ({
                             {dayjs(h.updatedAt).format("DD/MM/YYYY HH:mm")}
                           </Typography>
                         </Stack>
-                      ))}
-                    </Stack>
-                  ) : (
-                    <Typography variant="body2" color="text.secondary">
-                      Không có dữ liệu
-                    </Typography>
-                  )}
+                      ))
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">
+                        Không có cập nhật
+                      </Typography>
+                    )}
+                  </Stack>
                 </Stack>
               </>
             )}
