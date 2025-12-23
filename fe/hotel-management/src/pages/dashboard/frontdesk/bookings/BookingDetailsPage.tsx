@@ -297,6 +297,10 @@ const BookingDetailsPage: React.FC = () => {
                 color="primary"
                 startIcon={<PhoneIcon />}
                 onClick={() => setOpenCall(true)}
+                disabled={
+                  data?.status === EBookingStatus.Completed ||
+                  data?.status === EBookingStatus.Cancelled
+                }
               >
                 Gọi khách
               </Button>

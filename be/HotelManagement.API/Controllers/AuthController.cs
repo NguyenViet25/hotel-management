@@ -32,7 +32,14 @@ public class AuthController(IAuthService auth) : ControllerBase
             ));
         }
 
-        if (string.IsNullOrEmpty(result.AccessToken)) return Unauthorized(ApiResponse<LoginResponseDto>.Fail("Đăng nhập thất bại. Vui lòng kiểm tra thông tin đăng nhập."));
+        var lockedHotel = await _auth.IsHotelLockedAsync(request);
+        if (lockedHotel)
+            return Unauthorized(ApiResponse<LoginResponseDto>.Fail($"Cơ sở của bạn đã ngừng hoạt động."));
+
+
+
+        if (string.IsNullOrEmpty(result.AccessToken))
+            return Unauthorized(ApiResponse<LoginResponseDto>.Fail("Đăng nhập thất bại. Vui lòng kiểm tra thông tin đăng nhập."));
         return Ok(ApiResponse<LoginResponseDto>.Ok(result, "Đăng nhập thành công"));
     }
 

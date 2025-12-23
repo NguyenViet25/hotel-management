@@ -1,10 +1,23 @@
 import { Print, RemoveRedEye } from "@mui/icons-material";
 import { Chip, IconButton, Stack } from "@mui/material";
 import React from "react";
-import type { OrderSummaryDto } from "../../../../../api/ordersApi";
+import {
+  EOrderStatus,
+  type OrderSummaryDto,
+} from "../../../../../api/ordersApi";
 import DataTable, {
   type Column,
 } from "../../../../../components/common/DataTable";
+const getOrderPhase = (status: number): string => {
+  if (status === EOrderStatus.Draft) return "Mới";
+  if (status === EOrderStatus.NeedConfirmed) return "Chờ xác nhận";
+  if (status === EOrderStatus.Confirmed) return "Đã xác nhận";
+  if (status === EOrderStatus.InProgress) return "Đang nấu";
+  if (status === EOrderStatus.Ready) return "Sẵn sàng";
+  if (status === EOrderStatus.Completed) return "Đã phục vụ";
+  if (status === EOrderStatus.Cancelled) return "Đã hủy";
+  return "Mới";
+};
 
 interface OrdersTableProps {
   data: OrderSummaryDto[];
@@ -74,24 +87,29 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
     {
       id: "status",
       label: "Trạng thái",
-      format: (v: number) => {
-        const color =
-          v === 0
-            ? "warning"
-            : v === 1
+      format: (status: number) => {
+        const statusColor =
+          status === EOrderStatus.NeedConfirmed
+            ? "default"
+            : status === EOrderStatus.Confirmed
             ? "primary"
-            : v === 2
+            : status === EOrderStatus.InProgress
+            ? "primary"
+            : status === EOrderStatus.Ready
+            ? "primary"
+            : status === EOrderStatus.Completed
             ? "success"
-            : "error";
-        const label =
-          v === 0
-            ? "Đã tạo"
-            : v === 1
-            ? "Đang xử lý"
-            : v === 2
-            ? "Hoành thành"
-            : "Hủy";
-        return <Chip label={label} color={color as any} size="small" />;
+            : status === EOrderStatus.Cancelled
+            ? "error"
+            : "default";
+
+        return (
+          <Chip
+            label={getOrderPhase(status)}
+            color={statusColor as any}
+            size="small"
+          />
+        );
       },
       minWidth: 140,
     },
@@ -138,6 +156,10 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
       onView={onView}
       getRowId={(row) => row.id}
       actionColumn
+      disableEdit={(row) =>
+        row.status === EOrderStatus.Completed ||
+        row.status === EOrderStatus.Cancelled
+      }
       renderActions={(row) => {
         if (!row.isWalkIn) return null;
         const existing = invoiceMap?.[row.id];

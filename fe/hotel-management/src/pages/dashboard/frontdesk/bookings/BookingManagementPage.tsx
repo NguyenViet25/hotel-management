@@ -394,7 +394,7 @@ const BookingManagementPage: React.FC = () => {
                     data={listData}
                     loading={loading}
                     getRowId={(row) => row.id}
-                    onView={(row) => navigate(`/frontdesk/bookings/${row.id}`)}
+                    onView={(row) => navigate(`${row.id}`)}
                     onEdit={(row) => openEditModal(row as any)}
                     renderActions={(row) => (
                       <IconButton
@@ -563,9 +563,7 @@ const BookingManagementPage: React.FC = () => {
                               size="small"
                               variant="outlined"
                               startIcon={<Info />}
-                              onClick={() =>
-                                navigate(`/frontdesk/bookings/${b.id}`)
-                              }
+                              onClick={() => navigate(`${b.id}`)}
                             >
                               Chi tiết
                             </Button>
