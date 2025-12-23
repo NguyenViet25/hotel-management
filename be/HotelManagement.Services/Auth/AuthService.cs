@@ -59,9 +59,6 @@ public class AuthService : IAuthService
         var hotelId = hotel?.HotelId.ToString() ?? string.Empty;
         var roles = await _userManager.GetRolesAsync(user);
 
-        var lockedHotel = await _db.Hotels.AnyAsync(x => x.Id == hotel!.HotelId && x.IsActive == false);
-        if (lockedHotel)
-            return new LoginResponseDto(false, null, null, null);
 
         var extraClaims = new[]
         {
@@ -94,7 +91,18 @@ public class AuthService : IAuthService
         return await _db.Hotels.AnyAsync(x => x.Id == hotel!.HotelId && x.IsActive == false);
     }
 
+    public async Task<Guid> GetHotelIdAsync(LoginRequestDto request)
+    {
+        var user = await _userManager.FindByNameAsync(request.Username) ?? await _userManager.FindByEmailAsync(request.Username);
+        if (user is null) return Guid.Empty;
+        var propertyRoles = await _db.UserPropertyRoles.AsNoTracking()
+            .Select(pr => new UserPropertyRoleDto(pr.UserId, pr.HotelId, pr.Role, "")).ToListAsync();
 
+        var hotel = propertyRoles.Where(x => x.Id == user.Id).FirstOrDefault();
+        var hotelId = hotel?.HotelId ?? Guid.Empty;
+
+        return hotelId;
+    }
     public Task LogoutAsync(string userName)
     {
         // Stateless JWT logout is generally client-side; here we could add audit log or token blacklist.

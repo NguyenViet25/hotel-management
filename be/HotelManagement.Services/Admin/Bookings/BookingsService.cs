@@ -2003,4 +2003,43 @@ public class BookingsService(
         };
         return ApiResponse<EarlyCheckoutFeeResponseDto>.Ok(resp);
     }
+
+    public async Task<bool> AutoCancelBookingAsync(Guid hotelId)
+    {
+        try
+        {
+            var q = _bookingRepo.Query()
+                .Include(x => x.PrimaryGuest)
+                .Include(b => b.BookingRoomTypes)
+                .ThenInclude(rt => rt.BookingRooms)
+                .Where(x => x.HotelId == hotelId)
+                .Where(x => x.Status != BookingStatus.Completed && x.Status != BookingStatus.Cancelled);
+
+            var items = await q.ToListAsync();
+            foreach (var item in items)
+            {
+                var roomTypes = await _bookingRoomTypeRepo.Query().Where(x => x.BookingId == item.Id).ToListAsync();
+                foreach (var rt in roomTypes)
+                {
+                    var bookingRooms = await _bookingRoomRepo.Query()
+                        .Where(x => x.BookingRoomTypeId == rt.BookingRoomTypeId)
+                        .Select(x => new BookingRoomStatusDto(x.BookingStatus, rt.StartDate))
+                        .ToListAsync();
+
+                    if (bookingRooms.Any(x => x.StartDate.Date.AddDays(1).AddTicks(-1) <= DateTime.Now && x.Status == BookingRoomStatus.Pending))
+                    {
+                        item.Status = BookingStatus.Missing;
+                        await _bookingRepo.UpdateAsync(item);
+                        await _bookingRepo.SaveChangesAsync();
+                    }
+                }
+
+            }
+            return true;
+        }
+        catch (Exception )
+        {
+            return false;
+        }
+    }
 }

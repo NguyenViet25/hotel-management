@@ -7,6 +7,7 @@ import type { BookingGuestDto } from "../../../../../api/bookingsApi";
 type Props = {
   title: string;
   guests: BookingGuestDto[];
+  isDisabled?: boolean;
   editable?: boolean;
   onEdit?: (idx: number, guest: BookingGuestDto) => void;
   onDelete?: (idx: number, guest: BookingGuestDto) => void;
@@ -24,6 +25,7 @@ const GuestList: React.FC<Props> = ({
   onAddGuestClick,
   onChangeRoom,
   onExtendStay,
+  isDisabled = false,
 }) => {
   return (
     <Stack spacing={0.5}>
@@ -41,7 +43,7 @@ const GuestList: React.FC<Props> = ({
           variant="outlined"
           startIcon={<AddCircle />}
           size="small"
-          disabled={!editable}
+          disabled={!editable || isDisabled}
         >
           Thêm khách
         </Button>

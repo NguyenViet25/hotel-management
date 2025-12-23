@@ -16,8 +16,8 @@ export function statusUiFromTimeline(status: RoomStatus): {
     return { label: "Đang Dọn Dẹp", color: "#f9a825" };
   if (s === RoomStatus.Maintenance || s === RoomStatus.OutOfService)
     return { label: "Bảo Trì", color: "#424242" };
-  if (s === RoomStatus.Dirty) return { label: "Bẩn", color: "#ef6c00" };
-  if (s === RoomStatus.Clean) return { label: "Sạch", color: "#1976d2" };
+  if (s === RoomStatus.Dirty) return { label: "Phòng bẩn", color: "#ef6c00" };
+  if (s === RoomStatus.Clean) return { label: "Đã dọn sạch", color: "#1976d2" };
   return { label: "N/A", color: "#9e9e9e" };
 }
 

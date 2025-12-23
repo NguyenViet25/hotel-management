@@ -38,4 +38,5 @@ public interface IBookingsService
     Task<ApiResponse<List<PeakDayDto>>> GetPeakDaysAsync(PeakDaysQueryDto query);
     Task<ApiResponse<NoShowCancelResultDto>> CancelNoShowsAsync(NoShowCancelRequestDto request);
     Task<ApiResponse<EarlyCheckoutFeeResponseDto>> CalculateEarlyCheckoutFeeAsync(Guid bookingId, EarlyCheckoutFeeRequestDto dto);
+    Task<bool> AutoCancelBookingAsync(Guid hotelId);
 }

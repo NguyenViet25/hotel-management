@@ -96,6 +96,8 @@ public class BookingGuestDto
     public string? IdCardBackImageUrl { get; set; }
 }
 
+public record BookingRoomStatusDto(BookingRoomStatus Status, DateTime StartDate);
+
 public class BookingRoomDto
 {
     public Guid BookingRoomId { get; set; }

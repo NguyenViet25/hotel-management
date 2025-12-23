@@ -327,7 +327,7 @@ const BookingManagementPage: React.FC = () => {
                       const statusColor =
                         row.status === 3
                           ? "success"
-                          : row.status === 4
+                          : row.status === 4 || row.status === 5
                           ? "error"
                           : row.status === 1
                           ? "primary"
@@ -343,6 +343,8 @@ const BookingManagementPage: React.FC = () => {
                           ? "Đã hoàn thành"
                           : row.status === 4
                           ? "Đã hủy"
+                          : row.status === 5
+                          ? "Vắng mặt"
                           : String(row.status);
                       return (
                         <Chip color={statusColor as any} label={statusLabel} />

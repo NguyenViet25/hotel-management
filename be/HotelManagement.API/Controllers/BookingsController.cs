@@ -2,9 +2,7 @@ using HotelManagement.Services.Admin.Bookings;
 using HotelManagement.Services.Admin.Bookings.Dtos;
 using HotelManagement.Services.Admin.Medias;
 using HotelManagement.Services.Common;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
 
 namespace HotelManagement.Api.Controllers;
 
@@ -249,7 +247,6 @@ public class BookingsController(IBookingsService bookingsService, IWebHostEnviro
         var result = await _bookingsService.GetRoomHistoryAsync(roomId, from, to);
         return Ok(result);
     }
-
 
 }
 
