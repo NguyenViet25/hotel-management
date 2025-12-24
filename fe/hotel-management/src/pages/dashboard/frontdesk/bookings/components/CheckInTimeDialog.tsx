@@ -88,7 +88,7 @@ export default function CheckInTimeDialog({
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle>Chọn thời gian Check-in</DialogTitle>
+      <DialogTitle>Thời gian Check-in</DialogTitle>
       <DialogContent>
         <Stack spacing={1.5} sx={{ mt: 1 }}>
           <Stack direction="row" spacing={1} alignItems="center">
@@ -112,11 +112,17 @@ export default function CheckInTimeDialog({
           <DateTimePicker
             label="Thời gian check-in"
             value={value}
-            minDateTime={dayjs()}
-            maxDateTime={
-              displayScheduledEnd ||
-              (scheduledEnd ? dayjs(scheduledEnd) : undefined)
-            }
+            minDateTime={displayScheduledStart}
+            maxDateTime={(displayScheduledStart || dayjs(scheduledStart))
+              .hour(23)
+              .minute(59)
+              .second(0)
+              .millisecond(0)}
+            slotProps={{
+              textField: {
+                inputProps: { readOnly: true },
+              },
+            }}
             onChange={(v) => v && setValue(v)}
           />
           <Stack direction="row" spacing={1} alignItems="center">
@@ -131,6 +137,11 @@ export default function CheckInTimeDialog({
               }
             />
           </Stack>
+          {isEarly ? (
+            <Typography variant="body2" color="error" fontWeight={700}>
+              * Cần check in đúng giờ
+            </Typography>
+          ) : null}
         </Stack>
       </DialogContent>
       <DialogActions>

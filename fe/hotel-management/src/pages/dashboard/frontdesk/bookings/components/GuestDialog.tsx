@@ -139,7 +139,7 @@ const GuestDialog: React.FC<Props> = ({ open, initial, onClose, onSubmit }) => {
             error={!!guest.phone && !isPhoneValid}
             helperText={
               guest.phone && !isPhoneValid
-                ? "Số điện thoại Việt Nam không hợp lệ"
+                ? "Số điện thoại không hợp lệ"
                 : undefined
             }
             InputProps={{

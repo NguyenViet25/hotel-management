@@ -363,6 +363,36 @@ const BookingManagementPage: React.FC = () => {
                       );
                     },
                   },
+
+                  {
+                    id: "startDate",
+                    label: "Ngày đến",
+                    minWidth: 140,
+                    render: (row) => {
+                      const startDate =
+                        dayjs(row.startDate).format("DD/MM/YYYY") || "—";
+                      return (
+                        <Typography color="text.secondary">
+                          {startDate}
+                        </Typography>
+                      );
+                    },
+                  },
+
+                  {
+                    id: "endDate",
+                    label: "Ngày đi",
+                    minWidth: 140,
+                    render: (row) => {
+                      const endDate =
+                        dayjs(row.endDate).format("DD/MM/YYYY") || "—";
+                      return (
+                        <Typography color="text.secondary">
+                          {endDate}
+                        </Typography>
+                      );
+                    },
+                  },
                   {
                     id: "totalAmount",
                     label: "Tổng",
@@ -377,6 +407,35 @@ const BookingManagementPage: React.FC = () => {
                     },
                   },
                   {
+                    id: "depositAmount",
+                    label: "Tiền cọc",
+                    minWidth: 140,
+                    align: "right",
+                    render: (row) => {
+                      const isZero =
+                        row.status === EBookingStatus.Cancelled ||
+                        row.status === EBookingStatus.VisitorMissed;
+                      const v = isZero ? 0 : Number(row.depositAmount || 0);
+                      return `${v.toLocaleString()} đ`;
+                    },
+                  },
+                  // {
+                  //   id: "returnAmount",
+                  //   label: "Hoàn trả",
+                  //   minWidth: 140,
+                  //   align: "right",
+                  //   render: (row) => {
+                  //     const isZero =
+                  //       row.status === EBookingStatus.Cancelled ||
+                  //       row.status === EBookingStatus.VisitorMissed;
+                  //     const returnAmount = Number(
+                  //       row.depositAmount - row.totalAmount || 0
+                  //     );
+                  //     const v = isZero || returnAmount < 0 ? 0 : returnAmount;
+                  //     return `${v.toLocaleString()} đ`;
+                  //   },
+                  // },
+                  {
                     id: "leftAmount",
                     label: "Còn lại",
                     minWidth: 140,
@@ -389,13 +448,10 @@ const BookingManagementPage: React.FC = () => {
                         (row.totalAmount || 0) + (row.additionalAmount ?? 0);
                       const discountAmount =
                         ((row.promotionValue || 0) / 100) * total;
-                      const leftAmount =
-                        (row.leftAmount || 0) -
-                        discountAmount +
-                        (row.additionalAmount ?? 0);
+
                       return (
                         <Typography fontWeight={"bold"}>
-                          {(isZero ? 0 : leftAmount).toLocaleString()} đ
+                          {(isZero ? 0 : row.leftAmount).toLocaleString()} đ
                         </Typography>
                       );
                     },
@@ -418,10 +474,7 @@ const BookingManagementPage: React.FC = () => {
                       <IconButton
                         size="small"
                         color="success"
-                        disabled={
-                          row.status === EBookingStatus.Pending ||
-                          row.status === EBookingStatus.Cancelled
-                        }
+                        disabled={row.status !== EBookingStatus.Completed}
                         onClick={() => {
                           const hasRooms = (row.bookingRoomTypes || []).some(
                             (rt) => (rt.bookingRooms?.length || 0) > 0
@@ -589,10 +642,7 @@ const BookingManagementPage: React.FC = () => {
                               size="small"
                               variant="contained"
                               startIcon={<ReceiptLong />}
-                              disabled={
-                                b.status === EBookingStatus.Pending ||
-                                b.status === EBookingStatus.Cancelled
-                              }
+                              disabled={b.status !== EBookingStatus.Completed}
                               onClick={() => {
                                 const hasRooms = (
                                   b.bookingRoomTypes || []

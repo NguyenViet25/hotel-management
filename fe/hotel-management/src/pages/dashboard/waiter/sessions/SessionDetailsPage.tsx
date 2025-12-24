@@ -114,6 +114,11 @@ export default function SessionDetailsPage() {
   const [waiters, setWaiters] = useState<User[]>([]);
   const [waitersLoading, setWaitersLoading] = useState(false);
   const [selectedWaiterId, setSelectedWaiterId] = useState<string>("");
+  const [reqConfirmOpen, setReqConfirmOpen] = useState(false);
+  const [reqConfirmId, setReqConfirmId] = useState<string | null>(null);
+  const [reqConfirmTarget, setReqConfirmTarget] = useState<
+    "InProgress" | "Completed" | "Cancelled" | null
+  >(null);
 
   const requestTypes = useMemo(
     () => [
@@ -882,10 +887,18 @@ export default function SessionDetailsPage() {
                             color="primary"
                             variant="contained"
                             fullWidth
-                            onClick={() =>
-                              updateRequestStatus(r.id, "InProgress")
+                            onClick={() => {
+                              setReqConfirmId(r.id);
+                              setReqConfirmTarget("InProgress");
+                              setReqConfirmOpen(true);
+                            }}
+                            disabled={
+                              isWaiter ||
+                              session?.status !== "Open" ||
+                              r.status === "InProgress" ||
+                              r.status === "Completed" ||
+                              r.status === "Cancelled"
                             }
-                            disabled={isWaiter || session?.status !== "Open"}
                           >
                             Bắt đầu
                           </Button>
@@ -895,10 +908,16 @@ export default function SessionDetailsPage() {
                             startIcon={<CheckCircle />}
                             color="success"
                             fullWidth
-                            onClick={() =>
-                              updateRequestStatus(r.id, "Completed")
+                            onClick={() => {
+                              setReqConfirmId(r.id);
+                              setReqConfirmTarget("Completed");
+                              setReqConfirmOpen(true);
+                            }}
+                            disabled={
+                              isWaiter ||
+                              session?.status !== "Open" ||
+                              r.status !== "InProgress"
                             }
-                            disabled={isWaiter || session?.status !== "Open"}
                           >
                             Hoàn tất
                           </Button>
@@ -908,10 +927,16 @@ export default function SessionDetailsPage() {
                             variant="contained"
                             fullWidth
                             startIcon={<Cancel />}
-                            onClick={() =>
-                              updateRequestStatus(r.id, "Cancelled")
+                            onClick={() => {
+                              setReqConfirmId(r.id);
+                              setReqConfirmTarget("Cancelled");
+                              setReqConfirmOpen(true);
+                            }}
+                            disabled={
+                              isWaiter ||
+                              session?.status !== "Open" ||
+                              r.status !== "InProgress"
                             }
-                            disabled={isWaiter || session?.status !== "Open"}
                           >
                             Huỷ
                           </Button>
@@ -1141,6 +1166,52 @@ export default function SessionDetailsPage() {
           </Button>
           <Button
             onClick={confirmStatusChange}
+            variant="contained"
+            startIcon={<Check />}
+          >
+            Xác nhận
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={reqConfirmOpen}
+        onClose={() => setReqConfirmOpen(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 600 }}>
+          Xác nhận cập nhật yêu cầu
+        </DialogTitle>
+        <DialogContent dividers>
+          <Stack spacing={1.25}>
+            <Stack direction={"row"} alignItems="center" spacing={1}>
+              {reqConfirmTarget === "InProgress" &&
+                "Bắt đầu xử lý yêu cầu này?"}
+              {reqConfirmTarget === "Completed" &&
+                "Xác nhận hoàn tất yêu cầu này?"}
+              {reqConfirmTarget === "Cancelled" && "Xác nhận huỷ yêu cầu này?"}
+              <QuestionMark color="action" />
+            </Stack>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setReqConfirmOpen(false)}
+            color="inherit"
+            variant="outlined"
+            startIcon={<Close />}
+          >
+            Đóng
+          </Button>
+          <Button
+            onClick={async () => {
+              if (reqConfirmId && reqConfirmTarget) {
+                await updateRequestStatus(reqConfirmId, reqConfirmTarget);
+                setReqConfirmOpen(false);
+                setReqConfirmId(null);
+                setReqConfirmTarget(null);
+              }
+            }}
             variant="contained"
             startIcon={<Check />}
           >

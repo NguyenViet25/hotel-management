@@ -99,7 +99,7 @@ public class BookingGuestDto
     public string? IdCardBackImageUrl { get; set; }
 }
 
-public record BookingRoomStatusDto(BookingRoomStatus Status, DateTime StartDate);
+public record BookingRoomStatusDto(BookingRoomStatus Status, DateTime StartDate, DateTime? ActualCheckInAt);
 
 public class BookingRoomDto
 {
@@ -157,6 +157,8 @@ public class BookingDetailsDto
     public string? PromotionCode { get; set; }
     public decimal PromotionValue { get; set; }
     public DateTime CreatedAt { get; set; }
+    public DateTime? StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
     public string? Notes { get; set; }
     public List<BookingRoomTypeDto> BookingRoomTypes { get; set; } = new();
     public List<CallLogDto> CallLogs { get; set; } = new();

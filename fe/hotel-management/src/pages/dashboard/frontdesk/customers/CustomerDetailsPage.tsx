@@ -1,5 +1,6 @@
-import { Email, Person, Phone } from "@mui/icons-material";
+import { ArrowBack, Email, Person, Phone } from "@mui/icons-material";
 import {
+  Button,
   Card,
   CardContent,
   CardHeader,
@@ -8,7 +9,7 @@ import {
   Typography,
 } from "@mui/material";
 import React, { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import PageTitle from "../../../../components/common/PageTitle";
 import guestsApi, { type GuestDto } from "../../../../api/guestsApi";
 import bookingsApi, {
@@ -28,6 +29,7 @@ const CustomerDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useStore<StoreState>((s) => s);
   const hotelId = user?.hotelId || "";
+  const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
   const [guest, setGuest] = useState<GuestDto | null>(null);
@@ -152,7 +154,11 @@ const CustomerDetailsPage: React.FC = () => {
         title="Chi tiết khách hàng"
         subtitle="Thông tin cơ bản, lịch sử đặt phòng và đặt món"
       />
-
+      <Stack direction="row" spacing={1} alignItems="center">
+        <Button startIcon={<ArrowBack />} onClick={() => navigate(-1)}>
+          Quay lại danh sách
+        </Button>
+      </Stack>
       <Card variant="outlined">
         <CardHeader title={header} />
         <CardContent>
