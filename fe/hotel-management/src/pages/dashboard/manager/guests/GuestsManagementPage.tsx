@@ -112,10 +112,7 @@ const GuestsManagementPage: React.FC = () => {
         minWidth: 160,
         align: "center",
         render: (row) => (
-          <IconButton
-            size="small"
-            onClick={() => navigate(`/frontdesk/customers/${row.id}`)}
-          >
+          <IconButton size="small" onClick={() => navigate(`${row.id}`)}>
             <History fontSize="small" />
           </IconButton>
         ),

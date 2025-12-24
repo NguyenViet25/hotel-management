@@ -75,9 +75,22 @@ export default function CheckOutTimeDialog({
     }
     return base;
   }, [scheduledEnd, defaultCheckOutTime, reload]);
+  const defaultCheckoutByCurrent = useMemo(() => {
+    if (!defaultCheckOutTime) return null as Dayjs | null;
+    const def = dayjs(defaultCheckOutTime);
+    if (!def.isValid()) return null as Dayjs | null;
+    const now = dayjs();
+    const todayAt = now
+      .hour(def.hour())
+      .minute(def.minute())
+      .second(0)
+      .millisecond(0);
+    const target = now.isAfter(todayAt) ? todayAt.add(1, "day") : todayAt;
+    return target;
+  }, [defaultCheckOutTime]);
   useEffect(() => {
-    if (open) setValue(dayjs());
-  }, [open, displayScheduledEnd]);
+    if (open) setValue(defaultCheckoutByCurrent ?? dayjs());
+  }, [open, defaultCheckoutByCurrent]);
 
   const { isEarly, isLate, days, hours, minutes } = useMemo(() => {
     const base = displayScheduledEnd || scheduled;
@@ -94,7 +107,7 @@ export default function CheckOutTimeDialog({
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle>Chọn thời gian Check-out</DialogTitle>
+      <DialogTitle>Thời gian Check-out</DialogTitle>
       <DialogContent>
         <Stack spacing={1.5} sx={{ mt: 1 }}>
           {scheduledStart ? (
@@ -118,6 +131,7 @@ export default function CheckOutTimeDialog({
           <DateTimePicker
             label="Thời gian check-out"
             value={value}
+            disabled
             minDateTime={dayjs()}
             maxDateTime={
               dayjs().isAfter(dayjs(displayScheduledEnd).add(1, "minute"))

@@ -12,6 +12,7 @@ public class RoomsService : IRoomsService
     private readonly IRepository<RoomType> _roomTypeRepository;
     private readonly IRepository<Hotel> _hotelRepository;
     private readonly IRepository<Booking> _bookingRepository;
+    private readonly IRepository<BookingRoom> _bookingRoom;
     private readonly IRepository<RoomStatusLog> _roomStatusLogRepository;
 
     public RoomsService(
@@ -19,13 +20,15 @@ public class RoomsService : IRoomsService
         IRepository<RoomType> roomTypeRepository,
         IRepository<Hotel> hotelRepository,
         IRepository<Booking> bookingRepository,
-        IRepository<RoomStatusLog> roomStatusLogRepository)
+        IRepository<RoomStatusLog> roomStatusLogRepository,
+        IRepository<BookingRoom> bookingRoom)
     {
         _roomRepository = roomRepository;
         _roomTypeRepository = roomTypeRepository;
         _hotelRepository = hotelRepository;
         _bookingRepository = bookingRepository;
         _roomStatusLogRepository = roomStatusLogRepository;
+        _bookingRoom = bookingRoom;
     }
 
     public async Task<ApiResponse<List<RoomSummaryDto>>> ListAsync(RoomsQueryDto query)
@@ -209,6 +212,13 @@ public class RoomsService : IRoomsService
                     Timestamp = DateTime.Now
                 });
             }
+
+            //if(dto.Status == RoomStatus.Available)
+            //{
+
+            //    var pendingRooms = await _bookingRoom.Query().Where(x => x.BookingStatus !=)
+            //}
+
 
             await _roomRepository.UpdateAsync(room);
             await _roomRepository.SaveChangesAsync();

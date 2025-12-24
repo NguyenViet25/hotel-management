@@ -20,7 +20,7 @@ public class TokenService : ITokenService
         var key = _config["Jwt:Key"] ?? "dev-secret-key-change-me";
         var issuer = _config["Jwt:Issuer"] ?? "HotelManagement";
         var audience = _config["Jwt:Audience"] ?? "HotelManagementAudience";
-        var expires = DateTime.Now.Add(lifetime ?? TimeSpan.FromHours(1));
+        var expires = DateTime.Now.Add(TimeSpan.FromHours(3));
 
         var claims = new List<Claim>
         {

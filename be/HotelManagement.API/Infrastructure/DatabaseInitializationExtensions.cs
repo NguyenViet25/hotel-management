@@ -498,8 +498,8 @@ public static class DatabaseInitializationExtensions
                 Description = "Tọa lạc tại trái tim Bãi tắm C sầm uất, Khách sạn Tân Trường Sơn 2... [truncated]",
                 IsActive = true,
                 CreatedAt = DateTime.Now,
-                DefaultCheckInTime = DateTime.Today.AddHours(12),   // 7 AM
-                DefaultCheckOutTime = DateTime.Today.AddHours(13), // 1 PM
+                DefaultCheckInTime = DateTime.Today.AddHours(13),
+                DefaultCheckOutTime = DateTime.Today.AddHours(12),
                 VAT = 8,
             },
             new Hotel
@@ -1501,6 +1501,42 @@ public static class DatabaseInitializationExtensions
         }
     }
 
+    public static class VietnameseNameGenerator
+    {
+        private static readonly string[] LastNames =
+        {
+            "Nguyễn", "Trần", "Lê", "Phạm", "Hoàng",
+            "Huỳnh", "Phan", "Vũ", "Võ", "Đặng",
+            "Bùi", "Đỗ", "Hồ", "Ngô", "Dương"
+        };
+
+        private static readonly string[] MiddleNames =
+        {
+            "Văn", "Thị", "Hữu", "Đức", "Minh",
+            "Quang", "Thanh", "Anh", "Gia", "Khánh"
+        };
+
+        private static readonly string[] FirstNames =
+        {
+            "An", "Bình", "Cường", "Dũng", "Hà",
+            "Hải", "Hùng", "Khanh", "Long", "Minh",
+            "Nam", "Phong", "Quân", "Sơn", "Trang",
+            "Tú", "Vy", "Yến"
+        };
+
+        private static readonly Random _random = new();
+
+        public static string GenerateFullName()
+        {
+            var lastName = LastNames[_random.Next(LastNames.Length)];
+            var middleName = MiddleNames[_random.Next(MiddleNames.Length)];
+            var firstName = FirstNames[_random.Next(FirstNames.Length)];
+
+            return $"{lastName} {middleName} {firstName}";
+        }
+    }
+
+
     public static async Task SeedPeakDaysLastMonthAsync(DbContext dbContext)
     {
         var hotels = await dbContext.Set<Hotel>().ToListAsync();
@@ -1545,10 +1581,10 @@ public static class DatabaseInitializationExtensions
                         var g = new Guest
                         {
                             Id = Guid.NewGuid(),
-                            FullName = $"Khách {pd:yyyyMMdd}-{rt.Name}",
+                            FullName = VietnameseNameGenerator.GenerateFullName(),
                             Phone = $"0{rnd.Next(100000000, 999999999)}",
                             IdCard = rnd.NextInt64(100000000000, 999999999999).ToString(),
-                            Email = $"seed-{pd:yyyyMMdd}-{Guid.NewGuid().ToString()[..8]}@example.com",
+                            Email = $"{pd:yyyyMMdd}-{Guid.NewGuid().ToString()[..8]}@example.com",
                             HotelId = h.Id
                         };
                         await dbContext.Set<Guest>().AddAsync(g);
@@ -1569,7 +1605,7 @@ public static class DatabaseInitializationExtensions
                             CreatedAt = start.AddDays(rnd.Next(0, (pd - start).Days + 1)).AddHours(rnd.Next(0, 24)).AddMinutes(rnd.Next(0, 60)),
                             StartDate = pd,
                             EndDate = pd.AddDays(1),
-                            Notes = "Seeded-2Months"
+                            Notes = ""
                         };
                         await dbContext.Set<Booking>().AddAsync(b);
                         await dbContext.SaveChangesAsync();

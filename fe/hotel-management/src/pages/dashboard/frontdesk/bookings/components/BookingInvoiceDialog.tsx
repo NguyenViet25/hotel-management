@@ -36,6 +36,10 @@ import pricingApi, {
   type PricingQuoteResponse,
 } from "../../../../../api/pricingApi";
 import roomTypesApi from "../../../../../api/roomTypesApi";
+import roomsApi, {
+  type RoomsInUseTodayDto,
+  computeOccupancyDemand,
+} from "../../../../../api/roomsApi";
 import { useStore, type StoreState } from "../../../../../hooks/useStore";
 import {
   formatDateVN,
@@ -78,9 +82,6 @@ const BookingInvoiceDialog: React.FC<Props> = ({
     booking?.additionalAmount ?? 0
   );
 
-  const [additionalBookingAmount, setAdditionalBookingAmount] =
-    useState<number>(booking?.additionalBookingAmount ?? 0);
-
   const [promoOpen, setPromoOpen] = useState(false);
   const [additional, setAdditional] = useState<AdditionalChargesDto | null>();
 
@@ -89,6 +90,8 @@ const BookingInvoiceDialog: React.FC<Props> = ({
   const [hotel, setHotel] = useState<Hotel | null>(null);
   const [vatPercentage, setVatPercentage] = useState<number>(0);
   const [showVat, setShowVat] = useState(false);
+  const [autoEarlySurcharge, setAutoEarlySurcharge] = useState<number>(0);
+  const [autoEarlyRate, setAutoEarlyRate] = useState<number>(0);
 
   const invoiceRef = useRef<HTMLDivElement>(null);
 
@@ -129,7 +132,6 @@ const BookingInvoiceDialog: React.FC<Props> = ({
       try {
         setAdditionalNotes(booking.additionalNotes ?? "");
         setAdditionalAmount(booking.additionalAmount || 0);
-        setAdditionalBookingAmount(booking.additionalBookingAmount || 0);
         setPromotionCode(booking.promotionCode || "");
         setPromotionValue(booking.promotionValue || 0);
       } catch {}
@@ -148,6 +150,56 @@ const BookingInvoiceDialog: React.FC<Props> = ({
     };
     loadHotel();
   }, [open, hotelId]);
+
+  useEffect(() => {
+    const calcEarlyCheckoutSurcharge = async () => {
+      if (!open || !booking) {
+        setAutoEarlySurcharge(0);
+        setAutoEarlyRate(0);
+        return;
+      }
+      let penaltyBase = 0;
+      for (const rt of booking.bookingRoomTypes || []) {
+        for (const br of rt.bookingRooms || []) {
+          const start = dayjs(br.actualCheckInAt || rt.startDate);
+          const plannedEnd = dayjs(rt.endDate);
+          const actualEnd = dayjs(
+            br.actualCheckOutAt || br.extendedDate || rt.endDate
+          );
+          const isEarly =
+            actualEnd.isBefore(plannedEnd, "day") ||
+            actualEnd.isSame(plannedEnd, "day");
+          if (isEarly) {
+            const nights = Math.max(1, plannedEnd.diff(actualEnd, "day"));
+            const unit = rt.price || 0;
+            penaltyBase += unit * nights;
+          }
+        }
+      }
+      if (penaltyBase <= 0) {
+        setAutoEarlySurcharge(0);
+        setAutoEarlyRate(0);
+        return;
+      }
+      try {
+        const occ = await roomsApi.getRoomsInUseToday();
+        const summary = (occ.data ||
+          (occ as any).data?.data ||
+          occ) as RoomsInUseTodayDto;
+        const demand = computeOccupancyDemand(summary?.summary as any);
+        const rem = demand.remainingPercent || 0;
+        let rate = 0.25;
+        if (rem > 40 && rem <= 80) rate = 0.5;
+        else if (rem > 80) rate = 0.75;
+        setAutoEarlyRate(rate);
+        setAutoEarlySurcharge(Math.round(penaltyBase * rate));
+      } catch {
+        setAutoEarlyRate(0);
+        setAutoEarlySurcharge(0);
+      }
+    };
+    calcEarlyCheckoutSurcharge();
+  }, [open, booking?.id]);
 
   // VAT is only fetched and shown when printing
   //
@@ -345,16 +397,6 @@ const BookingInvoiceDialog: React.FC<Props> = ({
         total: l.amount,
       });
     }
-    if (additionalBookingAmount > 0) {
-      rows.push({
-        label: "Phụ thu thêm",
-        quantity: "—",
-        nights: undefined,
-        unit: additionalBookingAmount,
-        total: additionalBookingAmount,
-      });
-    }
-
     if (additionalAmount > 0) {
       rows.push({
         label:
@@ -368,15 +410,28 @@ const BookingInvoiceDialog: React.FC<Props> = ({
       });
     }
 
+    if (autoEarlySurcharge > 0) {
+      rows.push({
+        label: `Phụ thu trả phòng sớm (${Math.round(
+          (autoEarlyRate || 0) * 100
+        )}%)`,
+        quantity: "—",
+        nights: undefined,
+        unit: autoEarlySurcharge,
+        total: autoEarlySurcharge,
+      });
+    }
+
     return rows;
   }, [
     open,
     additional,
     ordersTotal,
     additionalAmount,
-    additionalBookingAmount,
     additionalNotes,
     priceByDateMap,
+    autoEarlySurcharge,
+    autoEarlyRate,
   ]);
 
   const totals = useMemo(() => {
@@ -404,7 +459,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
     const finalNoVat = taxableAmount - deposit;
     const finalWithVat = taxableAmount + vatAmt - deposit;
 
-    setTotalAmount(finalNoVat);
+    setTotalAmount(Math.max(0, finalNoVat));
 
     return {
       subtotal,
@@ -437,7 +492,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
         finalPayment: undefined,
         additionalNotes,
         additionalAmount,
-        additionalBookingAmount,
+        additionalBookingAmount: autoEarlySurcharge,
         totalAmount,
       });
 
@@ -652,6 +707,36 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                       </TableCell>
                     </TableRow>
                   )}
+                  {(() => {
+                    const gross =
+                      (totals.taxableAmount || 0) +
+                      (showVat ? totals.vatAmt || 0 : 0);
+                    const refund =
+                      (totals.deposit || 0) > gross
+                        ? (totals.deposit || 0) - gross
+                        : 0;
+                    return refund > 0 ? (
+                      <TableRow>
+                        <TableCell align="center">
+                          {tableRows.length +
+                            (booking && booking.depositAmount > 0 ? 1 : 0) +
+                            (promotionValue > 0 ? 1 : 0) +
+                            (showVat && vatPercentage > 0 ? 1 : 0) +
+                            1}
+                        </TableCell>
+                        <TableCell sx={{ color: "#2e7d32" }}>
+                          Hoàn trả tiền dư từ cọc
+                        </TableCell>
+                        <TableCell align="center">—</TableCell>
+                        <TableCell align="center">1</TableCell>
+                        <TableCell align="center">—</TableCell>
+                        <TableCell align="right">{currency(refund)}</TableCell>
+                        <TableCell align="right" sx={{ color: "#2e7d32" }}>
+                          +{currency(refund)}
+                        </TableCell>
+                      </TableRow>
+                    ) : null;
+                  })()}
                   <TableRow>
                     <TableCell align="center"></TableCell>
                     <TableCell sx={{ fontWeight: 700 }}>Tổng cộng</TableCell>
@@ -661,7 +746,10 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                     <TableCell align="right"></TableCell>
                     <TableCell align="right" sx={{ fontWeight: 600 }}>
                       {currency(
-                        showVat ? totals.finalWithVat : totals.finalNoVat
+                        Math.max(
+                          0,
+                          showVat ? totals.finalWithVat : totals.finalNoVat
+                        )
                       )}
                     </TableCell>
                   </TableRow>
@@ -685,7 +773,10 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                   >
                     {capitalize(
                       moneyToVietnameseWords(
-                        showVat ? totals.finalWithVat : totals.finalNoVat
+                        Math.max(
+                          0,
+                          showVat ? totals.finalWithVat : totals.finalNoVat
+                        )
                       )
                     )}
                   </Typography>
@@ -720,33 +811,6 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                   >
                     Chọn mã khuyến mãi
                   </Button>
-
-                  <TextField
-                    type="text"
-                    value={
-                      additionalBookingAmount !== undefined &&
-                      additionalBookingAmount !== null
-                        ? new Intl.NumberFormat("vi-VN").format(
-                            additionalBookingAmount || 0
-                          )
-                        : ""
-                    }
-                    onChange={(e) => {
-                      const raw = e.target.value.replace(/[^0-9]/g, "");
-                      const num = raw ? Number(raw) : 0;
-                      setAdditionalBookingAmount(num);
-                    }}
-                    label="Phụ thu"
-                    slotProps={{
-                      input: {
-                        endAdornment: (
-                          <InputAdornment position="start">VND</InputAdornment>
-                        ),
-                      },
-                    }}
-                    placeholder="Nhập phụ thu"
-                    fullWidth
-                  />
 
                   <TextField
                     type="text"

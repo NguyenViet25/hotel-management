@@ -9,7 +9,7 @@ import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
 import type { IBookingSummary } from "./types";
 import Grid from "@mui/material/Grid";
-import { Email } from "@mui/icons-material";
+import { Email, ResetTv } from "@mui/icons-material";
 
 interface BookingSummaryProps {
   data: IBookingSummary;
@@ -77,6 +77,17 @@ export const BookingSummary = ({
                   <Typography variant="body2">{data.notes}</Typography>
                 </Stack>
               )}
+              {/* <Stack
+                sx={{ opacity: 0 }}
+                direction="row"
+                spacing={1}
+                alignItems="center"
+              >
+                <PhoneIcon fontSize="small" color="action" />
+                <Typography variant="body2">
+                  {data.phoneNumber || "—"}
+                </Typography>
+              </Stack> */}
             </Stack>
           </Paper>
         </Grid>
@@ -121,6 +132,27 @@ export const BookingSummary = ({
                   Tiền cọc: {formatCurrency(data.depositAmount)}
                 </Typography>
               </Stack>
+
+              {/* <Stack direction="row" spacing={1} alignItems="center">
+                <ResetTv fontSize="small" color="action" />
+                <Typography
+                  variant="body2"
+                  fontWeight={600}
+                  color={theme.palette.success.main}
+                >
+                  Hoàn trả:{" "}
+                  {formatCurrency(
+                    Math.max(
+                      0,
+                      (data.depositAmount || 0) -
+                        Math.max(
+                          0,
+                          (data.totalAmount || 0) - (data.discountAmount || 0)
+                        )
+                    )
+                  )}
+                </Typography>
+              </Stack> */}
 
               <Stack direction="row" spacing={1} alignItems="center">
                 <MonetizationOnIcon fontSize="small" color="action" />

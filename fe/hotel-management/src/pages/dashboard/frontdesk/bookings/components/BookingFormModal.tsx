@@ -1,56 +1,50 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AddCircle } from "@mui/icons-material";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import CloseIcon from "@mui/icons-material/Close";
 import EmailIcon from "@mui/icons-material/Email";
 import HotelIcon from "@mui/icons-material/Hotel";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import NotesIcon from "@mui/icons-material/Notes";
 import PersonIcon from "@mui/icons-material/Person";
 import PhoneIcon from "@mui/icons-material/Phone";
+import RemoveRedEye from "@mui/icons-material/RemoveRedEye";
 import SaveIcon from "@mui/icons-material/Save";
 import {
   Alert,
+  Box,
   Button,
-  Card,
-  CardContent,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   Divider,
-  Collapse,
+  Grid,
   IconButton,
   InputAdornment,
+  Popover,
   Snackbar,
   Stack,
   TextField,
   Typography,
-  Box,
 } from "@mui/material";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs, { Dayjs } from "dayjs";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
-import { phoneSchema } from "../../../../../validation/phone";
 import bookingsApi, {
   type BookingDetailsDto,
   type BookingRoomTypeDto,
   type CreateBookingDto,
   type UpdateBookingDto,
 } from "../../../../../api/bookingsApi";
-import roomTypesApi, { type RoomType } from "../../../../../api/roomTypesApi";
-import { useStore, type StoreState } from "../../../../../hooks/useStore";
-import RoomBookingSection from "./RoomBookingSection";
 import pricingApi, {
   type PricingQuoteResponse,
 } from "../../../../../api/pricingApi";
-import FullCalendar from "@fullcalendar/react";
-import dayGridPlugin from "@fullcalendar/daygrid";
-import interactionPlugin from "@fullcalendar/interaction";
-import viLocale from "@fullcalendar/core/locales/vi";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import roomTypesApi, { type RoomType } from "../../../../../api/roomTypesApi";
+import { useStore, type StoreState } from "../../../../../hooks/useStore";
+import { phoneSchema } from "../../../../../validation/phone";
+import PriceCalendarRoomTypeDialog from "./PriceCalendarRoomTypeDialog";
 
 type Props = {
   open: boolean;
@@ -113,6 +107,14 @@ const schema = z
         dayjs(data.checkInDate as Dayjs)
       ),
     { message: "Đến ngày phải sau Từ ngày", path: ["checkOutDate"] }
+  )
+  .refine(
+    (data) =>
+      (data.roomTypes || []).reduce(
+        (sum, r) => sum + (Number(r.totalRooms) || 0),
+        0
+      ) > 0,
+    { message: "Chọn ít nhất 1 phòng", path: ["roomTypes"] }
   );
 
 type FormValues = z.infer<typeof schema>;
@@ -137,6 +139,7 @@ const BookingFormModal: React.FC<Props> = ({
     handleSubmit,
     reset,
     setValue,
+    clearErrors,
     setError,
     watch,
     formState: { errors },
@@ -148,21 +151,14 @@ const BookingFormModal: React.FC<Props> = ({
       guestEmail: "",
       checkInDate: dayjs(),
       checkOutDate: dayjs().add(1, "day"),
-      roomTypes: [
-        {
-          roomId: "",
-          totalRooms: 1,
-          price: 0,
-          rooms: [],
-        },
-      ],
+      roomTypes: [],
       depositAmount: 0,
       notes: "",
       totalAmount: 0,
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const { append, remove } = useFieldArray({
     name: "roomTypes",
     control,
   });
@@ -180,17 +176,22 @@ const BookingFormModal: React.FC<Props> = ({
   const [availabilityByIndex, setAvailabilityByIndex] = useState<
     Record<number, number>
   >({});
+  const [availabilityByType, setAvailabilityByType] = useState<
+    Record<string, number>
+  >({});
   const [itemOpen, setItemOpen] = useState<Record<number, boolean>>({});
-  const [calViewStart, setCalViewStart] = useState<Date | null>(null);
-  const [calViewEnd, setCalViewEnd] = useState<Date | null>(null);
+  const [priceDialogOpen, setPriceDialogOpen] = useState(false);
+  const [priceDialogRt, setPriceDialogRt] = useState<BookingRoomTypeDto | null>(
+    null
+  );
+  const [desiredCounts, setDesiredCounts] = useState<Record<string, number>>(
+    {}
+  );
+  const [pricePopoverType, setPricePopoverType] = useState<string | null>(null);
+  const [pricePopoverAnchor, setPricePopoverAnchor] =
+    useState<HTMLElement | null>(null);
 
-  useEffect(() => {
-    if (roomTypes.length > 0 && mode === "create") {
-      // Initialize first room section defaults
-      setValue("roomTypes.0.roomId", roomTypes[0].id);
-      setValue("roomTypes.0.price", roomTypes[0].priceFrom || 0);
-    }
-  }, [roomTypes, mode]);
+  useEffect(() => {}, [roomTypes, mode]);
 
   useEffect(() => {
     if (mode !== "create") return;
@@ -343,6 +344,54 @@ const BookingFormModal: React.FC<Props> = ({
   }, [roomsWatch, roomTypes, reloadCount]);
 
   useEffect(() => {
+    const fetchAvailabilityByType = async () => {
+      const startDate = globalStart;
+      const endDate = globalEnd;
+      if (!startDate || !endDate || !dayjs(endDate).isAfter(dayjs(startDate))) {
+        setAvailabilityByType({});
+        return;
+      }
+      const map: Record<string, number> = {};
+      await Promise.all(
+        roomTypes.map(async (t) => {
+          try {
+            const a = await bookingsApi.roomAvailability({
+              hotelId,
+              from: dayjs(startDate).format("YYYY-MM-DD"),
+              to: dayjs(endDate).format("YYYY-MM-DD"),
+              typeId: t.id,
+            });
+            map[t.id] = a?.data?.totalAvailable ?? 0;
+          } catch {
+            map[t.id] = 0;
+          }
+        })
+      );
+      setAvailabilityByType(map);
+    };
+    fetchAvailabilityByType();
+  }, [
+    roomTypes.map((t) => t.id).join("|"),
+    globalStart,
+    globalEnd,
+    reloadCount,
+    hotelId,
+  ]);
+
+  useEffect(() => {
+    if (mode === "update") return;
+    roomTypes.forEach((t) => {
+      const avail = availabilityByType[t.id] ?? 0;
+      const current = desiredCounts[t.id] ?? 0;
+      if (current > avail) {
+        setDesiredCounts((s) => ({ ...s, [t.id]: avail }));
+        const idx = (roomsWatch || []).findIndex((r) => r.roomId === t.id);
+        if (idx >= 0) setValue(`roomTypes.${idx}.totalRooms`, avail as any);
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [availabilityByType, roomTypes.map((t) => t.id).join("|")]);
+  useEffect(() => {
     const loadRoomTypes = async () => {
       try {
         const res = await roomTypesApi.getRoomTypes({
@@ -387,6 +436,14 @@ const BookingFormModal: React.FC<Props> = ({
         };
       });
       if (mapped.length > 0) setValue("roomTypes", mapped as any);
+      if (brts.length > 0) {
+        const counts: Record<string, number> = {};
+        brts.forEach((rt) => {
+          const c = rt.totalRoom || rt.bookingRooms?.length || 1;
+          counts[rt.roomTypeId] = c;
+        });
+        setDesiredCounts(counts);
+      }
       // Set global date range based on booking data
       const minStart = brts
         .map((rt) => dayjs(rt.startDate))
@@ -413,10 +470,14 @@ const BookingFormModal: React.FC<Props> = ({
 
   const submit = async (values: FormValues) => {
     try {
-      if (values.roomTypes.length === 0) {
+      const totalSelected = (values.roomTypes || []).reduce(
+        (sum, r) => sum + (Number(r.totalRooms) || 0),
+        0
+      );
+      if (values.roomTypes.length === 0 || totalSelected <= 0) {
         setSnackbar({
           open: true,
-          message: "Vui lòng chọn loại phòng",
+          message: "Vui lòng chọn ít nhất 1 phòng",
           severity: "error",
         });
         return;
@@ -485,9 +546,23 @@ const BookingFormModal: React.FC<Props> = ({
         })
       );
       let availabilityError = false;
+      const originalCountsMap: Record<string, number> = {};
+      if (mode === "update" && bookingData) {
+        for (const rt of (bookingData as any)?.bookingRoomTypes || []) {
+          const count = rt.totalRoom || rt.bookingRooms?.length || 0;
+          originalCountsMap[rt.roomTypeId] = count;
+        }
+      }
       values.roomTypes.forEach((rt, idx) => {
+        clearErrors(`roomTypes.${idx}.totalRooms` as any);
         const available = availabilityResults[idx] || 0;
-        if ((rt.totalRooms || 0) > available) {
+        const originalCount =
+          originalCountsMap[rt.roomId as string] ?? undefined;
+        const unchanged =
+          mode === "update" &&
+          originalCount !== undefined &&
+          (rt.totalRooms || 0) === originalCount;
+        if (!unchanged && (rt.totalRooms || 0) > available) {
           setError(
             `roomTypes.${idx}.totalRooms` as any,
             {
@@ -509,6 +584,28 @@ const BookingFormModal: React.FC<Props> = ({
 
       // Update booking flow
       if (mode === "update" && bookingData?.id) {
+        const originalTotalRooms = (
+          (bookingData as any)?.bookingRoomTypes || []
+        ).reduce(
+          (sum: number, rt: any) =>
+            sum + (rt.totalRoom || rt.bookingRooms?.length || 0),
+          0
+        );
+        const newTotalRooms = (values.roomTypes || []).reduce(
+          (sum, rt) => sum + (rt.totalRooms || 0),
+          0
+        );
+
+        // if (originalTotalRooms !== newTotalRooms) {
+        //   setSnackbar({
+        //     open: true,
+        //     message:
+        //       "Không thể cập nhật: tổng số phòng đã thay đổi. Vui lòng giữ nguyên số lượng phòng.",
+        //     severity: "error",
+        //   });
+        //   return;
+        // }
+
         const payload: UpdateBookingDto = {
           hotelId: hotelId,
           primaryGuest: {
@@ -518,6 +615,8 @@ const BookingFormModal: React.FC<Props> = ({
           },
           deposit: values.depositAmount || 0,
           discount: 0,
+          startDate: dayjs(globalStart).format("YYYY-MM-DD"),
+          endDate: dayjs(globalEnd).format("YYYY-MM-DD"),
           total: values.totalAmount || 0,
           left: (values.totalAmount || 0) - (values.depositAmount || 0) - 0,
           notes: values.notes || undefined,
@@ -526,9 +625,9 @@ const BookingFormModal: React.FC<Props> = ({
             price: rt.price || 0,
             capacity: 0,
             totalRoom: rt.totalRooms || 0,
-            startDate: globalStart,
-            endDate: globalEnd,
-            rooms: rt.rooms.map((r) => ({
+            startDate: dayjs(globalStart).format("YYYY-MM-DDTHH:mm:ss"),
+            endDate: dayjs(globalEnd).format("YYYY-MM-DDTHH:mm:ss"),
+            rooms: rt.rooms!.map((r) => ({
               roomId: r?.roomId,
               startDate: globalStart,
               endDate: globalEnd,
@@ -588,717 +687,521 @@ const BookingFormModal: React.FC<Props> = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="xl">
-      <DialogTitle sx={{ py: 2 }}>
-        <Stack direction="row" alignItems="center" spacing={1.5}>
-          <HotelIcon color="primary" />
-          <Typography variant="h5" fontWeight={700} sx={{ lineHeight: 1.2 }}>
-            {mode === "update"
-              ? "Chỉnh sửa yêu cầu đặt phòng"
-              : "Tạo yêu cầu đặt phòng"}
-          </Typography>
-        </Stack>
-      </DialogTitle>
-      <DialogContent sx={{ pt: 1.5 }}>
-        <Stack spacing={2.5} sx={{ pt: 1 }}>
-          {/* Customer info */}
-          <Stack spacing={2}>
-            <Typography
-              variant="subtitle2"
-              fontWeight={600}
-              color="text.secondary"
-            >
-              1. Thông tin khách hàng
+    <>
+      <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
+        <DialogTitle sx={{ py: 2 }}>
+          <Stack direction="row" alignItems="center" spacing={1.5}>
+            <HotelIcon color="primary" />
+            <Typography variant="h5" fontWeight={700} sx={{ lineHeight: 1.2 }}>
+              {mode === "update"
+                ? "Chỉnh sửa yêu cầu đặt phòng"
+                : "Tạo yêu cầu đặt phòng"}
             </Typography>
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              <Controller
-                name="guestName"
-                control={control}
-                rules={{ required: true }}
-                render={({ field }) => (
-                  <TextField
-                    label="Họ tên KH"
-                    fullWidth
-                    required
-                    placeholder="Nhập họ tên khách hàng"
-                    error={!!errors.guestName}
-                    helperText={errors.guestName?.message}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <PersonIcon fontSize="small" />
-                        </InputAdornment>
-                      ),
-                    }}
-                    {...field}
-                  />
-                )}
-              />
-              <Controller
-                name="guestPhone"
-                control={control}
-                rules={{ required: true }}
-                render={({ field }) => (
-                  <TextField
-                    label="SĐT"
-                    fullWidth
-                    required
-                    placeholder="Nhập số điện thoại khách hàng"
-                    error={!!errors.guestPhone}
-                    helperText={errors.guestPhone?.message}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <PhoneIcon fontSize="small" />
-                        </InputAdornment>
-                      ),
-                    }}
-                    {...field}
-                  />
-                )}
-              />
-              <Controller
-                name="guestEmail"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    label="Email"
-                    type="email"
-                    fullWidth
-                    placeholder="Nhập email khách hàng"
-                    error={!!errors.guestEmail}
-                    helperText={errors.guestEmail?.message}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <EmailIcon fontSize="small" />
-                        </InputAdornment>
-                      ),
-                    }}
-                    {...field}
-                  />
-                )}
-              />
-            </Stack>
           </Stack>
-
-          <Divider />
-
-          {/* Room sections */}
-          <Stack spacing={2}>
-            <Stack
-              spacing={2}
-              direction="row"
-              alignItems="center"
-              justifyContent="space-between"
-            >
+        </DialogTitle>
+        <DialogContent sx={{ pt: 1.5 }}>
+          <Stack spacing={2.5} sx={{ pt: 1 }}>
+            {/* Customer info */}
+            <Stack spacing={2}>
               <Typography
                 variant="subtitle2"
                 fontWeight={600}
                 color="text.secondary"
               >
-                2. Thông tin phòng
+                1. Thông tin khách hàng
               </Typography>
-              <Button
-                size="small"
-                variant="contained"
-                color="success"
-                startIcon={<AddCircle />}
-                onClick={() =>
-                  append({
-                    roomId: roomTypes[0]?.id || "",
-                    totalRooms: 1,
-                    price: roomTypes[0]?.priceFrom || 0,
-                    rooms: [],
-                  })
-                }
-              >
-                Thêm mục
-              </Button>
-            </Stack>
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              <Controller
-                name="checkInDate"
-                control={control}
-                render={({ field }) => (
-                  <DatePicker
-                    minDate={dayjs()}
-                    label="Từ ngày"
-                    value={field.value}
-                    onChange={(date) => {
-                      field.onChange(date);
-                      setReloadCount((prev) => prev + 1);
-                    }}
-                    slotProps={{
-                      textField: {
-                        fullWidth: true,
-                        error: !!errors?.checkInDate,
-                        helperText: (errors as any)?.checkInDate?.message,
-                        InputProps: {
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <CalendarTodayIcon fontSize="small" />
-                            </InputAdornment>
-                          ),
-                        },
-                      },
-                    }}
-                  />
-                )}
-              />
-              <Controller
-                name="checkOutDate"
-                control={control}
-                render={({ field }) => (
-                  <DatePicker
-                    minDate={dayjs().add(1, "day")}
-                    label="Đến ngày"
-                    value={field.value}
-                    onChange={(date) => {
-                      field.onChange(date);
-                      setReloadCount((prev) => prev + 1);
-                    }}
-                    slotProps={{
-                      textField: {
-                        fullWidth: true,
-                        error: !!errors?.checkOutDate,
-                        helperText: (errors as any)?.checkOutDate?.message,
-                        InputProps: {
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <CalendarTodayIcon fontSize="small" />
-                            </InputAdornment>
-                          ),
-                        },
-                      },
-                    }}
-                  />
-                )}
-              />
-            </Stack>
-
-            <Stack spacing={2}>
-              {fields.map((f, idx) => (
-                <Card variant="outlined" sx={{ borderRadius: 2 }}>
-                  <CardContent sx={{ pb: itemOpen[idx] !== false ? 2 : 0 }}>
-                    <Stack
-                      direction="row"
-                      alignItems="center"
-                      justifyContent="space-between"
-                      sx={{
-                        mb: itemOpen[idx] !== false ? 1 : 0,
-                        cursor: "pointer",
+              <Stack spacing={2} direction={{ xs: "column", sm: "row" }}>
+                <Controller
+                  name="guestName"
+                  control={control}
+                  size="small"
+                  rules={{ required: true }}
+                  render={({ field }) => (
+                    <TextField
+                      label="Họ tên KH"
+                      fullWidth
+                      required
+                      placeholder="Nhập họ tên khách hàng"
+                      error={!!errors.guestName}
+                      helperText={errors.guestName?.message}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <PersonIcon fontSize="small" />
+                          </InputAdornment>
+                        ),
                       }}
-                      onClick={() =>
-                        setItemOpen((s) => ({
-                          ...s,
-                          [idx]: s[idx] === false ? true : false,
-                        }))
+                      {...field}
+                    />
+                  )}
+                />
+                <Controller
+                  name="guestPhone"
+                  control={control}
+                  size="small"
+                  rules={{ required: true }}
+                  render={({ field }) => (
+                    <TextField
+                      label="SĐT"
+                      fullWidth
+                      required
+                      placeholder="Nhập số điện thoại khách hàng"
+                      error={!!errors.guestPhone}
+                      helperText={errors.guestPhone?.message}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <PhoneIcon fontSize="small" />
+                          </InputAdornment>
+                        ),
+                      }}
+                      {...field}
+                    />
+                  )}
+                />
+              </Stack>
+            </Stack>
+            <Controller
+              name="guestEmail"
+              control={control}
+              size="small"
+              render={({ field }) => (
+                <TextField
+                  label="Email"
+                  type="email"
+                  fullWidth
+                  placeholder="Nhập email khách hàng"
+                  error={!!errors.guestEmail}
+                  helperText={errors.guestEmail?.message}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <EmailIcon fontSize="small" />
+                      </InputAdornment>
+                    ),
+                  }}
+                  {...field}
+                />
+              )}
+            />
+
+            <Divider />
+
+            {/* Room sections */}
+            <Stack spacing={2}>
+              <Stack
+                spacing={2}
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+              >
+                <Typography
+                  variant="subtitle2"
+                  fontWeight={600}
+                  color="text.secondary"
+                >
+                  2. Thông tin phòng
+                </Typography>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    startIcon={<RemoveRedEye />}
+                    onClick={() => {
+                      if (!priceDialogRt && roomTypes[0]) {
+                        const rt = roomTypes[0];
+                        setPriceDialogRt({
+                          bookingRoomTypeId: "",
+                          roomTypeId: rt.id,
+                          roomTypeName: rt.name,
+                          capacity: 0,
+                          price: rt.priceFrom || 0,
+                          totalRoom: 1,
+                          startDate: dayjs(globalStart as Dayjs).format(
+                            "YYYY-MM-DD"
+                          ),
+                          endDate: dayjs(globalEnd as Dayjs).format(
+                            "YYYY-MM-DD"
+                          ),
+                          bookingRooms: [],
+                        });
                       }
-                    >
-                      <Stack direction="row" alignItems="center" spacing={1}>
-                        <Typography variant="subtitle2" fontWeight={700}>
-                          Mục #{idx + 1}
-                        </Typography>
-                        {itemOpen[idx] === false && (
-                          <Typography variant="body2" color="text.secondary">
-                            {roomTypes.find(
-                              (t) => t.id === roomsWatch[idx]?.roomId
-                            )?.name || "—"}
-                            {" • "}
-                            {globalStart
-                              ? dayjs(globalStart).format("DD/MM")
-                              : "—"}
-                            {" - "}
-                            {globalEnd ? dayjs(globalEnd).format("DD/MM") : "—"}
-                            {" • SL: "}
-                            {roomsWatch[idx]?.totalRooms || 0} {" • Tổng: "}
-                            {new Intl.NumberFormat("vi-VN").format(
-                              ((quotesByIndex[idx]?.total || 0) as number) *
-                                (roomsWatch[idx]?.totalRooms || 1)
-                            )}{" "}
-                            đ
-                          </Typography>
-                        )}
-                      </Stack>
-                      <Stack
-                        direction="row"
-                        spacing={1}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <IconButton
-                          color="error"
-                          size="small"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            remove(idx);
-                          }}
-                          aria-label="remove room-type"
-                        >
-                          <CloseIcon />
-                        </IconButton>
-                        <IconButton
-                          size="small"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setItemOpen((s) => ({
-                              ...s,
-                              [idx]: s[idx] === false ? true : false,
-                            }));
-                          }}
-                          aria-label="toggle-item"
-                        >
-                          {itemOpen[idx] !== false ? (
-                            <ExpandLessIcon />
-                          ) : (
-                            <ExpandMoreIcon />
-                          )}
-                        </IconButton>
-                      </Stack>
-                    </Stack>
-                    <Collapse in={itemOpen[idx] !== false}>
-                      <RoomBookingSection
-                        index={idx}
-                        control={control}
-                        errors={errors}
-                        roomTypes={roomTypes}
-                        onRemove={() => remove(idx)}
-                        hideHeader
-                        setReloadCount={setReloadCount}
-                        availableRooms={availabilityByIndex[idx] ?? 0}
-                      />
+                      setPriceDialogOpen(true);
+                    }}
+                  >
+                    Xem giá theo phòng
+                  </Button>
+                </Stack>
+              </Stack>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                <Controller
+                  name="checkInDate"
+                  control={control}
+                  render={({ field }) => (
+                    <DatePicker
+                      size="small"
+                      minDate={dayjs()}
+                      label="Từ ngày"
+                      value={field.value}
+                      onChange={(date) => {
+                        field.onChange(date);
+                        setReloadCount((prev) => prev + 1);
+                      }}
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          error: !!errors?.checkInDate,
+                          helperText: (errors as any)?.checkInDate?.message,
+                          InputProps: {
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <CalendarTodayIcon fontSize="small" />
+                              </InputAdornment>
+                            ),
+                          },
+                        },
+                      }}
+                    />
+                  )}
+                />
+                <Controller
+                  name="checkOutDate"
+                  control={control}
+                  render={({ field }) => (
+                    <DatePicker
+                      minDate={dayjs().add(1, "day")}
+                      label="Đến ngày"
+                      value={field.value}
+                      onChange={(date) => {
+                        field.onChange(date);
+                        setReloadCount((prev) => prev + 1);
+                      }}
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          error: !!errors?.checkOutDate,
+                          helperText: (errors as any)?.checkOutDate?.message,
+                          InputProps: {
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <CalendarTodayIcon fontSize="small" />
+                              </InputAdornment>
+                            ),
+                          },
+                        },
+                      }}
+                    />
+                  )}
+                />
+              </Stack>
 
-                      <Box
-                        sx={{
-                          mt: 2,
-                          mb: 1,
-                          "& .fc .price-event": {
-                            backgroundColor: (theme) =>
-                              theme.palette.primary.light,
-                            border: "none",
-                            color: (theme) =>
-                              theme.palette.primary.contrastText,
-                            padding: "2px 6px",
-                            borderRadius: 12,
-                            fontSize: "0.75rem",
-                            display: "inline-block",
-                            marginTop: "2px",
-                          },
-                          "& .fc .price-event.weekend": {
-                            backgroundColor: (theme) =>
-                              theme.palette.secondary.light,
-                          },
-                          "& .fc .price-event.override": {
-                            backgroundColor: (theme) =>
-                              theme.palette.warning.light,
-                            color: (theme) =>
-                              theme.palette.warning.contrastText,
-                          },
-                          "& .fc-daygrid-day": {
-                            cursor: "pointer",
-                          },
-                          "& .fc-daygrid-day.fc-day-today": {
-                            backgroundColor: (theme) =>
-                              theme.palette.action.hover,
-                          },
-                          "& .fc-daygrid-day.selected-date .fc-daygrid-day-number":
-                            {
-                              border: (theme) =>
-                                `2px solid ${theme.palette.primary.main}`,
-                              borderRadius: 12,
-                              padding: "2px 6px",
-                              lineHeight: 1.2,
-                              display: "inline-block",
-                            },
-                        }}
-                      >
-                        <Stack
-                          direction="row"
-                          spacing={2}
-                          alignItems="center"
-                          flexWrap="wrap"
-                          sx={{ mb: 1 }}
-                        >
-                          <Stack
-                            direction="row"
-                            spacing={1}
-                            alignItems="center"
-                          >
-                            <Box
-                              sx={{
-                                width: 16,
-                                height: 16,
-                                borderRadius: 0.5,
-                                backgroundColor: (theme) =>
-                                  theme.palette.primary.light,
-                                border: (theme) =>
-                                  `1px solid ${theme.palette.primary.main}`,
-                              }}
-                            />
+              <Box sx={{ mt: 1 }}>
+                <Stack spacing={1}>
+                  {roomTypes.map((rt) => {
+                    const available = availabilityByType[rt.id] ?? 0;
+                    const qty = desiredCounts[rt.id] ?? 0;
+                    const idx = (roomsWatch || []).findIndex(
+                      (r) => r.roomId === rt.id
+                    );
+                    const perRoomTotal =
+                      idx >= 0 ? quotesByIndex[idx]?.total ?? 0 : 0;
+                    const rowTotal = (perRoomTotal || 0) * (qty || 0);
+                    return (
+                      <Grid key={rt.id} container>
+                        <Grid size={{ xs: 12, md: 9 }}>
+                          <Stack spacing={0.25}>
+                            <Typography variant="subtitle2" fontWeight={700}>
+                              {rt.name}{" "}
+                              <IconButton
+                                size="small"
+                                onClick={(e) => {
+                                  setPricePopoverType(rt.id);
+                                  setPricePopoverAnchor(e.currentTarget);
+                                }}
+                              >
+                                <InfoOutlinedIcon fontSize="small" />
+                              </IconButton>
+                            </Typography>
                             <Typography variant="body2" color="text.secondary">
-                              Giá ngày thường (T2-T5)
+                              {available > 0
+                                ? `(Còn ${available} phòng trống)`
+                                : `(Hết phòng)`}
                             </Typography>
                           </Stack>
-                          <Stack
-                            direction="row"
-                            spacing={1}
-                            alignItems="center"
-                          >
-                            <Box
-                              sx={{
-                                width: 16,
-                                height: 16,
-                                borderRadius: 0.5,
-                                backgroundColor: (theme) =>
-                                  theme.palette.secondary.light,
-                                border: (theme) =>
-                                  `1px solid ${theme.palette.secondary.main}`,
-                              }}
-                            />
-                            <Typography variant="body2" color="text.secondary">
-                              Giá cuối tuần (T6-CN)
-                            </Typography>
-                          </Stack>
-                          <Stack
-                            direction="row"
-                            spacing={1}
-                            alignItems="center"
-                          >
-                            <Box
-                              sx={{
-                                width: 16,
-                                height: 16,
-                                borderRadius: 0.5,
-                                backgroundColor: (theme) =>
-                                  theme.palette.warning.light,
-                                border: (theme) =>
-                                  `1px solid ${theme.palette.warning.main}`,
-                              }}
-                            />
-                            <Typography variant="body2" color="text.secondary">
-                              Giá ghi đè
-                            </Typography>
-                          </Stack>
-                          <Stack
-                            direction="row"
-                            spacing={1}
-                            alignItems="center"
-                          >
-                            <Box
-                              sx={{
-                                width: 16,
-                                height: 16,
-                                borderRadius: 0.5,
-                                backgroundColor: "transparent",
-                                border: (theme) =>
-                                  `2px solid ${theme.palette.primary.main}`,
-                              }}
-                            />
-                            <Typography variant="body2" color="text.secondary">
-                              Ngày đã chọn
-                            </Typography>
-                          </Stack>
-                        </Stack>
-                        <FullCalendar
-                          plugins={[dayGridPlugin, interactionPlugin]}
-                          locales={[viLocale]}
-                          locale="vi"
-                          initialView="dayGridMonth"
-                          initialDate={dayjs(globalStart).toDate()}
-                          selectable={false}
-                          dayMaxEvents
-                          events={(() => {
-                            const rt = roomTypes.find(
-                              (t) => t.id === roomsWatch[idx]?.roomId
-                            );
-                            if (!rt || !calViewStart || !calViewEnd) return [];
-                            const start = dayjs(calViewStart);
-                            const end = dayjs(calViewEnd);
-                            const map = new Map<string, number>();
-                            (rt.priceByDates || []).forEach((p: any) => {
-                              map.set(
-                                dayjs(p.date).format("YYYY-MM-DD"),
-                                p.price
-                              );
-                            });
-                            const evs: any[] = [];
-                            for (
-                              let d = start;
-                              d.isBefore(end) || d.isSame(end, "day");
-                              d = d.add(1, "day")
-                            ) {
-                              const dateStr = d.format("YYYY-MM-DD");
-                              const weekend = d.day() === 5 || d.day() === 6;
-                              const base = weekend
-                                ? rt.priceTo || roomsWatch[idx]?.price || 0
-                                : rt.priceFrom || roomsWatch[idx]?.price || 0;
-                              const price = map.has(dateStr)
-                                ? map.get(dateStr) || 0
-                                : base;
-                              evs.push({
-                                id: dateStr,
-                                start: dateStr,
-                                allDay: true,
-                                title: `₫${Number(price).toLocaleString(
-                                  "vi-VN"
-                                )}`,
-                                className: `price-event ${
-                                  weekend ? "weekend" : "weekday"
-                                } ${
-                                  Number(price) !== Number(base)
-                                    ? "override"
-                                    : ""
-                                }`,
-                              });
-                            }
-                            return evs;
-                          })()}
-                          datesSet={(arg: any) => {
-                            const s = dayjs(arg.view.activeStart);
-                            const e = dayjs(arg.view.activeEnd).subtract(
-                              1,
-                              "day"
-                            );
-                            const startChanged =
-                              !calViewStart ||
-                              !dayjs(calViewStart).isSame(s, "day");
-                            const endChanged =
-                              !calViewEnd ||
-                              !dayjs(calViewEnd).isSame(e, "day");
-                            if (startChanged && endChanged) {
-                              setCalViewStart(s.toDate());
-                              setCalViewEnd(e.toDate());
-                            }
-                          }}
-                          dayCellClassNames={(arg: any) => {
-                            const dateStr = dayjs(arg.date).format(
-                              "YYYY-MM-DD"
-                            );
-                            if (globalStart && globalEnd) {
-                              const s = dayjs(globalStart).startOf("day");
-                              const e = dayjs(globalEnd)
-                                .subtract(1, "day")
-                                .startOf("day");
-                              const d = dayjs(dateStr).startOf("day");
-                              if (
-                                (d.isAfter(s) || d.isSame(s)) &&
-                                (d.isBefore(e) || d.isSame(e))
-                              ) {
-                                return ["selected-date"];
-                              }
-                            }
-                            return [];
-                          }}
-                          headerToolbar={{
-                            left: "prev,next today",
-                            center: "title",
-                            right: "",
-                          }}
-                          height="auto"
-                        />
-                      </Box>
-                      {quotesByIndex[idx]?.items?.length ? (
-                        <>
-                          {/* <Stack spacing={0.5} sx={{ mt: 2 }}>
-                          <Typography variant="subtitle2" fontWeight={700}>
-                            Bảng giá theo ngày
-                          </Typography>
-                          <Stack spacing={0.5}>
-                            {quotesByIndex[idx]!.items.map((it, i) => {
-                              const price = it.price || 0;
-                              const totalRooms =
-                                roomsWatch[idx]?.totalRooms || 0;
-                              const prev =
-                                i > 0
-                                  ? quotesByIndex[idx]!.items[i - 1].price
-                                  : price;
-                              const changed = price !== prev;
-                              const dow = dayjs(it.date).day();
-                              const weekend = dow === 5 || dow === 6;
-                              return (
-                                <Stack
-                                  key={`${it.date}-${i}`}
-                                  direction="row"
-                                  justifyContent="space-between"
-                                >
-                                  <Typography
-                                    variant="body2"
-                                    color="text.secondary"
-                                  >
-                                    {dayjs(it.date).format("DD/MM/YYYY")}
-                                  </Typography>
-                                  <Typography
-                                    variant="body2"
-                                    sx={{
-                                      color: weekend
-                                        ? "secondary.main"
-                                        : "text.primary",
-                                      fontWeight: weekend ? 700 : 500,
-                                    }}
-                                  >
-                                    {new Intl.NumberFormat("vi-VN").format(
-                                      price
-                                    )}{" "}
-                                    đ{" "}
-                                    {totalRooms > 1
-                                      ? `× ${totalRooms} phòng = ${new Intl.NumberFormat(
-                                          "vi-VN"
-                                        ).format(price * totalRooms)} đ`
-                                      : ""}
-                                  </Typography>
-                                </Stack>
-                              );
-                            })}
-                          </Stack>
-                          <Typography
-                            textAlign={"end"}
-                            variant="body2"
-                            sx={{ mt: 0.5 }}
-                            fontWeight={"bold"}
-                          >
-                            Tổng ({roomsWatch[idx]?.totalRooms || 1} phòng):{" "}
-                            {new Intl.NumberFormat("vi-VN").format(
-                              (quotesByIndex[idx]!.total || 0) *
-                                (roomsWatch[idx]?.totalRooms || 1)
-                            )}{" "}
-                            đ
-                          </Typography>
-                        </Stack> */}
-                        </>
-                      ) : null}
-                    </Collapse>
-                  </CardContent>
-                </Card>
-              ))}
+                        </Grid>
+                        <Grid size={{ xs: 12, md: 3 }}>
+                          <Grid container spacing={2} alignItems={"center"}>
+                            <Grid size={{ xs: 12, md: 6 }}>
+                              <TextField
+                                size="small"
+                                type="number"
+                                value={qty}
+                                label="Số lượng"
+                                onChange={(e) => {
+                                  setReloadCount((p) => p + 1);
+                                  const raw = Number(e.target.value) || 0;
+                                  const num = Math.max(
+                                    0,
+                                    Math.min(raw, available)
+                                  );
+                                  setDesiredCounts((s) => ({
+                                    ...s,
+                                    [rt.id]: num,
+                                  }));
+                                  const idx = (roomsWatch || []).findIndex(
+                                    (r) => r.roomId === rt.id
+                                  );
+                                  if (num <= 0) {
+                                    if (idx >= 0) remove(idx);
+                                  } else {
+                                    if (idx >= 0) {
+                                      setValue(
+                                        `roomTypes.${idx}.totalRooms`,
+                                        num as any
+                                      );
+                                      setValue(
+                                        `roomTypes.${idx}.price`,
+                                        rt.priceFrom || 0
+                                      );
+                                    } else {
+                                      append({
+                                        roomId: rt.id,
+                                        totalRooms: num,
+                                        price: rt.priceFrom || 0,
+                                        rooms: [],
+                                      });
+                                    }
+                                  }
+                                }}
+                                inputProps={{ min: 0, max: available }}
+                                disabled={available <= 0}
+                                sx={{ width: "100%" }}
+                              />
+                            </Grid>
+                            <Grid size={{ xs: 12, md: 6 }}>
+                              <Box>
+                                <Typography variant="body2" fontWeight={700}>
+                                  {new Intl.NumberFormat("vi-VN").format(
+                                    rowTotal
+                                  )}{" "}
+                                  đ
+                                </Typography>
+                              </Box>
+                            </Grid>
+                          </Grid>
+                        </Grid>
+                      </Grid>
+                    );
+                  })}
+                </Stack>
+              </Box>
             </Stack>
+
+            <Divider />
+
+            {/* Summary & Payment */}
+            <Stack spacing={2}>
+              <Typography
+                variant="subtitle2"
+                fontWeight={600}
+                color="text.secondary"
+              >
+                3. Tóm tắt & Thanh toán
+              </Typography>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                <TextField
+                  label="Tổng tiền"
+                  value={formatCurrency(watch("totalAmount") || 0)}
+                  fullWidth
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="start">VND</InputAdornment>
+                    ),
+                    disabled: true,
+                  }}
+                />
+
+                <Controller
+                  name="depositAmount"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      label="Tiền cọc"
+                      type="text"
+                      fullWidth
+                      error={!!errors.depositAmount}
+                      helperText={errors.depositAmount?.message}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="start">VND</InputAdornment>
+                        ),
+                      }}
+                      {...field}
+                      value={
+                        field.value !== undefined && field.value !== null
+                          ? new Intl.NumberFormat("vi-VN").format(
+                              Number(field.value)
+                            )
+                          : ""
+                      }
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/[^0-9]/g, "");
+                        const num = raw ? Number(raw) : 0;
+                        field.onChange(num);
+                      }}
+                    />
+                  )}
+                />
+
+                <TextField
+                  label="Còn lại"
+                  value={formatCurrency(afterDiscount)}
+                  fullWidth
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="start">VND</InputAdornment>
+                    ),
+                    disabled: true,
+                  }}
+                />
+              </Stack>
+            </Stack>
+
+            <Controller
+              name="notes"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  label="Ghi chú"
+                  multiline
+                  minRows={2}
+                  fullWidth
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <NotesIcon fontSize="small" />
+                      </InputAdornment>
+                    ),
+                  }}
+                  {...field}
+                />
+              )}
+            />
           </Stack>
 
-          <Divider />
-
-          {/* Summary & Payment */}
-          <Stack spacing={2}>
-            <Typography
-              variant="subtitle2"
-              fontWeight={600}
-              color="text.secondary"
-            >
-              3. Tóm tắt & Thanh toán
-            </Typography>
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              <TextField
-                label="Tổng tiền"
-                value={formatCurrency(watch("totalAmount") || 0)}
-                fullWidth
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="start">VND</InputAdornment>
-                  ),
-                  disabled: true,
-                }}
-              />
-
-              <Controller
-                name="depositAmount"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    label="Tiền cọc"
-                    type="text"
-                    fullWidth
-                    error={!!errors.depositAmount}
-                    helperText={errors.depositAmount?.message}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="start">VND</InputAdornment>
-                      ),
-                    }}
-                    {...field}
-                    value={
-                      field.value !== undefined && field.value !== null
-                        ? new Intl.NumberFormat("vi-VN").format(
-                            Number(field.value)
-                          )
-                        : ""
-                    }
-                    onChange={(e) => {
-                      const raw = e.target.value.replace(/[^0-9]/g, "");
-                      const num = raw ? Number(raw) : 0;
-                      field.onChange(num);
-                    }}
-                  />
-                )}
-              />
-
-              <TextField
-                label="Còn lại"
-                value={formatCurrency(afterDiscount)}
-                fullWidth
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="start">VND</InputAdornment>
-                  ),
-                  disabled: true,
-                }}
-              />
-            </Stack>
-          </Stack>
-
-          <Controller
-            name="notes"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                label="Ghi chú"
-                multiline
-                minRows={2}
-                fullWidth
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <NotesIcon fontSize="small" />
-                    </InputAdornment>
-                  ),
-                }}
-                {...field}
-              />
-            )}
-          />
-        </Stack>
-
-        <Snackbar
-          open={snackbar.open}
-          autoHideDuration={3000}
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-        >
-          <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
-        </Snackbar>
-      </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Stack
-          direction="row"
-          spacing={1.5}
-          justifyContent="flex-end"
-          sx={{ width: "100%" }}
-        >
-          <Button onClick={onClose} startIcon={<CloseIcon />}>
-            Đóng
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleSubmit(submit as any, () =>
-              setSnackbar({
-                open: true,
-                message: "Vui lòng kiểm tra lỗi trong yêu cầu đặt phòng",
-                severity: "error",
-              })
-            )}
-            startIcon={<SaveIcon />}
+          <Snackbar
+            open={snackbar.open}
+            autoHideDuration={3000}
+            onClose={() => setSnackbar({ ...snackbar, open: false })}
           >
-            {mode === "update" ? "Cập nhật" : "Lưu yêu cầu"}
-          </Button>
-        </Stack>
-      </DialogActions>
-    </Dialog>
+            <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
+          </Snackbar>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Stack
+            direction="row"
+            spacing={1.5}
+            justifyContent="flex-end"
+            sx={{ width: "100%" }}
+          >
+            <Button onClick={onClose} startIcon={<CloseIcon />}>
+              Đóng
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleSubmit(submit as any, () =>
+                setSnackbar({
+                  open: true,
+                  message: "Vui lòng chọn ít nhất 1 phòng",
+                  severity: "error",
+                })
+              )}
+              startIcon={<SaveIcon />}
+            >
+              {mode === "update" ? "Cập nhật" : "Lưu yêu cầu"}
+            </Button>
+          </Stack>
+        </DialogActions>
+      </Dialog>
+      <Box>
+        <PriceCalendarRoomTypeDialog
+          open={priceDialogOpen}
+          onClose={() => {
+            setPriceDialogOpen(false);
+            setPriceDialogRt(null);
+          }}
+          roomTypeId={
+            (priceDialogRt?.roomTypeId as string) || roomTypes[0]?.id || ""
+          }
+          value={Object.fromEntries(
+            (
+              roomTypes.find(
+                (t) =>
+                  t.id ===
+                  ((priceDialogRt?.roomTypeId as string) ||
+                    roomTypes[0]?.id ||
+                    "")
+              )?.priceByDates || []
+            ).map((p) => [dayjs(p.date).format("YYYY-MM-DD"), p.price])
+          )}
+        />
+        <Popover
+          open={!!pricePopoverAnchor}
+          anchorEl={pricePopoverAnchor}
+          onClose={() => {
+            setPricePopoverAnchor(null);
+            setPricePopoverType(null);
+          }}
+          anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+        >
+          <Box sx={{ p: 1.5, minWidth: 240 }}>
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>
+              Chi tiết giá theo ngày
+            </Typography>
+            {(() => {
+              const idx = (roomsWatch || []).findIndex(
+                (r) => r.roomId === pricePopoverType
+              );
+              const quote = idx >= 0 ? quotesByIndex[idx] || null : null;
+              const items = quote?.items || [];
+              if (!quote || items.length === 0) {
+                return (
+                  <Typography variant="body2" color="text.secondary">
+                    Chưa chọn loại phòng hoặc chưa có dữ liệu báo giá
+                  </Typography>
+                );
+              }
+              return (
+                <Stack spacing={0.75}>
+                  {items.map((it) => (
+                    <Stack
+                      key={`${pricePopoverType}-${it.date}`}
+                      direction="row"
+                      justifyContent="space-between"
+                    >
+                      <Typography variant="body2">
+                        {dayjs(it.date).format("DD/MM/YYYY")}
+                      </Typography>
+                      <Typography variant="body2" fontWeight={600}>
+                        {new Intl.NumberFormat("vi-VN").format(it.price || 0)} đ
+                      </Typography>
+                    </Stack>
+                  ))}
+                  <Divider />
+                  <Stack direction="row" justifyContent="space-between">
+                    <Typography variant="body2">Tổng 1 phòng</Typography>
+                    <Typography variant="body2" fontWeight={700}>
+                      {new Intl.NumberFormat("vi-VN").format(quote.total || 0)}{" "}
+                      đ
+                    </Typography>
+                  </Stack>
+                </Stack>
+              );
+            })()}
+          </Box>
+        </Popover>
+      </Box>
+    </>
   );
 };
 
