@@ -409,6 +409,10 @@ const BookingManagementPage: React.FC = () => {
                     loading={loading}
                     getRowId={(row) => row.id}
                     onView={(row) => navigate(`${row.id}`)}
+                    disableEdit={(row) =>
+                      row.status === EBookingStatus.Cancelled ||
+                      row.status === EBookingStatus.Completed
+                    }
                     onEdit={(row) => openEditModal(row as any)}
                     renderActions={(row) => (
                       <IconButton

@@ -68,6 +68,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import useSWR from "swr";
+import { ArrowBack } from "@mui/icons-material";
 import diningSessionsApi from "../../../../api/diningSessionsApi";
 import ordersApi, {
   EOrderStatus,
@@ -391,6 +392,20 @@ export default function SessionDetailsPage() {
 
   return (
     <Box>
+      <Stack
+        direction="row"
+        alignItems="center"
+        justifyContent="space-between"
+        sx={{ mb: 1 }}
+      >
+        <Button
+          startIcon={<ArrowBack />}
+          onClick={() => navigate(basePath)}
+          sx={{ textTransform: "none" }}
+        >
+          Trở về
+        </Button>
+      </Stack>
       <PageTitle
         title="Chi tiết phiên"
         subtitle={`Xem chi tiết phiên phục vụ`}
@@ -416,7 +431,7 @@ export default function SessionDetailsPage() {
               variant="subtitle2"
               sx={{ fontWeight: 800, color: "white", flexGrow: 1 }}
             >
-              {new Date(session.startedAt).toLocaleString()}
+              {new Date(session.startedAt).toLocaleString("vi-VN")}
             </Typography>
             <Chip
               label={session.status === "Open" ? "Đang mở" : "Đóng"}

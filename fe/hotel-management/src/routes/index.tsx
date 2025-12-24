@@ -270,6 +270,22 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: "sessions",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <SessionBoardPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "sessions/:id",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <SessionDetailsPage />
+          </Suspense>
+        ),
+      },
+      {
         path: "orders",
         element: (
           <Suspense fallback={<div>Loading...</div>}>

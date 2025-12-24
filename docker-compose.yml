@@ -6,6 +6,7 @@ services:
       - ACCEPT_EULA=Y
       - MSSQL_SA_PASSWORD=Password1@
       - MSSQL_PID=Developer
+      - TZ=Asia/Ho_Chi_Minh
     ports:
       - "11433:1433"
     volumes:
@@ -18,6 +19,7 @@ services:
     container_name: hotel-management-api
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - TZ=Asia/Ho_Chi_Minh
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=HotelManagement;User Id=sa;Password=Password1@;TrustServerCertificate=True
       - Jwt__Key=3k8s1ZGQ9q2a4nQ6wV9s+0b7hJmP1aHq0Y2uV6Bf2lM=
       - Jwt__Issuer=HotelManagement
@@ -34,6 +36,8 @@ services:
       args:
         - VITE_API_BASE_URL=http://api:5283
     container_name: hotel-management-frontend
+    environment:
+      - TZ=Asia/Ho_Chi_Minh
     ports:
       - "8080:80"
     depends_on:

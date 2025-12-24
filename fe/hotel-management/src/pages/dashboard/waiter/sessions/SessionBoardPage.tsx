@@ -468,7 +468,7 @@ export default function SessionBoardPage() {
                     variant="subtitle2"
                     sx={{ fontWeight: 800, color: "white", flexGrow: 1 }}
                   >
-                    {new Date(s.startedAt).toLocaleString()}
+                    {new Date(s.startedAt).toLocaleString("vi-VN")}
                   </Typography>
                   <Chip
                     label={s.status === "Open" ? "Đang mở" : "Đóng"}

@@ -51,6 +51,7 @@ import ordersApi, {
 import PageTitle from "../../../../components/common/PageTitle";
 import FloatingWarningIcon from "../../../../components/common/FloatingWarningIcon";
 import { useStore, type StoreState } from "../../../../hooks/useStore";
+import { isEmpty } from "lodash";
 
 type ColumnKey = "Mới" | "Đang nấu" | "Sẵn sàng" | "Đã phục vụ";
 
@@ -450,7 +451,9 @@ export default function KitchenManagementPage() {
                           <AccessTime fontSize="small" color="action" />
                           <Typography variant="body2">
                             {order.servingDate
-                              ? new Date(order.servingDate).toLocaleString()
+                              ? new Date(order.servingDate).toLocaleString(
+                                  "vi-VN"
+                                )
                               : "—"}
                           </Typography>
                         </Stack>
@@ -563,23 +566,27 @@ export default function KitchenManagementPage() {
                             }}
                           />
                         ) : (
-                          <Stack
-                            direction={{ xs: "row" }}
-                            spacing={1}
-                            alignItems="center"
-                            sx={{
-                              border: "1px dashed",
-                              borderRadius: 3,
-                              p: 1,
-                              backgroundColor: "yellow",
-                            }}
-                          >
-                            <FloatingWarningIcon color="error" />
-                            <Typography>
-                              <b>Yêu cầu đổi món: </b>
-                              {order.changeFoodRequest || "—"}
-                            </Typography>
-                          </Stack>
+                          <>
+                            {!isEmpty(order.changeFoodRequest) && (
+                              <Stack
+                                direction={{ xs: "row" }}
+                                spacing={1}
+                                alignItems="center"
+                                sx={{
+                                  border: "1px dashed",
+                                  borderRadius: 3,
+                                  p: 1,
+                                  backgroundColor: "yellow",
+                                }}
+                              >
+                                <FloatingWarningIcon color="error" />
+                                <Typography>
+                                  <b>Yêu cầu đổi món: </b>
+                                  {order.changeFoodRequest || "—"}
+                                </Typography>
+                              </Stack>
+                            )}
+                          </>
                         )}
                       </Stack>
                     </Box>

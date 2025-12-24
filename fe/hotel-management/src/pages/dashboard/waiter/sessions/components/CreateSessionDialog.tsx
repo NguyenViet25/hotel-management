@@ -14,6 +14,7 @@ import diningSessionsApi, {
 } from "../../../../../api/diningSessionsApi";
 import { useStore, type StoreState } from "../../../../../hooks/useStore";
 import dayjs from "dayjs";
+import { DateTimePicker } from "@mui/x-date-pickers";
 // no table selection at creation time
 
 interface Props {
@@ -79,14 +80,14 @@ export default function CreateSessionDialog({
       <DialogTitle>Tạo phiên phục vụ</DialogTitle>
       <DialogContent>
         <Stack spacing={2} mt={1}>
-          <TextField
+          <DateTimePicker
             label="Ngày giờ bắt đầu"
-            type="datetime-local"
-            value={startedAt}
-            onChange={(e) => setStartedAt(e.target.value)}
-            fullWidth
-            size="small"
+            value={dayjs(startedAt)}
+            minDateTime={dayjs()}
+            maxDateTime={dayjs()}
+            onChange={(v) => v && setStartedAt(v.format("YYYY-MM-DDTHH:mm:ss"))}
           />
+
           <TextField
             label="Ghi chú"
             value={notes}
