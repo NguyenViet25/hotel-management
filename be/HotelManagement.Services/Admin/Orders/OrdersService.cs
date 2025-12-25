@@ -15,6 +15,7 @@ public class OrdersService : IOrdersService
     private readonly IRepository<Booking> _bookingRepository;
     private readonly IRepository<MenuItem> _menuItemRepository;
     private readonly IRepository<OrderItemHistory> _orderItemHistoryRepository;
+    private readonly IRepository<Guest> _guestRepo;
     private readonly IUnitOfWork _unitOfWork;
 
     public OrdersService(
@@ -23,6 +24,7 @@ public class OrdersService : IOrdersService
         IRepository<Hotel> hotelRepository,
         IRepository<Booking> bookingRepository,
         IRepository<MenuItem> menuItemRepository,
+        IRepository<Guest> guestRepo,
         IRepository<OrderItemHistory> orderItemHistoryRepository,
         IUnitOfWork unitOfWork)
     {
@@ -33,6 +35,7 @@ public class OrdersService : IOrdersService
         _menuItemRepository = menuItemRepository;
         _orderItemHistoryRepository = orderItemHistoryRepository;
         _unitOfWork = unitOfWork;
+        _guestRepo = guestRepo;
     }
 
     public async Task<ApiResponse<List<OrderSummaryDto>>> ListAsync(OrdersQueryDto query)
@@ -61,7 +64,7 @@ public class OrdersService : IOrdersService
                                   (o.CustomerPhone ?? "").Contains(query.Search!));
             }
 
-            if(query.Status.HasValue)
+            if (query.Status.HasValue)
             {
                 q = q.Where(o => o.Status == query.Status);
             }
@@ -270,6 +273,23 @@ public class OrdersService : IOrdersService
                 }
             }
 
+
+            var existGuest = await _guestRepo.Query().Where(x => x.Phone == order.CustomerPhone).AnyAsync();
+            if (!existGuest)
+            {
+                var newGuest = new Guest()
+                {
+                    HotelId = dto.HotelId,
+                    Phone = order.CustomerName,
+                    FullName = order.CustomerName,
+                    IdCardBackImageUrl = string.Empty,
+                    IdCardFrontImageUrl = string.Empty,
+                    IdCard = string.Empty,
+                };
+                await _guestRepo.AddAsync(newGuest);
+                await _guestRepo.SaveChangesAsync();
+            }
+
             await _orderRepository.SaveChangesAsync();
 
             return await GetByIdAsync(order.Id);
@@ -320,7 +340,7 @@ public class OrdersService : IOrdersService
                         OrderId = order.Id,
                         MenuItemId = item.MenuItemId,
                         Quantity = item.Quantity,
-                        Name= menu.Name,
+                        Name = menu.Name,
                         UnitPrice = menu.UnitPrice,
                         Status = OrderItemStatus.Pending
                     });

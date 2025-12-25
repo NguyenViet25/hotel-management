@@ -26,6 +26,15 @@ public class BookingsController(IBookingsService bookingsService, IWebHostEnviro
     [HttpPost("{id}/check-in")]
     public async Task<ActionResult<ApiResponse>> CheckInJson(Guid id, [FromBody] CheckInDto dto)
     {
+        var hotelIdClaim = User.FindFirst("hotelId")?.Value;
+
+        if (hotelIdClaim == null)
+            return BadRequest("HotelId not found in user claims");
+
+        Guid hotelId = Guid.Parse(hotelIdClaim);
+
+        dto.HotelId = hotelId;
+
         var result = await _bookingsService.CheckInAsync(dto);
         return Ok(result);
     }

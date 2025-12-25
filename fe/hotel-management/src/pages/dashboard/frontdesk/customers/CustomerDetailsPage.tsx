@@ -1,4 +1,4 @@
-import { ArrowBack, Email, Person, Phone } from "@mui/icons-material";
+import { ArrowBack, Email, Person, Phone, Info } from "@mui/icons-material";
 import {
   Button,
   Card,
@@ -8,7 +8,7 @@ import {
   Typography,
 } from "@mui/material";
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import PageTitle from "../../../../components/common/PageTitle";
 import guestsApi, {
   type GuestDetailsDto,
@@ -25,11 +25,27 @@ const CustomerDetailsPage: React.FC = () => {
   const { user } = useStore<StoreState>((s) => s);
   const hotelId = user?.hotelId || "";
   const navigate = useNavigate();
+  const location = useLocation();
+  const base = location.pathname.startsWith("/manager")
+    ? "/manager"
+    : "/frontdesk";
 
   const [loading, setLoading] = useState(true);
   const [guest, setGuest] = useState<GuestDetailsDto | null>(null);
   const [roomStays, setRoomStays] = useState<GuestRoomStayDto[]>([]);
   const [orders, setOrders] = useState<GuestOrderDto[]>([]);
+  const [bookingPage, setBookingPage] = useState(1);
+  const bookingPageSize = 5;
+  const pagedRoomStays = useMemo(() => {
+    const start = (bookingPage - 1) * bookingPageSize;
+    return roomStays.slice(start, start + bookingPageSize);
+  }, [roomStays, bookingPage]);
+  const [orderPage, setOrderPage] = useState(1);
+  const orderPageSize = 5;
+  const pagedOrders = useMemo(() => {
+    const start = (orderPage - 1) * orderPageSize;
+    return orders.slice(start, start + orderPageSize);
+  }, [orders, orderPage]);
 
   useEffect(() => {
     const run = async () => {
@@ -65,13 +81,13 @@ const CustomerDetailsPage: React.FC = () => {
         id: "startDate",
         label: "Bắt đầu",
         minWidth: 160,
-        format: (v) => (v ? new Date(v).toLocaleString() : "—"),
+        format: (v) => (v ? new Date(v).toLocaleString("vi-VN") : "—"),
       },
       {
         id: "endDate",
         label: "Kết thúc",
         minWidth: 160,
-        format: (v) => (v ? new Date(v).toLocaleString() : "—"),
+        format: (v) => (v ? new Date(v).toLocaleString("vi-VN") : "—"),
       },
       {
         id: "status",
@@ -88,17 +104,33 @@ const CustomerDetailsPage: React.FC = () => {
           return map[v as number] ?? String(v ?? "—");
         },
       },
+      {
+        id: "actions",
+        label: "Hành động",
+        align: "center",
+        minWidth: 120,
+        render: (row) => (
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={<Info fontSize="small" />}
+            onClick={() => navigate(`${base}/bookings/${row.bookingId}`)}
+          >
+            Xem chi tiết
+          </Button>
+        ),
+      },
     ];
-  }, []);
+  }, [id]);
 
   const orderColumns = useMemo<Column<GuestOrderDto>[]>(() => {
     return [
       { id: "orderId", label: "Mã đơn", minWidth: 120 },
-      { id: "bookingId", label: "Mã booking", minWidth: 120 },
+      { id: "bookingId", minWidth: 120 },
 
       {
         id: "orderId",
-        label: "Tổng tiền món",
+        label: "Tổng tiền ",
         minWidth: 120,
         render: (row) => {
           const total = (row.items || []).reduce(
@@ -110,9 +142,9 @@ const CustomerDetailsPage: React.FC = () => {
       },
       {
         id: "createdAt",
-        label: "Tạo lúc",
+        label: "Thời gian phục vụ",
         minWidth: 160,
-        format: (v) => (v ? new Date(v).toLocaleString() : "—"),
+        format: (v) => (v ? new Date(v).toLocaleString("vi-VN") : "—"),
       },
       {
         id: "status",
@@ -131,8 +163,24 @@ const CustomerDetailsPage: React.FC = () => {
           return map[v as number] ?? String(v ?? "—");
         },
       },
+      {
+        id: "actions",
+        label: "Hành động",
+        align: "center",
+        minWidth: 120,
+        render: (row) => (
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={<Info fontSize="small" />}
+            onClick={() => navigate(`${base}/orders/${row.orderId}`)}
+          >
+            Xem chi tiết
+          </Button>
+        ),
+      },
     ];
-  }, []);
+  }, [id]);
 
   const header = (
     <Stack spacing={1}>
@@ -176,11 +224,17 @@ const CustomerDetailsPage: React.FC = () => {
               </Typography>
               <DataTable<GuestRoomStayDto>
                 columns={bookingColumns}
-                data={roomStays}
+                data={pagedRoomStays}
                 title=""
                 loading={loading}
                 getRowId={(row) => row.bookingRoomId}
                 actionColumn={false}
+                pagination={{
+                  page: bookingPage,
+                  pageSize: bookingPageSize,
+                  total: roomStays.length,
+                  onPageChange: (p) => setBookingPage(p),
+                }}
               />
             </Stack>
             <Stack sx={{ flex: 1 }}>
@@ -189,11 +243,17 @@ const CustomerDetailsPage: React.FC = () => {
               </Typography>
               <DataTable<GuestOrderDto>
                 columns={orderColumns}
-                data={orders}
+                data={pagedOrders}
                 title=""
                 loading={loading}
                 getRowId={(row) => row.orderId}
                 actionColumn={false}
+                pagination={{
+                  page: orderPage,
+                  pageSize: orderPageSize,
+                  total: orders.length,
+                  onPageChange: (p) => setOrderPage(p),
+                }}
               />
             </Stack>
           </Stack>

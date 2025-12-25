@@ -243,6 +243,7 @@ public class RoomAvailabilityQueryDto
 public class CheckInDto
 {
     public Guid RoomBookingId { get; set; }
+    public Guid? HotelId { get; set; }
 
     public List<PersonDto> Persons { get; set; } = [];
     public DateTime? ActualCheckInAt { get; set; }

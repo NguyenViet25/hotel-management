@@ -101,8 +101,8 @@ public class GuestsService : IGuestsService
                 BookingRoomId = r.BookingRoomId,
                 RoomId = r.RoomId,
                 RoomNumber = roomNumMap.TryGetValue(r.RoomId, out var num) ? num : null,
-                StartDate = r.StartDate,
-                EndDate = r.EndDate,
+                StartDate = r.ActualCheckInAt ?? r.StartDate,
+                EndDate = r.ActualCheckOutAt ?? r.EndDate,
                 Status = r.BookingStatus,
                 BookingId = bookingIdMap.TryGetValue(r.BookingRoomTypeId, out var bid) ? bid : Guid.Empty
             }).ToList();
@@ -110,7 +110,7 @@ public class GuestsService : IGuestsService
             var bookingIds = dto.Rooms.Select(x => x.BookingId).Where(b => b != Guid.Empty).Distinct().ToList();
             if (bookingIds.Count > 0)
             {
-                var orders = await _db.Orders.Where(o => o.BookingId.HasValue && bookingIds.Contains(o.BookingId.Value)).ToListAsync();
+                var orders = await _db.Orders.Where(o => o.BookingId.HasValue && bookingIds.Contains(o.BookingId.Value) || o.CustomerPhone == g.Phone).ToListAsync();
                 var orderIds = orders.Select(o => o.Id).ToList();
                 var items = await _db.OrderItems.Where(oi => orderIds.Contains(oi.OrderId)).ToListAsync();
                 var itemMap = items.GroupBy(i => i.OrderId).ToDictionary(gp => gp.Key, gp => gp.ToList());

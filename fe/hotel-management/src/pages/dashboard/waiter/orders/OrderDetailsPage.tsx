@@ -39,6 +39,8 @@ import ordersApi, {
 import PageTitle from "../../../../components/common/PageTitle";
 import menusApi, { type MenuItemDto } from "../../../../api/menusApi";
 import ConfirmModal from "../../../../components/common/ConfirmModel";
+import { isEmpty } from "lodash";
+import FloatingWarningIcon from "../../../../components/common/FloatingWarningIcon";
 
 const getOrderPhase = (status: number): string => {
   if (status === EOrderStatus.Draft) return "Mới";
@@ -274,6 +276,25 @@ const OrderDetailsPage: React.FC = () => {
                   </Stack>
                 </Stack>
 
+                {isEmpty(data.changeFoodRequest) ? null : (
+                  <Stack
+                    direction={{ xs: "row" }}
+                    spacing={1}
+                    alignItems="center"
+                    sx={{
+                      border: "1px dashed",
+                      borderRadius: 3,
+                      p: 1,
+                      mb: 2,
+                      backgroundColor: "yellow",
+                    }}
+                  >
+                    <FloatingWarningIcon color="error" />
+                    <Typography>
+                      <b> Yêu cầu đổi món:</b> {data.changeFoodRequest || "—"}
+                    </Typography>
+                  </Stack>
+                )}
                 <Stack spacing={1}>
                   <Typography variant="subtitle2" fontWeight={700}>
                     Món ăn
