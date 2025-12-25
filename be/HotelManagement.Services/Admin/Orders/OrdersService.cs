@@ -15,6 +15,7 @@ public class OrdersService : IOrdersService
     private readonly IRepository<Booking> _bookingRepository;
     private readonly IRepository<MenuItem> _menuItemRepository;
     private readonly IRepository<OrderItemHistory> _orderItemHistoryRepository;
+    private readonly IRepository<Guest> _guestRepo;
     private readonly IUnitOfWork _unitOfWork;
 
     public OrdersService(
@@ -23,6 +24,7 @@ public class OrdersService : IOrdersService
         IRepository<Hotel> hotelRepository,
         IRepository<Booking> bookingRepository,
         IRepository<MenuItem> menuItemRepository,
+        IRepository<Guest> guestRepo,
         IRepository<OrderItemHistory> orderItemHistoryRepository,
         IUnitOfWork unitOfWork)
     {
@@ -33,6 +35,7 @@ public class OrdersService : IOrdersService
         _menuItemRepository = menuItemRepository;
         _orderItemHistoryRepository = orderItemHistoryRepository;
         _unitOfWork = unitOfWork;
+        _guestRepo = guestRepo;
     }
 
     public async Task<ApiResponse<List<OrderSummaryDto>>> ListAsync(OrdersQueryDto query)
@@ -61,7 +64,7 @@ public class OrdersService : IOrdersService
                                   (o.CustomerPhone ?? "").Contains(query.Search!));
             }
 
-            if(query.Status.HasValue)
+            if (query.Status.HasValue)
             {
                 q = q.Where(o => o.Status == query.Status);
             }
@@ -93,10 +96,12 @@ public class OrdersService : IOrdersService
                     ItemsCount = o.Items.Count,
                     PromotionCode = o.PromotionCode,
                     PromotionValue = o.PromotionValue ?? 0,
+                    AdditionalValue = o.AdditionalValue ?? 0,
+                    AdditionalNote = o.AdditionalNotes,
                     Guests = o.Guests,
                     ItemsTotal = o.Items
                         .Where(i => i.Status != OrderItemStatus.Voided)
-                        .Sum(i => i.UnitPrice * i.Quantity),
+                        .Sum(i => i.UnitPrice * i.Quantity) + (o.AdditionalValue ?? 0),
                     Items = await GetOrderItemsAsync(o.Id)
                 };
 
@@ -175,7 +180,9 @@ public class OrdersService : IOrdersService
                 CreatedAt = o.CreatedAt,
                 ItemsCount = o.Items.Count,
                 ServingDate = o.ServingDate,
-                ItemsTotal = o.Items.Where(i => i.Status != OrderItemStatus.Voided).Sum(i => i.UnitPrice * i.Quantity),
+                AdditionalNote = o.AdditionalNotes,
+                AdditionalValue = o.AdditionalValue,
+                ItemsTotal = o.Items.Where(i => i.Status != OrderItemStatus.Voided).Sum(i => i.UnitPrice * i.Quantity) + (o.AdditionalValue ?? 0),
                 PromotionCode = o.PromotionCode,
                 PromotionValue = o.PromotionValue ?? 0,
                 Guests = o.Guests,
@@ -239,7 +246,7 @@ public class OrdersService : IOrdersService
                 CustomerName = dto.CustomerName,
                 CustomerPhone = dto.CustomerPhone,
                 Status = OrderStatus.NeedConfirmed,
-                CreatedAt = DateTime.Now,
+                CreatedAt = dto.ServingDate ?? DateTime.Now,
                 ServingDate = dto.ServingDate,
                 Notes = dto.Notes,
                 Guests = dto.Guests,
@@ -264,6 +271,23 @@ public class OrdersService : IOrdersService
                         Status = OrderItemStatus.Pending
                     });
                 }
+            }
+
+
+            var existGuest = await _guestRepo.Query().Where(x => x.Phone == order.CustomerPhone).AnyAsync();
+            if (!existGuest)
+            {
+                var newGuest = new Guest()
+                {
+                    HotelId = dto.HotelId,
+                    Phone = order.CustomerName,
+                    FullName = order.CustomerName,
+                    IdCardBackImageUrl = string.Empty,
+                    IdCardFrontImageUrl = string.Empty,
+                    IdCard = string.Empty,
+                };
+                await _guestRepo.AddAsync(newGuest);
+                await _guestRepo.SaveChangesAsync();
             }
 
             await _orderRepository.SaveChangesAsync();
@@ -297,7 +321,7 @@ public class OrdersService : IOrdersService
                 IsWalkIn = false,
                 Notes = dto.Notes,
                 Status = OrderStatus.NeedConfirmed,
-                CreatedAt = DateTime.Now,
+                CreatedAt = dto.ServingDate ?? DateTime.Now,
                 ServingDate = dto.ServingDate,
                 Guests = dto.Guests,
             };
@@ -316,7 +340,7 @@ public class OrdersService : IOrdersService
                         OrderId = order.Id,
                         MenuItemId = item.MenuItemId,
                         Quantity = item.Quantity,
-                        Name= menu.Name,
+                        Name = menu.Name,
                         UnitPrice = menu.UnitPrice,
                         Status = OrderItemStatus.Pending
                     });
@@ -475,6 +499,7 @@ public class OrdersService : IOrdersService
             order.CustomerPhone = dto.CustomerPhone;
             order.CustomerName = dto.CustomerName;
             order.Guests = dto.Guests;
+            order.CreatedAt = dto.ServingDate ?? DateTime.Now;
             if (dto.Status.HasValue)
             {
                 order.Status = dto.Status.Value;

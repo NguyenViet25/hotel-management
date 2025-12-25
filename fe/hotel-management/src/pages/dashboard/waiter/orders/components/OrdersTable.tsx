@@ -168,6 +168,7 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
             <IconButton
               size="small"
               color="success"
+              disabled={row.status !== EOrderStatus.Completed}
               onClick={() => onPrintInvoice(row, existing.id)}
               aria-label="view invoice"
             >
@@ -181,7 +182,7 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
             color="success"
             onClick={() => onCreateInvoice?.(row)}
             aria-label="create invoice"
-            disabled={row.status === 6}
+            disabled={row.status !== EOrderStatus.Completed}
           >
             <Print fontSize="small" />
           </IconButton>

@@ -94,17 +94,16 @@ public class InvoicesController : ControllerBase
         }
         var order = orderRes.Data;
 
-        var lines = new List<CreateInvoiceLineDto>();
-        foreach (var it in order.Items)
+        var lines = new List<CreateInvoiceLineDto>
         {
-            lines.Add(new CreateInvoiceLineDto
+            new ()
             {
-                Description = $"{it.MenuItemName} x{it.Quantity}",
-                Amount = it.Quantity * it.UnitPrice,
+                Description = $"Doanh thu đơn đồ ăn {order.Id}",
+                Amount = order.Items.Sum(x => x.Quantity * x.UnitPrice) + (request.AdditionalValue ?? 0),
                 SourceType = InvoiceLineSourceType.Fnb,
-                SourceId = it.Id
-            });
-        }
+                SourceId = order.Id
+            }
+        };
 
         if (!string.IsNullOrWhiteSpace(request.DiscountCode))
         {
@@ -156,20 +155,20 @@ public class InvoicesController : ControllerBase
             IsWalkIn = true,
             GuestId = null,
             Notes = $"Walk-in invoice for {order.CustomerName}",
-            Lines = lines
+            Lines = lines,
+            AdditionalNotes = request.AdditionalNotes,
+            AdditionalValue = request.AdditionalValue,
+
         };
 
         var uidClaim = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         Guid.TryParse(uidClaim, out var userId);
 
-
-
-        if (createDto.OrderId.HasValue && await _invoiceService.AllowAddOrderInvoiceAsync((Guid)createDto.OrderId))
+        if (createDto.OrderId.HasValue)
         {
             await _invoiceService.RemoveLastOrderInvoiceAsync((Guid)createDto.OrderId);
             var invoice = await _invoiceService.CreateInvoiceAsync(createDto, userId);
         }
-
 
         var inv = await _invoiceRepository.Query()
             .Where(i => i.OrderId == request.OrderId)
@@ -240,6 +239,8 @@ public class CreateWalkInInvoiceRequest
 {
     public Guid OrderId { get; set; }
     public string? DiscountCode { get; set; }
+    public decimal? AdditionalValue { get; set; }
+    public string? AdditionalNotes { get; set; }
 }
 
 public class CreateBookingInvoiceRequest

@@ -1,3 +1,4 @@
+using HotelManagement.Domain;
 namespace HotelManagement.Services.Admin.Guests;
 
 public class GuestsQueryDto
@@ -25,8 +26,38 @@ public class GuestDetailsDto : GuestSummaryDto
 {
     public string? IdCardFrontImageUrl { get; set; }
     public string? IdCardBackImageUrl { get; set; }
+    public List<GuestRoomStayDto> Rooms { get; set; } = new();
+    public List<GuestOrderDto> Orders { get; set; } = new();
 }
 
+public class GuestRoomStayDto
+{
+    public Guid BookingRoomId { get; set; }
+    public Guid RoomId { get; set; }
+    public string? RoomNumber { get; set; }
+    public DateTime StartDate { get; set; }
+    public DateTime EndDate { get; set; }
+    public BookingRoomStatus Status { get; set; }
+    public Guid BookingId { get; set; }
+}
+
+public class GuestOrderDto
+{
+    public Guid OrderId { get; set; }
+    public Guid? BookingId { get; set; }
+    public OrderStatus Status { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public List<GuestOrderItemDto> Items { get; set; } = new();
+}
+
+public class GuestOrderItemDto
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public int Quantity { get; set; }
+    public decimal UnitPrice { get; set; }
+    public OrderItemStatus Status { get; set; }
+}
 public class CreateGuestDto
 {
     public string FullName { get; set; } = string.Empty;

@@ -138,6 +138,7 @@ const FoodTimeline: React.FC = () => {
         map.set(key, day.foodsByDayItems || []);
       }
     }
+    console.log(map);
     return map;
   }, [data]);
 
@@ -323,7 +324,7 @@ const FoodTimeline: React.FC = () => {
       {!loading && (
         <Grid container spacing={2}>
           {weekDays.map((d, index) => {
-            const key = getExactVNDate(d.toDate().toDateString());
+            const key = d.format("YYYY-MM-DD");
             const foods = foodsMap.get(key) || [];
             const dayEntry = data?.foodsByDays.find(
               (item) => getExactVNDate(item.date) === key

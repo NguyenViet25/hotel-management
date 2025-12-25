@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelManagement.Domain.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251224202638_Init")]
+    [Migration("20251225060042_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -905,6 +905,12 @@ namespace HotelManagement.Domain.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AdditionalNotes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal?>("AdditionalValue")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<Guid?>("BookingId")
                         .HasColumnType("uniqueidentifier");
