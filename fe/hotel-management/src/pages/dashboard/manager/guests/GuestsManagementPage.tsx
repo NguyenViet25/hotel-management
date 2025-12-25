@@ -106,17 +106,6 @@ const GuestsManagementPage: React.FC = () => {
           );
         },
       },
-      {
-        id: "history",
-        label: "Lịch sử hoạt động",
-        minWidth: 160,
-        align: "center",
-        render: (row) => (
-          <IconButton size="small" onClick={() => navigate(`${row.id}`)}>
-            <History fontSize="small" />
-          </IconButton>
-        ),
-      },
     ],
     []
   );
@@ -195,6 +184,11 @@ const GuestsManagementPage: React.FC = () => {
         onAdd={handleAdd}
         onView={handleView}
         onEdit={handleEdit}
+        renderActions={(row) => (
+          <IconButton size="small" onClick={() => navigate(`${row.id}`)}>
+            <History fontSize="small" />
+          </IconButton>
+        )}
         getRowId={(row) => row.id}
         onSearch={(txt) => setSearchText(txt || "")}
       />

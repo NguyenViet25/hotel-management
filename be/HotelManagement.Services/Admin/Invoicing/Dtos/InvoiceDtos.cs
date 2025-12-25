@@ -54,8 +54,8 @@ public class CreateInvoiceDto
     public bool IsWalkIn { get; set; }
     
     public string? Notes { get; set; }
-    
-    [Required]
+    public decimal? AdditionalValue { get; set; }
+    public string? AdditionalNotes { get; set; }
     public List<CreateInvoiceLineDto> Lines { get; set; } = new();
 }
 

@@ -253,7 +253,7 @@ const DataTable = <T extends object>({
                             {onEdit && (
                               <IconButton
                                 size="small"
-                                color="primary"
+                                color="default"
                                 onClick={() => onEdit(row)}
                                 aria-label="edit"
                                 disabled={disableEdit(row)}

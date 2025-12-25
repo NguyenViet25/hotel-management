@@ -149,6 +149,8 @@ public class OrderSummaryDto
     public decimal ItemsTotal { get; set; }
     public DateTime? ServingDate { get; set; }
     public decimal PromotionValue { get; set; }
+    public decimal? AdditionalValue { get; set; }
+    public string? AdditionalNote { get; set; }
     public string? PromotionCode { get; set; }
     public int Guests { get; set; }
     public List<OrderItemDto> Items { get; set; } = new();

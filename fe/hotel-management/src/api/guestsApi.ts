@@ -10,6 +10,37 @@ export interface GuestDto {
   idCardBackImageUrl?: string | null;
 }
 
+export interface GuestRoomStayDto {
+  bookingRoomId: string;
+  roomId: string;
+  roomNumber?: string | null;
+  startDate: string;
+  endDate: string;
+  status: number;
+  bookingId: string;
+}
+
+export interface GuestOrderItemDto {
+  id: string;
+  name: string;
+  quantity: number;
+  unitPrice: number;
+  status: number;
+}
+
+export interface GuestOrderDto {
+  orderId: string;
+  bookingId?: string | null;
+  status: number;
+  createdAt: string;
+  items: GuestOrderItemDto[];
+}
+
+export interface GuestDetailsDto extends GuestDto {
+  rooms: GuestRoomStayDto[];
+  orders: GuestOrderDto[];
+}
+
 export interface GuestsQuery {
   name?: string;
   phone?: string;
@@ -66,20 +97,20 @@ const guestsApi = {
     const res = await axios.get(`/guests?${q.toString()}`);
     return res.data;
   },
-  getById: async (id: string): Promise<ItemResponse<GuestDto>> => {
+  getById: async (id: string): Promise<ItemResponse<GuestDetailsDto>> => {
     const res = await axios.get(`/guests/${id}`);
     return res.data;
   },
   create: async (
     payload: CreateGuestRequest
-  ): Promise<ItemResponse<GuestDto>> => {
+  ): Promise<ItemResponse<GuestDetailsDto>> => {
     const res = await axios.post("/guests", payload);
     return res.data;
   },
   update: async (
     id: string,
     payload: UpdateGuestRequest
-  ): Promise<ItemResponse<GuestDto>> => {
+  ): Promise<ItemResponse<GuestDetailsDto>> => {
     const res = await axios.put(`/guests/${id}`, payload);
     return res.data;
   },

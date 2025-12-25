@@ -4,22 +4,17 @@ import {
   Card,
   CardContent,
   CardHeader,
-  Chip,
   Stack,
   Typography,
 } from "@mui/material";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import PageTitle from "../../../../components/common/PageTitle";
-import guestsApi, { type GuestDto } from "../../../../api/guestsApi";
-import bookingsApi, {
-  type BookingDetailsDto,
-  type BookingSummaryDto,
-} from "../../../../api/bookingsApi";
-import ordersApi, {
-  type OrderSummaryDto,
-  type ListResponse,
-} from "../../../../api/ordersApi";
+import guestsApi, {
+  type GuestDetailsDto,
+  type GuestOrderDto,
+  type GuestRoomStayDto,
+} from "../../../../api/guestsApi";
 import DataTable, {
   type Column,
 } from "../../../../components/common/DataTable";
@@ -32,38 +27,22 @@ const CustomerDetailsPage: React.FC = () => {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
-  const [guest, setGuest] = useState<GuestDto | null>(null);
-  const [bookings, setBookings] = useState<BookingDetailsDto[]>([]);
-  const [orders, setOrders] = useState<OrderSummaryDto[]>([]);
+  const [guest, setGuest] = useState<GuestDetailsDto | null>(null);
+  const [roomStays, setRoomStays] = useState<GuestRoomStayDto[]>([]);
+  const [orders, setOrders] = useState<GuestOrderDto[]>([]);
 
   useEffect(() => {
     const run = async () => {
       if (!id) return;
       setLoading(true);
       try {
-        const gi = await guestsApi.getById(id);
-        const g = gi.data;
-        setGuest(g);
-
-        const allBookings = await bookingsApi.getAll({ hotelId });
-        const filteredBookings =
-          allBookings.filter(
-            (b) =>
-              (b.phoneNumber && g.phone && b.phoneNumber === g.phone) ||
-              (b.primaryGuestName &&
-                g.fullName &&
-                b.primaryGuestName.toLowerCase() === g.fullName.toLowerCase())
-          ) || [];
-        setBookings(filteredBookings);
-
-        const or: ListResponse<OrderSummaryDto> = await ordersApi.listOrders({
-          hotelId,
-          search: g.phone || g.fullName,
-          page: 1,
-          pageSize: 50,
-        });
-        setOrders(or.data || []);
+        const resp = await guestsApi.getById(id);
+        const g = resp.data;
+        setGuest(g || null);
+        setRoomStays(g?.rooms || []);
+        setOrders(g?.orders || []);
       } catch {
+        void 0;
       } finally {
         setLoading(false);
       }
@@ -71,58 +50,86 @@ const CustomerDetailsPage: React.FC = () => {
     run();
   }, [id, hotelId]);
 
-  const bookingColumns = useMemo<Column<BookingDetailsDto>[]>(() => {
-    return [
-      { id: "id", label: "Mã", minWidth: 120 },
-      {
-        id: "primaryGuestName",
-        label: "Khách",
-        minWidth: 160,
-      },
-      {
-        id: "phoneNumber",
-        label: "SĐT",
-        minWidth: 120,
-      },
+  const formatMoney = (v?: number) =>
+    typeof v === "number" ? new Intl.NumberFormat("vi-VN").format(v) : "—";
 
+  const bookingColumns = useMemo<Column<GuestRoomStayDto>[]>(() => {
+    return [
+      { id: "bookingId", label: "Mã booking", minWidth: 120 },
       {
-        id: "totalAmount",
-        label: "Tổng tiền",
+        id: "roomNumber",
+        label: "Phòng",
         minWidth: 120,
-        format: (v) =>
-          typeof v === "number"
-            ? new Intl.NumberFormat("vi-VN").format(v)
-            : "—",
       },
       {
-        id: "createdAt",
-        label: "Tạo lúc",
+        id: "startDate",
+        label: "Bắt đầu",
         minWidth: 160,
         format: (v) => (v ? new Date(v).toLocaleString() : "—"),
+      },
+      {
+        id: "endDate",
+        label: "Kết thúc",
+        minWidth: 160,
+        format: (v) => (v ? new Date(v).toLocaleString() : "—"),
+      },
+      {
+        id: "status",
+        label: "Trạng thái",
+        minWidth: 140,
+        format: (v) => {
+          const map: Record<number, string> = {
+            0: "Chờ xác nhận",
+            1: "Đã xác nhận",
+            2: "Đã nhận phòng",
+            3: "Đã trả phòng",
+            4: "Đã hủy",
+          };
+          return map[v as number] ?? String(v ?? "—");
+        },
       },
     ];
   }, []);
 
-  const orderColumns = useMemo<Column<OrderSummaryDto>[]>(() => {
+  const orderColumns = useMemo<Column<GuestOrderDto>[]>(() => {
     return [
-      { id: "id", label: "Mã", minWidth: 120 },
-      { id: "customerName", label: "Khách", minWidth: 160 },
-      { id: "customerPhone", label: "SĐT", minWidth: 120 },
+      { id: "orderId", label: "Mã đơn", minWidth: 120 },
+      { id: "bookingId", label: "Mã booking", minWidth: 120 },
 
       {
-        id: "itemsTotal",
-        label: "Tổng món",
+        id: "orderId",
+        label: "Tổng tiền món",
         minWidth: 120,
-        format: (v) =>
-          typeof v === "number"
-            ? new Intl.NumberFormat("vi-VN").format(v)
-            : "—",
+        render: (row) => {
+          const total = (row.items || []).reduce(
+            (sum, i) => sum + i.quantity * i.unitPrice,
+            0
+          );
+          return formatMoney(total);
+        },
       },
       {
         id: "createdAt",
         label: "Tạo lúc",
         minWidth: 160,
         format: (v) => (v ? new Date(v).toLocaleString() : "—"),
+      },
+      {
+        id: "status",
+        label: "Trạng thái",
+        minWidth: 140,
+        format: (v) => {
+          const map: Record<number, string> = {
+            0: "Nháp",
+            1: "Cần xác nhận",
+            2: "Đã xác nhận",
+            3: "Đang xử lý",
+            4: "Sẵn sàng",
+            5: "Hoàn tất",
+            6: "Đã hủy",
+          };
+          return map[v as number] ?? String(v ?? "—");
+        },
       },
     ];
   }, []);
@@ -167,12 +174,12 @@ const CustomerDetailsPage: React.FC = () => {
               <Typography variant="subtitle2" fontWeight={700}>
                 Lịch sử đặt phòng
               </Typography>
-              <DataTable<BookingDetailsDto>
+              <DataTable<GuestRoomStayDto>
                 columns={bookingColumns}
-                data={bookings}
+                data={roomStays}
                 title=""
                 loading={loading}
-                getRowId={(row) => row.id}
+                getRowId={(row) => row.bookingRoomId}
                 actionColumn={false}
               />
             </Stack>
@@ -180,12 +187,12 @@ const CustomerDetailsPage: React.FC = () => {
               <Typography variant="subtitle2" fontWeight={700}>
                 Lịch sử đặt món
               </Typography>
-              <DataTable<OrderSummaryDto>
+              <DataTable<GuestOrderDto>
                 columns={orderColumns}
                 data={orders}
                 title=""
                 loading={loading}
-                getRowId={(row) => row.id}
+                getRowId={(row) => row.orderId}
                 actionColumn={false}
               />
             </Stack>

@@ -93,6 +93,8 @@ public class OrdersService : IOrdersService
                     ItemsCount = o.Items.Count,
                     PromotionCode = o.PromotionCode,
                     PromotionValue = o.PromotionValue ?? 0,
+                    AdditionalValue = o.AdditionalValue ?? 0,
+                    AdditionalNote = o.AdditionalNotes,
                     Guests = o.Guests,
                     ItemsTotal = o.Items
                         .Where(i => i.Status != OrderItemStatus.Voided)
@@ -175,6 +177,8 @@ public class OrdersService : IOrdersService
                 CreatedAt = o.CreatedAt,
                 ItemsCount = o.Items.Count,
                 ServingDate = o.ServingDate,
+                AdditionalNote = o.AdditionalNotes,
+                AdditionalValue = o.AdditionalValue,
                 ItemsTotal = o.Items.Where(i => i.Status != OrderItemStatus.Voided).Sum(i => i.UnitPrice * i.Quantity),
                 PromotionCode = o.PromotionCode,
                 PromotionValue = o.PromotionValue ?? 0,

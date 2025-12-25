@@ -847,6 +847,8 @@ namespace HotelManagement.Domain.Migrations
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ServingDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     PromotionValue = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    AdditionalValue = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    AdditionalNotes = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     PromotionCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Guests = table.Column<int>(type: "int", nullable: false)
                 },

@@ -138,6 +138,7 @@ const FoodTimeline: React.FC = () => {
         map.set(key, day.foodsByDayItems || []);
       }
     }
+    console.log(map);
     return map;
   }, [data]);
 

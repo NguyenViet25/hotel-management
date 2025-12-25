@@ -62,6 +62,19 @@ public class InvoiceService : IInvoiceService
             });
         }
 
+        if (invoice.IsWalkIn)
+        {
+            var order = await _orderRepo.Query().Where(x => x.Id == request.OrderId).FirstOrDefaultAsync();
+            if (order is not null)
+            {
+                order.AdditionalValue = request.AdditionalValue;
+                order.AdditionalNotes = request.AdditionalNotes;
+                await _orderRepo.UpdateAsync(order);
+                await _orderRepo.SaveChangesAsync();
+            }
+        }
+
+
         // Calculate totals
         CalculateInvoiceTotals(invoice);
 
@@ -78,7 +91,7 @@ public class InvoiceService : IInvoiceService
 
         var invoice = await _invoiceRepository.Query().Where(x => x.BookingId == targetId).FirstOrDefaultAsync();
 
-        return (booking?.Status != BookingStatus.Cancelled || booking?.Status != BookingStatus.Pending)&& invoice is  null;
+        return (booking?.Status != BookingStatus.Cancelled || booking?.Status != BookingStatus.Pending) && invoice is null;
     }
 
     public async Task<bool> AllowAddOrderInvoiceAsync(Guid targetId)
@@ -86,7 +99,7 @@ public class InvoiceService : IInvoiceService
         var order = await _orderRepo.Query().Where(x => x.Id == targetId).FirstOrDefaultAsync();
         var invoice = await _invoiceRepository.Query().Where(x => x.OrderId == targetId).FirstOrDefaultAsync();
 
-        return (order?.Status != OrderStatus.Cancelled || order?.Status != OrderStatus.NeedConfirmed) && invoice is null;
+        return (order?.Status == OrderStatus.Completed) && invoice is null;
     }
 
     public async Task<bool> RemoveLastBookingInvoiceAsync(Guid targetId)
