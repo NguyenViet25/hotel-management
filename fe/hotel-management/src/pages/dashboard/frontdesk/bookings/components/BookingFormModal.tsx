@@ -714,7 +714,6 @@ const BookingFormModal: React.FC<Props> = ({
                 <Controller
                   name="guestName"
                   control={control}
-                  size="small"
                   rules={{ required: true }}
                   render={({ field }) => (
                     <TextField
@@ -738,7 +737,6 @@ const BookingFormModal: React.FC<Props> = ({
                 <Controller
                   name="guestPhone"
                   control={control}
-                  size="small"
                   rules={{ required: true }}
                   render={({ field }) => (
                     <TextField
@@ -764,7 +762,6 @@ const BookingFormModal: React.FC<Props> = ({
             <Controller
               name="guestEmail"
               control={control}
-              size="small"
               render={({ field }) => (
                 <TextField
                   label="Email"
@@ -839,7 +836,6 @@ const BookingFormModal: React.FC<Props> = ({
                   control={control}
                   render={({ field }) => (
                     <DatePicker
-                      size="small"
                       minDate={dayjs()}
                       label="Từ ngày"
                       value={field.value}
@@ -852,6 +848,7 @@ const BookingFormModal: React.FC<Props> = ({
                           fullWidth: true,
                           error: !!errors?.checkInDate,
                           helperText: (errors as any)?.checkInDate?.message,
+                          readOnly: true,
                           InputProps: {
                             startAdornment: (
                               <InputAdornment position="start">
@@ -879,6 +876,8 @@ const BookingFormModal: React.FC<Props> = ({
                       slotProps={{
                         textField: {
                           fullWidth: true,
+                          readOnly: true,
+
                           error: !!errors?.checkOutDate,
                           helperText: (errors as any)?.checkOutDate?.message,
                           InputProps: {

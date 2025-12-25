@@ -73,7 +73,7 @@ export interface CreateWalkInInvoiceRequest {
   discountCode?: string;
   promotionCode?: string;
   promotionValue?: number;
-  additionalAmount?: number;
+  additionalValue?: number;
   additionalNotes?: string;
 }
 

@@ -99,7 +99,7 @@ public class InvoiceService : IInvoiceService
         var order = await _orderRepo.Query().Where(x => x.Id == targetId).FirstOrDefaultAsync();
         var invoice = await _invoiceRepository.Query().Where(x => x.OrderId == targetId).FirstOrDefaultAsync();
 
-        return (order?.Status == OrderStatus.Completed) && invoice is null;
+        return (order?.Status != OrderStatus.Draft && order?.Status != OrderStatus.Cancelled) && invoice is null;
     }
 
     public async Task<bool> RemoveLastBookingInvoiceAsync(Guid targetId)
@@ -312,7 +312,7 @@ public class InvoiceService : IInvoiceService
     {
 
 
-        var q = _invoiceRepository.Query().Where(x => x.BookingId != null).AsQueryable();
+        var q = _invoiceRepository.Query().Where(x => x.BookingId != null || x.OrderId != null).AsQueryable();
 
         q = q.Where(i => i.HotelId == query.HotelId);
         q = q.Where(i => i.Status != InvoiceStatus.Cancelled);

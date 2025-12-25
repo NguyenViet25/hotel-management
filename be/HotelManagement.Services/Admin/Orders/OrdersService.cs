@@ -101,7 +101,7 @@ public class OrdersService : IOrdersService
                     Guests = o.Guests,
                     ItemsTotal = o.Items
                         .Where(i => i.Status != OrderItemStatus.Voided)
-                        .Sum(i => i.UnitPrice * i.Quantity),
+                        .Sum(i => i.UnitPrice * i.Quantity) + (o.AdditionalValue ?? 0),
                     Items = await GetOrderItemsAsync(o.Id)
                 };
 
@@ -182,7 +182,7 @@ public class OrdersService : IOrdersService
                 ServingDate = o.ServingDate,
                 AdditionalNote = o.AdditionalNotes,
                 AdditionalValue = o.AdditionalValue,
-                ItemsTotal = o.Items.Where(i => i.Status != OrderItemStatus.Voided).Sum(i => i.UnitPrice * i.Quantity),
+                ItemsTotal = o.Items.Where(i => i.Status != OrderItemStatus.Voided).Sum(i => i.UnitPrice * i.Quantity) + (o.AdditionalValue ?? 0),
                 PromotionCode = o.PromotionCode,
                 PromotionValue = o.PromotionValue ?? 0,
                 Guests = o.Guests,
@@ -246,7 +246,7 @@ public class OrdersService : IOrdersService
                 CustomerName = dto.CustomerName,
                 CustomerPhone = dto.CustomerPhone,
                 Status = OrderStatus.NeedConfirmed,
-                CreatedAt = DateTime.Now,
+                CreatedAt = dto.ServingDate ?? DateTime.Now,
                 ServingDate = dto.ServingDate,
                 Notes = dto.Notes,
                 Guests = dto.Guests,
@@ -321,7 +321,7 @@ public class OrdersService : IOrdersService
                 IsWalkIn = false,
                 Notes = dto.Notes,
                 Status = OrderStatus.NeedConfirmed,
-                CreatedAt = DateTime.Now,
+                CreatedAt = dto.ServingDate ?? DateTime.Now,
                 ServingDate = dto.ServingDate,
                 Guests = dto.Guests,
             };
@@ -499,6 +499,7 @@ public class OrdersService : IOrdersService
             order.CustomerPhone = dto.CustomerPhone;
             order.CustomerName = dto.CustomerName;
             order.Guests = dto.Guests;
+            order.CreatedAt = dto.ServingDate ?? DateTime.Now;
             if (dto.Status.HasValue)
             {
                 order.Status = dto.Status.Value;

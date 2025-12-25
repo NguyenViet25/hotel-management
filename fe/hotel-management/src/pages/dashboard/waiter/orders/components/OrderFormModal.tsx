@@ -344,6 +344,7 @@ const OrderFormModal: React.FC<IProps> = ({
                   slotProps={{
                     textField: {
                       fullWidth: true,
+
                       startAdornment: (
                         <InputAdornment position="start">
                           <AccessTime color="primary" />
