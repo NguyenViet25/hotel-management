@@ -1296,8 +1296,12 @@ public class BookingsService(
     {
         foreach (var guest in dto.Persons)
         {
+            var exitsGuest = await _guestRepo.Query().Where(x => x.Phone == guest.Phone).AnyAsync();
+            if (exitsGuest) continue;
+
             var newGuest = new Guest()
             {
+                HotelId = dto.HotelId,
                 Id = Guid.NewGuid(),
                 FullName = guest.Name,
                 Phone = guest.Phone,
@@ -1310,6 +1314,7 @@ public class BookingsService(
 
             var bookingGuest = new BookingGuest()
             {
+                
                 BookingRoomId = dto.RoomBookingId,
                 GuestId = newGuest.Id,
             };

@@ -73,6 +73,67 @@ public class GuestsService : IGuestsService
             IdCardFrontImageUrl = g.IdCardFrontImageUrl,
             IdCardBackImageUrl = g.IdCardBackImageUrl
         };
+
+        var guestRoomLinks = await _db.Set<BookingGuest>()
+            .Where(bg => bg.GuestId == id)
+            .Select(bg => bg.BookingRoomId)
+            .Distinct()
+            .ToListAsync();
+        if (guestRoomLinks.Count > 0)
+        {
+            var rooms = await _db.Set<BookingRoom>()
+                .Where(br => guestRoomLinks.Contains(br.BookingRoomId))
+                .ToListAsync();
+            var brtIds = rooms.Select(r => r.BookingRoomTypeId).Distinct().ToList();
+            var roomTypeLinks = await _db.Set<BookingRoomType>()
+                .Where(rt => brtIds.Contains(rt.BookingRoomTypeId))
+                .Select(rt => new { rt.BookingRoomTypeId, rt.BookingId })
+                .ToListAsync();
+            var bookingIdMap = roomTypeLinks.ToDictionary(x => x.BookingRoomTypeId, x => x.BookingId);
+
+            var hotelRoomIds = rooms.Select(r => r.RoomId).Distinct().ToList();
+            var hotelRooms = await _db.Rooms.Where(r => hotelRoomIds.Contains(r.Id)).ToListAsync();
+            var roomNumMap = hotelRooms.ToDictionary(r => r.Id, r => r.Number);
+
+            dto.Rooms = rooms.Select(r => new GuestRoomStayDto
+            {
+                BookingRoomId = r.BookingRoomId,
+                RoomId = r.RoomId,
+                RoomNumber = roomNumMap.TryGetValue(r.RoomId, out var num) ? num : null,
+                StartDate = r.ActualCheckInAt ?? r.StartDate,
+                EndDate = r.ActualCheckOutAt ?? r.EndDate,
+                Status = r.BookingStatus,
+                BookingId = bookingIdMap.TryGetValue(r.BookingRoomTypeId, out var bid) ? bid : Guid.Empty
+            }).ToList();
+
+            var bookingIds = dto.Rooms.Select(x => x.BookingId).Where(b => b != Guid.Empty).Distinct().ToList();
+            if (bookingIds.Count > 0)
+            {
+                var orders = await _db.Orders.Where(o => o.BookingId.HasValue && bookingIds.Contains(o.BookingId.Value) || o.CustomerPhone == g.Phone).ToListAsync();
+                var orderIds = orders.Select(o => o.Id).ToList();
+                var items = await _db.OrderItems.Where(oi => orderIds.Contains(oi.OrderId)).ToListAsync();
+                var itemMap = items.GroupBy(i => i.OrderId).ToDictionary(gp => gp.Key, gp => gp.ToList());
+
+                dto.Orders = orders.Select(o => new GuestOrderDto
+                {
+                    OrderId = o.Id,
+                    BookingId = o.BookingId,
+                    Status = o.Status,
+                    CreatedAt = o.CreatedAt,
+                    Items = (itemMap.TryGetValue(o.Id, out var list) ? list : new List<OrderItem>())
+                        .Select(i => new GuestOrderItemDto
+                        {
+                            Id = i.Id,
+                            Name = i.Name,
+                            Quantity = i.Quantity,
+                            UnitPrice = i.UnitPrice,
+                            Status = i.Status
+                        }).ToList()
+                }).ToList();
+            }
+        }
+
+        return dto;
     }
 
     public async Task<ApiResponse<GuestDetailsDto>> CreateAsync(CreateGuestDto dto, Guid hotelId)
