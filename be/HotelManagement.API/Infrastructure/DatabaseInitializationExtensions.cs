@@ -1446,7 +1446,7 @@ public static class DatabaseInitializationExtensions
                 PromotionCode = null,
                 PromotionValue = 0,
                 CreatedAt = DateTime.Now,
-                Notes = "Seeded"
+                Notes = ""
             };
             dbContext.Set<Booking>().Add(b);
             await dbContext.SaveChangesAsync();
@@ -1723,7 +1723,7 @@ public static class DatabaseInitializationExtensions
                             CreatedAt = pd,
                             IssuedAt = pd,
                             PaidAt = pd.AddDays(1),
-                            Notes = "Seeded-BookingInvoice"
+                            Notes = ""
                         };
                         await dbContext.Set<Invoice>().AddAsync(invoice);
                         await dbContext.SaveChangesAsync();
@@ -1754,10 +1754,10 @@ public static class DatabaseInitializationExtensions
                     var g = new Guest
                     {
                         Id = Guid.NewGuid(),
-                        FullName = $"Khách {d:yyyyMMdd}-{rt.Name}",
+                        FullName = VietnameseNameGenerator.GenerateFullName(),
                         Phone = $"0{rnd.Next(100000000, 999999999)}",
                         IdCard = rnd.NextInt64(100000000000, 999999999999).ToString(),
-                        Email = $"seed-{d:yyyyMMdd}-{Guid.NewGuid().ToString()[..8]}@example.com",
+                        Email = $"{Guid.NewGuid().ToString()[..8]}@example.com",
                         HotelId = h.Id
                     };
                     await dbContext.Set<Guest>().AddAsync(g);
@@ -1778,7 +1778,7 @@ public static class DatabaseInitializationExtensions
                         CreatedAt = start.AddDays(rnd.Next(0, (d - start).Days + 1)).AddHours(rnd.Next(0, 24)).AddMinutes(rnd.Next(0, 60)),
                         StartDate = d,
                         EndDate = d.AddDays(1),
-                        Notes = "Seeded-2Months"
+                        Notes = ""
                     };
                     await dbContext.Set<Booking>().AddAsync(b);
                     await dbContext.SaveChangesAsync();
@@ -1896,7 +1896,7 @@ public static class DatabaseInitializationExtensions
                         CreatedAt = d,
                         IssuedAt = d,
                         PaidAt = d.AddDays(1),
-                        Notes = "Seeded-BookingInvoice"
+                        Notes = ""
                     };
                     await dbContext.Set<Invoice>().AddAsync(invoice);
                     await dbContext.SaveChangesAsync();

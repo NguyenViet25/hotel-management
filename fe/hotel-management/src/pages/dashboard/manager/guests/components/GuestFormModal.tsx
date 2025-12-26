@@ -47,10 +47,8 @@ const createSchema = z.object({
     .string()
     .trim()
     .min(2, "Họ tên tối thiểu 2 ký tự")
-    .regex(
-      /^[a-zA-Z]+$/,
-      "Họ tên chỉ được chứa chữ các ký tự chữ cái a-z hoặc A-Z"
-    ),
+    .regex(/^[\p{L}\s]+$/u, "Họ tên chỉ được chứa chữ cái a-z hoặc A-Z"),
+
   phone: phoneSchema,
   email: z.string().email("Email không hợp lệ").optional().or(z.literal("")),
   idCard: z
@@ -65,10 +63,7 @@ const updateSchema = z.object({
     .string()
     .trim()
     .min(2, "Họ tên tối thiểu 2 ký tự")
-    .regex(
-      /^[a-zA-Z]+$/,
-      "Họ tên chỉ được chứa chữ các ký tự chữ cái a-z hoặc A-Z"
-    ),
+    .regex(/^[\p{L}\s]+$/u, "Họ tên chỉ được chứa chữ cái a-z hoặc A-Z"),
   phone: phoneSchema.optional(),
   email: z.string().email("Email không hợp lệ").optional().or(z.literal("")),
   idCard: z

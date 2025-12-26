@@ -41,10 +41,8 @@ const GuestDialog: React.FC<Props> = ({ open, initial, onClose, onSubmit }) => {
     name: z
       .string()
       .min(2, "Họ tên phải có ít nhất 2 ký tự")
-      .regex(
-        /^[a-zA-Z]+$/,
-        "Họ tên chỉ được chứa chữ các ký tự chữ cái a-z hoặc A-Z"
-      ),
+      .regex(/^[\p{L}\s]+$/u, "Họ tên chỉ được chứa chữ cái a-z hoặc A-Z"),
+
     idCard: z
       .string("Vui lòng nhập CCCD")
       .trim()

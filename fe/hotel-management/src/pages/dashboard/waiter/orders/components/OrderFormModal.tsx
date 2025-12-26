@@ -54,10 +54,8 @@ const schema = z.object({
   customerName: z
     .string()
     .min(2, "Tên khách hàng bắt buộc")
-    .regex(
-      /^[a-zA-Z]+$/,
-      "Họ tên chỉ được chứa chữ các ký tự chữ cái a-z hoặc A-Z"
-    ),
+    .regex(/^[\p{L}\s]+$/u, "Họ tên chỉ được chứa chữ cái a-z hoặc A-Z"),
+
   customerPhone: phoneSchema.optional(),
   status: z.number().optional(),
   notes: z.string().optional(),
