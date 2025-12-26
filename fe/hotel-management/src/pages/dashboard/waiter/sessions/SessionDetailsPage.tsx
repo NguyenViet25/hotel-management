@@ -440,7 +440,12 @@ export default function SessionDetailsPage() {
             </Typography>
             <Chip
               label={session.status === "Open" ? "Đang mở" : "Đóng"}
-              sx={{ color: "white", border: "1px dashed" }}
+              sx={{
+                color: session.status === "Open" ? "black" : "white",
+                border: "1px dashed",
+                backgroundColor:
+                  session.status === "Open" ? "yellow" : "error.main",
+              }}
               size="small"
             />
           </Box>

@@ -86,7 +86,7 @@ public class KitchenService : IKitchenService
                 .Where(o => o.CreatedAt >= startOfDay && o.CreatedAt < endOfDay)
                 .Where(o => o.HotelId == request.HotelId)
                 .SelectMany(o => o.Items)                   // flatten items
-                .GroupBy(i => i.Id)                         // group by Id
+                .GroupBy(i => i.MenuItemId)                         // group by Id
                 .Select(g => new FoodsByDayItem
                 {
                     Id = g.Key,

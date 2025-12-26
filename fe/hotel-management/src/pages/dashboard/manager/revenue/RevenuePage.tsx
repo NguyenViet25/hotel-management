@@ -175,11 +175,11 @@ const RevenuePage: React.FC = () => {
             <Typography variant="h5" fontWeight={800}>
               {currency(stats?.total || 0)}
             </Typography>
-            <Divider sx={{ my: 1 }} />
-            <Typography variant="body2" color="text.secondary">
+            {/* <Divider sx={{ my: 1 }} /> */}
+            {/* <Typography variant="body2" color="text.secondary">
               Số hóa đơn
             </Typography>
-            <Typography variant="h6">{stats?.count || 0}</Typography>
+            <Typography variant="h6">{stats?.count || 0}</Typography> */}
           </Stack>
         </CardContent>
       </Card>

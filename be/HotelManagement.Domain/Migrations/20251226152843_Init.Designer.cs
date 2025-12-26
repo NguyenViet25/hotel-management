@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelManagement.Domain.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251225060042_Init")]
+    [Migration("20251226152843_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -76,6 +76,9 @@ namespace HotelManagement.Domain.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<decimal>("DefaultAmount")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("DepositAmount")
                         .HasPrecision(18, 2)

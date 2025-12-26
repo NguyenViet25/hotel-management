@@ -11,6 +11,7 @@ public class Booking
     public decimal DepositAmount { get; set; }
     public decimal DiscountAmount { get; set; }
     public decimal TotalAmount { get; set; }
+    public decimal DefaultAmount { get; set; }
     public decimal LeftAmount { get; set; }
     public decimal AdditionalAmount { get; set; }
     public decimal? AdditionalBookingAmount { get; set; }

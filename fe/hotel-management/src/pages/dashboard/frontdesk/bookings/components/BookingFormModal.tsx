@@ -80,7 +80,13 @@ const roomItemSchema = z.object({
 
 const schema = z
   .object({
-    guestName: z.string().min(2, "Họ tên phải có ít nhất 2 ký tự"),
+    guestName: z
+      .string()
+      .min(2, "Họ tên phải có ít nhất 2 ký tự")
+      .regex(
+        /^[a-zA-Z]+$/,
+        "Họ tên chỉ được chứa chữ các ký tự chữ cái a-z hoặc A-Z"
+      ),
     guestPhone: phoneSchema,
     guestEmail: z
       .string()
@@ -89,7 +95,7 @@ const schema = z
       .or(z.literal("")),
     checkInDate: dayjsValidator,
     checkOutDate: dayjsValidator,
-    roomTypes: z.array(roomItemSchema).min(1, "Thêm ít nhất 1 phòng"),
+    roomTypes: z.array(roomItemSchema).min(0).optional(),
     depositAmount: z.coerce
       .number("Tiền cọc phải là số")
       .min(0, "Tiền cọc không âm"),
@@ -107,14 +113,6 @@ const schema = z
         dayjs(data.checkInDate as Dayjs)
       ),
     { message: "Đến ngày phải sau Từ ngày", path: ["checkOutDate"] }
-  )
-  .refine(
-    (data) =>
-      (data.roomTypes || []).reduce(
-        (sum, r) => sum + (Number(r.totalRooms) || 0),
-        0
-      ) > 0,
-    { message: "Chọn ít nhất 1 phòng", path: ["roomTypes"] }
   );
 
 type FormValues = z.infer<typeof schema>;
@@ -157,6 +155,8 @@ const BookingFormModal: React.FC<Props> = ({
       totalAmount: 0,
     },
   });
+
+  console.log("errors", errors);
 
   const { append, remove } = useFieldArray({
     name: "roomTypes",
@@ -1111,7 +1111,7 @@ const BookingFormModal: React.FC<Props> = ({
               onClick={handleSubmit(submit as any, () =>
                 setSnackbar({
                   open: true,
-                  message: "Vui lòng chọn ít nhất 1 phòng",
+                  message: "Vui lòng nhập đầy đủ thông tin",
                   severity: "error",
                 })
               )}

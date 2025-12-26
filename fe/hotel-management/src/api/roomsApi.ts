@@ -155,6 +155,17 @@ export interface RoomsInUseTodayDto {
   summary: RoomStatusSummaryDto;
 }
 
+export function getOccupancyTier(summary: RoomStatusSummaryDto) {
+  const total = summary.totalRooms || 0;
+  const occupied = summary.occupiedRooms || 0;
+  const remaining = Math.max(0, total - occupied);
+  const remainingPercent = total > 0 ? (remaining / total) * 100 : 0;
+  let tier = 0.25;
+  if (remainingPercent > 40 && remainingPercent <= 80) tier = 0.5;
+  else if (remainingPercent > 80) tier = 0.75;
+  return tier;
+}
+
 export function computeOccupancyDemand(summary: RoomStatusSummaryDto) {
   const total = summary.totalRooms || 0;
   const occupied = summary.occupiedRooms || 0;

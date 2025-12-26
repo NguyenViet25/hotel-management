@@ -283,11 +283,11 @@ const AdminDashboardPage: React.FC = () => {
                 <Typography variant="h5" fontWeight={800}>
                   {Math.round(Number(revStats?.total || 0)).toLocaleString()} đ
                 </Typography>
-                <Divider sx={{ my: 1 }} />
-                <Typography variant="body2" color="text.secondary">
+                {/* <Divider sx={{ my: 1 }} /> */}
+                {/* <Typography variant="body2" color="text.secondary">
                   Số hóa đơn
                 </Typography>
-                <Typography variant="h6">{revStats?.count || 0}</Typography>
+                <Typography variant="h6">{revStats?.count || 0}</Typography> */}
               </Stack>
             </CardContent>
           </Card>

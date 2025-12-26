@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -16,6 +16,10 @@ import PhoneIcon from "@mui/icons-material/Phone";
 
 import UploadCCCD from "./UploadCCCD";
 import { toast } from "react-toastify";
+import { useForm, Controller } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { phoneSchema } from "../../../../../validation/phone";
 
 type GuestForm = {
   name: string;
@@ -33,17 +37,45 @@ type Props = {
 };
 
 const GuestDialog: React.FC<Props> = ({ open, initial, onClose, onSubmit }) => {
-  const [guest, setGuest] = useState<GuestForm>({
-    name: "",
-    phone: "",
-    idCardBackImageUrl: "",
-    idCardFrontImageUrl: "",
-    idCard: "",
+  const schema = z.object({
+    name: z
+      .string()
+      .min(2, "Họ tên phải có ít nhất 2 ký tự")
+      .regex(
+        /^[a-zA-Z]+$/,
+        "Họ tên chỉ được chứa chữ các ký tự chữ cái a-z hoặc A-Z"
+      ),
+    idCard: z
+      .string("Vui lòng nhập CCCD")
+      .trim()
+      .regex(/^\d{9}$|^\d{12}$/, "CMND/CCCD không hợp lệ"),
+    phone: phoneSchema,
+    idCardFrontImageUrl: z.string().optional(),
+    idCardBackImageUrl: z.string().optional(),
+  });
+
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    reset,
+    formState: { errors, isValid },
+    watch,
+  } = useForm<GuestForm>({
+    resolver: zodResolver(schema),
+    mode: "onChange",
+    defaultValues: {
+      name: "",
+      phone: "",
+      idCardBackImageUrl: "",
+      idCardFrontImageUrl: "",
+      idCard: "",
+    },
   });
 
   useEffect(() => {
-    if (open)
-      setGuest(
+    if (open) {
+      reset(
         initial || {
           name: "",
           phone: "",
@@ -52,28 +84,18 @@ const GuestDialog: React.FC<Props> = ({ open, initial, onClose, onSubmit }) => {
           idCard: "",
         }
       );
-  }, [open, initial]);
+    }
+  }, [open, initial, reset]);
 
-  const isPhoneValid = useMemo(() => {
-    const v = (guest.phone || "").trim();
-    const re = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
-    return re.test(v);
-  }, [guest.phone]);
+  const idCardFrontImageUrl = watch("idCardFrontImageUrl");
 
-  const allRequiredFilled = useMemo(() => {
-    return Boolean(guest.name && guest.phone && guest.idCard);
-  }, [guest]);
-
-  const submit = () => {
-    if (!allRequiredFilled || !isPhoneValid) return;
-
-    if (!guest.idCardFrontImageUrl) {
+  const submit = handleSubmit((data) => {
+    if (!idCardFrontImageUrl) {
       toast.warning("Vui lòng upload ảnh mặt trước");
       return;
     }
-
-    onSubmit(guest);
-  };
+    onSubmit(data);
+  });
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
@@ -90,88 +112,92 @@ const GuestDialog: React.FC<Props> = ({ open, initial, onClose, onSubmit }) => {
 
       <DialogContent>
         <Stack spacing={1.5} sx={{ mt: 4 }}>
-          {/* Full Name */}
-          <TextField
-            label="Họ và tên"
-            value={guest.name}
-            placeholder="Nhập họ và tên"
-            onChange={(e) => setGuest({ ...guest, name: e.target.value })}
-            fullWidth
-            required
-            error={!guest.name}
-            helperText={!guest.name ? "Bắt buộc nhập họ và tên" : undefined}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <PersonIcon color="primary" />
-                </InputAdornment>
-              ),
-            }}
+          <Controller
+            control={control}
+            name="name"
+            render={({ field }) => (
+              <TextField
+                label="Họ và tên"
+                placeholder="Nhập họ và tên"
+                fullWidth
+                required
+                error={!!errors.name}
+                helperText={errors.name?.message}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PersonIcon color="primary" />
+                    </InputAdornment>
+                  ),
+                }}
+                {...field}
+              />
+            )}
           />
 
-          {/* ID Card */}
-          <TextField
-            label="Căn cước công dân"
-            placeholder="Nhập căn cước công dân"
-            value={guest.idCard}
-            onChange={(e) => setGuest({ ...guest, idCard: e.target.value })}
-            fullWidth
-            required
-            error={!guest.idCard}
-            helperText={!guest.idCard ? "Bắt buộc nhập CCCD" : undefined}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <BadgeIcon color="primary" />
-                </InputAdornment>
-              ),
-            }}
+          <Controller
+            control={control}
+            name="idCard"
+            render={({ field }) => (
+              <TextField
+                label="CMND/CCCD"
+                placeholder="Nhập CMND/CCCD"
+                fullWidth
+                required
+                error={!!errors.idCard}
+                helperText={errors.idCard?.message}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <BadgeIcon color="primary" />
+                    </InputAdornment>
+                  ),
+                }}
+                {...field}
+              />
+            )}
           />
 
-          {/* Phone */}
-          <TextField
-            label="Số điện thoại"
-            value={guest.phone}
-            placeholder="Nhập số điện thoại"
-            onChange={(e) => setGuest({ ...guest, phone: e.target.value })}
-            fullWidth
-            required
-            error={!!guest.phone && !isPhoneValid}
-            helperText={
-              guest.phone && !isPhoneValid
-                ? "Số điện thoại không hợp lệ"
-                : undefined
-            }
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <PhoneIcon color="primary" />
-                </InputAdornment>
-              ),
-            }}
+          <Controller
+            control={control}
+            name="phone"
+            render={({ field }) => (
+              <TextField
+                label="Số điện thoại"
+                placeholder="Nhập số điện thoại"
+                fullWidth
+                required
+                error={!!errors.phone}
+                helperText={errors.phone?.message}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PhoneIcon color="primary" />
+                    </InputAdornment>
+                  ),
+                }}
+                {...field}
+              />
+            )}
           />
 
           <UploadCCCD
             label="Mặt trước"
-            value={guest.idCardFrontImageUrl}
-            onChange={(url) => setGuest({ ...guest, idCardFrontImageUrl: url })}
+            value={watch("idCardFrontImageUrl")}
+            onChange={(url) => setValue("idCardFrontImageUrl", url)}
           />
 
           <UploadCCCD
             label="Mặt sau"
-            value={guest.idCardBackImageUrl}
-            onChange={(url) => setGuest({ ...guest, idCardBackImageUrl: url })}
+            value={watch("idCardBackImageUrl")}
+            onChange={(url) => setValue("idCardBackImageUrl", url)}
           />
         </Stack>
       </DialogContent>
 
       <DialogActions>
         <Button onClick={onClose}>Hủy</Button>
-        <Button
-          variant="contained"
-          onClick={submit}
-          disabled={!allRequiredFilled || !isPhoneValid}
-        >
+        <Button variant="contained" onClick={submit} disabled={!isValid}>
           Lưu
         </Button>
       </DialogActions>

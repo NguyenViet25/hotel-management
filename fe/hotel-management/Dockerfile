@@ -7,9 +7,9 @@ RUN npm ci
 
 COPY . .
 
-# Allow overriding API base URL at build time
-ARG VITE_API_BASE_URL=http://localhost:5000
-ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
+# Allow overriding API base URL at build time (used by Vite)
+ARG VITE_API_URL=http://localhost:5000/api
+ENV VITE_API_URL=${VITE_API_URL}
 
 RUN npm run build
 

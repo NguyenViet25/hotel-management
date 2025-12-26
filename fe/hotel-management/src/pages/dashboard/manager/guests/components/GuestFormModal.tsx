@@ -43,18 +43,38 @@ type Props =
       onSubmit: (payload: UpdateGuestRequest) => Promise<void>;
     };
 const createSchema = z.object({
-  fullName: z.string().trim().min(2, "Họ tên tối thiểu 2 ký tự"),
+  fullName: z
+    .string()
+    .trim()
+    .min(2, "Họ tên tối thiểu 2 ký tự")
+    .regex(
+      /^[a-zA-Z]+$/,
+      "Họ tên chỉ được chứa chữ các ký tự chữ cái a-z hoặc A-Z"
+    ),
   phone: phoneSchema,
   email: z.string().email("Email không hợp lệ").optional().or(z.literal("")),
-  idCard: z.string().trim().min(6, "CMND/CCCD không hợp lệ"),
+  idCard: z
+    .string("Vui lòng nhập CCCD")
+    .trim()
+    .regex(/^\d{9}$|^\d{12}$/, "CMND/CCCD không hợp lệ"),
   idCardFrontImageUrl: z.string().optional().or(z.literal("")),
   idCardBackImageUrl: z.string().optional().or(z.literal("")),
 });
 const updateSchema = z.object({
-  fullName: z.string().trim().min(2, "Họ tên tối thiểu 2 ký tự").optional(),
+  fullName: z
+    .string()
+    .trim()
+    .min(2, "Họ tên tối thiểu 2 ký tự")
+    .regex(
+      /^[a-zA-Z]+$/,
+      "Họ tên chỉ được chứa chữ các ký tự chữ cái a-z hoặc A-Z"
+    ),
   phone: phoneSchema.optional(),
   email: z.string().email("Email không hợp lệ").optional().or(z.literal("")),
-  idCard: z.string().trim().min(6, "CMND/CCCD không hợp lệ").optional(),
+  idCard: z
+    .string("Vui lòng nhập CCCD")
+    .trim()
+    .regex(/^\d{9}$|^\d{12}$/, "CMND/CCCD không hợp lệ"),
   idCardFrontImageUrl: z.string().optional(),
   idCardBackImageUrl: z.string().optional(),
 });

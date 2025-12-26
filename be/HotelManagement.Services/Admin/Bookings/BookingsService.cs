@@ -81,6 +81,7 @@ public class BookingsService(
                 DepositAmount = dto.Deposit,
                 DiscountAmount = dto.Discount,
                 TotalAmount = dto.Total,
+                DefaultAmount = dto.Total,
                 LeftAmount = dto.Left,
                 CreatedAt = DateTime.Now,
                 Notes = dto.Notes,
@@ -239,6 +240,8 @@ public class BookingsService(
                 .ToListAsync();
             var gm = guestDetails.ToDictionary(x => x.Id, x => x);
 
+
+
             var dto = new BookingDetailsDto
             {
                 Id = b.Id,
@@ -249,6 +252,7 @@ public class BookingsService(
                 Email = b.PrimaryGuest?.Email,
                 Notes = b.Notes,
                 Status = b.Status,
+                DefaultAmount = b.DefaultAmount,
                 DepositAmount = b.DepositAmount,
                 DiscountAmount = b.DiscountAmount,
                 TotalAmount = b.TotalAmount,
@@ -363,7 +367,7 @@ public class BookingsService(
             if (!string.IsNullOrWhiteSpace(query.GuestName))
             {
                 var gn = query.GuestName!.Trim();
-                q = q.Where(b => (_guestRepo.Query().Any(g => g.Id == b.PrimaryGuestId && (g.FullName ?? "").Contains(gn))));
+                q = q.Where(b => (_guestRepo.Query().Any(g => g.Id == b.PrimaryGuestId && ((g.FullName ?? "").Contains(gn) || g.Phone.Contains(gn)))));
             }
             if (!string.IsNullOrWhiteSpace(query.RoomNumber))
             {
@@ -387,7 +391,7 @@ public class BookingsService(
             var items = await q
                 .Skip((query.Page - 1) * query.PageSize)
                 .Take(query.PageSize)
-               
+
                 .ToListAsync();
 
             // Preload guests
@@ -514,7 +518,7 @@ public class BookingsService(
 
                 list.Add(item);
             }
-            return ApiResponse<List<BookingDetailsDto>>.Ok(list.OrderBy(x => x.StartDate).ToList(), meta: new { total, page = query.Page, pageSize = query.PageSize });
+            return ApiResponse<List<BookingDetailsDto>>.Ok(list.OrderBy(x => x.Status).ThenBy(x => x.StartDate).ToList(), meta: new { total, page = query.Page, pageSize = query.PageSize });
         }
         catch (Exception ex)
         {
@@ -744,6 +748,7 @@ public class BookingsService(
             booking.EndDate = dto.EndDate;
             booking.TotalAmount = dto.Total;
             booking.LeftAmount = dto.Left;
+            booking.DefaultAmount = dto.Total;
             booking.DiscountAmount = dto.Discount;
             booking.DepositAmount = dto.Deposit;
             booking.Notes = dto.Notes;
@@ -1314,7 +1319,7 @@ public class BookingsService(
 
             var bookingGuest = new BookingGuest()
             {
-                
+
                 BookingRoomId = dto.RoomBookingId,
                 GuestId = newGuest.Id,
             };
