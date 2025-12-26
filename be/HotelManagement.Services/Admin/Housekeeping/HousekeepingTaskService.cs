@@ -69,11 +69,33 @@ public class HousekeepingTaskService : IHousekeepingTaskService
 
     public async Task<ApiResponse<HousekeepingTaskDto>> AssignAsync(AssignHousekeeperRequest request)
     {
-        var task = await _taskRepo.FindAsync(request.TaskId);
-        if (task == null) return ApiResponse<HousekeepingTaskDto>.Fail("Task not found");
-        task.AssignedToUserId = request.AssignedToUserId;
-        await _taskRepo.UpdateAsync(task);
+        var oldTask = await _taskRepo.FindAsync(request.TaskId);
+        if (oldTask == null) return ApiResponse<HousekeepingTaskDto>.Fail("Task not found");
+
+    
+
+        var allOldTasks = await _taskRepo.Query().Where(x => x.RoomId == oldTask.RoomId && x.CompletedAt == null).ToListAsync();
+
+        foreach(var removedTask in allOldTasks)
+        {
+            await _taskRepo.RemoveAsync(removedTask);
+            await _taskRepo.SaveChangesAsync();
+        }
+
+        var task = new HousekeepingTask
+        {
+            Id = Guid.NewGuid(),
+            HotelId = oldTask.HotelId,
+            RoomId = oldTask.RoomId,
+            AssignedToUserId = request.AssignedToUserId,
+            Notes = oldTask.Notes,
+            CreatedAt = DateTime.Now
+        };
+
+        await _taskRepo.AddAsync(task);
         await _taskRepo.SaveChangesAsync();
+
+
         return ApiResponse<HousekeepingTaskDto>.Success(await ToDto(task));
     }
 

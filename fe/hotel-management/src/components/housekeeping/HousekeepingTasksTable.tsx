@@ -17,8 +17,17 @@ import {
   Divider,
   Stack,
   Typography,
+  InputAdornment,
 } from "@mui/material";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import {
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  type SelectChangeEvent,
+} from "@mui/material";
+import { Search } from "@mui/icons-material";
 import housekeepingApi from "../../api/housekeepingApi";
 import { type HousekeepingTaskDto } from "../../api/housekeepingTasksApi";
 import DataTable, { type Column } from "../common/DataTable";
@@ -38,18 +47,47 @@ export default function HousekeepingTasksTable({
   const [selected, setSelected] = useState<HousekeepingTaskDto | null>(null);
   const currency = (v?: number) =>
     typeof v === "number" ? `${v.toLocaleString()}₫` : "—";
+  const [statusFilter, setStatusFilter] = useState<
+    "All" | "Pending" | "InProgress" | "Completed"
+  >("All");
+  const [searchText, setSearchText] = useState<string>("");
+  const [floorFilter, setFloorFilter] = useState<number | "all">("all");
 
   const openInfo = async (id: string) => {
     try {
-      const from = new Date(selected?.startedAt!);
-      from.setHours(0, 0, 0, 0);
-      const to = new Date(selected?.completedAt!);
-      to.setHours(23, 59, 59, 999);
       const houseKeepingTask = await housekeepingApi.getAsync(id);
       setSelected(houseKeepingTask.data || null);
-    } catch {}
+    } catch (e) {
+      void e;
+    }
     setInfoOpen(true);
   };
+
+  const filteredTasks = useMemo(() => {
+    return (tasks || []).filter((t) => {
+      const status = t.completedAt
+        ? "Completed"
+        : t.startedAt
+        ? "InProgress"
+        : "Pending";
+      const byStatus = statusFilter === "All" || statusFilter === status;
+      const bySearch =
+        !searchText ||
+        t.roomNumber.toLowerCase().includes(searchText.toLowerCase()) ||
+        (t.assignedToName || "")
+          .toLowerCase()
+          .includes(searchText.toLowerCase());
+      const byFloor = floorFilter === "all" || t.floor === floorFilter;
+      return byStatus && bySearch && byFloor;
+    });
+  }, [tasks, statusFilter, searchText, floorFilter]);
+
+  const floorOptions = useMemo(() => {
+    const floors = Array.from(new Set((tasks || []).map((t) => t.floor))).sort(
+      (a, b) => a - b
+    );
+    return floors;
+  }, [tasks]);
 
   const columns: Column<HousekeepingTaskDto>[] = [
     { id: "roomNumber", label: "Phòng", minWidth: 90 },
@@ -104,9 +142,51 @@ export default function HousekeepingTasksTable({
           {title}
         </Typography>
       )}
+      <Stack
+        direction={{ xs: "column", md: "row" }}
+        spacing={1}
+        alignItems="center"
+        sx={{ mb: 1 }}
+      >
+        <FormControl size="small" sx={{ minWidth: 180 }}>
+          <InputLabel>Trạng thái</InputLabel>
+          <Select
+            label="Trạng thái"
+            value={statusFilter}
+            onChange={(e: SelectChangeEvent) =>
+              setStatusFilter(
+                e.target.value as "All" | "Pending" | "InProgress" | "Completed"
+              )
+            }
+          >
+            <MenuItem value="All">Tất cả</MenuItem>
+            <MenuItem value="Pending">Chưa làm</MenuItem>
+            <MenuItem value="InProgress">Đang làm</MenuItem>
+            <MenuItem value="Completed">Hoàn tất</MenuItem>
+          </Select>
+        </FormControl>
+        <FormControl size="small" sx={{ minWidth: 140 }}>
+          <InputLabel>Tầng</InputLabel>
+          <Select
+            label="Tầng"
+            value={String(floorFilter)}
+            onChange={(e: SelectChangeEvent) => {
+              const v = e.target.value;
+              setFloorFilter(v === "all" ? "all" : Number(v));
+            }}
+          >
+            <MenuItem value="all">Tất cả</MenuItem>
+            {floorOptions.map((f) => (
+              <MenuItem key={f} value={f}>
+                Tầng {f}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Stack>
       <DataTable
         columns={columns}
-        data={tasks}
+        data={filteredTasks}
         loading={loading}
         getRowId={(t) => t.id}
         actionColumn={false}
@@ -308,7 +388,7 @@ export default function HousekeepingTasksTable({
                               </TableCell>
                               <TableCell align="right">
                                 <Typography variant="body2">
-                                  {currency((b as any).minibarPrice)}
+                                  {currency(b.minibarPrice)}
                                 </Typography>
                               </TableCell>
                               <TableCell align="right">

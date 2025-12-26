@@ -412,6 +412,7 @@ public class BookingsService(
                 Email = b.PrimaryGuest?.Email,
                 Status = b.Status,
                 DepositAmount = b.DepositAmount,
+                DefaultAmount = b.DefaultAmount,
                 DiscountAmount = b.DiscountAmount,
                 TotalAmount = b.TotalAmount,
                 LeftAmount = b.LeftAmount,
@@ -640,10 +641,22 @@ public class BookingsService(
                 return ApiResponse<BookingDetailsDto>.Fail("Booking not found");
             }
 
+
+
             var existingBrtList = await _bookingRoomTypeRepo.Query()
                 .Where(x => x.BookingId == booking.Id)
                 .ToListAsync();
-            booking.BookingRoomTypes = existingBrtList;
+
+            var exist = existingBrtList.Where(x => dto.RoomTypes.Any(b => b.RoomTypeId == x.RoomTypeId)).ToList();
+            var notExist = existingBrtList.Except(exist).ToList();
+
+            foreach (var notExt in notExist)
+            {
+                await _bookingRoomTypeRepo.RemoveAsync(notExt);
+                await _bookingRoomTypeRepo.SaveChangesAsync();
+            }
+
+            booking.BookingRoomTypes = exist;
 
             if (dto.RoomTypes != null && dto.RoomTypes.Count > 0)
             {

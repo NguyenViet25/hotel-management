@@ -311,7 +311,7 @@ namespace HotelManagement.Domain.Migrations
                     DepositAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     DiscountAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     TotalAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    DefaultAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    DefaultAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     LeftAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     AdditionalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     AdditionalBookingAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),

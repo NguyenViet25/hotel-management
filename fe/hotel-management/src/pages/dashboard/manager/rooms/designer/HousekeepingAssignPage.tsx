@@ -101,7 +101,8 @@ export default function HousekeepingAssignPage() {
 
   const taskByRoomId = useMemo(() => {
     const map: Record<string, HousekeepingTaskDto | undefined> = {};
-    for (const t of tasks) map[t.roomId] = t;
+    for (const t of tasks.filter((x) => x.completedAt === null))
+      map[t.roomId] = t;
     return map;
   }, [tasks]);
 

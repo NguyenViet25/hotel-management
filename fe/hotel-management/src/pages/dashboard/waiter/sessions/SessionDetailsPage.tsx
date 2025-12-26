@@ -544,7 +544,7 @@ export default function SessionDetailsPage() {
                   Gán nhân viên
                 </Button>
               )}
-              {session?.status !== "Open" && (
+              {/* {session?.status !== "Open" && (
                 <Button
                   size="small"
                   variant="contained"
@@ -555,7 +555,7 @@ export default function SessionDetailsPage() {
                 >
                   Mở phiên
                 </Button>
-              )}
+              )} */}
               <Button
                 size="small"
                 variant="contained"
@@ -1125,19 +1125,20 @@ export default function SessionDetailsPage() {
                   </TableBody>
                 </Table>
 
-                {isWaiter && (
-                  <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-                    <Button
-                      variant="contained"
-                      color="success"
-                      size="small"
-                      startIcon={<CheckCircle />}
-                      onClick={() => setStatusDialogOpen(true)}
-                    >
-                      Đã phục vụ
-                    </Button>
-                  </Box>
-                )}
+                {isWaiter &&
+                  orderRes.data.status !== EOrderStatus.Completed && (
+                    <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+                      <Button
+                        variant="contained"
+                        color="success"
+                        size="small"
+                        startIcon={<CheckCircle />}
+                        onClick={() => setStatusDialogOpen(true)}
+                      >
+                        Đã phục vụ
+                      </Button>
+                    </Box>
+                  )}
               </Stack>
             )}
           </Box>

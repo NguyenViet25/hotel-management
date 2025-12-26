@@ -469,6 +469,7 @@ const BookingFormModal: React.FC<Props> = ({
   }, [mode, bookingData, setValue]);
 
   const submit = async (values: FormValues) => {
+    console.log("-----------------", values);
     try {
       const totalSelected = (values.roomTypes || []).reduce(
         (sum, r) => sum + (Number(r.totalRooms) || 0),
@@ -492,7 +493,7 @@ const BookingFormModal: React.FC<Props> = ({
         return;
       }
       let dynError = false;
-      values.roomTypes.forEach((rt, idx) => {
+      values.roomTypes?.forEach((rt, idx) => {
         const t = roomTypes.find((x) => x.id === rt.roomId);
         const min = t?.priceFrom ?? 0;
         const max = t?.priceTo ?? Number.MAX_SAFE_INTEGER;
@@ -584,28 +585,6 @@ const BookingFormModal: React.FC<Props> = ({
 
       // Update booking flow
       if (mode === "update" && bookingData?.id) {
-        const originalTotalRooms = (
-          (bookingData as any)?.bookingRoomTypes || []
-        ).reduce(
-          (sum: number, rt: any) =>
-            sum + (rt.totalRoom || rt.bookingRooms?.length || 0),
-          0
-        );
-        const newTotalRooms = (values.roomTypes || []).reduce(
-          (sum, rt) => sum + (rt.totalRooms || 0),
-          0
-        );
-
-        // if (originalTotalRooms !== newTotalRooms) {
-        //   setSnackbar({
-        //     open: true,
-        //     message:
-        //       "Không thể cập nhật: tổng số phòng đã thay đổi. Vui lòng giữ nguyên số lượng phòng.",
-        //     severity: "error",
-        //   });
-        //   return;
-        // }
-
         const payload: UpdateBookingDto = {
           hotelId: hotelId,
           primaryGuest: {
