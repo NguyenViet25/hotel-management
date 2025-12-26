@@ -39,6 +39,7 @@ import roomTypesApi from "../../../../../api/roomTypesApi";
 import roomsApi, {
   type RoomsInUseTodayDto,
   computeOccupancyDemand,
+  getOccupancyTier,
 } from "../../../../../api/roomsApi";
 import { useStore, type StoreState } from "../../../../../hooks/useStore";
 import {
@@ -53,6 +54,7 @@ import PromotionDialog from "../../invoices/components/PromotionDialog";
 import { Close, Print } from "@mui/icons-material";
 import DiscountIcon from "@mui/icons-material/Discount";
 import PercentIcon from "@mui/icons-material/Percent";
+import housekeepingApi from "../../../../../api/housekeepingApi";
 
 type Props = {
   open: boolean;
@@ -182,15 +184,10 @@ const BookingInvoiceDialog: React.FC<Props> = ({
         return;
       }
       try {
-        const occ = await roomsApi.getRoomsInUseToday();
-        const summary = (occ.data ||
-          (occ as any).data?.data ||
-          occ) as RoomsInUseTodayDto;
-        const demand = computeOccupancyDemand(summary?.summary as any);
-        const rem = demand.remainingPercent || 0;
-        let rate = 0.25;
-        if (rem > 40 && rem <= 80) rate = 0.5;
-        else if (rem > 80) rate = 0.75;
+        const summary = await housekeepingApi.getSummary(hotelId!);
+
+        const rate = getOccupancyTier(summary.data!) ?? 0;
+
         setAutoEarlyRate(rate);
         setAutoEarlySurcharge(Math.round(penaltyBase * rate));
       } catch {
@@ -411,10 +408,14 @@ const BookingInvoiceDialog: React.FC<Props> = ({
     }
 
     if (autoEarlySurcharge > 0) {
+      const actualCheckOutAt = booking.bookingRoomTypes.flatMap((x) =>
+        x.bookingRooms.flatMap((x) => x.actualCheckOutAt)
+      )[0];
       rows.push({
         label: `Phụ thu trả phòng sớm (${Math.round(
           (autoEarlyRate || 0) * 100
-        )}%)`,
+        )}%) `,
+        dateRange: dayjs(actualCheckOutAt).format("DD/MM/YYYY"),
         quantity: "—",
         nights: undefined,
         unit: autoEarlySurcharge,
@@ -516,14 +517,6 @@ const BookingInvoiceDialog: React.FC<Props> = ({
       toast.error("Đã xảy ra lỗi khi xuất hóa đơn");
     }
   };
-
-  function formatVND(value: number | null | undefined) {
-    if (value === null || value === undefined) return "";
-
-    const digits = value.toString();
-
-    return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  }
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
