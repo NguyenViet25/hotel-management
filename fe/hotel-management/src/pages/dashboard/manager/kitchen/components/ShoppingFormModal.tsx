@@ -130,7 +130,7 @@ const ShoppingFormModal: React.FC<ShoppingFormModalProps> = ({
   const submitHandler = async (values: FormValues) => {
     const payload: ShoppingListRequestDto = {
       id: initialValues?.id || undefined,
-      orderDate: getExactVNDate(values.orderDate.toDate().toDateString()),
+      orderDate: dayjs(values.orderDate).toDate(),
       hotelId,
       notes: values.notes || "",
       shoppingItems: values.shoppingItems,

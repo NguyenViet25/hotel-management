@@ -115,7 +115,7 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
     },
     {
       id: "itemsCount",
-      label: "Số món",
+      label: "Số lượng",
       minWidth: 90,
     },
     {

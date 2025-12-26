@@ -399,7 +399,7 @@ export default function SessionBoardPage() {
             >
               <MenuItem value="All">Tất cả</MenuItem>
               <MenuItem value="Open">Đang mở</MenuItem>
-              <MenuItem value="Closed">Đã kết thúc</MenuItem>
+              <MenuItem value="Closed">Đóng</MenuItem>
             </Select>
           </FormControl>
           <DatePicker

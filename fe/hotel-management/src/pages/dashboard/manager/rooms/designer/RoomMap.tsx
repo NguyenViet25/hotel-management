@@ -1263,39 +1263,6 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                                                   </TableCell>
                                                 </TableRow>
                                               ))
-                                            ) : h.primaryGuestName ? (
-                                              <TableRow>
-                                                <TableCell>1</TableCell>
-                                                <TableCell>
-                                                  <Chip
-                                                    size="small"
-                                                    icon={<Person />}
-                                                    label={h.primaryGuestName}
-                                                  />
-                                                </TableCell>
-                                                <TableCell>
-                                                  <Chip
-                                                    size="small"
-                                                    icon={<Phone />}
-                                                    label={"—"}
-                                                  />
-                                                </TableCell>
-                                                <TableCell>
-                                                  <Chip
-                                                    size="small"
-                                                    icon={<CreditCard />}
-                                                    label={"—"}
-                                                  />
-                                                </TableCell>
-                                                <TableCell align="center">
-                                                  <IconButton
-                                                    size="small"
-                                                    disabled
-                                                  >
-                                                    <RemoveRedEye />
-                                                  </IconButton>
-                                                </TableCell>
-                                              </TableRow>
                                             ) : (
                                               <TableRow>
                                                 <TableCell colSpan={5}>
