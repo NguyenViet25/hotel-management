@@ -363,7 +363,7 @@ public class BookingsService(
             if (!string.IsNullOrWhiteSpace(query.GuestName))
             {
                 var gn = query.GuestName!.Trim();
-                q = q.Where(b => (_guestRepo.Query().Any(g => g.Id == b.PrimaryGuestId && (g.FullName ?? "").Contains(gn) || g.Phone.Contains(gn))));
+                q = q.Where(b => (_guestRepo.Query().Any(g => g.Id == b.PrimaryGuestId && ((g.FullName ?? "").Contains(gn) || g.Phone.Contains(gn)))));
             }
             if (!string.IsNullOrWhiteSpace(query.RoomNumber))
             {
