@@ -30,6 +30,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import type { SelectChangeEvent } from "@mui/material/Select";
 import { DatePicker, DateTimePicker } from "@mui/x-date-pickers";
 import dayjs, { Dayjs } from "dayjs";
 import { useEffect, useMemo, useState } from "react";
@@ -70,8 +71,8 @@ export default function SessionBoardPage() {
   const [statusFilter, setStatusFilter] = useState<number | "all">("all");
   const [searchText, setSearchText] = useState("");
   const [sessionStatusFilter, setSessionStatusFilter] = useState<
-    "All" | "Open" | "Ended"
-  >("All");
+    "All" | "Open" | "Closed"
+  >("Open");
   const [fromDate, setFromDate] = useState<Dayjs | null>(
     dayjs().startOf("month")
   );
@@ -164,7 +165,9 @@ export default function SessionBoardPage() {
         );
         setRequests(l.data?.requests || []);
       }
-    } catch {}
+    } catch (e) {
+      void e;
+    }
   };
   const completeRequest = async (id: string) => {
     if (isWaiter) return;
@@ -178,7 +181,9 @@ export default function SessionBoardPage() {
         );
         setRequests(l.data?.requests || []);
       }
-    } catch {}
+    } catch (e) {
+      void e;
+    }
   };
   const cancelRequest = async (id: string) => {
     if (isWaiter) return;
@@ -192,7 +197,9 @@ export default function SessionBoardPage() {
         );
         setRequests(l.data?.requests || []);
       }
-    } catch {}
+    } catch (e) {
+      void e;
+    }
   };
   const confirmDeleteRequest = async () => {
     try {
@@ -266,7 +273,7 @@ export default function SessionBoardPage() {
   );
 
   const { data: sessionsRes, mutate: mutateSessions } = useSWR(
-    ["sessions", hotelId],
+    ["sessions", hotelId, sessionStatusFilter],
     async () => {
       if (!hotelId) return undefined;
       return diningSessionsApi.getSessions({
@@ -384,11 +391,15 @@ export default function SessionBoardPage() {
             <Select
               label="Trạng thái"
               value={sessionStatusFilter}
-              onChange={(e) => setSessionStatusFilter(e.target.value as any)}
+              onChange={(e: SelectChangeEvent) =>
+                setSessionStatusFilter(
+                  e.target.value as "All" | "Open" | "Closed"
+                )
+              }
             >
               <MenuItem value="All">Tất cả</MenuItem>
               <MenuItem value="Open">Đang mở</MenuItem>
-              <MenuItem value="Ended">Đã kết thúc</MenuItem>
+              <MenuItem value="Closed">Đã kết thúc</MenuItem>
             </Select>
           </FormControl>
           <DatePicker
@@ -472,7 +483,12 @@ export default function SessionBoardPage() {
                   </Typography>
                   <Chip
                     label={s.status === "Open" ? "Đang mở" : "Đóng"}
-                    sx={{ color: "white", border: "1px dashed" }}
+                    sx={{
+                      color: s.status === "Open" ? "black" : "white",
+                      border: "1px dashed",
+                      backgroundColor:
+                        s.status === "Open" ? "yellow" : "error.main",
+                    }}
                     size="small"
                   />
                 </Box>
@@ -505,15 +521,12 @@ export default function SessionBoardPage() {
                       )}
                     </Typography>
                   </Stack>
-
-                  {!!s.notes && (
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <CleanHands fontSize="small" color="disabled" />
-                      <Typography variant="caption" color="text.secondary">
-                        Ghi chú: {s.notes}
-                      </Typography>
-                    </Stack>
-                  )}
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <CleanHands fontSize="small" color="disabled" />
+                    <Typography variant="caption" color="text.secondary">
+                      Ghi chú: {s.notes}
+                    </Typography>
+                  </Stack>
                 </Stack>
                 <Stack
                   direction={{ xs: "column", lg: "row" }}

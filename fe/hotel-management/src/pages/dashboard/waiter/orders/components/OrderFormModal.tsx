@@ -38,6 +38,7 @@ import ordersApi, {
   type OrderDetailsDto,
 } from "../../../../../api/ordersApi";
 import CustomSelect from "../../../../../components/common/CustomSelect";
+import { phoneSchema } from "../../../../../validation/phone";
 
 interface IProps {
   open: boolean;
@@ -50,8 +51,14 @@ interface IProps {
 
 const schema = z.object({
   bookingId: z.string().optional(),
-  customerName: z.string().min(2, "Tên khách hàng bắt buộc"),
-  customerPhone: z.string().optional(),
+  customerName: z
+    .string()
+    .min(2, "Tên khách hàng bắt buộc")
+    .regex(
+      /^[a-zA-Z]+$/,
+      "Họ tên chỉ được chứa chữ các ký tự chữ cái a-z hoặc A-Z"
+    ),
+  customerPhone: phoneSchema.optional(),
   status: z.number().optional(),
   notes: z.string().optional(),
   guests: z.number().min(1, "Số khách phải >= 1").optional(),
@@ -398,6 +405,8 @@ const OrderFormModal: React.FC<IProps> = ({
                           </InputAdornment>
                         ),
                       }}
+                      error={!!errors.customerPhone}
+                      helperText={errors.customerPhone?.message}
                     />
                   )}
                 />

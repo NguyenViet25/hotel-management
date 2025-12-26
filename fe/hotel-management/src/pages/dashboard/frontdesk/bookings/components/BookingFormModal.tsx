@@ -83,7 +83,10 @@ const schema = z
     guestName: z
       .string()
       .min(2, "Họ tên phải có ít nhất 2 ký tự")
-      .regex(/^[a-zA-Z0-9]+$/, "Chỉ được nhập chữ và số"),
+      .regex(
+        /^[a-zA-Z]+$/,
+        "Họ tên chỉ được chứa chữ các ký tự chữ cái a-z hoặc A-Z"
+      ),
     guestPhone: phoneSchema,
     guestEmail: z
       .string()
