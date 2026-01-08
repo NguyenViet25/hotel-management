@@ -10,6 +10,8 @@ const axiosInstance = axios.create({
   },
 });
 
+console.log("API_URL", API_URL);
+
 // ✅ Helper: navigate user based on role
 const navigateToCorrectPage = (user: any) => {
   if (!user) return;
