@@ -368,7 +368,7 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
                         />
                       </Stack>
                     )}
-                    <Button
+                    {/* <Button
                       variant="outlined"
                       startIcon={<DiscountIcon />}
                       onClick={() => {
@@ -380,7 +380,7 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
                       sx={{ width: "fit-content" }}
                     >
                       Chọn mã khuyến mãi
-                    </Button>
+                    </Button> */}
                     <Grid container spacing={2}>
                       <Grid size={{ xs: 12 }}>
                         <Stack>

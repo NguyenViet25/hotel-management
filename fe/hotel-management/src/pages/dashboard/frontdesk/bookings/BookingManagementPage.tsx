@@ -393,37 +393,37 @@ const BookingManagementPage: React.FC = () => {
                       );
                     },
                   },
+                  // {
+                  //   id: "totalAmount",
+                  //   label: "Tổng dự kiến",
+                  //   minWidth: 140,
+                  //   align: "right",
+                  //   render: (row) => {
+                  //     const isZero =
+                  //       row.status === EBookingStatus.Cancelled ||
+                  //       row.status === 5;
+                  //     const v = isZero ? 0 : Number(row?.defaultAmount || 0);
+                  //     return `${v.toLocaleString()} đ`;
+                  //   },
+                  // },
+                  // {
+                  //   id: "totalAmount",
+                  //   label: "Tổng còn lại",
+                  //   minWidth: 140,
+                  //   align: "right",
+                  //   render: (row) => {
+                  //     const isZero =
+                  //       row.status === EBookingStatus.Cancelled ||
+                  //       row.status === 5;
+                  //     const v = isZero
+                  //       ? 0
+                  //       : Number(row?.defaultAmount - row.totalAmount || 0);
+                  //     return `${v.toLocaleString()} đ`;
+                  //   },
+                  // },
                   {
                     id: "totalAmount",
-                    label: "Tổng dự kiến",
-                    minWidth: 140,
-                    align: "right",
-                    render: (row) => {
-                      const isZero =
-                        row.status === EBookingStatus.Cancelled ||
-                        row.status === 5;
-                      const v = isZero ? 0 : Number(row?.defaultAmount || 0);
-                      return `${v.toLocaleString()} đ`;
-                    },
-                  },
-                  {
-                    id: "totalAmount",
-                    label: "Tổng còn lại",
-                    minWidth: 140,
-                    align: "right",
-                    render: (row) => {
-                      const isZero =
-                        row.status === EBookingStatus.Cancelled ||
-                        row.status === 5;
-                      const v = isZero
-                        ? 0
-                        : Number(row?.defaultAmount - row.totalAmount || 0);
-                      return `${v.toLocaleString()} đ`;
-                    },
-                  },
-                  {
-                    id: "totalAmount",
-                    label: "Tổng thực tế",
+                    label: "Tổng",
                     minWidth: 140,
                     align: "right",
                     render: (row) => {
@@ -883,7 +883,7 @@ const BookingManagementPage: React.FC = () => {
                 />
               </Box>
             )}
-            {rows.length > 0 && (
+            {/* {rows.length > 0 && (
               <>
                 <Stack
                   direction={{ xs: "column", sm: "row" }}
@@ -918,7 +918,7 @@ const BookingManagementPage: React.FC = () => {
                   })()}
                 </Stack>
               </>
-            )}
+            )} */}
           </>
         )}
       </Stack>

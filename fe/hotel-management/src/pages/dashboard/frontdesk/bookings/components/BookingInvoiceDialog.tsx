@@ -407,21 +407,21 @@ const BookingInvoiceDialog: React.FC<Props> = ({
       });
     }
 
-    if (autoEarlySurcharge > 0) {
-      const actualCheckOutAt = booking.bookingRoomTypes.flatMap((x) =>
-        x.bookingRooms.flatMap((x) => x.actualCheckOutAt)
-      )[0];
-      rows.push({
-        label: `Phụ thu trả phòng sớm (${Math.round(
-          (autoEarlyRate || 0) * 100
-        )}%) `,
-        dateRange: dayjs(actualCheckOutAt).format("DD/MM/YYYY"),
-        quantity: "—",
-        nights: undefined,
-        unit: autoEarlySurcharge,
-        total: autoEarlySurcharge,
-      });
-    }
+    // if (autoEarlySurcharge > 0) {
+    //   const actualCheckOutAt = booking.bookingRoomTypes.flatMap((x) =>
+    //     x.bookingRooms.flatMap((x) => x.actualCheckOutAt)
+    //   )[0];
+    //   rows.push({
+    //     label: `Phụ thu trả phòng sớm (${Math.round(
+    //       (autoEarlyRate || 0) * 100
+    //     )}%) `,
+    //     dateRange: dayjs(actualCheckOutAt).format("DD/MM/YYYY"),
+    //     quantity: "—",
+    //     nights: undefined,
+    //     unit: autoEarlySurcharge,
+    //     total: autoEarlySurcharge,
+    //   });
+    // }
 
     return rows;
   }, [
@@ -778,7 +778,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
 
               {!disableForPrint && (
                 <Stack spacing={2} mt={1}>
-                  {promotionValue > 0 && (
+                  {/* {promotionValue > 0 && (
                     <Stack direction="row" spacing={1.5} alignItems="center">
                       <PercentIcon color="primary" />
                       <Typography fontWeight={700}>Mã giảm giá</Typography>
@@ -792,8 +792,8 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                         }}
                       />
                     </Stack>
-                  )}
-                  <Button
+                  )} */}
+                  {/* <Button
                     variant="outlined"
                     startIcon={<DiscountIcon />}
                     onClick={() => {
@@ -803,7 +803,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                     sx={{ width: "fit-content" }}
                   >
                     Chọn mã khuyến mãi
-                  </Button>
+                  </Button> */}
 
                   <TextField
                     type="text"

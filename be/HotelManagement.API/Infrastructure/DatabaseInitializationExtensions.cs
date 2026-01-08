@@ -48,7 +48,7 @@ public static class DatabaseInitializationExtensions
                 SeedMenuSetsAsync(dbContext).GetAwaiter().GetResult();
                 SeedPromotionsAsync(dbContext).GetAwaiter().GetResult();
                 SeedMinibarsAsync(dbContext).GetAwaiter().GetResult();
-                SeedTablesAsync(dbContext).GetAwaiter().GetResult();
+                SeedTableForHotels(dbContext).GetAwaiter().GetResult();
                 SeedPeakDaysLastMonthAsync(dbContext).GetAwaiter().GetResult();
                 //SeedBookingsAsync(dbContext).GetAwaiter().GetResult();
                 //SeedHousekeepingTasksAsync(dbContext).GetAwaiter().GetResult();
@@ -58,6 +58,20 @@ public static class DatabaseInitializationExtensions
         return app;
     }
 
+    private static async Task SeedTableForHotels(DbContext dbContext)
+    {
+        var tts1 = await dbContext.Set<Hotel>().FirstOrDefaultAsync(h => h.Code == "TTS1");
+        var tts1HotelId = tts1?.Id;
+        var tts2 = await dbContext.Set<Hotel>().FirstOrDefaultAsync(h => h.Code == "TTS2");
+        var tts2HotelId = tts2?.Id;
+        var tts3 = await dbContext.Set<Hotel>().FirstOrDefaultAsync(h => h.Code == "TTS3");
+        var tts3HotelId = tts3?.Id;
+
+        SeedTablesAsync(dbContext, DEFAULT_HOTEL_ID).GetAwaiter().GetResult();
+        SeedTablesAsync(dbContext, tts1HotelId).GetAwaiter().GetResult();
+        SeedTablesAsync(dbContext, tts2HotelId).GetAwaiter().GetResult();
+        SeedTablesAsync(dbContext, tts3HotelId).GetAwaiter().GetResult();
+    }
     private static async Task SeedRoles(RoleManager<IdentityRole<Guid>> roleManager)
     {
         // Create roles if they don't exist
@@ -1317,9 +1331,8 @@ public static class DatabaseInitializationExtensions
         await dbContext.SaveChangesAsync();
     }
 
-    public static async Task SeedTablesAsync(DbContext dbContext)
+    public static async Task SeedTablesAsync(DbContext dbContext, Guid? hotelId)
     {
-        var hotelId = DEFAULT_HOTEL_ID;
 
         // If tables already exist, skip
         if (await dbContext.Set<Table>().AnyAsync(t => t.HotelId == hotelId))
@@ -1334,7 +1347,7 @@ public static class DatabaseInitializationExtensions
                 tables.Add(new Table
                 {
                     Id = Guid.NewGuid(),
-                    HotelId = hotelId,
+                    HotelId = hotelId ?? Guid.NewGuid(),
                     Name = $"Bàn {(j - 1) * 10 + i}",              // Table name T1 → T20
                     Capacity = j,        // Capacity 2–5 seats (cycle)
                     IsActive = true,

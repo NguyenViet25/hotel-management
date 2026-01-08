@@ -53,11 +53,11 @@ export const menuItems = {
       icon: <SensorsOutlined />,
     },
     { title: "Khách hàng", path: "/manager/guests", icon: <People /> },
-    {
-      title: "Mã giảm giá",
-      path: "/manager/discount-codes",
-      icon: <Discount />,
-    },
+    // {
+    //   title: "Mã giảm giá",
+    //   path: "/manager/discount-codes",
+    //   icon: <Discount />,
+    // },
     { title: "Thực đơn", path: "/manager/menus", icon: <DiningIcon /> },
     // {
     //   title: "Báo cáo doanh thu",

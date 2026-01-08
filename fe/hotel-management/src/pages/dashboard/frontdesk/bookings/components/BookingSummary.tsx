@@ -99,10 +99,11 @@ export const BookingSummary = ({
             sx={{
               p: 2.5,
               borderRadius: 2,
+              height: "100%",
               bgcolor: theme.palette.background.paper,
             }}
           >
-            <Stack spacing={1}>
+            <Stack spacing={1} sx={{ height: "100%" }}>
               <Typography
                 variant="subtitle1"
                 fontWeight={600}
@@ -119,12 +120,12 @@ export const BookingSummary = ({
                 </Typography>
               </Stack>
 
-              <Stack direction="row" spacing={1} alignItems="center">
+              {/* <Stack direction="row" spacing={1} alignItems="center">
                 <DiscountIcon fontSize="small" color="action" />
                 <Typography variant="body2">
                   Giảm giá: {formatCurrency(data.discountAmount)}
                 </Typography>
-              </Stack>
+              </Stack> */}
 
               <Stack direction="row" spacing={1} alignItems="center">
                 <AccountBalanceWalletIcon fontSize="small" color="action" />

@@ -348,6 +348,10 @@ const OrderFormModal: React.FC<IProps> = ({
                   }
                   slotProps={{
                     textField: {
+                      readOnly: true,
+                      inputProps: {
+                        readOnly: true,
+                      },
                       fullWidth: true,
 
                       startAdornment: (
