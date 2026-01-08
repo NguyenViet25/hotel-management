@@ -28,6 +28,7 @@ public class GuestDetailsDto : GuestSummaryDto
 {
     public string? IdCardFrontImageUrl { get; set; }
     public string? IdCardBackImageUrl { get; set; }
+    public string? PrimaryGuestName { get; set; }
     public List<GuestRoomStayDto> Rooms { get; set; } = new();
     public List<GuestOrderDto> Orders { get; set; } = new();
 }

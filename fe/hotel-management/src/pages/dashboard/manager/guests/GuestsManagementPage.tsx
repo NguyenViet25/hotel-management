@@ -53,7 +53,7 @@ const GuestsManagementPage: React.FC = () => {
 
   const columns = useMemo<Column<GuestDto>[]>(
     () => [
-      { id: "fullName", label: "Tên khách đặt đơn", minWidth: 160 },
+      { id: "primaryGuestName", label: "Tên khách đặt đơn", minWidth: 160 },
       { id: "fullName", label: "Họ tên khách ở", minWidth: 160 },
       { id: "phone", label: "Điện thoại", minWidth: 140 },
       // { id: "checkInDate", label: "Ngày đến", minWidth: 140 },
