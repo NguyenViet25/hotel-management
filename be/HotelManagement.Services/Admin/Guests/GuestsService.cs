@@ -22,6 +22,26 @@ public class GuestsService : IGuestsService
     {
         var baseQuery = _db.Guests.Where(x => x.HotelId == hotelId).AsQueryable();
 
+        if (query.FromDate.HasValue || query.ToDate.HasValue)
+        {
+            var from = query.FromDate;
+            var to = query.ToDate;
+            var bookingQuery = _db.Bookings.Where(b => b.HotelId == hotelId && b.PrimaryGuestId.HasValue);
+            if (from.HasValue && to.HasValue)
+                bookingQuery = bookingQuery.Where(b => from.Value < b.EndDate && to.Value > b.StartDate);
+            else if (from.HasValue)
+                bookingQuery = bookingQuery.Where(b => from.Value < b.EndDate);
+            else if (to.HasValue)
+                bookingQuery = bookingQuery.Where(b => to.Value > b.StartDate);
+
+            var primaryGuestIds = await bookingQuery
+                .Select(b => b.PrimaryGuestId!.Value)
+                .Distinct()
+                .ToListAsync();
+
+            baseQuery = baseQuery.Where(g => primaryGuestIds.Contains(g.Id));
+        }
+
         if (!string.IsNullOrWhiteSpace(query.Name))
         {
             var s = query.Name.ToLower();

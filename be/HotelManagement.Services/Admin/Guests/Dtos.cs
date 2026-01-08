@@ -7,6 +7,8 @@ public class GuestsQueryDto
     public string? Phone { get; set; }
     public string? Email { get; set; }
     public string? IdCard { get; set; }
+    public DateTime? FromDate { get; set; }
+    public DateTime? ToDate { get; set; }
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 20;
     public string? SortBy { get; set; } = "createdAt";

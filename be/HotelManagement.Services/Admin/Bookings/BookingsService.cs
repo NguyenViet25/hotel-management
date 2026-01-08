@@ -1041,7 +1041,7 @@ public class BookingsService(
     {
         try
         {
-            var q = _roomRepo.Query().Include(r => r.RoomType).Where(r => true);
+            var q = _roomRepo.Query().Where(r => true);
             if (query.HotelId.HasValue) q = q.Where(r => r.HotelId == query.HotelId.Value);
             if (query.TypeId.HasValue) q = q.Where(r => r.RoomTypeId == query.TypeId.Value);
             var rooms = await q.Where(x => x.Status == RoomStatus.Available).ToListAsync();
@@ -1049,19 +1049,41 @@ public class BookingsService(
             var from = query.From?.Date ?? DateTime.Now.Date;
             var to = query.To?.Date ?? from.AddDays(1);
 
-            var roomIds = rooms.Where(x => x.Status == RoomStatus.Available).Select(r => r.Id).ToList();
-            var overlapping = await _bookingRoomRepo.Query()
+            var roomIds = rooms.Select(r => r.Id).ToList();
+            var assignedOverlaps = await _bookingRoomRepo.Query()
                 .Where(br => roomIds.Contains(br.RoomId) && br.BookingStatus != BookingRoomStatus.Cancelled && br.BookingStatus != BookingRoomStatus.CheckedOut)
                 .Where(br => from < br.EndDate && to > br.StartDate)
-                .Where(br => br.ActualCheckInAt != null)
                 .Select(br => br.RoomId)
                 .Distinct()
+                .CountAsync();
+
+            var confirmedBookingIds = await _bookingRepo.Query()
+                .Where(b => b.Status == BookingStatus.Confirmed)
+                .Where(b => !query.HotelId.HasValue || b.HotelId == query.HotelId.Value)
+                .Select(b => b.Id)
                 .ToListAsync();
 
-            var available = rooms.Where(r => !overlapping.Contains(r.Id))
-                .Select(r => new { roomId = r.Id, roomNumber = r.Number, roomTypeId = r.RoomTypeId, roomTypeName = r.RoomType?.Name ?? string.Empty }).ToList();
+            var brts = await _bookingRoomTypeRepo.Query()
+                .Where(rt => confirmedBookingIds.Contains(rt.BookingId))
+                .Where(rt => !query.TypeId.HasValue || rt.RoomTypeId == query.TypeId.Value)
+                .Where(rt => from < rt.EndDate && to > rt.StartDate)
+                .Select(rt => new { rt.BookingRoomTypeId, rt.TotalRoom })
+                .ToListAsync();
 
-            var result = new { availableRooms = available, totalAvailable = available.Count };
+            var unassignedReserved = 0;
+            foreach (var rt in brts)
+            {
+                var assignedForRt = await _bookingRoomRepo.Query()
+                    .Where(br => br.BookingRoomTypeId == rt.BookingRoomTypeId)
+                    .Where(br => from < br.EndDate && to > br.StartDate)
+                    .CountAsync();
+                var needed = Math.Max(rt.TotalRoom - assignedForRt, 0);
+                unassignedReserved += needed;
+            }
+
+            var available = Math.Max(rooms.Count - assignedOverlaps - unassignedReserved, 0);
+            var result = new { availableRooms = available, totalAvailable = available };
+
             return ApiResponse<object>.Ok(result);
         }
         catch (Exception ex)
@@ -1314,8 +1336,27 @@ public class BookingsService(
     {
         foreach (var guest in dto.Persons)
         {
-            var exitsGuest = await _guestRepo.Query().Where(x => x.Phone == guest.Phone).AnyAsync();
-            if (exitsGuest) continue;
+            var exitsGuest = await _guestRepo.Query().Where(x => x.Phone == guest.Phone).FirstOrDefaultAsync();
+            if (exitsGuest != null)
+            {
+                exitsGuest.FullName = guest.Name;
+                exitsGuest.Phone = guest.Phone;
+                exitsGuest.IdCard = guest.IdCard;
+                exitsGuest.IdCardFrontImageUrl = guest.IdCardFrontImageUrl;
+                exitsGuest.IdCardBackImageUrl = guest.IdCardBackImageUrl;
+                await _guestRepo.UpdateAsync(exitsGuest);
+                await _guestRepo.SaveChangesAsync();
+
+                var bGuest = new BookingGuest()
+                {
+
+                    BookingRoomId = dto.RoomBookingId,
+                    GuestId = exitsGuest.Id,
+                };
+                await _bookingGuestRepo.AddAsync(bGuest);
+                await _bookingGuestRepo.SaveChangesAsync();
+                continue;
+            }
 
             var newGuest = new Guest()
             {

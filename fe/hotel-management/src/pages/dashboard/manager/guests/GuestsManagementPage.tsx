@@ -10,8 +10,11 @@ import {
   Stack,
   Typography,
   IconButton,
+  TextField,
 } from "@mui/material";
 import React, { useEffect, useMemo, useState } from "react";
+import { DatePicker } from "@mui/x-date-pickers";
+import { Dayjs } from "dayjs";
 import guestsApi, {
   type CreateGuestRequest,
   type GuestDto,
@@ -22,7 +25,7 @@ import DataTable, {
 } from "../../../../components/common/DataTable";
 import PageTitle from "../../../../components/common/PageTitle";
 import GuestFormModal from "./components/GuestFormModal";
-import { History } from "@mui/icons-material";
+import { Add, History } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 
 const GuestsManagementPage: React.FC = () => {
@@ -32,6 +35,8 @@ const GuestsManagementPage: React.FC = () => {
   const [pageSize] = useState(10);
   const [total, setTotal] = useState(0);
   const [searchText, setSearchText] = useState("");
+  const [fromDate, setFromDate] = useState<Dayjs | null>(null);
+  const [toDate, setToDate] = useState<Dayjs | null>(null);
 
   const [editOpen, setEditOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
@@ -48,64 +53,66 @@ const GuestsManagementPage: React.FC = () => {
 
   const columns = useMemo<Column<GuestDto>[]>(
     () => [
-      { id: "fullName", label: "Họ tên", minWidth: 160 },
+      { id: "fullName", label: "Tên khách đặt đơn", minWidth: 160 },
+      { id: "fullName", label: "Họ tên khách ở", minWidth: 160 },
       { id: "phone", label: "Điện thoại", minWidth: 140 },
-      { id: "email", label: "Email", minWidth: 200 },
+      // { id: "checkInDate", label: "Ngày đến", minWidth: 140 },
+      // { id: "checkOutDate", label: "Ngày đi", minWidth: 140 },
       { id: "idCard", label: "CMND/CCCD", minWidth: 140 },
-      {
-        id: "idCardFrontImageUrl",
-        label: "Mặt trước",
-        minWidth: 120,
-        render: (row) => {
-          const url = row.idCardFrontImageUrl || "";
-          if (!url) return "-";
-          const isPdf = url.toLowerCase().endsWith(".pdf");
-          return isPdf ? (
-            <Button
-              size="small"
-              variant="outlined"
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Xem PDF
-            </Button>
-          ) : (
-            <img
-              src={url}
-              alt="CCCD trước"
-              style={{ height: 40, borderRadius: 4 }}
-            />
-          );
-        },
-      },
-      {
-        id: "idCardBackImageUrl",
-        label: "Mặt sau",
-        minWidth: 120,
-        render: (row) => {
-          const url = row.idCardBackImageUrl || "";
-          if (!url) return "-";
-          const isPdf = url.toLowerCase().endsWith(".pdf");
-          return isPdf ? (
-            <Button
-              size="small"
-              variant="outlined"
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Xem PDF
-            </Button>
-          ) : (
-            <img
-              src={url}
-              alt="CCCD sau"
-              style={{ height: 40, borderRadius: 4 }}
-            />
-          );
-        },
-      },
+      // {
+      //   id: "idCardFrontImageUrl",
+      //   label: "Mặt trước",
+      //   minWidth: 120,
+      //   render: (row) => {
+      //     const url = row.idCardFrontImageUrl || "";
+      //     if (!url) return "-";
+      //     const isPdf = url.toLowerCase().endsWith(".pdf");
+      //     return isPdf ? (
+      //       <Button
+      //         size="small"
+      //         variant="outlined"
+      //         href={url}
+      //         target="_blank"
+      //         rel="noopener noreferrer"
+      //       >
+      //         Xem PDF
+      //       </Button>
+      //     ) : (
+      //       <img
+      //         src={url}
+      //         alt="CCCD trước"
+      //         style={{ height: 40, borderRadius: 4 }}
+      //       />
+      //     );
+      //   },
+      // },
+      // {
+      //   id: "idCardBackImageUrl",
+      //   label: "Mặt sau",
+      //   minWidth: 120,
+      //   render: (row) => {
+      //     const url = row.idCardBackImageUrl || "";
+      //     if (!url) return "-";
+      //     const isPdf = url.toLowerCase().endsWith(".pdf");
+      //     return isPdf ? (
+      //       <Button
+      //         size="small"
+      //         variant="outlined"
+      //         href={url}
+      //         target="_blank"
+      //         rel="noopener noreferrer"
+      //       >
+      //         Xem PDF
+      //       </Button>
+      //     ) : (
+      //       <img
+      //         src={url}
+      //         alt="CCCD sau"
+      //         style={{ height: 40, borderRadius: 4 }}
+      //       />
+      //     );
+      //   },
+      // },
     ],
     []
   );
@@ -119,6 +126,12 @@ const GuestsManagementPage: React.FC = () => {
         name: searchText || undefined,
         phone: searchText || undefined,
         email: searchText || undefined,
+        fromDate: fromDate
+          ? fromDate.startOf("day").format("YYYY-MM-DDTHH:mm:ss")
+          : undefined,
+        toDate: toDate
+          ? toDate.endOf("day").format("YYYY-MM-DDTHH:mm:ss")
+          : undefined,
       });
       if (res.isSuccess) {
         setItems(res.data);
@@ -144,12 +157,13 @@ const GuestsManagementPage: React.FC = () => {
 
   useEffect(() => {
     fetchItems(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     fetchItems(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchText]);
+  }, [searchText, fromDate, toDate]);
 
   const onPageChange = (newPage: number) => {
     setPage(newPage);
@@ -174,6 +188,42 @@ const GuestsManagementPage: React.FC = () => {
         title="Quản lý khách"
         subtitle="Tra cứu và cập nhật thông tin khách"
       />
+      <Stack
+        direction={{ xs: "column", md: "row" }}
+        justifyContent={"space-between"}
+        alignItems={"center"}
+        mb={1}
+      >
+        <Stack
+          direction={{ xs: "column", md: "row" }}
+          spacing={1}
+          alignItems="center"
+          sx={{ mb: 1 }}
+        >
+          <TextField
+            label="Tìm kiếm"
+            size={"small"}
+            value={searchText}
+            onChange={(v) => setSearchText(v.target.value)}
+            sx={{ minWidth: 280 }}
+          />
+          <DatePicker
+            label="Từ ngày"
+            value={fromDate}
+            onChange={(v) => setFromDate(v)}
+            slotProps={{ textField: { size: "small" } }}
+          />
+          <DatePicker
+            label="Đến ngày"
+            value={toDate}
+            onChange={(v) => setToDate(v)}
+            slotProps={{ textField: { size: "small" } }}
+          />
+        </Stack>
+        <Button variant="contained" startIcon={<Add />} onClick={handleAdd}>
+          Thêm mới
+        </Button>
+      </Stack>
 
       <DataTable
         title="Danh sách khách"
@@ -181,7 +231,6 @@ const GuestsManagementPage: React.FC = () => {
         data={items}
         loading={loading}
         pagination={{ page, pageSize, total, onPageChange }}
-        onAdd={handleAdd}
         onView={handleView}
         onEdit={handleEdit}
         renderActions={(row) => (
@@ -190,7 +239,6 @@ const GuestsManagementPage: React.FC = () => {
           </IconButton>
         )}
         getRowId={(row) => row.id}
-        onSearch={(txt) => setSearchText(txt || "")}
       />
 
       <GuestFormModal

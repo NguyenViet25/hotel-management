@@ -46,6 +46,8 @@ export interface GuestsQuery {
   phone?: string;
   email?: string;
   idCard?: string;
+  fromDate?: string;
+  toDate?: string;
   page?: number;
   pageSize?: number;
   sortBy?: string;
@@ -90,6 +92,8 @@ const guestsApi = {
     if (params.phone) q.append("phone", params.phone);
     if (params.email) q.append("email", params.email);
     if (params.idCard) q.append("idCard", params.idCard);
+    if (params.fromDate) q.append("fromDate", params.fromDate);
+    if (params.toDate) q.append("toDate", params.toDate);
     if (params.page) q.append("page", String(params.page));
     if (params.pageSize) q.append("pageSize", String(params.pageSize));
     if (params.sortBy) q.append("sortBy", params.sortBy);

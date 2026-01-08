@@ -81,11 +81,11 @@ const GuestCard: React.FC<Props> = ({
             <Typography variant="body2" color="text.secondary" noWrap>
               SĐT: {guest.phone || "—"}
             </Typography>
-            {guest.email ? (
+            {/* {guest.email ? (
               <Typography variant="caption" color="text.secondary" noWrap>
                 Email: {guest.email}
               </Typography>
-            ) : null}
+            ) : null} */}
             {typeLabel ? (
               <Box sx={{ mt: 0.5 }}>
                 <Chip size="small" label={typeLabel} />
