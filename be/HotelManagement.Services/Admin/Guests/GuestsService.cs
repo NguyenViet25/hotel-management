@@ -26,23 +26,54 @@ public class GuestsService : IGuestsService
         {
             var from = query.FromDate;
             var to = query.ToDate;
-            var bookingQuery = _db.Bookings.Where(b => b.HotelId == hotelId && b.PrimaryGuestId.HasValue);
-            if (from.HasValue && to.HasValue)
-                bookingQuery = bookingQuery.Where(b => b.StartDate >= from && b.StartDate <= to);
-            else if (from.HasValue)
-                bookingQuery = bookingQuery.Where(b => b.StartDate >= from);
-            else if (to.HasValue)
-                bookingQuery = bookingQuery.Where(b => b.StartDate <= to);
 
-            var primaryGuestIds = await bookingQuery
+            var roomQ = _db.BookingRooms.AsQueryable();
+            if (from.HasValue && to.HasValue)
+                roomQ = roomQ.Where(br => br.ActualCheckInAt.HasValue && br.ActualCheckOutAt.HasValue && from.Value < br.ActualCheckOutAt && to.Value > br.ActualCheckInAt);
+            else if (from.HasValue)
+                roomQ = roomQ.Where(br => br.ActualCheckInAt.HasValue && br.ActualCheckInAt >= from);
+            else if (to.HasValue)
+                roomQ = roomQ.Where(br => br.ActualCheckInAt.HasValue && br.ActualCheckInAt <= to);
+
+            var bookingRoomIds = await roomQ
+                .Select(br => br.BookingRoomId)
+                .Distinct()
+                .ToListAsync();
+            var brtIds = await _db.BookingRooms
+                .Where(br => bookingRoomIds.Contains(br.BookingRoomId))
+                .Select(br => br.BookingRoomTypeId)
+                .Distinct()
+                .ToListAsync();
+            var bookingIds = await _db.BookingRoomTypes
+                .Where(rt => brtIds.Contains(rt.BookingRoomTypeId))
+                .Select(rt => rt.BookingId)
+                .Distinct()
+                .ToListAsync();
+            var primaryGuestIds = await _db.Bookings
+                .Where(b => b.HotelId == hotelId && bookingIds.Contains(b.Id) && b.PrimaryGuestId.HasValue)
                 .Select(b => b.PrimaryGuestId!.Value)
                 .Distinct()
                 .ToListAsync();
 
-            baseQuery = baseQuery.Where(g => primaryGuestIds.Contains(g.Id));
+            var guestIdsInRange = await _db.BookingGuests
+                .Where(bg => bookingRoomIds.Contains(bg.BookingRoomId))
+                .Select(bg => bg.GuestId)
+                .Distinct()
+                .ToListAsync();
+
+            var finalGuestIds = guestIdsInRange.Where(id => !primaryGuestIds.Contains(id)).Distinct().ToList();
+            baseQuery = baseQuery.Where(g => finalGuestIds.Contains(g.Id));
         }
 
-    
+        if (!string.IsNullOrWhiteSpace(query.Name))
+        {
+            var s = query.Name.Trim().ToLower();
+            baseQuery = baseQuery.Where(g =>
+                g.FullName.ToLower().Contains(s)
+                || g.Phone.Contains(s)
+                || (g.Email ?? "").ToLower().Contains(s)
+                || g.IdCard.Contains(s));
+        }
 
         baseQuery = (query.SortBy?.ToLower(), query.SortDir?.ToLower()) switch
         {
@@ -60,58 +91,10 @@ public class GuestsService : IGuestsService
             .ToListAsync();
 
         var guestIds = pageGuests.Select(x => x.Id).ToList();
+        var bookingGuestIds = await _db.BookingGuests.Select(x => x.GuestId).Distinct().ToListAsync();
 
-        var primaryBookings = await _db.Bookings
-            .Where(b => b.HotelId == hotelId && b.PrimaryGuestId.HasValue && guestIds.Contains(b.PrimaryGuestId.Value))
-            .Select(b => new { b.Id, b.PrimaryGuestId, b.CreatedAt })
-            .ToListAsync();
-
-        var guestRoomLinks = await _db.BookingGuests
-            .Where(bg => guestIds.Contains(bg.GuestId))
-            .Select(bg => new { bg.GuestId, bg.BookingRoomId })
-            .ToListAsync();
-        var bookingRoomIds = guestRoomLinks.Select(x => x.BookingRoomId).Distinct().ToList();
-        var roomTypeLinks = await _db.BookingRooms
-            .Where(br => bookingRoomIds.Contains(br.BookingRoomId))
-            .Select(br => new { br.BookingRoomId, br.BookingRoomTypeId })
-            .ToListAsync();
-        var brtIds = roomTypeLinks.Select(x => x.BookingRoomTypeId).Distinct().ToList();
-        var bookingLinks = await _db.BookingRoomTypes
-            .Where(rt => brtIds.Contains(rt.BookingRoomTypeId))
-            .Select(rt => new { rt.BookingRoomTypeId, rt.BookingId })
-            .ToListAsync();
-
-        var guestBookingIds = guestRoomLinks
-            .Join(roomTypeLinks, gl => gl.BookingRoomId, rl => rl.BookingRoomId, (gl, rl) => new { gl.GuestId, rl.BookingRoomTypeId })
-            .Join(bookingLinks, x => x.BookingRoomTypeId, bl => bl.BookingRoomTypeId, (x, bl) => new { x.GuestId, bl.BookingId })
-            .GroupBy(x => x.GuestId)
-            .ToDictionary(gp => gp.Key, gp => gp.Select(x => x.BookingId).Distinct().ToList());
-
-        var allBookingIds = guestBookingIds.Values.SelectMany(x => x).Distinct().ToList();
-        var involvedBookings = await _db.Bookings
-            .Where(b => b.HotelId == hotelId && allBookingIds.Contains(b.Id))
-            .Select(b => new { b.Id, b.PrimaryGuestId, b.CreatedAt })
-            .ToListAsync();
-
-        var latestPrimaryByGuest = new Dictionary<Guid, Guid?>();
-        foreach (var gid in guestIds)
+        var items = pageGuests.Where(x => bookingGuestIds.Contains(x.Id)).Select(g => new GuestDetailsDto
         {
-            var selfBookings = primaryBookings.Where(b => b.PrimaryGuestId == gid);
-            var invIds = guestBookingIds.TryGetValue(gid, out var ids) ? ids : new List<Guid>();
-            var invBookings = involvedBookings.Where(b => invIds.Contains(b.Id));
-            var candidate = selfBookings.Concat(invBookings).OrderByDescending(b => b.CreatedAt).FirstOrDefault();
-            latestPrimaryByGuest[gid] = candidate?.PrimaryGuestId;
-        }
-
-        var primaryIds = latestPrimaryByGuest.Values.Where(id => id.HasValue).Select(id => id!.Value).Distinct().ToList();
-        var primaryNameMap = await _db.Guests
-            .Where(g => primaryIds.Contains(g.Id))
-            .Select(g => new { g.Id, g.FullName })
-            .ToDictionaryAsync(x => x.Id, x => x.FullName);
-
-        var items = pageGuests.Select(g => new GuestDetailsDto
-        {
-            PrimaryGuestName = latestPrimaryByGuest.TryGetValue(g.Id, out var pid) && pid.HasValue && primaryNameMap.TryGetValue(pid.Value, out var nm) ? nm : null,
             Id = g.Id,
             FullName = g.FullName,
             Phone = g.Phone,
@@ -121,9 +104,7 @@ public class GuestsService : IGuestsService
             IdCardFrontImageUrl = g.IdCardFrontImageUrl,
         }).ToList();
 
-        var results = items.Where(x => (x.PrimaryGuestName ?? "").Contains(query.Name ?? "") || x.FullName.Contains(query.Name ?? "")).ToList();
-
-        return (results, total);
+        return (items, total);
     }
 
     public async Task<GuestDetailsDto?> GetAsync(Guid id)

@@ -65,7 +65,8 @@ public class BookingsService(
                 Id = Guid.NewGuid(),
                 FullName = dto.PrimaryGuest.Fullname,
                 Phone = dto.PrimaryGuest.Phone ?? string.Empty,
-                Email = dto.PrimaryGuest.Email
+                Email = dto.PrimaryGuest.Email,
+                HotelId = dto.HotelId
             };
             await _guestRepo.AddAsync(primaryGuest);
             await _guestRepo.SaveChangesAsync();
