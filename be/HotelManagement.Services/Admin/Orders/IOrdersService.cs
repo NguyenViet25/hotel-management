@@ -6,6 +6,7 @@ namespace HotelManagement.Services.Admin.Orders;
 public interface IOrdersService
 {
     Task<ApiResponse<List<OrderSummaryDto>>> ListAsync(OrdersQueryDto query);
+    Task<ApiResponse<List<OrderSummaryDto>>> ListActiveAsync(OrdersQueryDto query);
     Task<ApiResponse<OrderDetailsDto>> GetByIdAsync(Guid id);
     Task<ApiResponse<OrderDetailsDto>> CreateWalkInAsync(CreateWalkInOrderDto dto);
     Task<ApiResponse<OrderDetailsDto>> UpdateWalkInAsync(Guid id, UpdateWalkInOrderDto dto);

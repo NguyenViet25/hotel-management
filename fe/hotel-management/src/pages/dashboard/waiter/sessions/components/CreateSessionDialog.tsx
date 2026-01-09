@@ -4,6 +4,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  InputAdornment,
   Stack,
   TextField,
 } from "@mui/material";
@@ -15,6 +16,7 @@ import diningSessionsApi, {
 import { useStore, type StoreState } from "../../../../../hooks/useStore";
 import dayjs from "dayjs";
 import { DateTimePicker } from "@mui/x-date-pickers";
+import { AccessTime } from "@mui/icons-material";
 // no table selection at creation time
 
 interface Props {
@@ -85,6 +87,21 @@ export default function CreateSessionDialog({
             value={dayjs(startedAt)}
             minDateTime={dayjs()}
             maxDateTime={dayjs()}
+            slotProps={{
+              textField: {
+                readOnly: true,
+                inputProps: {
+                  readOnly: true,
+                },
+                fullWidth: true,
+
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <AccessTime color="primary" />
+                  </InputAdornment>
+                ),
+              },
+            }}
             onChange={(v) => v && setStartedAt(v.format("YYYY-MM-DDTHH:mm:ss"))}
           />
 

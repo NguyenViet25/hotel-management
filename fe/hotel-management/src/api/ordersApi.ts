@@ -139,6 +139,22 @@ const ordersApi = {
     return res.data;
   },
 
+  async listActiveOrders(
+    params: OrdersQueryParams = {}
+  ): Promise<ListResponse<OrderSummaryDto>> {
+    const qp = new URLSearchParams();
+    if (params.hotelId) qp.append("hotelId", params.hotelId);
+    if (params.status) qp.append("status", params.status.toString());
+    if (params.bookingId) qp.append("bookingId", params.bookingId);
+    if (params.isWalkIn !== undefined)
+      qp.append("isWalkIn", String(params.isWalkIn));
+    if (params.search) qp.append("search", params.search);
+    qp.append("page", String(params.page ?? 1));
+    qp.append("pageSize", String(params.pageSize ?? 10));
+    const res = await axios.get(`/orders/active?${qp.toString()}`);
+    return res.data;
+  },
+
   async getById(id: string): Promise<ItemResponse<OrderDetailsDto>> {
     const res = await axios.get(`/orders/${id}`);
     return res.data;

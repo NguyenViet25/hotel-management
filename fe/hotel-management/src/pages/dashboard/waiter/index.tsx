@@ -79,7 +79,7 @@ const WaiterDashboard: React.FC = () => {
                 </Box>
                 <Stack>
                   <Typography variant="subtitle2" color="text.secondary">
-                    Bàn đang hoạt động
+                    Phiên đang mở
                   </Typography>
                   <Typography variant="h5" fontWeight={700}>
                     {loading ? "—" : summary?.openDiningSessions ?? "—"}

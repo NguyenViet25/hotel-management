@@ -105,49 +105,6 @@ public class InvoicesController : ControllerBase
             }
         };
 
-        if (!string.IsNullOrWhiteSpace(request.DiscountCode))
-        {
-            var now = DateTime.Now;
-            var promo = await _promotionRepository.Query()
-                .FirstOrDefaultAsync(p => p.HotelId == order.HotelId && p.Code == request.DiscountCode && p.IsActive && p.StartDate <= now && p.EndDate >= now);
-            if (promo is not null && promo.Value > 0)
-            {
-                var scope = promo.Scope;
-                if (!string.Equals(scope, "food", StringComparison.OrdinalIgnoreCase))
-                {
-                    return BadRequest(ApiResponse<InvoiceDto>.Fail("Mã giảm giá chỉ áp dụng cho dịch vụ ăn uống"));
-                }
-                var subtotal = lines.Sum(l => l.Amount);
-                var discountAmt = Math.Round(subtotal * (promo.Value / 100m), 2);
-                if (discountAmt > 0)
-                {
-                    lines.Add(new CreateInvoiceLineDto
-                    {
-                        Description = $"Khuyến mãi {promo.Code}",
-                        Amount = -discountAmt,
-                        SourceType = InvoiceLineSourceType.Discount,
-                        SourceId = promo.Id
-                    });
-                }
-
-                await _ordersService.UpdateWalkPromotionAsync(request.OrderId, new Services.Admin.Orders.Dtos.UpdateWalkInPromotionDto()
-                {
-                    Id = request.OrderId,
-                    PromotionValue = promo.Value,
-                    PromotionCode = promo.Code
-                });
-            }
-            else
-            {
-                await _ordersService.UpdateWalkPromotionAsync(request.OrderId, new Services.Admin.Orders.Dtos.UpdateWalkInPromotionDto()
-                {
-                    Id = request.OrderId,
-                    PromotionValue = null,
-                    PromotionCode = null
-                });
-            }
-        }
-
         var createDto = new CreateInvoiceDto
         {
             HotelId = order.HotelId,

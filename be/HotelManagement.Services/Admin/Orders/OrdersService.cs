@@ -116,6 +116,84 @@ public class OrdersService : IOrdersService
         }
     }
 
+    public async Task<ApiResponse<List<OrderSummaryDto>>> ListActiveAsync(OrdersQueryDto query)
+    {
+        try
+        {
+            var q = _orderRepository.Query()
+                .Include(o => o.Items)
+                .Where(x => x.DiningSessionId == null);
+
+            if (query.HotelId.HasValue)
+                q = q.Where(o => o.HotelId == query.HotelId.Value);
+
+            //if (query.Status.HasValue)
+            //    q = q.Where(o => o.Status == query.Status.Value);
+
+            if (query.BookingId.HasValue)
+                q = q.Where(o => o.BookingId == query.BookingId.Value);
+
+            if (query.IsWalkIn.HasValue)
+                q = q.Where(o => o.IsWalkIn == query.IsWalkIn.Value);
+
+            if (!string.IsNullOrWhiteSpace(query.Search))
+            {
+                q = q.Where(o => (o.CustomerName ?? "").Contains(query.Search!) ||
+                                  (o.CustomerPhone ?? "").Contains(query.Search!));
+            }
+
+            if (query.Status.HasValue)
+            {
+                q = q.Where(o => o.Status == query.Status);
+            }
+
+            var items = await q
+                .OrderByDescending(o => o.CreatedAt)
+                .Skip((query.Page - 1) * query.PageSize)
+                .Take(query.PageSize)
+                .ToListAsync();
+
+
+
+            var dtos = new List<OrderSummaryDto>();
+
+            foreach (var o in items)
+            {
+                var dto = new OrderSummaryDto
+                {
+                    Id = o.Id,
+                    HotelId = o.HotelId,
+                    BookingId = o.BookingId,
+                    IsWalkIn = o.IsWalkIn,
+                    CustomerName = o.CustomerName,
+                    CustomerPhone = o.CustomerPhone,
+                    Status = o.Status,
+                    Notes = o.Notes,
+                    ChangeFoodRequest = o.ChangeFoodRequest,
+                    CreatedAt = o.CreatedAt,
+                    ItemsCount = o.Items.Count,
+                    PromotionCode = o.PromotionCode,
+                    PromotionValue = o.PromotionValue ?? 0,
+                    AdditionalValue = o.AdditionalValue ?? 0,
+                    AdditionalNote = o.AdditionalNotes,
+                    Guests = o.Guests,
+                    ItemsTotal = o.Items
+                        .Where(i => i.Status != OrderItemStatus.Voided)
+                        .Sum(i => i.UnitPrice * i.Quantity) + (o.AdditionalValue ?? 0),
+                    Items = await GetOrderItemsAsync(o.Id)
+                };
+
+                dtos.Add(dto);
+            }
+
+            return ApiResponse<List<OrderSummaryDto>>.Ok(dtos);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<List<OrderSummaryDto>>.Fail($"Error listing orders: {ex.Message}");
+        }
+    }
+
     private async Task<List<OrderItemDto>> GetOrderItemsAsync(Guid id)
     {
         try

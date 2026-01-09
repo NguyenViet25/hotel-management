@@ -46,6 +46,7 @@ import {
   Divider,
   FormControl,
   Grid,
+  InputAdornment,
   InputLabel,
   MenuItem,
   Paper,
@@ -83,6 +84,17 @@ import { useStore, type StoreState } from "../../../../hooks/useStore";
 import AssignMultipleTableDialog from "./components/AssignMultipleTableDialog";
 import AssignOrderDialog from "./components/AssignOrderDialog";
 import userService, { type User } from "../../../../api/userService";
+
+const getOrderPhase = (status: number): string => {
+  if (status === EOrderStatus.Draft) return "Mới";
+  if (status === EOrderStatus.NeedConfirmed) return "Chờ xác nhận";
+  if (status === EOrderStatus.Confirmed) return "Đã xác nhận";
+  if (status === EOrderStatus.InProgress) return "Đang nấu";
+  if (status === EOrderStatus.Ready) return "Sẵn sàng";
+  if (status === EOrderStatus.Completed) return "Đã phục vụ";
+  if (status === EOrderStatus.Cancelled) return "Đã hủy";
+  return "Mới";
+};
 
 export default function SessionDetailsPage() {
   const { id } = useParams();
@@ -981,20 +993,26 @@ export default function SessionDetailsPage() {
         <Box>
           <Typography variant="h6">
             Yêu cầu đặt món{" "}
-            {orderRes?.data?.status === EOrderStatus.Completed && (
-              <Chip
-                label={
-                  orderRes?.data?.status === EOrderStatus.Completed
-                    ? "Đã phục vụ"
-                    : ""
-                }
-                color={
-                  orderRes?.data?.status === EOrderStatus.Completed
-                    ? "success"
-                    : "default"
-                }
-              />
-            )}
+            <Chip
+              size="small"
+              color={
+                orderRes?.data?.status === EOrderStatus.NeedConfirmed
+                  ? "default"
+                  : orderRes?.data?.status === EOrderStatus.Confirmed
+                  ? "primary"
+                  : orderRes?.data?.status === EOrderStatus.InProgress
+                  ? "primary"
+                  : orderRes?.data?.status === EOrderStatus.Ready
+                  ? "primary"
+                  : orderRes?.data?.status === EOrderStatus.Completed
+                  ? "success"
+                  : orderRes?.data?.status === EOrderStatus.Cancelled
+                  ? "error"
+                  : "default"
+              }
+              label={getOrderPhase(Number(orderRes?.data?.status))}
+              sx={{ minWidth: 140 }}
+            />
           </Typography>
           <Box mt={1}>
             {!orderRes?.data ? (
@@ -1125,20 +1143,19 @@ export default function SessionDetailsPage() {
                   </TableBody>
                 </Table>
 
-                {isWaiter &&
-                  orderRes.data.status !== EOrderStatus.Completed && (
-                    <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-                      <Button
-                        variant="contained"
-                        color="success"
-                        size="small"
-                        startIcon={<CheckCircle />}
-                        onClick={() => setStatusDialogOpen(true)}
-                      >
-                        Đã phục vụ
-                      </Button>
-                    </Box>
-                  )}
+                {isWaiter && orderRes.data.status === EOrderStatus.Ready && (
+                  <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+                    <Button
+                      variant="contained"
+                      color="success"
+                      size="small"
+                      startIcon={<CheckCircle />}
+                      onClick={() => setStatusDialogOpen(true)}
+                    >
+                      Đã phục vụ
+                    </Button>
+                  </Box>
+                )}
               </Stack>
             )}
           </Box>
@@ -1286,7 +1303,22 @@ export default function SessionDetailsPage() {
               label="Thời gian bắt đầu"
               value={editStartedAt}
               onChange={(v) => setEditStartedAt(v)}
-              slotProps={{ textField: { size: "small" } }}
+              slotProps={{
+                textField: {
+                  size: "small",
+                  readOnly: true,
+                  inputProps: {
+                    readOnly: true,
+                  },
+                  fullWidth: true,
+
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <AccessTime color="primary" />
+                    </InputAdornment>
+                  ),
+                },
+              }}
             />
             <TextField
               label="Ghi chú"

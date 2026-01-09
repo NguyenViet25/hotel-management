@@ -161,21 +161,6 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
         row.status === EOrderStatus.Cancelled
       }
       renderActions={(row) => {
-        if (!row.isWalkIn) return null;
-        const existing = invoiceMap?.[row.id];
-        if (existing && onPrintInvoice) {
-          return (
-            <IconButton
-              size="small"
-              color="success"
-              disabled={row.status !== EOrderStatus.Completed}
-              onClick={() => onPrintInvoice(row, existing.id)}
-              aria-label="view invoice"
-            >
-              <RemoveRedEye fontSize="small" />
-            </IconButton>
-          );
-        }
         return (
           <IconButton
             size="small"

@@ -1788,7 +1788,7 @@ public class BookingsService(
             booking.AdditionalAmount = dto.AdditionalAmount ?? 0;
             booking.AdditionalBookingNotes = dto.AdditionalBookingNotes;
             booking.AdditionalBookingAmount = dto.AdditionalBookingAmount ?? 0;
-            booking.TotalAmount = baseTotal + booking.AdditionalAmount + booking.AdditionalBookingAmount ?? 0;
+            booking.TotalAmount = baseTotal + booking.AdditionalAmount ;
             booking.LeftAmount = Math.Max(0, booking.TotalAmount - totalPaid);
 
             await _bookingRepo.UpdateAsync(booking);

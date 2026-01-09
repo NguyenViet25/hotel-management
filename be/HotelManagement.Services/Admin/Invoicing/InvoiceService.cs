@@ -91,7 +91,7 @@ public class InvoiceService : IInvoiceService
 
         var invoice = await _invoiceRepository.Query().Where(x => x.BookingId == targetId).FirstOrDefaultAsync();
 
-        return (booking?.Status != BookingStatus.Cancelled || booking?.Status != BookingStatus.Pending) && invoice is null;
+        return (booking?.Status != BookingStatus.Cancelled || booking?.Status != BookingStatus.Pending) ;
     }
 
     public async Task<bool> AllowAddOrderInvoiceAsync(Guid targetId)
@@ -445,7 +445,7 @@ public class InvoiceService : IInvoiceService
         invoice.TaxAmount = invoice.VatIncluded ? Math.Round(invoice.SubTotal * 0.1m, 2) : 0;
 
         // Calculate total amount
-        invoice.TotalAmount = invoice.SubTotal - invoice.DiscountAmount + invoice.TaxAmount;
+        invoice.TotalAmount = invoice.SubTotal ;
     }
 
     private string GenerateInvoiceNumber()

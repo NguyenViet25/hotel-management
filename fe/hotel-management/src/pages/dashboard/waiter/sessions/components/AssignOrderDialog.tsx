@@ -67,7 +67,7 @@ export default function AssignOrderDialog({
       page: 1,
       pageSize: 9999,
     };
-    const res = await ordersApi.listOrders(params);
+    const res = await ordersApi.listActiveOrders(params);
     setLoading(false);
 
     const data = res.data.map((o) => {

@@ -90,6 +90,7 @@ const WalkInInvoiceDialog: React.FC<Props> = ({
             setPromotionCode(res.data.promotionCode);
             setPromotionValue(res.data.promotionValue || 0);
           }
+          setAdditionalAmount(res.data.additionalValue || 0);
         }
       } catch (e) {
         void e;

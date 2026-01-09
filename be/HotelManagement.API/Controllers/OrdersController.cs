@@ -26,6 +26,13 @@ public class OrdersController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("active")]
+    public async Task<ActionResult<ApiResponse<List<OrderSummaryDto>>>> ListActive([FromQuery] OrdersQueryDto query)
+    {
+        var result = await _ordersService.ListActiveAsync(query);
+        return Ok(result);
+    }
+
     [HttpGet("{id}")]
     public async Task<ActionResult<ApiResponse<OrderDetailsDto>>> Get(Guid id)
     {
