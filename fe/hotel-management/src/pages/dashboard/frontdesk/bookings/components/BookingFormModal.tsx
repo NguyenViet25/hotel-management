@@ -73,7 +73,7 @@ const roomItemSchema = z.object({
         .object({
           roomId: z.string().min(1, "Vui lòng chọn phòng"),
         })
-        .optional()
+        .optional(),
     )
     .optional(),
 });
@@ -108,9 +108,9 @@ const schema = z
       !!data.checkInDate &&
       !!data.checkOutDate &&
       dayjs(data.checkOutDate as Dayjs).isAfter(
-        dayjs(data.checkInDate as Dayjs)
+        dayjs(data.checkInDate as Dayjs),
       ),
-    { message: "Đến ngày phải sau Từ ngày", path: ["checkOutDate"] }
+    { message: "Đến ngày phải sau Từ ngày", path: ["checkOutDate"] },
   );
 
 type FormValues = z.infer<typeof schema>;
@@ -177,13 +177,12 @@ const BookingFormModal: React.FC<Props> = ({
   const [availabilityByType, setAvailabilityByType] = useState<
     Record<string, number>
   >({});
-  const [itemOpen, setItemOpen] = useState<Record<number, boolean>>({});
   const [priceDialogOpen, setPriceDialogOpen] = useState(false);
   const [priceDialogRt, setPriceDialogRt] = useState<BookingRoomTypeDto | null>(
-    null
+    null,
   );
   const [desiredCounts, setDesiredCounts] = useState<Record<string, number>>(
-    {}
+    {},
   );
   const [pricePopoverType, setPricePopoverType] = useState<string | null>(null);
   const [pricePopoverAnchor, setPricePopoverAnchor] =
@@ -232,7 +231,7 @@ const BookingFormModal: React.FC<Props> = ({
           } else {
             newQuotes[idx] = null;
           }
-        })
+        }),
       );
       // Adjust calendar prices:
       // - Keep specific override prices intact (from roomTypes.priceByDates)
@@ -241,7 +240,7 @@ const BookingFormModal: React.FC<Props> = ({
       roomsWatch.forEach((r, idx) => {
         const rt = roomTypes.find((t) => t.id === r.roomId);
         const overrides = (rt?.priceByDates || []).map((d) =>
-          dayjs(d.date).format("YYYY-MM-DD")
+          dayjs(d.date).format("YYYY-MM-DD"),
         );
         const overrideSet = new Set(overrides);
         const inputPrice = r.price || rt?.priceFrom || 0;
@@ -266,12 +265,12 @@ const BookingFormModal: React.FC<Props> = ({
           while (cursor.isBefore(end)) {
             const dateStr = cursor.format("YYYY-MM-DD");
             const overridePrice = rt?.priceByDates?.find(
-              (p) => dayjs(p.date).format("YYYY-MM-DD") === dateStr
+              (p) => dayjs(p.date).format("YYYY-MM-DD") === dateStr,
             )?.price;
             const weekend = cursor.day() === 5 || cursor.day() === 6;
             const base = weekend
-              ? rt?.priceTo ?? inputPrice
-              : rt?.priceFrom ?? inputPrice;
+              ? (rt?.priceTo ?? inputPrice)
+              : (rt?.priceFrom ?? inputPrice);
             temp.push({
               date: dateStr,
               price: overridePrice ?? base,
@@ -287,8 +286,8 @@ const BookingFormModal: React.FC<Props> = ({
             const dow = dayjs(d).day();
             const weekend = dow === 5 || dow === 6;
             const base = weekend
-              ? rt?.priceTo ?? inputPrice
-              : rt?.priceFrom ?? inputPrice;
+              ? (rt?.priceTo ?? inputPrice)
+              : (rt?.priceFrom ?? inputPrice);
             return {
               ...it,
               price: isOverride ? it.price : base,
@@ -302,9 +301,7 @@ const BookingFormModal: React.FC<Props> = ({
 
       setQuotesByIndex(enrichedQuotes);
       const total = roomsWatch.reduce((sum, r, idx) => {
-        const quote = enrichedQuotes[idx];
-        const perRoomTotal = quote?.total ?? 0;
-        return sum + perRoomTotal * (r.totalRooms || 0);
+        return sum + r.price * r.totalRooms;
       }, 0);
       setValue("totalAmount", total);
       const availability: Record<number, number> = {};
@@ -333,7 +330,7 @@ const BookingFormModal: React.FC<Props> = ({
           } else {
             availability[idx] = 0;
           }
-        })
+        }),
       );
       setAvailabilityByIndex(availability);
     };
@@ -363,7 +360,7 @@ const BookingFormModal: React.FC<Props> = ({
           } catch {
             map[t.id] = 0;
           }
-        })
+        }),
       );
       setAvailabilityByType(map);
     };
@@ -423,9 +420,6 @@ const BookingFormModal: React.FC<Props> = ({
         const rooms = (rt.bookingRooms || []).map((r) => ({
           roomId: r.roomId,
         }));
-
-        const startDate = dayjs(rt.startDate);
-        const endDate = dayjs(rt.endDate);
         return {
           roomId: rt.roomTypeId,
           totalRooms: rt.totalRoom || rooms.length || 1,
@@ -447,13 +441,13 @@ const BookingFormModal: React.FC<Props> = ({
         .map((rt) => dayjs(rt.startDate))
         .reduce(
           (min, d) => (min && min.isBefore(d) ? min : d),
-          dayjs(brts[0]?.startDate)
+          dayjs(brts[0]?.startDate),
         );
       const maxEnd = brts
         .map((rt) => dayjs(rt.endDate))
         .reduce(
           (max, d) => (max && max.isAfter(d) ? max : d),
-          dayjs(brts[0]?.endDate)
+          dayjs(brts[0]?.endDate),
         );
       if (minStart && maxEnd) {
         setValue("checkInDate", minStart as any);
@@ -471,9 +465,9 @@ const BookingFormModal: React.FC<Props> = ({
     try {
       const totalSelected = (values.roomTypes || []).reduce(
         (sum, r) => sum + (Number(r.totalRooms) || 0),
-        0
+        0,
       );
-      if (values.roomTypes.length === 0 || totalSelected <= 0) {
+      if (values.roomTypes?.length === 0 || totalSelected <= 0) {
         setSnackbar({
           open: true,
           message: "Vui lòng chọn ít nhất 1 phòng",
@@ -501,9 +495,9 @@ const BookingFormModal: React.FC<Props> = ({
             {
               type: "manual",
               message: `Đơn giá phải trong khoảng ${new Intl.NumberFormat(
-                "vi-VN"
+                "vi-VN",
               ).format(min)} - ${new Intl.NumberFormat("vi-VN").format(max)} đ`,
-            } as any
+            } as any,
           );
           dynError = true;
         }
@@ -516,7 +510,7 @@ const BookingFormModal: React.FC<Props> = ({
             {
               type: "manual",
               message: "Tối thiểu 1 phòng",
-            } as any
+            } as any,
           );
           dynError = true;
         }
@@ -530,7 +524,7 @@ const BookingFormModal: React.FC<Props> = ({
         return;
       }
       const availabilityResults = await Promise.all(
-        values.roomTypes.map(async (rt) => {
+        values.roomTypes?.map(async (rt) => {
           try {
             const res = await bookingsApi.roomAvailability({
               hotelId,
@@ -542,7 +536,7 @@ const BookingFormModal: React.FC<Props> = ({
           } catch {
             return 0;
           }
-        })
+        }) ?? [],
       );
       let availabilityError = false;
       const originalCountsMap: Record<string, number> = {};
@@ -552,7 +546,7 @@ const BookingFormModal: React.FC<Props> = ({
           originalCountsMap[rt.roomTypeId] = count;
         }
       }
-      values.roomTypes.forEach((rt, idx) => {
+      values.roomTypes?.forEach((rt, idx) => {
         clearErrors(`roomTypes.${idx}.totalRooms` as any);
         const available = availabilityResults[idx] || 0;
         const originalCount =
@@ -567,7 +561,7 @@ const BookingFormModal: React.FC<Props> = ({
             {
               type: "manual",
               message: `Vượt quá số lượng phòng trống: còn ${available} phòng`,
-            } as any
+            } as any,
           );
           availabilityError = true;
         }
@@ -597,7 +591,7 @@ const BookingFormModal: React.FC<Props> = ({
           total: values.totalAmount || 0,
           left: (values.totalAmount || 0) - (values.depositAmount || 0) - 0,
           notes: values.notes || undefined,
-          roomTypes: values.roomTypes.map((rt) => ({
+          roomTypes: values.roomTypes?.map((rt) => ({
             roomTypeId: rt.roomId,
             price: rt.price || 0,
             capacity: 0,
@@ -632,14 +626,14 @@ const BookingFormModal: React.FC<Props> = ({
         notes: values.notes || undefined,
         startDate: dayjs(globalStart).format("YYYY-MM-DD"),
         endDate: dayjs(globalEnd).format("YYYY-MM-DD"),
-        roomTypes: values.roomTypes.map((rt) => ({
+        roomTypes: values.roomTypes?.map((rt) => ({
           roomTypeId: rt.roomId,
           price: rt.price || 0,
           capacity: 0,
           totalRoom: rt.totalRooms || 0,
           startDate: dayjs(globalStart).format("YYYY-MM-DDTHH:mm:ss"),
           endDate: dayjs(globalEnd).format("YYYY-MM-DDTHH:mm:ss"),
-          rooms: rt.rooms.map((r) => ({
+          rooms: rt.rooms?.map((r) => ({
             roomId: r?.roomId,
             startDate: dayjs(globalStart).format("YYYY-MM-DDTHH:mm:ss"),
             endDate: dayjs(globalEnd).format("YYYY-MM-DDTHH:mm:ss"),
@@ -792,10 +786,10 @@ const BookingFormModal: React.FC<Props> = ({
                           price: rt.priceFrom || 0,
                           totalRoom: 1,
                           startDate: dayjs(globalStart as Dayjs).format(
-                            "YYYY-MM-DD"
+                            "YYYY-MM-DD",
                           ),
                           endDate: dayjs(globalEnd as Dayjs).format(
-                            "YYYY-MM-DD"
+                            "YYYY-MM-DD",
                           ),
                           bookingRooms: [],
                         });
@@ -877,10 +871,10 @@ const BookingFormModal: React.FC<Props> = ({
                     const available = availabilityByType[rt.id] ?? 0;
                     const qty = desiredCounts[rt.id] ?? 0;
                     const idx = (roomsWatch || []).findIndex(
-                      (r) => r.roomId === rt.id
+                      (r) => r.roomId === rt.id,
                     );
                     const perRoomTotal =
-                      idx >= 0 ? quotesByIndex[idx]?.total ?? 0 : 0;
+                      idx >= 0 ? (roomsWatch[idx]?.price ?? 0) : 0;
                     const rowTotal = (perRoomTotal || 0) * (qty || 0);
                     return (
                       <Grid key={rt.id} container>
@@ -918,14 +912,14 @@ const BookingFormModal: React.FC<Props> = ({
                                   const raw = Number(e.target.value) || 0;
                                   const num = Math.max(
                                     0,
-                                    Math.min(raw, available)
+                                    Math.min(raw, available),
                                   );
                                   setDesiredCounts((s) => ({
                                     ...s,
                                     [rt.id]: num,
                                   }));
                                   const idx = (roomsWatch || []).findIndex(
-                                    (r) => r.roomId === rt.id
+                                    (r) => r.roomId === rt.id,
                                   );
                                   if (num <= 0) {
                                     if (idx >= 0) remove(idx);
@@ -933,11 +927,11 @@ const BookingFormModal: React.FC<Props> = ({
                                     if (idx >= 0) {
                                       setValue(
                                         `roomTypes.${idx}.totalRooms`,
-                                        num as any
+                                        num as any,
                                       );
                                       setValue(
                                         `roomTypes.${idx}.price`,
-                                        rt.priceFrom || 0
+                                        rt.priceFrom || 0,
                                       );
                                     } else {
                                       append({
@@ -958,7 +952,7 @@ const BookingFormModal: React.FC<Props> = ({
                               <Box>
                                 <Typography variant="body2" fontWeight={700}>
                                   {new Intl.NumberFormat("vi-VN").format(
-                                    rowTotal
+                                    rowTotal,
                                   )}{" "}
                                   đ
                                 </Typography>
@@ -1016,7 +1010,7 @@ const BookingFormModal: React.FC<Props> = ({
                       value={
                         field.value !== undefined && field.value !== null
                           ? new Intl.NumberFormat("vi-VN").format(
-                              Number(field.value)
+                              Number(field.value),
                             )
                           : ""
                       }
@@ -1090,7 +1084,7 @@ const BookingFormModal: React.FC<Props> = ({
                   open: true,
                   message: "Vui lòng nhập đầy đủ thông tin",
                   severity: "error",
-                })
+                }),
               )}
               startIcon={<SaveIcon />}
             >
@@ -1116,9 +1110,9 @@ const BookingFormModal: React.FC<Props> = ({
                   t.id ===
                   ((priceDialogRt?.roomTypeId as string) ||
                     roomTypes[0]?.id ||
-                    "")
+                    ""),
               )?.priceByDates || []
-            ).map((p) => [dayjs(p.date).format("YYYY-MM-DD"), p.price])
+            ).map((p) => [dayjs(p.date).format("YYYY-MM-DD"), p.price]),
           )}
         />
         <Popover
@@ -1136,7 +1130,7 @@ const BookingFormModal: React.FC<Props> = ({
             </Typography>
             {(() => {
               const idx = (roomsWatch || []).findIndex(
-                (r) => r.roomId === pricePopoverType
+                (r) => r.roomId === pricePopoverType,
               );
               const quote = idx >= 0 ? quotesByIndex[idx] || null : null;
               const items = quote?.items || [];
