@@ -177,6 +177,7 @@ const BookingFormModal: React.FC<Props> = ({
   const [availabilityByType, setAvailabilityByType] = useState<
     Record<string, number>
   >({});
+  const [itemOpen, setItemOpen] = useState<Record<number, boolean>>({});
   const [priceDialogOpen, setPriceDialogOpen] = useState(false);
   const [priceDialogRt, setPriceDialogRt] = useState<BookingRoomTypeDto | null>(
     null,
@@ -301,7 +302,9 @@ const BookingFormModal: React.FC<Props> = ({
 
       setQuotesByIndex(enrichedQuotes);
       const total = roomsWatch.reduce((sum, r, idx) => {
-        return sum + r.price * r.totalRooms;
+        const quote = enrichedQuotes[idx];
+        const perRoomTotal = quote?.total ?? 0;
+        return sum + perRoomTotal * (r.totalRooms || 0);
       }, 0);
       setValue("totalAmount", total);
       const availability: Record<number, number> = {};
@@ -420,6 +423,9 @@ const BookingFormModal: React.FC<Props> = ({
         const rooms = (rt.bookingRooms || []).map((r) => ({
           roomId: r.roomId,
         }));
+
+        const startDate = dayjs(rt.startDate);
+        const endDate = dayjs(rt.endDate);
         return {
           roomId: rt.roomTypeId,
           totalRooms: rt.totalRoom || rooms.length || 1,
@@ -467,7 +473,7 @@ const BookingFormModal: React.FC<Props> = ({
         (sum, r) => sum + (Number(r.totalRooms) || 0),
         0,
       );
-      if (values.roomTypes?.length === 0 || totalSelected <= 0) {
+      if (values.roomTypes.length === 0 || totalSelected <= 0) {
         setSnackbar({
           open: true,
           message: "Vui lòng chọn ít nhất 1 phòng",
@@ -524,7 +530,7 @@ const BookingFormModal: React.FC<Props> = ({
         return;
       }
       const availabilityResults = await Promise.all(
-        values.roomTypes?.map(async (rt) => {
+        values.roomTypes.map(async (rt) => {
           try {
             const res = await bookingsApi.roomAvailability({
               hotelId,
@@ -536,7 +542,7 @@ const BookingFormModal: React.FC<Props> = ({
           } catch {
             return 0;
           }
-        }) ?? [],
+        }),
       );
       let availabilityError = false;
       const originalCountsMap: Record<string, number> = {};
@@ -546,7 +552,7 @@ const BookingFormModal: React.FC<Props> = ({
           originalCountsMap[rt.roomTypeId] = count;
         }
       }
-      values.roomTypes?.forEach((rt, idx) => {
+      values.roomTypes.forEach((rt, idx) => {
         clearErrors(`roomTypes.${idx}.totalRooms` as any);
         const available = availabilityResults[idx] || 0;
         const originalCount =
@@ -591,7 +597,7 @@ const BookingFormModal: React.FC<Props> = ({
           total: values.totalAmount || 0,
           left: (values.totalAmount || 0) - (values.depositAmount || 0) - 0,
           notes: values.notes || undefined,
-          roomTypes: values.roomTypes?.map((rt) => ({
+          roomTypes: values.roomTypes.map((rt) => ({
             roomTypeId: rt.roomId,
             price: rt.price || 0,
             capacity: 0,
@@ -626,14 +632,14 @@ const BookingFormModal: React.FC<Props> = ({
         notes: values.notes || undefined,
         startDate: dayjs(globalStart).format("YYYY-MM-DD"),
         endDate: dayjs(globalEnd).format("YYYY-MM-DD"),
-        roomTypes: values.roomTypes?.map((rt) => ({
+        roomTypes: values.roomTypes.map((rt) => ({
           roomTypeId: rt.roomId,
           price: rt.price || 0,
           capacity: 0,
           totalRoom: rt.totalRooms || 0,
           startDate: dayjs(globalStart).format("YYYY-MM-DDTHH:mm:ss"),
           endDate: dayjs(globalEnd).format("YYYY-MM-DDTHH:mm:ss"),
-          rooms: rt.rooms?.map((r) => ({
+          rooms: rt.rooms.map((r) => ({
             roomId: r?.roomId,
             startDate: dayjs(globalStart).format("YYYY-MM-DDTHH:mm:ss"),
             endDate: dayjs(globalEnd).format("YYYY-MM-DDTHH:mm:ss"),
@@ -874,7 +880,7 @@ const BookingFormModal: React.FC<Props> = ({
                       (r) => r.roomId === rt.id,
                     );
                     const perRoomTotal =
-                      idx >= 0 ? (roomsWatch[idx]?.price ?? 0) : 0;
+                      idx >= 0 ? (quotesByIndex[idx]?.total ?? 0) : 0;
                     const rowTotal = (perRoomTotal || 0) * (qty || 0);
                     return (
                       <Grid key={rt.id} container>
