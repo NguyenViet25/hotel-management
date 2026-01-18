@@ -711,6 +711,14 @@ public class BookingsService(
                         else if (target < current)
                         {
                             var diff = current - target;
+
+                            var assignedRoomsCount = await _bookingRoomRepo.Query()
+                                .Where(r => r.BookingRoomTypeId == brt.BookingRoomTypeId)
+                                .CountAsync();
+
+                            var needToAssignRoomsCount = current - assignedRoomsCount;
+                            diff = Math.Abs(diff - needToAssignRoomsCount);
+
                             var rooms = await _bookingRoomRepo.Query()
                                 .Where(r => r.BookingRoomTypeId == brt.BookingRoomTypeId)
                                 .ToListAsync();
@@ -1805,7 +1813,7 @@ public class BookingsService(
             booking.AdditionalAmount = dto.AdditionalAmount ?? 0;
             booking.AdditionalBookingNotes = dto.AdditionalBookingNotes;
             booking.AdditionalBookingAmount = dto.AdditionalBookingAmount ?? 0;
-            booking.TotalAmount = baseTotal + booking.AdditionalAmount ;
+            booking.TotalAmount = baseTotal + booking.AdditionalAmount;
             booking.LeftAmount = Math.Max(0, booking.TotalAmount - totalPaid);
 
             await _bookingRepo.UpdateAsync(booking);
@@ -2247,6 +2255,24 @@ public class BookingsService(
                         await _bookingRepo.UpdateAsync(item);
                         await _bookingRepo.SaveChangesAsync();
                     }
+
+                    var noCheckInRooms = await _bookingRoomRepo.Query()
+                        .Where(x => x.BookingRoomTypeId == rt.BookingRoomTypeId && x.ActualCheckInAt == null)
+                        .ToListAsync();
+                    foreach (var noCheckInRoom in noCheckInRooms)
+                    {
+                        var room = await _roomRepo.Query().Where(x => x.Id == noCheckInRoom.RoomId).FirstOrDefaultAsync();
+                        if (room != null)
+                        {
+                            room.Status = RoomStatus.Available;
+                            await _roomRepo.UpdateAsync(room);
+                            await _roomRepo.SaveChangesAsync();
+                        }
+
+                        await _bookingRoomRepo.RemoveAsync(noCheckInRoom);
+                        await _bookingRoomRepo.SaveChangesAsync();
+                    }
+
                 }
 
             }

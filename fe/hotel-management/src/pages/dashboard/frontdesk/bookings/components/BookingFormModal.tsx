@@ -555,18 +555,14 @@ const BookingFormModal: React.FC<Props> = ({
       values.roomTypes.forEach((rt, idx) => {
         clearErrors(`roomTypes.${idx}.totalRooms` as any);
         const available = availabilityResults[idx] || 0;
-        const originalCount =
-          originalCountsMap[rt.roomId as string] ?? undefined;
-        const unchanged =
-          mode === "update" &&
-          originalCount !== undefined &&
-          (rt.totalRooms || 0) === originalCount;
-        if (!unchanged && (rt.totalRooms || 0) > available) {
+        const originalCount = originalCountsMap[rt.roomId as string] ?? 0;
+        const effectiveAvailable = (available || 0) + (originalCount || 0);
+        if ((rt.totalRooms || 0) > effectiveAvailable) {
           setError(
             `roomTypes.${idx}.totalRooms` as any,
             {
               type: "manual",
-              message: `Vượt quá số lượng phòng trống: còn ${available} phòng`,
+              message: `Vượt quá số lượng phòng trống: còn ${effectiveAvailable} phòng`,
             } as any,
           );
           availabilityError = true;
@@ -879,9 +875,24 @@ const BookingFormModal: React.FC<Props> = ({
                     const idx = (roomsWatch || []).findIndex(
                       (r) => r.roomId === rt.id,
                     );
+                    const originalCount =
+                      mode === "update"
+                        ? ((bookingData as any)?.bookingRoomTypes || []).find(
+                            (x: any) => x.roomTypeId === rt.id,
+                          )?.totalRoom ||
+                          (((bookingData as any)?.bookingRoomTypes || []).find(
+                            (x: any) => x.roomTypeId === rt.id,
+                          )?.bookingRooms?.length ??
+                            0) ||
+                          0
+                        : 0;
                     const perRoomTotal =
                       idx >= 0 ? (quotesByIndex[idx]?.total ?? 0) : 0;
                     const rowTotal = (perRoomTotal || 0) * (qty || 0);
+                    const availableLeft = Math.max(
+                      0,
+                      (available || 0) + (originalCount || 0) - (qty || 0),
+                    );
                     return (
                       <Grid key={rt.id} container>
                         <Grid size={{ xs: 12, md: 9 }}>
@@ -899,8 +910,8 @@ const BookingFormModal: React.FC<Props> = ({
                               </IconButton>
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
-                              {available > 0
-                                ? `(Còn ${available} phòng trống)`
+                              {availableLeft > 0
+                                ? `(Còn ${availableLeft} phòng trống)`
                                 : `(Hết phòng)`}
                             </Typography>
                           </Stack>
@@ -918,7 +929,10 @@ const BookingFormModal: React.FC<Props> = ({
                                   const raw = Number(e.target.value) || 0;
                                   const num = Math.max(
                                     0,
-                                    Math.min(raw, available),
+                                    Math.min(
+                                      raw,
+                                      (available || 0) + (originalCount || 0),
+                                    ),
                                   );
                                   setDesiredCounts((s) => ({
                                     ...s,
@@ -949,8 +963,13 @@ const BookingFormModal: React.FC<Props> = ({
                                     }
                                   }
                                 }}
-                                inputProps={{ min: 0, max: available }}
-                                disabled={available <= 0}
+                                inputProps={{
+                                  min: 0,
+                                  max: (available || 0) + (originalCount || 0),
+                                }}
+                                disabled={
+                                  (available || 0) + (originalCount || 0) <= 0
+                                }
                                 sx={{ width: "100%" }}
                               />
                             </Grid>
