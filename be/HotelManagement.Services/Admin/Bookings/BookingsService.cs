@@ -721,6 +721,7 @@ public class BookingsService(
                             var rooms = await _bookingRoomRepo.Query()
                                 .Where(r => r.BookingRoomTypeId == brt.BookingRoomTypeId)
                                 .ToListAsync();
+
                             var roomIds = rooms.Select(r => r.BookingRoomId).ToList();
                             var guestCounts = await _bookingGuestRepo.Query()
                                 .Where(bg => roomIds.Contains(bg.BookingRoomId))
@@ -728,7 +729,7 @@ public class BookingsService(
                                 .Select(g => new { BookingRoomId = g.Key, Count = g.Count() })
                                 .ToListAsync();
                             int GetGuestCount(Guid rid) => guestCounts.FirstOrDefault(x => x.BookingRoomId == rid)?.Count ?? 0;
-                            var removable = rooms.Take(diff).ToList();
+                            var removable = rooms.Where(x => x.ActualCheckInAt == null).Take(diff).ToList();
 
                             var remain = diff - removable.Count;
                             foreach (var r in removable)
