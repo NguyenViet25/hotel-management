@@ -37,7 +37,7 @@ import {
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs, { Dayjs } from "dayjs";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import bookingsApi, {
   type BookingDetailsDto,
@@ -69,7 +69,7 @@ export default function KitchenManagementPage() {
   const { hotelId } = useStore<StoreState>((s) => s);
   const [summaries, setSummaries] = useState<OrderSummaryDto[]>([]);
   const [detailsMap, setDetailsMap] = useState<Record<string, OrderDetailsDto>>(
-    {}
+    {},
   );
   const [bookingMap, setBookingMap] = useState<
     Record<string, BookingDetailsDto | undefined>
@@ -80,6 +80,12 @@ export default function KitchenManagementPage() {
   const [notesDraft, setNotesDraft] = useState<Record<string, string>>({});
   const [needConfirm, setNeedConfirm] = useState<Record<string, boolean>>({});
   const [search, setSearch] = useState("");
+  const inputRefs = useRef<
+    Record<string, HTMLTextAreaElement | HTMLInputElement | null>
+  >({});
+  const cursorPosRef = useRef<Record<string, { start: number; end: number }>>(
+    {},
+  );
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuTarget, setMenuTarget] = useState<{
@@ -90,7 +96,7 @@ export default function KitchenManagementPage() {
   const [menuItems, setMenuItems] = useState<MenuItemDto[]>([]);
   const [menuLoading, setMenuLoading] = useState(false);
   const [menuItemMap, setMenuItemMap] = useState<Record<string, MenuItemDto>>(
-    {}
+    {},
   );
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmTargetId, setConfirmTargetId] = useState<string | null>(null);
@@ -100,7 +106,7 @@ export default function KitchenManagementPage() {
   >(null);
   const [statusDialogNext, setStatusDialogNext] = useState<number | null>(null);
   const [expandedOrders, setExpandedOrders] = useState<Record<string, boolean>>(
-    {}
+    {},
   );
 
   const [startDate, setStartDate] = useState<Dayjs>(dayjs().startOf("day"));
@@ -142,7 +148,7 @@ export default function KitchenManagementPage() {
       setDetailsMap(map);
       const bookingsToFetch = list.filter((s) => !!s.bookingId);
       const bookingDetails = await Promise.all(
-        bookingsToFetch.map((s) => bookingsApi.getById(s.bookingId!))
+        bookingsToFetch.map((s) => bookingsApi.getById(s.bookingId!)),
       );
       const bMap: Record<string, BookingDetailsDto | undefined> = {};
       for (const b of bookingDetails) bMap[b.data!.id] = b.data;
@@ -244,14 +250,14 @@ export default function KitchenManagementPage() {
     const d = detailsMap[orderId];
     if (!d) return;
     const pending = d.items.filter(
-      (i) => Number(i?.status) === EOrderStatus.Confirmed
+      (i) => Number(i?.status) === EOrderStatus.Confirmed,
     );
     await Promise.all(
       pending.map((i) =>
         ordersApi.updateItem(orderId, i.id, {
           status: EOrderStatus.InProgress as any,
-        })
-      )
+        }),
+      ),
     );
     await ordersApi.updateStatus(orderId, {
       status: EOrderStatus.InProgress as any,
@@ -414,16 +420,16 @@ export default function KitchenManagementPage() {
                         order.status === EOrderStatus.NeedConfirmed
                           ? "default"
                           : order.status === EOrderStatus.Confirmed
-                          ? "primary"
-                          : order.status === EOrderStatus.InProgress
-                          ? "primary"
-                          : order.status === EOrderStatus.Ready
-                          ? "primary"
-                          : order.status === EOrderStatus.Completed
-                          ? "success"
-                          : order.status === EOrderStatus.Cancelled
-                          ? "error"
-                          : "default"
+                            ? "primary"
+                            : order.status === EOrderStatus.InProgress
+                              ? "primary"
+                              : order.status === EOrderStatus.Ready
+                                ? "primary"
+                                : order.status === EOrderStatus.Completed
+                                  ? "success"
+                                  : order.status === EOrderStatus.Cancelled
+                                    ? "error"
+                                    : "default"
                       }
                       size="small"
                     />
@@ -452,7 +458,7 @@ export default function KitchenManagementPage() {
                           <Typography variant="body2">
                             {order.servingDate
                               ? new Date(order.servingDate).toLocaleString(
-                                  "vi-VN"
+                                  "vi-VN",
                                 )
                               : "—"}
                           </Typography>
@@ -536,6 +542,21 @@ export default function KitchenManagementPage() {
                                     ...m,
                                     [order.id]: true,
                                   }));
+                                  const el = inputRefs.current[order.id];
+                                  requestAnimationFrame(() => {
+                                    if (el) {
+                                      el.focus();
+                                      const len =
+                                        (el as HTMLInputElement).value
+                                          ?.length ??
+                                        (el as HTMLTextAreaElement).value
+                                          ?.length ??
+                                        0;
+                                      try {
+                                        el.setSelectionRange(len, len);
+                                      } catch {}
+                                    }
+                                  });
                                 }}
                                 sx={{ fontSize: "0.75rem", py: 0.3 }}
                               >
@@ -552,15 +573,48 @@ export default function KitchenManagementPage() {
                               order.changeFoodRequest ??
                               ""
                             }
-                            onChange={(e) =>
+                            onChange={(e) => {
+                              const el = inputRefs.current[order.id];
+                              const start =
+                                (el as HTMLInputElement | HTMLTextAreaElement)
+                                  ?.selectionStart ?? 0;
+                              const end =
+                                (el as HTMLInputElement | HTMLTextAreaElement)
+                                  ?.selectionEnd ?? 0;
+                              cursorPosRef.current[order.id] = {
+                                start,
+                                end,
+                              };
                               setNotesDraft((m) => ({
                                 ...m,
                                 [order.id]: e.target.value,
-                              }))
-                            }
+                              }));
+                              requestAnimationFrame(() => {
+                                const el2 = inputRefs.current[order.id];
+                                const pos = cursorPosRef.current[order.id];
+                                if (el2 && pos) {
+                                  try {
+                                    el2.focus();
+                                    el2.setSelectionRange(pos.start, pos.end);
+                                  } catch {}
+                                }
+                              });
+                            }}
                             placeholder="Nhập yêu cầu đổi món"
                             multiline
                             minRows={2}
+                            inputRef={(el) => {
+                              inputRefs.current[order.id] = el;
+                            }}
+                            onSelect={(e) => {
+                              const target = e.target as
+                                | HTMLInputElement
+                                | HTMLTextAreaElement;
+                              cursorPosRef.current[order.id] = {
+                                start: target.selectionStart ?? 0,
+                                end: target.selectionEnd ?? 0,
+                              };
+                            }}
                             sx={{
                               "& .MuiInputBase-input": { fontSize: "0.9rem" },
                             }}
@@ -655,7 +709,7 @@ export default function KitchenManagementPage() {
                         </Typography>
                         {order.itemHistories &&
                           order.itemHistories.some(
-                            (h) => h.newOrderItemId === it.id
+                            (h) => h.newOrderItemId === it.id,
                           ) && <Chip label={`Món mới`} color="success" />}
                         <Chip label={`${it.unitPrice.toLocaleString()} đ`} />
                       </Stack>
@@ -823,7 +877,7 @@ export default function KitchenManagementPage() {
                 .filter((mi) =>
                   (search || "").trim().length === 0
                     ? true
-                    : mi.name.toLowerCase().includes(search.toLowerCase())
+                    : mi.name.toLowerCase().includes(search.toLowerCase()),
                 )
                 .map((mi) => (
                   <Stack
@@ -896,7 +950,7 @@ export default function KitchenManagementPage() {
                 <Typography>Order {confirmTargetId}</Typography>
                 <Typography variant="body2" color="text.secondary">
                   {dayjs(detailsMap[confirmTargetId]?.createdAt).format(
-                    "D/M/YYYY HH:mm"
+                    "D/M/YYYY HH:mm",
                   )}
                 </Typography>
                 {detailsMap[confirmTargetId]?.notes && (
@@ -965,7 +1019,7 @@ export default function KitchenManagementPage() {
                   <Typography variant="body2">
                     Trạng thái tiếp theo:{" "}
                     {getNextStatusLabel(
-                      Number(detailsMap[statusDialogTargetId]?.status ?? 0)
+                      Number(detailsMap[statusDialogTargetId]?.status ?? 0),
                     )}
                   </Typography>
                 </Stack>

@@ -49,7 +49,7 @@ const GuestDialog: React.FC<Props> = ({ open, initial, onClose, onSubmit }) => {
       .regex(/^\d{9}$|^\d{12}$/, "CMND/CCCD không hợp lệ"),
     phone: phoneSchema,
     idCardFrontImageUrl: z.string().optional(),
-    idCardBackImageUrl: z.string().optional(),
+    idCardBackImageUrl: z.string().nullable().optional(),
   });
 
   const {
@@ -57,17 +57,17 @@ const GuestDialog: React.FC<Props> = ({ open, initial, onClose, onSubmit }) => {
     handleSubmit,
     setValue,
     reset,
-    formState: { errors, isValid },
+    formState: { errors },
     watch,
   } = useForm<GuestForm>({
     resolver: zodResolver(schema),
     mode: "onChange",
     defaultValues: {
-      name: "",
-      phone: "",
-      idCardBackImageUrl: "",
-      idCardFrontImageUrl: "",
-      idCard: "",
+      name: initial?.name ?? "",
+      phone: initial?.phone ?? "",
+      idCardBackImageUrl: initial?.idCardBackImageUrl ?? "",
+      idCardFrontImageUrl: initial?.idCardFrontImageUrl ?? "",
+      idCard: initial?.idCard ?? "",
     },
   });
 
@@ -80,7 +80,7 @@ const GuestDialog: React.FC<Props> = ({ open, initial, onClose, onSubmit }) => {
           idCardBackImageUrl: "",
           idCardFrontImageUrl: "",
           idCard: "",
-        }
+        },
       );
     }
   }, [open, initial, reset]);
@@ -94,6 +94,8 @@ const GuestDialog: React.FC<Props> = ({ open, initial, onClose, onSubmit }) => {
     }
     onSubmit(data);
   });
+
+  console.log("e", errors);
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
@@ -195,7 +197,7 @@ const GuestDialog: React.FC<Props> = ({ open, initial, onClose, onSubmit }) => {
 
       <DialogActions>
         <Button onClick={onClose}>Hủy</Button>
-        <Button variant="contained" onClick={submit} disabled={!isValid}>
+        <Button variant="contained" onClick={submit}>
           Lưu
         </Button>
       </DialogActions>

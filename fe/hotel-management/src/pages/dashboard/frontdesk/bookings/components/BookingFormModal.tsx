@@ -33,6 +33,8 @@ import React, { useEffect, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import bookingsApi, {
+  BookingRoomStatus,
+  EBookingStatus,
   type BookingDetailsDto,
   type BookingRoomTypeDto,
   type CreateBookingDto,
@@ -816,6 +818,9 @@ const BookingFormModal: React.FC<Props> = ({
                         field.onChange(date);
                         setReloadCount((prev) => prev + 1);
                       }}
+                      readOnly={
+                        bookingData?.status === EBookingStatus.Confirmed
+                      }
                       slotProps={{
                         textField: {
                           fullWidth: true,
@@ -846,6 +851,9 @@ const BookingFormModal: React.FC<Props> = ({
                         field.onChange(date);
                         setReloadCount((prev) => prev + 1);
                       }}
+                      readOnly={
+                        bookingData?.status === EBookingStatus.Confirmed
+                      }
                       slotProps={{
                         textField: {
                           fullWidth: true,

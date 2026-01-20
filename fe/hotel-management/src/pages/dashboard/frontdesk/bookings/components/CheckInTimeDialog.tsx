@@ -118,6 +118,7 @@ export default function CheckInTimeDialog({
               .minute(59)
               .second(0)
               .millisecond(0)}
+            readOnly
             slotProps={{
               textField: {
                 readOnly: true,

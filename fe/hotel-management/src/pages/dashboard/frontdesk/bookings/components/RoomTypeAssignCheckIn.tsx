@@ -15,6 +15,10 @@ import {
   Card,
   CardContent,
   CardHeader,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Chip,
   Grid,
   IconButton,
@@ -123,6 +127,9 @@ const RoomTypeBlock: React.FC<{
   const [movingGuest, setMovingGuest] = useState<BookingGuestDto | null>(null);
   const [movingFromRoomId, setMovingFromRoomId] = useState<string | null>(null);
   const [reload, setReload] = useState(0);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteGuest, setDeleteGuest] = useState<BookingGuestDto | null>(null);
+  const [deleteRoomId, setDeleteRoomId] = useState<string | null>(null);
 
   const openAddGuest = (roomId: string) => {
     setGuestRoomId(roomId);
@@ -576,32 +583,9 @@ const RoomTypeBlock: React.FC<{
                             } as any)
                           }
                           onDelete={async (_idx, gi) => {
-                            try {
-                              const res = await bookingsApi.removeGuestFromRoom(
-                                br.bookingRoomId,
-                                gi.guestId!
-                              );
-                              if (res.isSuccess) {
-                                setSnackbar({
-                                  open: true,
-                                  message: "Xoá khách khỏi phòng thành công",
-                                  severity: "success",
-                                });
-                                await onRefresh?.();
-                              } else {
-                                setSnackbar({
-                                  open: true,
-                                  message: res.message || "Không thể xoá khách",
-                                  severity: "error",
-                                });
-                              }
-                            } catch {
-                              setSnackbar({
-                                open: true,
-                                message: "Đã xảy ra lỗi khi xoá khách",
-                                severity: "error",
-                              });
-                            }
+                            setDeleteGuest(gi);
+                            setDeleteRoomId(br.bookingRoomId);
+                            setDeleteOpen(true);
                           }}
                           onChangeRoom={(gi) => {
                             setActiveRoom(br);
@@ -810,6 +794,60 @@ const RoomTypeBlock: React.FC<{
             }
           }}
         />
+        <Dialog open={deleteOpen} onClose={() => setDeleteOpen(false)}>
+          <DialogTitle>Xác nhận xoá khách</DialogTitle>
+          <DialogContent>
+            <Typography>
+              {`Bạn có chắc muốn xoá khách ${
+                deleteGuest?.fullname || ""
+              } khỏi phòng này?`}
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setDeleteOpen(false)}>Huỷ</Button>
+            <Button
+              color="error"
+              variant="contained"
+              onClick={async () => {
+                try {
+                  if (!deleteRoomId || !deleteGuest?.guestId) {
+                    setDeleteOpen(false);
+                    return;
+                  }
+                  const res = await bookingsApi.removeGuestFromRoom(
+                    deleteRoomId,
+                    deleteGuest.guestId
+                  );
+                  if (res.isSuccess) {
+                    setSnackbar({
+                      open: true,
+                      message: "Xoá khách khỏi phòng thành công",
+                      severity: "success",
+                    });
+                    setDeleteOpen(false);
+                    setDeleteGuest(null);
+                    setDeleteRoomId(null);
+                    await onRefresh?.();
+                  } else {
+                    setSnackbar({
+                      open: true,
+                      message: res.message || "Không thể xoá khách",
+                      severity: "error",
+                    });
+                  }
+                } catch {
+                  setSnackbar({
+                    open: true,
+                    message: "Đã xảy ra lỗi khi xoá khách",
+                    severity: "error",
+                  });
+                }
+              }}
+            >
+              Xoá
+            </Button>
+          </DialogActions>
+        </Dialog>
         <ExtendStayDialog
           open={extendOpen}
           currentEnd={activeRoom?.endDate || rt.endDate}

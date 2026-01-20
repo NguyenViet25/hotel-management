@@ -74,7 +74,7 @@ const BookingManagementPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const [pageSize] = useState(100);
+  const [pageSize, setPageSize] = useState(5);
 
   const [viewMode, setViewMode] = useState<"card" | "table">("table");
 
@@ -83,7 +83,7 @@ const BookingManagementPage: React.FC = () => {
   const hotelId = user?.hotelId || "";
   const [status, setStatus] = useState<BookingStatus | " ">(" ");
   const [fromDate, setFromDate] = useState<Dayjs | null>(
-    dayjs().startOf("month")
+    dayjs().startOf("month"),
   );
   const [toDate, setToDate] = useState<Dayjs | null>(dayjs().endOf("month"));
   const [guestName, setGuestName] = useState<string>("");
@@ -109,7 +109,7 @@ const BookingManagementPage: React.FC = () => {
     useState<BookingDetailsDto | null>(null);
   const [priceDialogOpen, setPriceDialogOpen] = useState(false);
   const [priceDialogRt, setPriceDialogRt] = useState<BookingRoomTypeDto | null>(
-    null
+    null,
   );
 
   // Notifications
@@ -176,7 +176,7 @@ const BookingManagementPage: React.FC = () => {
         setLoading(false);
       }
     },
-    [hotelId, status, fromDate, toDate, guestName, roomNumber, page, pageSize]
+    [hotelId, status, fromDate, toDate, guestName, roomNumber, page, pageSize],
   );
 
   useEffect(() => {
@@ -306,7 +306,7 @@ const BookingManagementPage: React.FC = () => {
                       const totalRooms = (row.bookingRoomTypes || []).reduce(
                         (sum, rt) =>
                           sum + (rt.totalRoom || rt.bookingRooms?.length || 0),
-                        0
+                        0,
                       );
                       return <Typography>{totalRooms}</Typography>;
                     },
@@ -340,24 +340,24 @@ const BookingManagementPage: React.FC = () => {
                         row.status === 3
                           ? "success"
                           : row.status === 4 || row.status === 5
-                          ? "error"
-                          : row.status === 1
-                          ? "primary"
-                          : "default";
+                            ? "error"
+                            : row.status === 1
+                              ? "primary"
+                              : "default";
                       const statusLabel =
                         row.status === 0
                           ? "Chờ duyệt"
                           : row.status === 1
-                          ? "Đã xác nhận"
-                          : row.status === 2
-                          ? "Đã hoàn thành"
-                          : row.status === 3
-                          ? "Đã hoàn thành"
-                          : row.status === 4
-                          ? "Đã hủy"
-                          : row.status === 5
-                          ? "Vắng mặt"
-                          : String(row.status);
+                            ? "Đã xác nhận"
+                            : row.status === 2
+                              ? "Đã hoàn thành"
+                              : row.status === 3
+                                ? "Đã hoàn thành"
+                                : row.status === 4
+                                  ? "Đã hủy"
+                                  : row.status === 5
+                                    ? "Vắng mặt"
+                                    : String(row.status);
                       return (
                         <Chip color={statusColor as any} label={statusLabel} />
                       );
@@ -505,7 +505,7 @@ const BookingManagementPage: React.FC = () => {
                         disabled={row.status !== EBookingStatus.Completed}
                         onClick={() => {
                           const hasRooms = (row.bookingRoomTypes || []).some(
-                            (rt) => (rt.bookingRooms?.length || 0) > 0
+                            (rt) => (rt.bookingRooms?.length || 0) > 0,
                           );
                           if (!hasRooms) {
                             toast.warning("Vui lòng thêm phòng vào đơn");
@@ -533,44 +533,47 @@ const BookingManagementPage: React.FC = () => {
                   />
                 );
               }
-              return listData.map((b, idx) => {
-                const totalRooms = (b.bookingRoomTypes || []).reduce(
+              return listData.map((row, idx) => {
+                const totalRooms = (row.bookingRoomTypes || []).reduce(
                   (sum, rt) =>
                     sum + (rt.totalRoom || rt.bookingRooms?.length || 0),
-                  0
+                  0,
                 );
 
-                const total = b.totalAmount + (b.additionalAmount ?? 0);
-                const discountAmount = ((b.promotionValue || 0) / 100) * total;
+                const total = row.totalAmount + (row.additionalAmount ?? 0);
+                const discountAmount =
+                  ((row.promotionValue || 0) / 100) * total;
 
                 const leftAmount =
-                  b.leftAmount - discountAmount + (b.additionalAmount ?? 0);
+                  row.leftAmount - discountAmount + (row.additionalAmount ?? 0);
 
                 const statusColor =
-                  b.status === 3
+                  row.status === 3
                     ? "success"
-                    : b.status === 4
-                    ? "error"
-                    : b.status === 1
-                    ? "primary"
-                    : "default";
+                    : row.status === 4 || row.status === 5
+                      ? "error"
+                      : row.status === 1
+                        ? "primary"
+                        : "default";
                 const statusLabel =
-                  b.status === 0
+                  row.status === 0
                     ? "Chờ duyệt"
-                    : b.status === 1
-                    ? "Đã xác nhận"
-                    : b.status === 2
-                    ? "Đã hoàn thành"
-                    : b.status === 3
-                    ? "Đã hoàn thành"
-                    : b.status === 4
-                    ? "Đã hủy"
-                    : String(b.status);
+                    : row.status === 1
+                      ? "Đã xác nhận"
+                      : row.status === 2
+                        ? "Đã hoàn thành"
+                        : row.status === 3
+                          ? "Đã hoàn thành"
+                          : row.status === 4
+                            ? "Đã hủy"
+                            : row.status === 5
+                              ? "Vắng mặt"
+                              : String(row.status);
                 const zeroMoney =
-                  b.status === EBookingStatus.Cancelled || b.status === 5;
+                  row.status === EBookingStatus.Cancelled || row.status === 5;
                 return (
                   <Accordion
-                    key={b.id}
+                    key={row.id}
                     sx={{
                       borderRadius: 2,
                       boxShadow: 2,
@@ -594,7 +597,7 @@ const BookingManagementPage: React.FC = () => {
                           <Typography
                             fontWeight={700}
                           >{`Yêu cầu đặt phòng: #${String(
-                            idx + 1
+                            idx + 1,
                           ).toUpperCase()}`}</Typography>
                           <Chip
                             label={`Tổng số phòng: ${totalRooms}`}
@@ -603,7 +606,7 @@ const BookingManagementPage: React.FC = () => {
                         </Stack>
                         <Stack direction="row" spacing={1} alignItems="center">
                           <Typography color="text.secondary">
-                            {randomLastMonthDate(b.id).toLocaleString()}
+                            {randomLastMonthDate(row.id).toLocaleString()}
                           </Typography>
                           <Chip
                             color={statusColor as any}
@@ -632,7 +635,7 @@ const BookingManagementPage: React.FC = () => {
                             >
                               <PersonIcon color="action" />
                               <Typography>
-                                Họ và tên: {b.primaryGuestName || "—"}
+                                Họ và tên: {row.primaryGuestName || "—"}
                               </Typography>
                             </Stack>
                             <Stack
@@ -642,7 +645,7 @@ const BookingManagementPage: React.FC = () => {
                             >
                               <Phone color="action" />
                               <Typography>
-                                SĐT: {b.phoneNumber || "—"}
+                                SĐT: {row.phoneNumber || "—"}
                               </Typography>
                             </Stack>
                           </Stack>
@@ -654,7 +657,7 @@ const BookingManagementPage: React.FC = () => {
                               size="small"
                               variant="outlined"
                               startIcon={<Edit />}
-                              onClick={() => openEditModal(b as any)}
+                              onClick={() => openEditModal(row as any)}
                             >
                               Sửa
                             </Button>
@@ -662,7 +665,7 @@ const BookingManagementPage: React.FC = () => {
                               size="small"
                               variant="outlined"
                               startIcon={<Info />}
-                              onClick={() => navigate(`${b.id}`)}
+                              onClick={() => navigate(`${row.id}`)}
                             >
                               Chi tiết
                             </Button>
@@ -670,12 +673,12 @@ const BookingManagementPage: React.FC = () => {
                               size="small"
                               variant="contained"
                               startIcon={<ReceiptLong />}
-                              disabled={b.status !== EBookingStatus.Completed}
+                              disabled={row.status !== EBookingStatus.Completed}
                               onClick={() => {
                                 const hasRooms = (
-                                  b.bookingRoomTypes || []
+                                  row.bookingRoomTypes || []
                                 ).some(
-                                  (rt) => (rt.bookingRooms?.length || 0) > 0
+                                  (rt) => (rt.bookingRooms?.length || 0) > 0,
                                 );
                                 if (!hasRooms) {
                                   setSnackbar({
@@ -685,7 +688,7 @@ const BookingManagementPage: React.FC = () => {
                                   });
                                   return;
                                 }
-                                setInvoiceBooking(b as any);
+                                setInvoiceBooking(row as any);
                                 setOpenBookingInvoice(true);
                               }}
                             >
@@ -697,8 +700,8 @@ const BookingManagementPage: React.FC = () => {
                           <Typography variant="subtitle2" fontWeight={700}>
                             Danh sách phòng
                           </Typography>
-                          {b.bookingRoomTypes?.length ? (
-                            b.bookingRoomTypes.map((rt) => (
+                          {row.bookingRoomTypes?.length ? (
+                            row.bookingRoomTypes.map((rt) => (
                               <Stack
                                 key={rt.bookingRoomTypeId}
                                 spacing={1}
@@ -713,8 +716,8 @@ const BookingManagementPage: React.FC = () => {
                                     1,
                                     dayjs(rt.endDate).diff(
                                       dayjs(rt.startDate),
-                                      "day"
-                                    )
+                                      "day",
+                                    ),
                                   );
                                   const rooms =
                                     rt.totalRoom ||
@@ -758,11 +761,11 @@ const BookingManagementPage: React.FC = () => {
                                           </Typography>
                                           <Typography color="text.secondary">
                                             {new Date(
-                                              rt.startDate
+                                              rt.startDate,
                                             ).toLocaleDateString()}{" "}
                                             -{" "}
                                             {new Date(
-                                              rt.endDate
+                                              rt.endDate,
                                             ).toLocaleDateString()}{" "}
                                             ({nights} đêm)
                                           </Typography>
@@ -816,7 +819,7 @@ const BookingManagementPage: React.FC = () => {
                               <Typography fontWeight={700}>
                                 {(zeroMoney
                                   ? 0
-                                  : b.totalAmount || 0
+                                  : row.totalAmount || 0
                                 ).toLocaleString()}{" "}
                                 đ
                               </Typography>
@@ -828,7 +831,7 @@ const BookingManagementPage: React.FC = () => {
                               <Typography fontWeight={700}>
                                 {(zeroMoney
                                   ? 0
-                                  : b.additionalAmount || 0
+                                  : row.additionalAmount || 0
                                 ).toLocaleString()}{" "}
                                 đ
                               </Typography>
@@ -836,7 +839,7 @@ const BookingManagementPage: React.FC = () => {
                             <Stack alignItems="flex-end">
                               <Typography color="red">Cọc</Typography>
                               <Typography color="red" fontWeight={700}>
-                                {(b.depositAmount || 0).toLocaleString()} đ
+                                {(row.depositAmount || 0).toLocaleString()} đ
                               </Typography>
                             </Stack>
                             <Stack alignItems="flex-end">

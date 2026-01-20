@@ -392,7 +392,6 @@ public class BookingsService(
             var items = await q
                 .Skip((query.Page - 1) * query.PageSize)
                 .Take(query.PageSize)
-
                 .ToListAsync();
 
             // Preload guests

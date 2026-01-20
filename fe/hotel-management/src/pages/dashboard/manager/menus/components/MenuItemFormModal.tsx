@@ -47,18 +47,6 @@ type FormValues = {
   description?: string;
 };
 
-const schema = z.object({
-  category: z.string().min(1, "Vui lòng chọn nhóm món"),
-  name: z.string().min(1, "Tên món là bắt buộc").max(100, "Tối đa 100 ký tự"),
-  unitPrice: z
-    .number("Giá phải là số")
-    .min(0.01, "Giá phải lớn hơn 0")
-    .max(10000000, "Giá quá lớn"),
-  imageUrl: z.string().optional().or(z.literal("")),
-  status: z.number().int().min(0).max(1),
-  description: z.string().max(500, "Tối đa 500 ký tự").optional(),
-});
-
 export interface MenuItemFormModalProps {
   open: boolean;
   onClose: () => void;
@@ -90,7 +78,10 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
     resolver: zodResolver(
       z
         .object({
-          category: z.string("Chọn nhóm món").min(1, "Vui lòng chọn nhóm món"),
+          category: z
+            .string("Chọn nhóm món")
+            .min(1, "Vui lòng chọn nhóm món")
+            .optional(),
           name: z.string().min(1, "Tên là bắt buộc").max(100),
           unitPrice: z.number("Giá phải là số").optional(),
           imageUrl: z.string().optional().or(z.literal("")),
@@ -127,7 +118,7 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
       category:
         createType === "set"
           ? (initialValues?.category ?? "Set")
-          : (initialValues?.category ?? ""),
+          : (initialValues?.category ?? FOOD_CATEGORY_VALUES[0]),
       name: initialValues?.name ?? "",
       unitPrice: createType === "set" ? 1 : (initialValues?.unitPrice ?? 0),
       imageUrl: initialValues?.imageUrl ?? "",
@@ -148,7 +139,7 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
   };
   useEffect(() => {
     if (mode === "edit") {
-      setValue("category", initialValues?.category ?? "Món khai vị");
+      setValue("category", initialValues?.category ?? FOOD_CATEGORY_VALUES[0]);
       setValue("name", initialValues?.name ?? "");
       setValue("unitPrice", initialValues?.unitPrice ?? 0);
       setValue("imageUrl", initialValues?.imageUrl ?? "");
@@ -205,14 +196,7 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
     reset();
   };
 
-  const foodGroups = [
-    { id: "Món khai vị", name: "Món khai vị" },
-    { id: "Món chính", name: "Món chính" },
-    { id: "Món lẩu", name: "Món lẩu" },
-    { id: "Món nướng", name: "Món nướng" },
-    { id: "Món tráng miệng", name: "Món tráng miệng" },
-    { id: "Thức uống", name: "Thức uống" },
-  ];
+  console.log("errors", errors);
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
