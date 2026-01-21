@@ -99,7 +99,7 @@ const BookingDetailsPage: React.FC = () => {
             r.actualCheckInAt !== undefined &&
             r.actualCheckInAt !== null &&
             r.actualCheckOutAt !== undefined &&
-            r.actualCheckOutAt !== null
+            r.actualCheckOutAt !== null,
         ) &&
       data.bookingRoomTypes.every((x) => {
         const assigned = x.bookingRooms?.length || 0;
@@ -199,15 +199,17 @@ const BookingDetailsPage: React.FC = () => {
             data?.status !== EBookingStatus.Cancelled &&
             data?.status !== EBookingStatus.VisitorMissed && (
               <>
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  startIcon={<Edit />}
-                  onClick={() => setOpenEdit(true)}
-                  aria-label="Chỉnh sửa booking"
-                >
-                  Chỉnh sửa
-                </Button>
+                {data?.status !== EBookingStatus.Confirmed && (
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    startIcon={<Edit />}
+                    onClick={() => setOpenEdit(true)}
+                    aria-label="Chỉnh sửa booking"
+                  >
+                    Chỉnh sửa
+                  </Button>
+                )}
                 <Button
                   variant="outlined"
                   color="error"
@@ -232,7 +234,7 @@ const BookingDetailsPage: React.FC = () => {
             </Button>
           )}
 
-          {data?.status === EBookingStatus.Confirmed && (
+          {/* {data?.status === EBookingStatus.Confirmed && (
             <Button
               variant="contained"
               color="success"
@@ -259,7 +261,7 @@ const BookingDetailsPage: React.FC = () => {
             >
               Hoàn thành
             </Button>
-          )}
+          )} */}
         </Stack>
       </Stack>
 

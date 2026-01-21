@@ -2,13 +2,15 @@ using HotelManagement.Domain;
 using HotelManagement.Domain.Repositories;
 using HotelManagement.Repository.Common;
 using HotelManagement.Services.Admin.Bookings.Dtos;
+using HotelManagement.Services.Admin.Rooms.Dtos;
+using HotelManagement.Services.Admin.RoomTypes.Dtos;
 using HotelManagement.Services.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
 using System.Linq;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using System.Text.Json;
-using HotelManagement.Services.Admin.RoomTypes.Dtos;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace HotelManagement.Services.Admin.Bookings;
 
@@ -1055,7 +1057,36 @@ public class BookingsService(
                 Timeline = BuildDayTimeline(targetDate, byRoom.TryGetValue(r.Id, out var list) && list.Any())
             }).ToList();
 
-            return ApiResponse<List<RoomMapItemDto>>.Ok(result);
+
+            var results = new List<RoomMapItemDto>();
+            foreach (var d in result)
+            {
+                var existBookingRoom = await _bookingRoomRepo.Query()
+                    .Where(x => x.RoomId == d.RoomId)
+                    .Where(x => targetDate >= x.StartDate.Date && targetDate <= (x.ActualCheckOutAt ?? x.EndDate).Date)
+                    .FirstOrDefaultAsync();
+
+                if (existBookingRoom != null)
+                {
+                    d.Status = RoomStatus.Occupied;
+                }
+                else
+                {
+                    if (targetDate == DateTime.Now.Date && d.Status != RoomStatus.Occupied)
+                    {
+                        results.Add(d);
+                        continue;
+                    }
+
+                    d.Status = RoomStatus.Available;
+
+
+                }
+                results.Add(d);
+            }
+
+
+            return ApiResponse<List<RoomMapItemDto>>.Ok(results);
         }
         catch (Exception ex)
         {
@@ -1070,12 +1101,43 @@ public class BookingsService(
             var q = _roomRepo.Query().Where(r => true);
             if (query.HotelId.HasValue) q = q.Where(r => r.HotelId == query.HotelId.Value);
             if (query.TypeId.HasValue) q = q.Where(r => r.RoomTypeId == query.TypeId.Value);
-            var rooms = await q.Where(x => x.Status == RoomStatus.Available).ToListAsync();
 
             var from = query.From?.Date ?? DateTime.Now.Date;
             var to = query.To?.Date ?? from.AddDays(1);
 
+            var listRoom = await q.ToListAsync();
+            var results = new List<HotelRoom>();
+            foreach (var d in listRoom)
+            {
+                var existBookingRoom = await _bookingRoomRepo.Query()
+                    .Where(x => x.RoomId == d.Id)
+                    .Where(x => from >= x.StartDate.Date && from <= (x.ActualCheckOutAt ?? x.EndDate).Date ||  to >= x.StartDate.Date && to <= (x.ActualCheckOutAt ?? x.EndDate).Date)
+                    .FirstOrDefaultAsync();
+
+                if (existBookingRoom != null)
+                {
+                    d.Status = RoomStatus.Occupied;
+                }
+                else
+                {
+                    if (from == DateTime.Now.Date && d.Status != RoomStatus.Occupied)
+                    {
+                        results.Add(d);
+                        continue;
+                    }
+
+                    d.Status = RoomStatus.Available;
+
+
+                }
+                results.Add(d);
+            }
+
+            var rooms =  results.Where(x => x.Status == RoomStatus.Available).ToList();
+
             var roomIds = rooms.Select(r => r.Id).ToList();
+
+
             var assignedOverlaps = await _bookingRoomRepo.Query()
                 .Where(br => roomIds.Contains(br.RoomId) && br.BookingStatus != BookingRoomStatus.Cancelled && br.BookingStatus != BookingRoomStatus.CheckedOut)
                 .Where(br => from < (br.ActualCheckOutAt ?? br.EndDate) && to > (br.ActualCheckInAt ?? br.StartDate))

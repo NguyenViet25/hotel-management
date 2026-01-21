@@ -46,7 +46,7 @@ interface TableFormModalProps {
   initialValues?: TableDto;
   onClose: () => void;
   onSubmit: (
-    payload: CreateTableRequest | UpdateTableRequest
+    payload: CreateTableRequest | UpdateTableRequest,
   ) => Promise<void> | void;
 }
 
@@ -85,7 +85,7 @@ const TableFormModal: React.FC<TableFormModalProps> = ({
   }, [mode, initialValues, reset]);
 
   const statusOptions = [
-    { value: 0, label: "Sẵn sàng" },
+    { value: 0, label: "Trống" },
     { value: 1, label: "Đang sử dụng" },
     { value: 3, label: "Ngừng phục vụ" },
   ];

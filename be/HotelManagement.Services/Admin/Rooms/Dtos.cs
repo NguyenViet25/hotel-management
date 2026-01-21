@@ -10,6 +10,7 @@ public class RoomsQueryDto
     public Guid? RoomTypeId { get; set; }
     public int? Floor { get; set; }
     public string? Search { get; set; }
+    public DateTime Date { get; set; }
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 20;
 }
@@ -23,6 +24,17 @@ public class RoomSummaryDto
     public string Number { get; set; } = string.Empty;
     public int Floor { get; set; }
     public RoomStatus Status { get; set; }
+
+    public DateTime? StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
+}
+
+public class RoomBusyRangeDto
+{
+    public Guid BookingRoomId { get; set; }
+    public DateTime StartDate { get; set; }
+    public DateTime EndDate { get; set; }
+    public BookingRoomStatus Status { get; set; }
 }
 
 public class CreateRoomDto

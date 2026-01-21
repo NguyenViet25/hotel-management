@@ -4,15 +4,12 @@ import {
   CalendarMonth,
   ChevronLeft,
   ChevronRight,
+  Circle,
   CreditCard,
   History,
   Info,
   Person,
   Phone,
-  Pin,
-  PinDrop,
-  PinInvoke,
-  PushPin,
   RemoveRedEye,
 } from "@mui/icons-material";
 import BlockIcon from "@mui/icons-material/Block";
@@ -59,6 +56,7 @@ import dayjs from "dayjs";
 import "dayjs/locale/vi";
 import React, { useEffect, useMemo, useState } from "react";
 import bookingsApi, {
+  BookingRoomStatus,
   type BookingDetailsDto,
   type BookingIntervalDto,
   type RoomStayHistoryDto,
@@ -141,6 +139,11 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
   const [occupiedMap, setOccupiedMap] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
+    setFilterFloor(0);
+    setFilterStatus(-1);
+  }, [overviewDate]);
+
+  useEffect(() => {
     const fetchRoomTypes = async () => {
       setRoomTypesLoading(true);
       try {
@@ -153,13 +156,19 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
       } catch {}
       setRoomTypesLoading(false);
     };
+    fetchRoomTypes();
+  }, []);
+
+  useEffect(() => {
     const fetchRooms = async () => {
       setLoading(true);
       try {
+        const start = overviewDate.startOf("day").format("YYYY-MM-DDTHH:mm:ss");
         const res = await roomsApi.getRooms({
           page: 1,
           pageSize: 200,
           hotelId: hotelId ?? "",
+          date: start,
         });
         if (res.isSuccess) setRooms(res.data);
       } catch {
@@ -171,9 +180,8 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
       }
       setLoading(false);
     };
-    fetchRoomTypes();
     fetchRooms();
-  }, []);
+  }, [overviewDate, hotelId]);
 
   useEffect(() => {
     const occupied = rooms.filter((r) => r.status === 1);
@@ -190,12 +198,21 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
     }
     return Array.from(s).sort((a, b) => a - b);
   }, [rooms]);
+  const uniqueRoomNumbers = useMemo(() => {
+    const s = new Set<string>();
+    for (const r of rooms) {
+      const num = r.number || "";
+      if (num) s.add(num);
+    }
+    return Array.from(s).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+  }, [rooms]);
 
   const floors = useMemo(() => {
     const map: Record<number, RoomDto[]> = {};
     const list = rooms.filter((r) => {
       const f = r.floor ?? 0;
       const s = (r.status as number) ?? -1;
+      const n = r.number || "";
       const floorOk = filterFloor === 0 || f === filterFloor;
       const statusOk = filterStatus === -1 || s === filterStatus;
       return floorOk && statusOk;
@@ -239,7 +256,7 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
   const statusChip = (status: number) => {
     const s = getRoomStatusString(status);
     const map: Record<string, { bg: string; text: string; label: string }> = {
-      "Sẵn sàng": { bg: "#F2F4F7", text: "#344054", label: "Trống" },
+      Trống: { bg: "#F2F4F7", text: "#344054", label: "Trống" },
       "Đang sử dụng": { bg: "#E8ECF7", text: "#1F2A44", label: "Đang sử dụng" },
       "Đang dọn dẹp": { bg: "#FEF3C7", text: "#92400E", label: "Đang Dọn Dẹp" },
       "Ngừng phục vụ": { bg: "#EDEDED", text: "#555", label: "Ngừng phục vụ" },
@@ -252,8 +269,11 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
       text: "#344054",
       label: String(status),
     };
+    const isPast = overviewDate.isBefore(dayjs(), "day");
+    const displayLabel =
+      isPast && s === "Đang sử dụng" ? "Đã sử dụng" : cfg.label;
     const icon =
-      s === "Sẵn sàng" ? (
+      s === "Trống" ? (
         <CheckCircleIcon />
       ) : s === "Đang sử dụng" ? (
         <HotelIcon />
@@ -271,7 +291,7 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
     return (
       <Chip
         size="small"
-        label={cfg.label}
+        label={displayLabel}
         sx={{ bgcolor: cfg.bg, color: cfg.text, fontWeight: 700 }}
         icon={icon}
       />
@@ -481,10 +501,12 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
 
   const refreshRooms = async () => {
     try {
+      const start = overviewDate.startOf("day").format("YYYY-MM-DDTHH:mm:ss");
       const res = await roomsApi.getRooms({
         page: 1,
         pageSize: 200,
         hotelId: hotelId || "",
+        date: start,
       });
       if (res.isSuccess) setRooms(res.data);
     } catch {}
@@ -526,16 +548,58 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
             <MenuItem value={-1}>Tất cả trạng thái</MenuItem>
             {ROOM_STATUS_OPTIONS.map((opt) => (
               <MenuItem key={opt.value} value={opt.value}>
-                {opt.label}
+                {overviewDate.isBefore(dayjs(), "day") &&
+                opt.label === "Đang sử dụng"
+                  ? "Đã sử dụng"
+                  : opt.label}
               </MenuItem>
             ))}
           </TextField>
-          <DatePicker
-            label="Ngày"
-            value={overviewDate}
-            onChange={(v) => v && setOverviewDate(v)}
-            slotProps={{ textField: { size: "small" } }}
-          />
+
+          {/* <TextField
+            select
+            label="Lọc theo phòng"
+            size="small"
+            value={filterRoomNumber}
+            onChange={(e) => setFilterRoomNumber(e.target.value)}
+            SelectProps={{ native: false }}
+            sx={{ minWidth: 180 }}
+          >
+            <MenuItem value={""}>Tất cả phòng</MenuItem>
+            {uniqueRoomNumbers.map((num) => (
+              <MenuItem key={num} value={num}>{`Phòng ${num}`}</MenuItem>
+            ))}
+          </TextField> */}
+
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Tooltip placement="top" title="Ngày trước">
+              <IconButton
+                aria-label="Ngày trước"
+                onClick={() =>
+                  setOverviewDate((prev) => prev.subtract(1, "day"))
+                }
+                size="small"
+              >
+                <ChevronLeft />
+              </IconButton>
+            </Tooltip>
+            <DatePicker
+              label="Ngày"
+              value={overviewDate}
+              onChange={(v) => v && setOverviewDate(v)}
+              slotProps={{ textField: { size: "small" } }}
+            />
+
+            <Tooltip title="Ngày sau" placement="top">
+              <IconButton
+                aria-label="Ngày sau"
+                onClick={() => setOverviewDate((prev) => prev.add(1, "day"))}
+                size="small"
+              >
+                <ChevronRight />
+              </IconButton>
+            </Tooltip>
+          </Stack>
         </Stack>
         {allowAddNew && (
           <Button
@@ -564,71 +628,81 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
           sx={{
             position: "absolute",
             top: 8,
-            left: 8,
+            left: 16,
             color: "primary.main",
-            opacity: 0.25,
+            opacity: 0.6,
             pointerEvents: "none",
+            transform: "rotate(-60deg)",
           }}
         >
-          <PushPin fontSize="small" />
+          <Circle fontSize="small" sx={{ width: 16, height: 16 }} />
         </Box>
         <Box
           sx={{
             position: "absolute",
             top: 8,
-            right: 8,
+            right: 16,
             color: "primary.main",
-            opacity: 0.25,
+            opacity: 0.6,
             pointerEvents: "none",
+            transform: "rotate(60deg)",
           }}
         >
-          <PushPin fontSize="small" />
+          <Circle fontSize="small" sx={{ width: 16, height: 16 }} />
         </Box>
         <Box
           sx={{
             position: "absolute",
             bottom: 8,
-            left: 8,
+            left: 16,
             color: "primary.main",
-            opacity: 0.25,
+            opacity: 0.6,
             pointerEvents: "none",
+            transform: "rotate(-120deg)",
           }}
         >
-          <PushPin fontSize="small" />
+          <Circle fontSize="small" sx={{ width: 16, height: 16 }} />
         </Box>
         <Box
           sx={{
             position: "absolute",
             bottom: 8,
-            right: 8,
+            right: 16,
             color: "primary.main",
-            opacity: 0.25,
+            opacity: 0.6,
             pointerEvents: "none",
+            transform: "rotate(120deg)",
           }}
         >
-          <PushPin fontSize="small" />
+          <Circle fontSize="small" sx={{ width: 16, height: 16 }} />
         </Box>
-        <Stack spacing={1.5}>
+        <Stack spacing={1.5} alignItems="center">
           <Stack
-            direction={{ xs: "column", sm: "row" }}
+            direction="row"
             spacing={1}
-            alignItems={{ xs: "flex-start", sm: "center" }}
-            justifyContent="space-between"
+            alignItems="center"
+            justifyContent="center"
           >
-            <Stack direction="row" spacing={1} alignItems="center">
-              <HotelIcon color="primary" />
+            <HotelIcon color="primary" />
+            <Stack direction={"row"} alignItems={"center"} gap={1}>
               <Typography variant="subtitle1" fontWeight={700}>
-                Tổng quan
+                Tổng quan khách sạn
               </Typography>
-            </Stack>
-            <Stack direction="row" spacing={1} alignItems="center">
-              {overviewLoading && <Chip label="Đang tải..." size="small" />}
+              {overviewLoading ? (
+                <Loading />
+              ) : (
+                <Typography sx={{ fontWeight: "bold", color: "text.primary" }}>
+                  ({overviewDate?.format("DD-MM-YYYY")})
+                </Typography>
+              )}
             </Stack>
           </Stack>
           <Stack
             direction={{ xs: "column", sm: "row" }}
             spacing={1}
             alignItems={{ xs: "stretch", sm: "center" }}
+            justifyContent="center"
+            sx={{ flexWrap: "wrap", rowGap: 1 }}
           >
             <Chip
               icon={<Bed />}
@@ -641,41 +715,20 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
               const count = rooms.filter(
                 (r) => Number(r.status) === Number(opt.value),
               ).length;
+              const isPast = overviewDate.isBefore(dayjs(), "day");
+              const label =
+                isPast && opt.label === "Đang sử dụng"
+                  ? "Đã sử dụng"
+                  : opt.label;
               return (
                 <Chip
                   key={opt.value}
                   variant="outlined"
-                  label={`${opt.label}: ${count}`}
+                  label={`${label}: ${count}`}
                   sx={{ fontWeight: 600 }}
                 />
               );
             })}
-          </Stack>
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            spacing={1}
-            alignItems={{ xs: "stretch", sm: "center" }}
-          >
-            {(() => {
-              const occupiedCount = rooms.filter(
-                (r) => occupiedMap[r.id],
-              ).length;
-              const freeCount = rooms.length - occupiedCount;
-              return (
-                <>
-                  <Chip
-                    color="primary"
-                    label={`Có đặt phòng: ${occupiedCount}`}
-                    sx={{ fontWeight: 700 }}
-                  />
-                  <Chip
-                    color="success"
-                    label={`Không đặt phòng: ${freeCount}`}
-                    sx={{ fontWeight: 700 }}
-                  />
-                </>
-              );
-            })()}
           </Stack>
         </Stack>
       </Paper>
@@ -877,6 +930,45 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                             Lịch sử
                           </Button>
                         </Stack>
+                        {Array.isArray(r.busyRanges) &&
+                        r.busyRanges.length > 0 ? (
+                          <Stack spacing={0.5}>
+                            {r.busyRanges.map((range) => {
+                              const s = dayjs(range.startDate).format("HH:mm");
+                              const e = dayjs(range.endDate).format("HH:mm");
+                              const label =
+                                range.status === BookingRoomStatus.CheckedIn
+                                  ? "Đang ở"
+                                  : range.status === BookingRoomStatus.Confirmed
+                                    ? "Đã đặt"
+                                    : range.status === BookingRoomStatus.Pending
+                                      ? "Chờ xác nhận"
+                                      : range.status ===
+                                          BookingRoomStatus.CheckedOut
+                                        ? "Đã trả phòng"
+                                        : "Đã hủy";
+                              return (
+                                <Stack
+                                  key={range.bookingRoomId}
+                                  direction="row"
+                                  spacing={1}
+                                  alignItems="center"
+                                >
+                                  <Chip
+                                    size="small"
+                                    icon={<CalendarMonth />}
+                                    label={`${s} - ${e}`}
+                                  />
+                                  <Chip
+                                    size="small"
+                                    variant="outlined"
+                                    label={label}
+                                  />
+                                </Stack>
+                              );
+                            })}
+                          </Stack>
+                        ) : null}
                       </Stack>
                     </CardContent>
 

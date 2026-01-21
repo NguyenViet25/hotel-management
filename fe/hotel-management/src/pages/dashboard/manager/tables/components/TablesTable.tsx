@@ -62,7 +62,7 @@ interface TablesTableProps {
 
 const statusChip = (status: TableStatus) => {
   const map: Record<number, { label: string; color: any }> = {
-    0: { label: "Sẵn sàng", color: "success" },
+    0: { label: "Trống", color: "success" },
     1: { label: "Đang sử dụng", color: "primary" },
     2: { label: "Đã đặt", color: "warning" },
     3: { label: "Ngừng phục vụ", color: "error" },
@@ -89,7 +89,7 @@ const TablesTable: React.FC<TablesTableProps> = ({
   const [viewItem, setViewItem] = useState<TableDto | null>(null);
   const [orderLoading, setOrderLoading] = useState(false);
   const [orderDetails, setOrderDetails] = useState<OrderDetailsDto | null>(
-    null
+    null,
   );
 
   React.useEffect(() => {
@@ -114,16 +114,16 @@ const TablesTable: React.FC<TablesTableProps> = ({
 
   const dayOptions: Option[] = useMemo(() => {
     const caps = Array.from(new Set((data || []).map((t) => t.capacity))).sort(
-      (a, b) => a - b
+      (a, b) => a - b,
     );
     return [{ value: -1, label: "Tất cả dãy" }].concat(
-      caps.map((c) => ({ value: c, label: `Dãy ${c}` }))
+      caps.map((c) => ({ value: c, label: `Dãy ${c}` })),
     );
   }, [data]);
 
   const statusOptions: Option[] = [
     { value: -1, label: "Tất cả trạng thái" },
-    { value: 0, label: "Sẵn sàng" },
+    { value: 0, label: "Trống" },
     { value: 1, label: "Đang sử dụng" },
     { value: 3, label: "Ngừng phục vụ" },
   ];
@@ -132,7 +132,7 @@ const TablesTable: React.FC<TablesTableProps> = ({
     return dayOptions
       .filter((o) => o.value !== -1)
       .filter((o) =>
-        dayFilter === -1 ? true : String(o.value) === String(dayFilter)
+        dayFilter === -1 ? true : String(o.value) === String(dayFilter),
       );
   }, [dayOptions, dayFilter]);
 
@@ -211,7 +211,7 @@ const TablesTable: React.FC<TablesTableProps> = ({
         ) : (
           groupsToRender.map((o) => {
             const rows = data.filter(
-              (t) => String(t.capacity) === String(o.value)
+              (t) => String(t.capacity) === String(o.value),
             );
             return (
               <Paper
@@ -472,7 +472,7 @@ const TablesTable: React.FC<TablesTableProps> = ({
                     <Chip
                       icon={<MonetizationOn fontSize="small" />}
                       label={`Tổng: ${Number(
-                        orderDetails.itemsTotal
+                        orderDetails.itemsTotal,
                       ).toLocaleString()} đ`}
                     />
                   </Stack>
@@ -502,7 +502,7 @@ const TablesTable: React.FC<TablesTableProps> = ({
                           </TableCell>
                           <TableCell align="right">
                             {Number(
-                              it.unitPrice * it.quantity
+                              it.unitPrice * it.quantity,
                             ).toLocaleString()}{" "}
                             đ
                           </TableCell>
@@ -523,8 +523,8 @@ const TablesTable: React.FC<TablesTableProps> = ({
                               Math.round(
                                 (orderDetails.itemsTotal *
                                   (orderDetails.promotionValue || 0)) /
-                                  100
-                              )
+                                  100,
+                              ),
                             ).toLocaleString()}{" "}
                             đ
                           </TableCell>
@@ -534,8 +534,8 @@ const TablesTable: React.FC<TablesTableProps> = ({
                               Math.round(
                                 (orderDetails.itemsTotal *
                                   (orderDetails.promotionValue || 0)) /
-                                  100
-                              )
+                                  100,
+                              ),
                             ).toLocaleString()}{" "}
                             đ
                           </TableCell>
@@ -553,8 +553,8 @@ const TablesTable: React.FC<TablesTableProps> = ({
                               Math.round(
                                 (orderDetails.itemsTotal *
                                   (orderDetails.promotionValue || 0)) /
-                                  100
-                              )
+                                  100,
+                              ),
                           ).toLocaleString()}{" "}
                           đ
                         </TableCell>

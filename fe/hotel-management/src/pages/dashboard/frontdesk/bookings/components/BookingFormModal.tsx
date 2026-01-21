@@ -13,6 +13,7 @@ import {
   Alert,
   Box,
   Button,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -179,6 +180,7 @@ const BookingFormModal: React.FC<Props> = ({
   const [availabilityByType, setAvailabilityByType] = useState<
     Record<string, number>
   >({});
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
   const [itemOpen, setItemOpen] = useState<Record<number, boolean>>({});
   const [priceDialogOpen, setPriceDialogOpen] = useState(false);
   const [priceDialogRt, setPriceDialogRt] = useState<BookingRoomTypeDto | null>(
@@ -345,10 +347,12 @@ const BookingFormModal: React.FC<Props> = ({
 
   useEffect(() => {
     const fetchAvailabilityByType = async () => {
+      setAvailabilityLoading(true);
       const startDate = globalStart;
       const endDate = globalEnd;
       if (!startDate || !endDate || !dayjs(endDate).isAfter(dayjs(startDate))) {
         setAvailabilityByType({});
+        setAvailabilityLoading(false);
         return;
       }
       const map: Record<string, number> = {};
@@ -368,6 +372,7 @@ const BookingFormModal: React.FC<Props> = ({
         }),
       );
       setAvailabilityByType(map);
+      setAvailabilityLoading(false);
     };
     fetchAvailabilityByType();
   }, [
@@ -917,11 +922,30 @@ const BookingFormModal: React.FC<Props> = ({
                                 <InfoOutlinedIcon fontSize="small" />
                               </IconButton>
                             </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              {availableLeft > 0
-                                ? `(Còn ${availableLeft} phòng trống)`
-                                : `(Hết phòng)`}
-                            </Typography>
+                            {availabilityLoading ? (
+                              <Stack
+                                direction="row"
+                                alignItems="center"
+                                spacing={0.75}
+                              >
+                                <CircularProgress size={14} />
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                >
+                                  Đang tải số phòng…
+                                </Typography>
+                              </Stack>
+                            ) : (
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
+                                {availableLeft > 0
+                                  ? `(Còn ${availableLeft} phòng trống)`
+                                  : `(Hết phòng)`}
+                              </Typography>
+                            )}
                           </Stack>
                         </Grid>
                         <Grid size={{ xs: 12, md: 3 }}>

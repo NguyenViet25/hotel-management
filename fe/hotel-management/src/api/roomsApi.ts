@@ -9,6 +9,8 @@ export interface RoomDto {
   number: string;
   floor: number;
   status: number;
+  busyRanges?: RoomBusyRangeDto[];
+  rangeBookingStatus?: number | null;
 }
 
 export enum RoomStatus {
@@ -24,7 +26,7 @@ export enum RoomStatus {
 export function getRoomStatusString(status: number | RoomStatus): string {
   switch (status) {
     case RoomStatus.Available:
-      return "Sẵn sàng";
+      return "Trống";
     case RoomStatus.Occupied:
       return "Đang sử dụng";
     case RoomStatus.Cleaning:
@@ -48,6 +50,7 @@ export interface RoomsQueryParams {
   floor?: number;
   typeId?: string;
   number?: string;
+  date?: string;
   page?: number;
   pageSize?: number;
 }
@@ -60,7 +63,7 @@ export interface CreateRoomRequest {
   status?: number;
 }
 
-export interface UpdateRoomRequest extends CreateRoomRequest {}
+export type UpdateRoomRequest = CreateRoomRequest;
 
 export interface ListResponse<T> {
   isSuccess: boolean;
@@ -79,9 +82,16 @@ export interface ItemResponse<T> {
   data: T;
 }
 
+export interface RoomBusyRangeDto {
+  bookingRoomId: string;
+  startDate: string;
+  endDate: string;
+  status: number;
+}
+
 const roomsApi = {
   async getRooms(
-    params: RoomsQueryParams = {}
+    params: RoomsQueryParams = {},
   ): Promise<ListResponse<RoomDto>> {
     const qp = new URLSearchParams();
     if (params.hotelId) qp.append("hotelId", params.hotelId);
@@ -89,6 +99,7 @@ const roomsApi = {
     if (params.floor !== undefined) qp.append("floor", String(params.floor));
     if (params.typeId) qp.append("roomTypeId", params.typeId);
     if (params.number) qp.append("search", params.number);
+    if (params.date) qp.append("date", params.date);
     qp.append("page", String(params.page ?? 1));
     qp.append("pageSize", String(params.pageSize ?? 10));
 
@@ -108,21 +119,21 @@ const roomsApi = {
 
   async updateRoom(
     id: string,
-    payload: UpdateRoomRequest
+    payload: UpdateRoomRequest,
   ): Promise<ItemResponse<RoomDto>> {
     const res = await axios.put(`/rooms/${id}`, payload);
     return res.data;
   },
 
   async deleteRoom(
-    id: string
+    id: string,
   ): Promise<{ isSuccess: boolean; message: string | null }> {
     const res = await axios.delete(`/rooms/${id}`);
     return res.data;
   },
 
   async validateDelete(
-    id: string
+    id: string,
   ): Promise<{ isSuccess: boolean; message: string | null }> {
     // Optional endpoint; if not supported, server should enforce and return error on delete
     const res = await axios.get(`/rooms/${id}/can-delete`);
@@ -136,13 +147,13 @@ const roomsApi = {
 
   async getRoomsUsageSummaryByMonth(
     month: number,
-    year: number
+    year: number,
   ): Promise<ApiResponse<MonthlyUsageDaySummaryDto[]>> {
     const qp = new URLSearchParams();
     qp.append("month", month.toString());
     qp.append("year", year.toString());
     const res = await axios.get(
-      `dashboard/rooms/usage-summary-by-month?${qp.toString()}`
+      `dashboard/rooms/usage-summary-by-month?${qp.toString()}`,
     );
     return res.data;
   },
@@ -201,7 +212,7 @@ export function isPeakUsageDay(s: MonthlyUsageDaySummaryDto): boolean {
     s.percentage !== undefined
       ? s.percentage
       : total > 0
-      ? (booked / total) * 100
-      : 0;
+        ? (booked / total) * 100
+        : 0;
   return pct >= 75;
 }

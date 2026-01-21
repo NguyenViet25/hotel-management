@@ -26,7 +26,7 @@ type RoomTableProps = {
 const statusChip = (status: RoomStatus) => {
   const s = getRoomStatusString(status);
   const map: Record<string, { bg: string; text: string; label: string }> = {
-    "Sẵn sàng": { bg: "#F2F4F7", text: "#344054", label: "Trống" },
+    Trống: { bg: "#F2F4F7", text: "#344054", label: "Trống" },
     "Đang sử dụng": { bg: "#E8ECF7", text: "#1F2A44", label: "Đang sử dụng" },
     "Đang dọn dẹp": { bg: "#FEF3C7", text: "#92400E", label: "Đang Dọn Dẹp" },
     "Ngừng phục vụ": { bg: "#EDEDED", text: "#555", label: "Ngừng phục vụ" },
@@ -73,7 +73,7 @@ const RoomTable: React.FC<RoomTableProps> = ({
         format: (v) => statusChip(v),
       },
     ],
-    []
+    [],
   );
 
   return (
