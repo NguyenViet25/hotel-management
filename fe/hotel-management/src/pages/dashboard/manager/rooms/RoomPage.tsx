@@ -15,15 +15,15 @@ export default function RoomPage() {
           view === "map"
             ? "Danh Sách Phòng"
             : view === "assign"
-            ? "Phân công dọn dẹp"
-            : "Quản lý phòng"
+              ? "Phân công dọn dẹp"
+              : "Quản lý phòng"
         }
         subtitle={
           view === "map"
             ? "Quản lý phòng theo dạng danh sáchtrực quan"
             : view === "assign"
-            ? "Giao nhiệm vụ dọn buồng"
-            : "Xem danh sách phòng, thêm/sửa/xóa và cập nhật trạng thái"
+              ? "Giao nhiệm vụ dọn buồng"
+              : "Xem danh sách phòng, thêm/sửa/xóa và cập nhật trạng thái"
         }
       />
       <ViewSwitcher view={view} onChange={setView} />

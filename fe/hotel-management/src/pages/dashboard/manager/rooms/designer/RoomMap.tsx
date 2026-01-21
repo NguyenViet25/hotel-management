@@ -9,6 +9,10 @@ import {
   Info,
   Person,
   Phone,
+  Pin,
+  PinDrop,
+  PinInvoke,
+  PushPin,
   RemoveRedEye,
 } from "@mui/icons-material";
 import BlockIcon from "@mui/icons-material/Block";
@@ -117,13 +121,13 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
     useState(false);
   const [idCardPreviewOpen, setIdCardPreviewOpen] = useState(false);
   const [idCardPreviewFront, setIdCardPreviewFront] = useState<string | null>(
-    null
+    null,
   );
   const [idCardPreviewBack, setIdCardPreviewBack] = useState<string | null>(
-    null
+    null,
   );
   const [idCardPreviewName, setIdCardPreviewName] = useState<string | null>(
-    null
+    null,
   );
 
   const [hkOpen, setHkOpen] = useState(false);
@@ -132,6 +136,9 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
   const [hkNotes, setHkNotes] = useState("");
   const [hkEvidence, setHkEvidence] = useState<MediaDto[]>([]);
   const [hkUploading, setHkUploading] = useState(false);
+  const [overviewDate, setOverviewDate] = useState(dayjs());
+  const [overviewLoading, setOverviewLoading] = useState(false);
+  const [occupiedMap, setOccupiedMap] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const fetchRoomTypes = async () => {
@@ -171,9 +178,9 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
   useEffect(() => {
     const occupied = rooms.filter((r) => r.status === 1);
     if (occupied.length) {
-      loadOccupancyCounts(occupied);
+      loadOccupancyCounts(occupied, overviewDate);
     }
-  }, [rooms]);
+  }, [rooms, overviewDate]);
 
   const uniqueFloors = useMemo(() => {
     const s = new Set<number>();
@@ -202,10 +209,10 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
       s === 4 /* Dirty */
         ? 0
         : s === 2 /* Cleaning */
-        ? 1
-        : s === 6 /* Maintenance */
-        ? 2
-        : 3;
+          ? 1
+          : s === 6 /* Maintenance */
+            ? 2
+            : 3;
     return Object.entries(map)
       .sort((a, b) => Number(a[0]) - Number(b[0]))
       .map(([floor, rs]) => ({
@@ -271,9 +278,12 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
     );
   };
 
-  const loadOccupancyCounts = async (targetRooms: RoomDto[]) => {
-    const todayStart = dayjs().startOf("day").format("YYYY-MM-DDTHH:mm:ss");
-    const todayEnd = dayjs().endOf("day").format("YYYY-MM-DDTHH:mm:ss");
+  const loadOccupancyCounts = async (
+    targetRooms: RoomDto[],
+    date: dayjs.Dayjs,
+  ) => {
+    const todayStart = date.startOf("day").format("YYYY-MM-DDTHH:mm:ss");
+    const todayEnd = date.endOf("day").format("YYYY-MM-DDTHH:mm:ss");
     const updates: Record<string, number> = {};
     const loadingMap: Record<string, boolean> = {};
     for (const r of targetRooms) {
@@ -285,7 +295,7 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
         const schedRes = await bookingsApi.roomSchedule(
           r.id,
           todayStart,
-          todayEnd
+          todayEnd,
         );
         const intervals = (schedRes.data || []) as BookingIntervalDto[];
         if (!intervals.length) {
@@ -315,6 +325,28 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
     setOccupancyLoading((prev) => ({ ...prev, ...doneMap }));
   };
 
+  const loadOverviewOccupancy = async (date: dayjs.Dayjs) => {
+    setOverviewLoading(true);
+    const start = date.startOf("day").format("YYYY-MM-DDTHH:mm:ss");
+    const end = date.endOf("day").format("YYYY-MM-DDTHH:mm:ss");
+    const map: Record<string, boolean> = {};
+    for (const r of rooms) {
+      try {
+        const schedRes = await bookingsApi.roomSchedule(r.id, start, end);
+        const intervals = (schedRes.data || []) as BookingIntervalDto[];
+        map[r.id] = intervals.length > 0;
+      } catch {
+        map[r.id] = false;
+      }
+    }
+    setOccupiedMap(map);
+    setOverviewLoading(false);
+  };
+
+  useEffect(() => {
+    if (rooms.length > 0) loadOverviewOccupancy(overviewDate);
+  }, [rooms, overviewDate]);
+
   const openOccupancyDialog = async (room: RoomDto) => {
     setOccupancyOpen(true);
     setOccupancyRoom(room);
@@ -327,7 +359,7 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
       const histRes = await bookingsApi.roomHistory(
         room.id,
         defaultFrom.format("YYYY-MM-DDTHH:mm:ss"),
-        defaultTo.format("YYYY-MM-DDTHH:mm:ss")
+        defaultTo.format("YYYY-MM-DDTHH:mm:ss"),
       );
       const hist = (histRes.data || []) as RoomStayHistoryDto[];
       setOccupancyHistory(hist);
@@ -343,11 +375,11 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
   };
   const { start: weekStart, end: weekEnd } = useMemo(
     () => getWeekRange(occCurrentDate),
-    [occCurrentDate]
+    [occCurrentDate],
   );
   const weekDays = useMemo(
     () => Array.from({ length: 7 }, (_, i) => weekStart.add(i, "day")),
-    [weekStart, occCurrentDate]
+    [weekStart, occCurrentDate],
   );
 
   const loadHistoryForWeek = async (date: dayjs.Dayjs) => {
@@ -358,7 +390,7 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
       const res = await bookingsApi.roomHistory(
         occupancyRoom.id,
         start.startOf("day").format("YYYY-MM-DDTHH:mm:ss"),
-        end.endOf("day").format("YYYY-MM-DDTHH:mm:ss")
+        end.endOf("day").format("YYYY-MM-DDTHH:mm:ss"),
       );
       const hist = (res.data || []) as RoomStayHistoryDto[];
       setOccupancyHistory(hist);
@@ -371,7 +403,7 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
   const openIdCardPreview = (
     front?: string | null,
     back?: string | null,
-    name?: string
+    name?: string,
   ) => {
     if (!front && !back) return;
     setIdCardPreviewFront(front ?? null);
@@ -393,7 +425,6 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
     setEditingRoom(room);
     setStatusOpen(true);
   };
-  const askDelete = (room: RoomDto) => setDeleteTarget(room);
 
   const uploadEvidenceFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -499,6 +530,12 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
               </MenuItem>
             ))}
           </TextField>
+          <DatePicker
+            label="Ngày"
+            value={overviewDate}
+            onChange={(v) => v && setOverviewDate(v)}
+            slotProps={{ textField: { size: "small" } }}
+          />
         </Stack>
         {allowAddNew && (
           <Button
@@ -511,7 +548,137 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
           </Button>
         )}
       </Stack>
-
+      <Paper
+        sx={{
+          p: 2,
+          mb: 2,
+          position: "relative",
+          borderRadius: 3,
+          border: "2px dashed",
+          borderColor: "primary.light",
+          background: "linear-gradient(135deg, #EFF6FF 0%, #FFFFFF 100%)",
+          boxShadow: "0 8px 24px rgba(31, 64, 104, 0.08)",
+        }}
+      >
+        <Box
+          sx={{
+            position: "absolute",
+            top: 8,
+            left: 8,
+            color: "primary.main",
+            opacity: 0.25,
+            pointerEvents: "none",
+          }}
+        >
+          <PushPin fontSize="small" />
+        </Box>
+        <Box
+          sx={{
+            position: "absolute",
+            top: 8,
+            right: 8,
+            color: "primary.main",
+            opacity: 0.25,
+            pointerEvents: "none",
+          }}
+        >
+          <PushPin fontSize="small" />
+        </Box>
+        <Box
+          sx={{
+            position: "absolute",
+            bottom: 8,
+            left: 8,
+            color: "primary.main",
+            opacity: 0.25,
+            pointerEvents: "none",
+          }}
+        >
+          <PushPin fontSize="small" />
+        </Box>
+        <Box
+          sx={{
+            position: "absolute",
+            bottom: 8,
+            right: 8,
+            color: "primary.main",
+            opacity: 0.25,
+            pointerEvents: "none",
+          }}
+        >
+          <PushPin fontSize="small" />
+        </Box>
+        <Stack spacing={1.5}>
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={1}
+            alignItems={{ xs: "flex-start", sm: "center" }}
+            justifyContent="space-between"
+          >
+            <Stack direction="row" spacing={1} alignItems="center">
+              <HotelIcon color="primary" />
+              <Typography variant="subtitle1" fontWeight={700}>
+                Tổng quan
+              </Typography>
+            </Stack>
+            <Stack direction="row" spacing={1} alignItems="center">
+              {overviewLoading && <Chip label="Đang tải..." size="small" />}
+            </Stack>
+          </Stack>
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={1}
+            alignItems={{ xs: "stretch", sm: "center" }}
+          >
+            <Chip
+              icon={<Bed />}
+              color="primary"
+              variant="outlined"
+              label={`Tổng số phòng: ${rooms.length}`}
+              sx={{ fontWeight: 700 }}
+            />
+            {ROOM_STATUS_OPTIONS.map((opt) => {
+              const count = rooms.filter(
+                (r) => Number(r.status) === Number(opt.value),
+              ).length;
+              return (
+                <Chip
+                  key={opt.value}
+                  variant="outlined"
+                  label={`${opt.label}: ${count}`}
+                  sx={{ fontWeight: 600 }}
+                />
+              );
+            })}
+          </Stack>
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={1}
+            alignItems={{ xs: "stretch", sm: "center" }}
+          >
+            {(() => {
+              const occupiedCount = rooms.filter(
+                (r) => occupiedMap[r.id],
+              ).length;
+              const freeCount = rooms.length - occupiedCount;
+              return (
+                <>
+                  <Chip
+                    color="primary"
+                    label={`Có đặt phòng: ${occupiedCount}`}
+                    sx={{ fontWeight: 700 }}
+                  />
+                  <Chip
+                    color="success"
+                    label={`Không đặt phòng: ${freeCount}`}
+                    sx={{ fontWeight: 700 }}
+                  />
+                </>
+              );
+            })()}
+          </Stack>
+        </Stack>
+      </Paper>
       {loading && <Loading label="Đang tải danh sách phòng" />}
 
       {floors.length === 0 && !loading && (
@@ -1090,7 +1257,7 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                 <Chip
                   sx={{ width: "100%" }}
                   label={`${weekStart.format("DD/MM/YYYY")} - ${weekEnd.format(
-                    "DD/MM/YYYY"
+                    "DD/MM/YYYY",
                   )}`}
                 />
                 <IconButton
@@ -1138,7 +1305,7 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                       })
                       .sort(
                         (a, b) =>
-                          dayjs(a.start).valueOf() - dayjs(b.start).valueOf()
+                          dayjs(a.start).valueOf() - dayjs(b.start).valueOf(),
                       );
                     return (
                       <Grid size={{ xs: 12 }} key={`${idx}-day`}>
@@ -1162,7 +1329,7 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                                 color="primary"
                                 icon={<CalendarMonth />}
                                 label={`${capitalize(
-                                  d.locale("vi").format("dddd")
+                                  d.locale("vi").format("dddd"),
                                 )} • ${d.format("DD/MM/YYYY")}`}
                               />
                             </Stack>
@@ -1250,7 +1417,7 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                                                           g.idCardFrontImageUrl,
                                                           g.idCardBackImageUrl,
                                                           g.fullname ||
-                                                            undefined
+                                                            undefined,
                                                         )
                                                       }
                                                       disabled={

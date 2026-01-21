@@ -197,6 +197,16 @@ public class BookingsByHotelQueryDto
 
 }
 
+public class ActiveBookingsByHotelQueryDto
+{
+    public Guid? HotelId { get; set; }
+    public DateTime StartDate { get; set; }
+
+    public DateTime EndDate { get; set; }
+
+}
+
+
 public class BookingsQueryDto
 {
     public Guid? HotelId { get; set; }

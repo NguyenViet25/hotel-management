@@ -78,10 +78,10 @@ const BookingInvoiceDialog: React.FC<Props> = ({
   const [promotionValue, setPromotionValue] = useState<number>(0);
   const [totalAmount, setTotalAmount] = useState<number>(0);
   const [additionalNotes, setAdditionalNotes] = useState(
-    booking?.additionalNotes ?? " "
+    booking?.additionalNotes ?? " ",
   );
   const [additionalAmount, setAdditionalAmount] = useState<number>(
-    booking?.additionalAmount ?? 0
+    booking?.additionalAmount ?? 0,
   );
 
   const [promoOpen, setPromoOpen] = useState(false);
@@ -166,7 +166,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
           const start = dayjs(br.actualCheckInAt || rt.startDate);
           const plannedEnd = dayjs(rt.endDate);
           const actualEnd = dayjs(
-            br.actualCheckOutAt || br.extendedDate || rt.endDate
+            br.actualCheckOutAt || br.extendedDate || rt.endDate,
           );
           const isEarly =
             actualEnd.isBefore(plannedEnd, "day") ||
@@ -218,10 +218,10 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                 pricingApi.quote({
                   roomTypeId: rt.roomTypeId,
                   checkInDate: dayjs(br.actualCheckInAt || rt.startDate).format(
-                    "YYYY-MM-DD"
+                    "YYYY-MM-DD",
                   ),
                   checkOutDate: dayjs(
-                    br.actualCheckOutAt || br.extendedDate || rt.endDate
+                    br.actualCheckOutAt || br.extendedDate || rt.endDate,
                   ).format("YYYY-MM-DD"),
                 }),
                 roomTypesApi.getRoomTypeById(rt.roomTypeId),
@@ -233,14 +233,14 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                 (rtRes as any).data?.data ||
                 rtRes.data) as any;
               const overrides = (rtDetails?.priceByDates || []).map((d: any) =>
-                dayjs(d.date).format("YYYY-MM-DD")
+                dayjs(d.date).format("YYYY-MM-DD"),
               );
               const overrideSet = new Set(overrides);
               const inputPrice = rt.price || rtDetails?.priceFrom || 0;
 
               const start = dayjs(br.actualCheckInAt || rt.startDate);
               const end = dayjs(
-                br.actualCheckOutAt || br.extendedDate || rt.endDate
+                br.actualCheckOutAt || br.extendedDate || rt.endDate,
               );
 
               let items =
@@ -251,7 +251,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                 while (cursor.isBefore(end)) {
                   const dateStr = cursor.format("YYYY-MM-DD");
                   const overridePrice = rtDetails?.priceByDates?.find(
-                    (p: any) => dayjs(p.date).format("YYYY-MM-DD") === dateStr
+                    (p: any) => dayjs(p.date).format("YYYY-MM-DD") === dateStr,
                   )?.price;
                   temp.push({
                     date: dateStr,
@@ -272,8 +272,8 @@ const BookingInvoiceDialog: React.FC<Props> = ({
               }
               result[br.bookingRoomId] = items as any;
             } catch {}
-          })
-        )
+          }),
+        ),
       );
       setPriceByDateMap(result);
     };
@@ -304,7 +304,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
         if (daily.length === 0) {
           const start = dayjs(br.actualCheckInAt || rt.startDate);
           const end = dayjs(
-            br.actualCheckOutAt || br.extendedDate || rt.endDate
+            br.actualCheckOutAt || br.extendedDate || rt.endDate,
           );
           const nights = Math.max(1, end.diff(start, "day"));
           rows.push({
@@ -342,12 +342,12 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                 dateRange:
                   nights > 1
                     ? `${dayjs(segStart.date).format("DD/MM/YYYY")} - ${dayjs(
-                        segEnd.date
+                        segEnd.date,
                       )
                         .add(1, "day")
                         .format("DD/MM/YYYY")}`
                     : `${dayjs(segStart.date).format("DD/MM/YYYY")} - ${dayjs(
-                        segEnd.date
+                        segEnd.date,
                       )
                         .add(1, "day")
                         .format("DD/MM/YYYY")}`,
@@ -367,12 +367,12 @@ const BookingInvoiceDialog: React.FC<Props> = ({
             dateRange:
               nights > 1
                 ? `${dayjs(segStart.date).format("DD/MM/YYYY")} - ${dayjs(
-                    segEnd.date
+                    segEnd.date,
                   )
                     .add(1, "day")
                     .format("DD/MM/YYYY")}`
                 : `${dayjs(segStart.date).format("DD/MM/YYYY")} - ${dayjs(
-                    segEnd.date
+                    segEnd.date,
                   )
                     .add(1, "day")
                     .format("DD/MM/YYYY")}`,
@@ -455,7 +455,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
     const vatAmt = Math.round(
       ((taxableAmount - additionalAmount) *
         (showVat ? vatPercentage || 0 : 0)) /
-        100
+        100,
     );
     const finalNoVat = taxableAmount - deposit;
     const finalWithVat = taxableAmount + vatAmt - deposit;
@@ -645,9 +645,9 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                       <TableCell sx={{ color: "#c62828" }}>
                         Khấu trừ tiền cọc
                       </TableCell>
-                      <TableCell align="center">—</TableCell>
-                      <TableCell align="center">1</TableCell>
-                      <TableCell align="center">__</TableCell>
+                      <TableCell align="center"></TableCell>
+                      <TableCell align="center"></TableCell>
+                      <TableCell align="center"></TableCell>
                       <TableCell align="right">
                         {currency(booking.depositAmount)}
                       </TableCell>
@@ -689,9 +689,9 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                       <TableCell sx={{ color: "#c62828" }}>
                         Thuế VAT ({vatPercentage}%)
                       </TableCell>
-                      <TableCell align="center">—</TableCell>
-                      <TableCell align="center">1</TableCell>
-                      <TableCell align="center">—</TableCell>
+                      <TableCell align="center"></TableCell>
+                      <TableCell align="center"></TableCell>
+                      <TableCell align="center"></TableCell>
                       <TableCell align="right">
                         {currency(totals.vatAmt)}
                       </TableCell>
@@ -741,8 +741,8 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                       {currency(
                         Math.max(
                           0,
-                          showVat ? totals.finalWithVat : totals.finalNoVat
-                        )
+                          showVat ? totals.finalWithVat : totals.finalNoVat,
+                        ),
                       )}
                     </TableCell>
                   </TableRow>
@@ -768,9 +768,9 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                       moneyToVietnameseWords(
                         Math.max(
                           0,
-                          showVat ? totals.finalWithVat : totals.finalNoVat
-                        )
-                      )
+                          showVat ? totals.finalWithVat : totals.finalNoVat,
+                        ),
+                      ),
                     )}
                   </Typography>
                 </Stack>
@@ -811,7 +811,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                       additionalAmount !== undefined &&
                       additionalAmount !== null
                         ? new Intl.NumberFormat("vi-VN").format(
-                            Number(additionalAmount)
+                            Number(additionalAmount),
                           )
                         : ""
                     }

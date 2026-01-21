@@ -1078,7 +1078,7 @@ public class BookingsService(
             var roomIds = rooms.Select(r => r.Id).ToList();
             var assignedOverlaps = await _bookingRoomRepo.Query()
                 .Where(br => roomIds.Contains(br.RoomId) && br.BookingStatus != BookingRoomStatus.Cancelled && br.BookingStatus != BookingRoomStatus.CheckedOut)
-                .Where(br => from < br.EndDate && to > br.StartDate)
+                .Where(br => from < (br.ActualCheckOutAt ?? br.EndDate) && to > (br.ActualCheckInAt ?? br.StartDate))
                 .Select(br => br.RoomId)
                 .Distinct()
                 .CountAsync();
