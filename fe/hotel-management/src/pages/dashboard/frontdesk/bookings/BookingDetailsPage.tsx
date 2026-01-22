@@ -162,6 +162,14 @@ const BookingDetailsPage: React.FC = () => {
     notes: data?.notes || "—",
   };
 
+  const anyRoomCheckedIn = useMemo(() => {
+    const rooms =
+      data?.bookingRoomTypes?.flatMap((x) => x.bookingRooms || []) || [];
+    return rooms.some(
+      (r) => r.actualCheckInAt !== undefined && r.actualCheckInAt !== null,
+    );
+  }, [data]);
+
   return (
     <Stack justifyContent={"space-between"} spacing={2} mb={2}>
       <PageTitle
@@ -210,15 +218,17 @@ const BookingDetailsPage: React.FC = () => {
                     Chỉnh sửa
                   </Button>
                 )}
-                <Button
-                  variant="outlined"
-                  color="error"
-                  startIcon={<CancelIcon />}
-                  onClick={() => setOpenCancel(true)}
-                  aria-label="Hủy booking"
-                >
-                  Hủy
-                </Button>
+                {!anyRoomCheckedIn && (
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    startIcon={<CancelIcon />}
+                    onClick={() => setOpenCancel(true)}
+                    aria-label="Hủy booking"
+                  >
+                    Hủy
+                  </Button>
+                )}
               </>
             )}
 

@@ -79,10 +79,14 @@ const PriceCalendarRoomTypeDialog: React.FC<CalendarPriceSetupProps> = ({
   const [selectedRoomTypeId, setSelectedRoomTypeId] = useState<string>(
     roomTypes[0]?.id || "",
   );
+  const selectedRoomTypeIdRef = React.useRef<string>("");
 
   useEffect(() => {
     setSelectedRoomTypeId(roomTypes[0]?.id || "");
   }, [roomTypes]);
+  useEffect(() => {
+    selectedRoomTypeIdRef.current = selectedRoomTypeId || "";
+  }, [selectedRoomTypeId]);
 
   const basePriceForDate = (dateStr: string | null) => {
     if (!dateStr || !roomTypeBase) return 0;
@@ -132,6 +136,9 @@ const PriceCalendarRoomTypeDialog: React.FC<CalendarPriceSetupProps> = ({
     );
 
     setPriceMap(values);
+  }, [selectedRoomTypeId]);
+  React.useEffect(() => {
+    setHistoryCache({});
   }, [selectedRoomTypeId]);
 
   const handleSelectDate = (_arg: DateClickArg) => {};
@@ -229,13 +236,15 @@ const PriceCalendarRoomTypeDialog: React.FC<CalendarPriceSetupProps> = ({
     const dateStr = dayjs(date).format("YYYY-MM-DD");
     setHoverAnchorEl(anchorEl);
     setHoverDateStr(dateStr);
-    if (!selectedRoomTypeId) {
+    const rtId = selectedRoomTypeIdRef.current;
+    if (!rtId) {
       setHoverLastYearLatest(null);
       setHoverCurrentYearList([]);
       setHoverLoading(false);
       return;
     }
-    const cached = historyCache[dateStr];
+    const cacheKey = `${rtId}:${dateStr}`;
+    const cached = historyCache[cacheKey];
     if (cached) {
       setHoverLastYearLatest(cached.lastYearLatest);
       setHoverCurrentYearList(cached.currentYearList);
@@ -247,11 +256,7 @@ const PriceCalendarRoomTypeDialog: React.FC<CalendarPriceSetupProps> = ({
       const lastYear = curYear - 1;
       const from = dayjs(`${lastYear}-01-01`).format("YYYY-MM-DD");
       const to = dayjs(`${curYear}-12-31`).format("YYYY-MM-DD");
-      const res = await roomTypesApi.getPriceHistory(
-        selectedRoomTypeId,
-        from,
-        to,
-      );
+      const res = await roomTypesApi.getPriceHistory(rtId, from, to);
       const primary = (res as { data?: unknown }).data as
         | { data?: RoomTypePriceHistoryItem[] }
         | RoomTypePriceHistoryItem[]
@@ -284,7 +289,7 @@ const PriceCalendarRoomTypeDialog: React.FC<CalendarPriceSetupProps> = ({
       setHoverCurrentYearList(curYearItems);
       setHistoryCache((prev) => ({
         ...prev,
-        [dateStr]: {
+        [cacheKey]: {
           lastYearLatest: latestLastYear,
           currentYearList: curYearItems,
         },
