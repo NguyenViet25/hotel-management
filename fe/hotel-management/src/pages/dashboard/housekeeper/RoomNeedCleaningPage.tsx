@@ -84,16 +84,21 @@ export default function RoomNeedCleaningPage() {
     s === RoomStatus.Dirty
       ? 0
       : s === RoomStatus.Cleaning
-      ? 1
-      : s === RoomStatus.Maintenance
-      ? 2
-      : 3;
+        ? 1
+        : s === RoomStatus.Maintenance
+          ? 2
+          : 3;
 
   const refresh = async () => {
     if (!hotelId) return;
     setLoading(true);
     try {
-      const res = await roomsApi.getRooms({ hotelId, page: 1, pageSize: 500 });
+      const res = await roomsApi.getRooms({
+        hotelId,
+        page: 1,
+        pageSize: 500,
+        date: dayjs().format("YYYY-MM-DD"),
+      });
       if (res.isSuccess) setRooms(res.data);
       await refreshTasks();
     } finally {
@@ -126,7 +131,7 @@ export default function RoomNeedCleaningPage() {
     let rs = rooms.filter(
       (r) =>
         myTaskRoomIds.has(r.id) &&
-        (r.status === RoomStatus.Dirty || r.status === RoomStatus.Cleaning)
+        (r.status === RoomStatus.Dirty || r.status === RoomStatus.Cleaning),
     );
     if (floorFilter) rs = rs.filter((r) => String(r.floor) === floorFilter);
     if (statusFilter) rs = rs.filter((r) => String(r.status) === statusFilter);
@@ -134,7 +139,7 @@ export default function RoomNeedCleaningPage() {
       (a, b) =>
         statusPriority(a.status) - statusPriority(b.status) ||
         (a.floor ?? 0) - (b.floor ?? 0) ||
-        (a.number || "").localeCompare(b.number || "")
+        (a.number || "").localeCompare(b.number || ""),
     );
     return rs;
   }, [rooms, tasks, floorFilter, statusFilter]);
@@ -142,9 +147,9 @@ export default function RoomNeedCleaningPage() {
   const floors = useMemo(
     () =>
       Array.from(new Set(rooms.map((r) => r.floor))).sort(
-        (a, b) => (a ?? 0) - (b ?? 0)
+        (a, b) => (a ?? 0) - (b ?? 0),
       ),
-    [rooms]
+    [rooms],
   );
 
   const taskByRoomId = useMemo(() => {
@@ -208,7 +213,7 @@ export default function RoomNeedCleaningPage() {
       const schedRes = await bookingsApi.roomSchedule(
         room.id,
         dayjs(todayStart).format("YYYY-MM-DDTHH:mm:ss"),
-        dayjs(todayEnd).format("YYYY-MM-DDTHH:mm:ss")
+        dayjs(todayEnd).format("YYYY-MM-DDTHH:mm:ss"),
       );
       const intervals = (schedRes.data || []) as BookingIntervalDto[];
       return intervals[0]?.bookingId || "";
@@ -232,7 +237,7 @@ export default function RoomNeedCleaningPage() {
         pageSize: 200,
       });
       setMinibarItems(
-        (res.data || []).map((it) => ({ item: it, qty: it.quantity || 0 }))
+        (res.data || []).map((it) => ({ item: it, qty: it.quantity || 0 })),
       );
     } catch {
       setMinibarItems([]);
@@ -249,7 +254,7 @@ export default function RoomNeedCleaningPage() {
         Array.from(files).map(async (f) => {
           const res = await mediaApi.upload(f);
           return res.data;
-        })
+        }),
       );
       setCompleteEvidence((prev) => [...prev, ...uploaded]);
     } finally {
@@ -515,7 +520,7 @@ export default function RoomNeedCleaningPage() {
                       setViewerUrls(
                         completeEvidence
                           .map((m) => m.fileUrl || m.filePath)
-                          .filter((u): u is string => !!u)
+                          .filter((u): u is string => !!u),
                       );
                       setViewerOpen(true);
                     }}

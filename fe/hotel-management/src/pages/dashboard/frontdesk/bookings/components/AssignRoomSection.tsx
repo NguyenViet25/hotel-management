@@ -28,6 +28,7 @@ const AssignRoomSection: React.FC<Props> = ({ booking, onAssigned }) => {
   const [selected, setSelected] = useState<string | null>(null);
 
   const startDate = booking?.bookingRoomTypes?.[0]?.startDate;
+  const endDate = booking?.bookingRoomTypes?.[0]?.endDate;
   const roomTypeId = booking?.bookingRoomTypes?.[0]?.roomTypeId;
   const bookingRoomTypeId = booking?.bookingRoomTypes?.[0]?.bookingRoomTypeId;
 
@@ -36,7 +37,8 @@ const AssignRoomSection: React.FC<Props> = ({ booking, onAssigned }) => {
     setLoading(true);
     try {
       const res = await bookingsApi.getRoomMap({
-        date: startDate,
+        startDate: startDate,
+        endDate: endDate,
         hotelId: booking?.hotelId,
       });
       if (res.isSuccess && res.data) setRooms(res.data);
@@ -61,7 +63,7 @@ const AssignRoomSection: React.FC<Props> = ({ booking, onAssigned }) => {
       byFloor[f].push(r);
     });
     const entries = Object.entries(byFloor).sort(
-      (a, b) => Number(a[0]) - Number(b[0])
+      (a, b) => Number(a[0]) - Number(b[0]),
     );
     return entries.map(([floor, rooms]) => ({ floor, rooms }));
   }, [filteredRooms]);
@@ -106,7 +108,7 @@ const AssignRoomSection: React.FC<Props> = ({ booking, onAssigned }) => {
                 ? (new Date(booking.bookingRoomTypes[0].endDate).getTime() -
                     new Date(startDate).getTime()) /
                     86400000
-                : 1
+                : 1,
             )}`}
           />
         </Stack>

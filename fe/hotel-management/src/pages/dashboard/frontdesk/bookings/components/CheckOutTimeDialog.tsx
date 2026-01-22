@@ -132,13 +132,13 @@ export default function CheckOutTimeDialog({
           <DateTimePicker
             label="Thời gian check-out"
             value={value}
-            disabled
-            minDateTime={dayjs()}
-            maxDateTime={
-              dayjs().isAfter(dayjs(displayScheduledEnd).add(1, "minute"))
-                ? dayjs(displayScheduledEnd).add(1, "minute")
-                : dayjs()
-            }
+            // disabled
+            // minDateTime={dayjs()}
+            // maxDateTime={
+            //   dayjs().isAfter(dayjs(displayScheduledEnd).add(1, "minute"))
+            //     ? dayjs(displayScheduledEnd).add(1, "minute")
+            //     : dayjs()
+            // }
             onChange={(v) => v && setValue(v)}
           />
           <Stack direction="row" spacing={1} alignItems="center">

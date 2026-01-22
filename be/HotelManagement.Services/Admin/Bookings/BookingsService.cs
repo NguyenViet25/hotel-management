@@ -1028,7 +1028,8 @@ public class BookingsService(
     {
         try
         {
-            var targetDate = query.Date.Date;
+            var startDate = query.StartDate.Date;
+            var endDate = query.EndDate.Date;
 
             var roomsQuery = _roomRepo.Query().Include(r => r.RoomType).Where(r => true);
             if (query.HotelId.HasValue) roomsQuery = roomsQuery.Where(r => r.HotelId == query.HotelId.Value);
@@ -1037,7 +1038,8 @@ public class BookingsService(
             var roomIds = rooms.Select(r => r.Id).ToList();
             var bookings = await _bookingRoomRepo.Query()
                 .Where(br => roomIds.Contains(br.RoomId) && br.BookingStatus != BookingRoomStatus.Cancelled)
-                .Where(br => targetDate < br.EndDate.Date && targetDate >= br.StartDate.Date)
+                .Where(br => startDate <= br.EndDate.Date && startDate >= br.StartDate.Date || 
+                    endDate >= br.StartDate.Date && endDate <= (br.EndDate).Date)
                 .Select(br => new { br.RoomId, br.StartDate, br.EndDate, br.BookingRoomId })
                 .ToListAsync();
             var byRoom = bookings.GroupBy(b => b.RoomId).ToDictionary(g => g.Key, g => g.ToList());
@@ -1050,8 +1052,9 @@ public class BookingsService(
                 RoomTypeName = r.RoomType?.Name ?? string.Empty,
                 Floor = r.Floor,
                 Status = r.Status,
-                Timeline = BuildDayTimeline(targetDate, byRoom.TryGetValue(r.Id, out var list) && list.Any())
+                Timeline = BuildDayTimeline(startDate, byRoom.TryGetValue(r.Id, out var list) && list.Any())
             }).ToList();
+
 
 
             var results = new List<RoomMapItemDto>();
@@ -1059,16 +1062,20 @@ public class BookingsService(
             {
                 var existBookingRoom = await _bookingRoomRepo.Query()
                     .Where(x => x.RoomId == d.RoomId)
-                    .Where(x => targetDate >= x.StartDate.Date && targetDate <= (x.ActualCheckOutAt ?? x.EndDate).Date)
+                    .Where(x => startDate >= x.StartDate.Date && startDate <= (x.ActualCheckOutAt ?? x.ExtendedDate ?? x.EndDate).Date ||
+                         endDate >= x.StartDate.Date && endDate <= (x.ActualCheckOutAt ?? x.ExtendedDate ?? x.EndDate).Date)
                     .FirstOrDefaultAsync();
 
                 if (existBookingRoom != null)
                 {
-                    d.Status = RoomStatus.Occupied;
+                    if (startDate != DateTime.Now.Date )
+                    {
+                        d.Status = RoomStatus.Occupied;
+                    }
                 }
                 else
                 {
-                    if (targetDate == DateTime.Now.Date && d.Status != RoomStatus.Occupied)
+                    if (startDate == DateTime.Now.Date && d.Status != RoomStatus.Occupied)
                     {
                         results.Add(d);
                         continue;
@@ -1107,7 +1114,7 @@ public class BookingsService(
             {
                 var existBookingRoom = await _bookingRoomRepo.Query()
                     .Where(x => x.RoomId == d.Id)
-                    .Where(x => from >= x.StartDate.Date && from <= (x.ActualCheckOutAt ?? x.ExtendedDate ?? x.EndDate).Date ||  to >= x.StartDate.Date && to <= (x.ActualCheckOutAt ?? x.EndDate).Date)
+                    .Where(x => from >= x.StartDate.Date && from <= (x.ActualCheckOutAt ?? x.ExtendedDate ?? x.EndDate).Date || to >= x.StartDate.Date && to <= (x.ActualCheckOutAt ?? x.EndDate).Date)
                     .FirstOrDefaultAsync();
 
                 if (existBookingRoom != null)
@@ -1132,7 +1139,7 @@ public class BookingsService(
                 results.Add(d);
             }
 
-            var rooms =  results.Where(x => x.Status == RoomStatus.Available).ToList();
+            var rooms = results.Where(x => x.Status == RoomStatus.Available).ToList();
 
             var roomIds = rooms.Select(r => r.Id).ToList();
 

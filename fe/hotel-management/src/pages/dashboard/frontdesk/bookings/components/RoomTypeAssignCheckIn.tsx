@@ -756,9 +756,9 @@ const RoomTypeBlock: React.FC<{
                 setSnackbar({
                   open: true,
                   message: info.isEarly
-                    ? `Check-in early ${info.days}d ${info.hours}h ${info.minutes}m`
+                    ? `Check-in sớm ${info.days}d ${info.hours}h ${info.minutes}m`
                     : info.isLate
-                      ? `Late check-in ${info.days}d ${info.hours}h ${info.minutes}m`
+                      ? `Check-in muộn ${info.days}d ${info.hours}h ${info.minutes}m`
                       : "Check-in thành công",
                   severity: "success",
                 });

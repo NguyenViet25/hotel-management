@@ -43,14 +43,15 @@ const AssignRoomDialog: React.FC<Props> = ({
   const assignedRooms = roomType.bookingRooms || [];
   const remaining = Math.max(
     0,
-    (roomType.totalRoom || 0) - assignedRooms.length
+    (roomType.totalRoom || 0) - assignedRooms.length,
   );
 
   const fetchMap = async () => {
     setLoading(true);
     try {
       const res = await bookingsApi.getRoomMap({
-        date: roomType.startDate,
+        startDate: roomType.startDate,
+        endDate: roomType.endDate,
         hotelId: booking.hotelId,
       });
       console.log("roomType", roomType);
@@ -143,7 +144,7 @@ const AssignRoomDialog: React.FC<Props> = ({
               <Grid container spacing={2}>
                 {group.map((r) => {
                   const alreadyAssigned = assignedRooms.some(
-                    (br) => br.roomId === r.roomId
+                    (br) => br.roomId === r.roomId,
                   );
                   const available = r.status === RoomStatus.Available;
                   const disabled =
@@ -156,8 +157,8 @@ const AssignRoomDialog: React.FC<Props> = ({
                   const newUi = isMaintenance
                     ? { label: "Bảo trì", color: "#7b1fa2" }
                     : available
-                    ? { label: "Trống", color: "#2e7d32" }
-                    : baseUi;
+                      ? { label: "Trống", color: "#2e7d32" }
+                      : baseUi;
 
                   return (
                     <Grid key={r.roomId}>

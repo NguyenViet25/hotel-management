@@ -50,6 +50,11 @@ export default function ChangeRoomDialog({
   const [selected, setSelected] = useState<string | null>(null);
 
   const startDate = bookingRoom?.startDate || roomType.startDate;
+  const endDate =
+    bookingRoom?.actualCheckOutAt ||
+    bookingRoom?.extendedDate ||
+    bookingRoom?.endDate ||
+    roomType.endDate;
 
   useEffect(() => {
     const fetchMap = async () => {
@@ -57,7 +62,8 @@ export default function ChangeRoomDialog({
       setLoading(true);
       try {
         const res = await bookingsApi.getRoomMap({
-          date: startDate,
+          startDate: startDate,
+          endDate: endDate,
           hotelId: booking?.hotelId,
         });
         const list = (res as any).data || [];
@@ -74,9 +80,9 @@ export default function ChangeRoomDialog({
       rooms.filter(
         (r) =>
           r.roomTypeId === roomType.roomTypeId &&
-          r?.roomId !== bookingRoom?.roomId
+          r?.roomId !== bookingRoom?.roomId,
       ),
-    [rooms, roomType.roomTypeId, bookingRoom?.roomId]
+    [rooms, roomType.roomTypeId, bookingRoom?.roomId],
   );
 
   const isAvailable = (room: RoomMapItemDto) => {
@@ -217,8 +223,8 @@ export default function ChangeRoomDialog({
                               borderColor: isSelected
                                 ? "primary.main"
                                 : available
-                                ? "success.light"
-                                : "grey.300",
+                                  ? "success.light"
+                                  : "grey.300",
                               boxShadow: isSelected
                                 ? "0 0 0 3px rgba(25,118,210,0.25)"
                                 : "0 1px 4px rgba(0,0,0,0.08)",

@@ -85,41 +85,47 @@ public class RoomsService : IRoomsService
                 Status = r.Status
             }).ToList();
 
-            var date = query.Date.Date;
+            var date = DateOnly.FromDateTime(query.Date);
+
+            var today = DateOnly.FromDateTime(DateTime.Now);
 
             var results = new List<RoomSummaryDto>();
+
             foreach (var d in dtos)
             {
                 var existBookingRoom = await _bookingRoom.Query()
                     .Where(x => x.RoomId == d.Id)
-                    .Where(x => date >= x.StartDate.Date && date <= (x.ActualCheckOutAt ?? x.ExtendedDate ?? x.EndDate).Date)
+                    .Where(x =>
+                        date >= DateOnly.FromDateTime(x.StartDate) &&
+                        date <= DateOnly.FromDateTime(
+                            x.ActualCheckOutAt
+                            ?? x.ExtendedDate
+                            ?? x.EndDate))
                     .FirstOrDefaultAsync();
 
                 if (existBookingRoom != null)
                 {
                     d.StartDate = existBookingRoom.StartDate;
-                    d.EndDate = (existBookingRoom.ActualCheckOutAt ?? existBookingRoom.ExtendedDate ?? existBookingRoom.EndDate);
-                    d.Status = RoomStatus.Occupied;
+                    d.EndDate = existBookingRoom.ActualCheckOutAt
+                                ?? existBookingRoom.ExtendedDate
+                                ?? existBookingRoom.EndDate;
 
-                    if (date != DateTime.Now.Date)
-                    {
-                        d.Status = RoomStatus.Occupied;
-                    }
+                    if(date != today) d.Status = RoomStatus.Occupied;
                 }
                 else
                 {
-                    if (date == DateTime.Now.Date && d.Status != RoomStatus.Occupied)
+                    if (date == today && d.Status != RoomStatus.Occupied)
                     {
                         results.Add(d);
                         continue;
                     }
 
                     d.Status = RoomStatus.Available;
-
-
                 }
+
                 results.Add(d);
             }
+
 
             var meta = new { total, page = query.Page, pageSize = query.PageSize };
 

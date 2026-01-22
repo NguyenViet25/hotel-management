@@ -222,23 +222,6 @@ public class DashboardController : ControllerBase
 
     public record RoomsUsageSummaryDto(DateTime Date, int TotalRooms, int BookedRooms, double Percentage, bool IsPeakDay);
 
-    [HttpGet("rooms/usage-summary-today")]
-    public async Task<ActionResult<ApiResponse<RoomsUsageSummaryDto>>> GetRoomsUsageSummaryToday([FromQuery] Guid? hotelId)
-    {
-        if (hotelId == null || hotelId == Guid.Empty)
-            return BadRequest(ApiResponse.Fail("HotelId is required"));
-
-        var date = DateTime.Today;
-        var roomMapRes = await _bookings.GetRoomMapAsync(new RoomMapQueryDto { Date = date, HotelId = hotelId.Value });
-        var totalRooms = roomMapRes.Data?.Count ?? 0;
-        var bookedRooms = roomMapRes.Data?.Count(x => x.Timeline.Any(s => s.Status == RoomStatus.Occupied)) ?? 0;
-        var percentage = totalRooms == 0 ? 0 : Math.Round((double)bookedRooms / totalRooms * 100.0, 2);
-        var isPeakDay = percentage >= 75.0;
-
-        var dto = new RoomsUsageSummaryDto(date, totalRooms, bookedRooms, percentage, isPeakDay);
-        return Ok(ApiResponse<RoomsUsageSummaryDto>.Ok(dto));
-    }
-
     [HttpGet("rooms/usage-summary-by-month")]
     public async Task<ActionResult<ApiResponse<List<RoomsUsageSummaryDto>>>> GetRoomsUsageSummaryByMonth([FromQuery] int? year, [FromQuery] int? month)
     {

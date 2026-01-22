@@ -63,7 +63,7 @@ export default function HousekeepingAssignPage() {
         hotelId: hotelId || undefined,
         page: 1,
         pageSize: 500,
-        date: dayjs().startOf("day").format("YYYY-MM-DDTHH:mm:ss"),
+        date: dayjs().format("YYYY-MM-DD"),
       });
       if (res.isSuccess) setRooms(res.data);
     } finally {

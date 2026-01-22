@@ -156,7 +156,8 @@ export interface RoomMapItemDto {
 }
 
 export interface RoomMapQueryDto {
-  date: string; // ISO string
+  startDate: string; // ISO string
+  endDate: string; // ISO string
   hotelId?: string;
 }
 
@@ -329,7 +330,7 @@ export interface BookingSummaryDto {
 
 const bookingsApi = {
   async list(
-    query: BookingsQueryDto = {}
+    query: BookingsQueryDto = {},
   ): Promise<ApiResponse<BookingDetailsDto[]>> {
     const qp = new URLSearchParams();
     if (query.hotelId) qp.append("hotelId", query.hotelId);
@@ -346,7 +347,7 @@ const bookingsApi = {
     return res.data;
   },
   async listActive(
-    query: BookingsByHotelQueryDto = {}
+    query: BookingsByHotelQueryDto = {},
   ): Promise<ApiResponse<BookingDetailsDto[]>> {
     const qp = new URLSearchParams();
     if (query.hotelId) qp.append("hotelId", query.hotelId);
@@ -356,7 +357,7 @@ const bookingsApi = {
   },
   // Fetch all bookings in one call by using a large page size.
   async getAll(
-    query: Partial<BookingsQueryDto> = {}
+    query: Partial<BookingsQueryDto> = {},
   ): Promise<BookingDetailsDto[]> {
     const qp = new URLSearchParams();
     if (query.hotelId) qp.append("hotelId", query.hotelId);
@@ -380,7 +381,7 @@ const bookingsApi = {
   },
 
   async create(
-    payload: CreateBookingDto
+    payload: CreateBookingDto,
   ): Promise<ApiResponse<BookingDetailsDto>> {
     const res = await axios.post(`/bookings`, payload);
     return res.data;
@@ -388,7 +389,7 @@ const bookingsApi = {
 
   async update(
     id: string,
-    payload: UpdateBookingDto
+    payload: UpdateBookingDto,
   ): Promise<ApiResponse<BookingDetailsDto>> {
     const res = await axios.put(`/bookings/${id}`, payload);
     return res.data;
@@ -411,14 +412,14 @@ const bookingsApi = {
 
   async checkIn(
     id: string,
-    payload: CheckInDto
+    payload: CheckInDto,
   ): Promise<ApiResponse<BookingDetailsDto>> {
     const res = await axios.post(`/bookings/${id}/check-in`, payload);
     return res.data;
   },
 
   async additionalChargesPreview(
-    id: string
+    id: string,
   ): Promise<ApiResponse<AdditionalChargesDto>> {
     const res = await axios.get(`/bookings/${id}/additional-charges/preview`);
     return res.data;
@@ -426,18 +427,18 @@ const bookingsApi = {
 
   async recordMinibarConsumption(
     id: string,
-    payload: MinibarConsumptionDto
+    payload: MinibarConsumptionDto,
   ): Promise<ApiResponse<any>> {
     const res = await axios.post(
       `/bookings/${id}/minibar-consumption`,
-      payload
+      payload,
     );
     return res.data;
   },
 
   async checkOut(
     id: string,
-    payload: CheckoutRequestDto
+    payload: CheckoutRequestDto,
   ): Promise<ApiResponse<CheckoutResultDto>> {
     const res = await axios.post(`/bookings/${id}/check-out`, payload);
     return res.data;
@@ -445,7 +446,7 @@ const bookingsApi = {
 
   async changeRoom(
     id: string,
-    payload: ChangeRoomDto
+    payload: ChangeRoomDto,
   ): Promise<ApiResponse<BookingDetailsDto>> {
     const res = await axios.post(`/bookings/${id}/change-room`, payload);
     return res.data;
@@ -461,37 +462,38 @@ const bookingsApi = {
       idCardFrontImageUrl?: string;
       idCardBackImageUrl?: string;
       idCard?: string;
-    }
+    },
   ): Promise<ApiResponse<BookingDetailsDto>> {
     const res = await axios.put(
       `/bookings/rooms/${bookingRoomId}/guests/${guestId}`,
-      payload
+      payload,
     );
     return res.data;
   },
 
   async removeGuestFromRoom(
     bookingRoomId: string,
-    guestId: string
+    guestId: string,
   ): Promise<ApiResponse<BookingDetailsDto>> {
     const res = await axios.delete(
-      `/bookings/rooms/${bookingRoomId}/guests/${guestId}`
+      `/bookings/rooms/${bookingRoomId}/guests/${guestId}`,
     );
     return res.data;
   },
 
   async addRoom(
-    payload: AddRoomToBookingDto
+    payload: AddRoomToBookingDto,
   ): Promise<ApiResponse<BookingDetailsDto>> {
     const res = await axios.post(`/bookings/add-room`, payload);
     return res.data;
   },
 
   async getRoomMap(
-    query: RoomMapQueryDto
+    query: RoomMapQueryDto,
   ): Promise<ApiResponse<RoomMapItemDto[]>> {
     const qp = new URLSearchParams();
-    qp.append("date", query.date);
+    qp.append("startDate", query.startDate);
+    if (query.endDate) qp.append("endDate", query.endDate);
     if (query.hotelId) qp.append("hotelId", query.hotelId);
     const res = await axios.get(`/bookings/room-map?${qp.toString()}`);
     return res.data;
@@ -499,7 +501,7 @@ const bookingsApi = {
 
   async extendStay(
     id: string,
-    payload: ExtendStayDto
+    payload: ExtendStayDto,
   ): Promise<ApiResponse<ExtendStayResultDto>> {
     const res = await axios.post(`/bookings/${id}/extend-stay`, payload);
     return res.data;
@@ -507,22 +509,22 @@ const bookingsApi = {
 
   async updateRoomDates(
     bookingRoomId: string,
-    payload: { startDate: string; endDate: string }
+    payload: { startDate: string; endDate: string },
   ): Promise<ApiResponse<BookingDetailsDto>> {
     const res = await axios.put(
       `/bookings/rooms/${bookingRoomId}/dates`,
-      payload
+      payload,
     );
     return res.data;
   },
 
   async updateRoomActualTimes(
     bookingRoomId: string,
-    payload: { actualCheckInAt?: string; actualCheckOutAt?: string }
+    payload: { actualCheckInAt?: string; actualCheckOutAt?: string },
   ): Promise<ApiResponse<BookingDetailsDto>> {
     const res = await axios.put(
       `/bookings/rooms/${bookingRoomId}/actual-times`,
-      payload
+      payload,
     );
     return res.data;
   },
@@ -530,11 +532,11 @@ const bookingsApi = {
   async moveGuest(
     bookingRoomId: string,
     guestId: string,
-    payload: { targetBookingRoomId: string }
+    payload: { targetBookingRoomId: string },
   ): Promise<ApiResponse<BookingDetailsDto>> {
     const res = await axios.post(
       `/bookings/rooms/${bookingRoomId}/guests/${guestId}/move`,
-      payload
+      payload,
     );
     return res.data;
   },
@@ -542,18 +544,18 @@ const bookingsApi = {
   async swapGuests(
     bookingRoomId: string,
     guestId: string,
-    payload: { targetBookingRoomId: string; targetGuestId: string }
+    payload: { targetBookingRoomId: string; targetGuestId: string },
   ): Promise<ApiResponse<BookingDetailsDto>> {
     const res = await axios.post(
       `/bookings/rooms/${bookingRoomId}/guests/${guestId}/swap`,
-      payload
+      payload,
     );
     return res.data;
   },
 
   async createCallLog(
     id: string,
-    payload: { callTime?: string; result: CallResult; notes?: string }
+    payload: { callTime?: string; result: CallResult; notes?: string },
   ): Promise<ApiResponse<CallLogDto>> {
     const res = await axios.post(`/bookings/${id}/call-logs`, payload);
     return res.data;
@@ -582,12 +584,12 @@ const bookingsApi = {
   async roomSchedule(
     roomId: string,
     from: string,
-    to: string
+    to: string,
   ): Promise<ApiResponse<BookingIntervalDto[]>> {
     const res = await axios.get(
       `/bookings/rooms/${roomId}/schedule?from=${encodeURIComponent(
-        from
-      )}&to=${encodeURIComponent(to)}`
+        from,
+      )}&to=${encodeURIComponent(to)}`,
     );
     return res.data;
   },
@@ -595,7 +597,7 @@ const bookingsApi = {
   async roomHistory(
     roomId: string,
     from?: string,
-    to?: string
+    to?: string,
   ): Promise<ApiResponse<RoomStayHistoryDto[]>> {
     const qp = new URLSearchParams();
     if (from) qp.append("from", from);
@@ -613,7 +615,7 @@ const bookingsApi = {
   },
 
   async getPeakDays(
-    query: PeakDaysQueryDto
+    query: PeakDaysQueryDto,
   ): Promise<ApiResponse<PeakDayDto[]>> {
     const qp = new URLSearchParams();
     qp.append("hotelId", query.hotelId);
@@ -624,7 +626,7 @@ const bookingsApi = {
   },
 
   async cancelNoShows(
-    payload: NoShowCancelRequestDto
+    payload: NoShowCancelRequestDto,
   ): Promise<
     ApiResponse<{ cancelledRooms: number; affectedBookings: number }>
   > {
@@ -634,12 +636,12 @@ const bookingsApi = {
 
   async getEarlyCheckoutQuote(
     bookingId: string,
-    checkoutDate: string
+    checkoutDate: string,
   ): Promise<ApiResponse<EarlyCheckoutFeeResponseDto>> {
     const qp = new URLSearchParams();
     qp.append("checkoutDate", checkoutDate);
     const res = await axios.get(
-      `/bookings/${bookingId}/early-checkout/quote?${qp.toString()}`
+      `/bookings/${bookingId}/early-checkout/quote?${qp.toString()}`,
     );
     return res.data;
   },

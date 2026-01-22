@@ -118,7 +118,7 @@ export default function CheckInTimeDialog({
               .minute(59)
               .second(0)
               .millisecond(0)}
-            readOnly
+            // readOnly
             slotProps={{
               textField: {
                 readOnly: true,
@@ -153,7 +153,7 @@ export default function CheckInTimeDialog({
         <Button onClick={onClose}>Hủy</Button>
         <Button
           variant="contained"
-          disabled={isEarly}
+          // disabled={isEarly}
           onClick={() =>
             onConfirm(value.format("YYYY-MM-DDTHH:mm:ss"), {
               isEarly,
