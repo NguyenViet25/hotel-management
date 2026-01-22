@@ -24,6 +24,7 @@ public interface IBookingsService
     Task<ApiResponse<List<RoomStayHistoryDto>>> GetRoomHistoryAsync(Guid roomId, DateTime? from, DateTime? to);
     Task<ApiResponse> AddRoomToBookingAsync(Guid bookingRoomTypeId, Guid roomId);
     Task<ApiResponse> CheckInAsync(CheckInDto dto);
+    Task<ApiResponse> AddGuestAsync(CheckInDto dto);
     Task<ApiResponse<BookingDetailsDto>> ChangeRoomAsync(Guid bookingRoomId, Guid newRoomId);
     Task<ApiResponse> ExtendStayAsync(Guid bookingRoomId, DateTime newEndDate, string? discountCode);
     Task<ApiResponse<CheckoutResultDto>> CheckOutAsync(Guid bookingId, CheckoutRequestDto dto);

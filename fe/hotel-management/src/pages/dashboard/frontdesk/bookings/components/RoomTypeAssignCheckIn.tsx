@@ -141,7 +141,7 @@ const RoomTypeBlock: React.FC<{
   const openEditGuest = (
     roomId: string,
     idx: number,
-    initial?: GuestForm & { id?: string }
+    initial?: GuestForm & { id?: string },
   ) => {
     setGuestRoomId(roomId);
     setGuestEditIndex(idx);
@@ -155,7 +155,7 @@ const RoomTypeBlock: React.FC<{
             idCardBackImageUrl: initial.idCardBackImageUrl,
             idCard: initial.idCard,
           }
-        : null
+        : null,
     );
     setGuestOpen(true);
   };
@@ -172,7 +172,7 @@ const RoomTypeBlock: React.FC<{
             idCardFrontImageUrl: g.idCardFrontImageUrl,
             idCardBackImageUrl: g.idCardBackImageUrl,
             idCard: g.idCard,
-          }
+          },
         );
         if (res.isSuccess) {
           setSnackbar({
@@ -209,6 +209,71 @@ const RoomTypeBlock: React.FC<{
           setSnackbar({
             open: true,
             message: res.message || "Không thể check-in",
+            severity: "error",
+          });
+        }
+      }
+    } catch {
+      setSnackbar({
+        open: true,
+        message:
+          guestEditIndex !== null
+            ? "Đã xảy ra lỗi khi cập nhật khách"
+            : "Đã xảy ra lỗi khi check-in",
+        severity: "error",
+      });
+    }
+  };
+
+  const submitAddGuest = async (g: GuestForm) => {
+    try {
+      if (guestEditIndex !== null && updatingGuestId && guestRoomId) {
+        const res = await bookingsApi.updateGuestInRoom(
+          guestRoomId,
+          updatingGuestId,
+          {
+            fullname: g.name,
+            phone: g.phone,
+            idCardFrontImageUrl: g.idCardFrontImageUrl,
+            idCardBackImageUrl: g.idCardBackImageUrl,
+            idCard: g.idCard,
+          },
+        );
+        if (res.isSuccess) {
+          setSnackbar({
+            open: true,
+            message: "Cập nhật khách thành công",
+            severity: "success",
+          });
+          setGuestOpen(false);
+          setUpdatingGuestId(null);
+          setGuestEditIndex(null);
+          await onRefresh?.();
+        } else {
+          setSnackbar({
+            open: true,
+            message: res.message || "Không thể cập nhật khách",
+            severity: "error",
+          });
+        }
+      } else {
+        const persons = [g];
+        const res = await bookingsApi.checkIn(booking.id, {
+          roomBookingId: guestRoomId,
+          persons,
+        } as any);
+        if (res.isSuccess) {
+          setSnackbar({
+            open: true,
+            message: "Thêm khách thành công",
+            severity: "success",
+          });
+          setGuestOpen(false);
+          await onRefresh?.();
+        } else {
+          setSnackbar({
+            open: true,
+            message: res.message || "Không thể thêm khách",
             severity: "error",
           });
         }
@@ -655,7 +720,7 @@ const RoomTypeBlock: React.FC<{
             open={guestOpen}
             initial={guestInitial || undefined}
             onClose={() => setGuestOpen(false)}
-            onSubmit={submitCheckIn}
+            onSubmit={submitAddGuest}
           />
         </Stack>
         <AssignRoomDialog
@@ -693,8 +758,8 @@ const RoomTypeBlock: React.FC<{
                   message: info.isEarly
                     ? `Check-in early ${info.days}d ${info.hours}h ${info.minutes}m`
                     : info.isLate
-                    ? `Late check-in ${info.days}d ${info.hours}h ${info.minutes}m`
-                    : "Check-in thành công",
+                      ? `Late check-in ${info.days}d ${info.hours}h ${info.minutes}m`
+                      : "Check-in thành công",
                   severity: "success",
                 });
                 setCheckInOpen(false);
@@ -728,16 +793,16 @@ const RoomTypeBlock: React.FC<{
             try {
               const res = await bookingsApi.updateRoomActualTimes(
                 activeRoom!.bookingRoomId,
-                { actualCheckOutAt: iso }
+                { actualCheckOutAt: iso },
               );
               if (res.isSuccess) {
                 setSnackbar({
                   open: true,
                   message: info.isLate
-                    ? `Late check-out ${info.days}d ${info.hours}h ${info.minutes}m`
+                    ? `Trả phòng muộn ${info.days}d ${info.hours}h ${info.minutes}m`
                     : info.isEarly
-                    ? `Early check-out ${info.days}d ${info.hours}h ${info.minutes}m`
-                    : "Check-out thành công",
+                      ? `Trả phòng sớm ${info.days}d ${info.hours}h ${info.minutes}m`
+                      : "Check-out thành công",
                   severity: "success",
                 });
                 setCheckOutOpen(false);
@@ -768,7 +833,7 @@ const RoomTypeBlock: React.FC<{
             try {
               const res = await bookingsApi.changeRoom(
                 activeRoom!.bookingRoomId,
-                { newRoomId: roomId }
+                { newRoomId: roomId },
               );
               if (res.isSuccess) {
                 setSnackbar({
@@ -816,7 +881,7 @@ const RoomTypeBlock: React.FC<{
                   }
                   const res = await bookingsApi.removeGuestFromRoom(
                     deleteRoomId,
-                    deleteGuest.guestId
+                    deleteGuest.guestId,
                   );
                   if (res.isSuccess) {
                     setSnackbar({
@@ -856,7 +921,7 @@ const RoomTypeBlock: React.FC<{
             try {
               const res = await bookingsApi.extendStay(
                 activeRoom!.bookingRoomId,
-                { newEndDate: newEndIso }
+                { newEndDate: newEndIso },
               );
               if (res.isSuccess) {
                 const price = (res as any)?.data?.price ?? undefined;
@@ -900,7 +965,7 @@ const RoomTypeBlock: React.FC<{
             try {
               const res = await bookingsApi.updateRoomDates(
                 activeRoom!.bookingRoomId,
-                { startDate: startIso, endDate: endIso }
+                { startDate: startIso, endDate: endIso },
               );
               if (res.isSuccess) {
                 setSnackbar({
@@ -935,16 +1000,16 @@ const RoomTypeBlock: React.FC<{
             try {
               const res = await bookingsApi.updateRoomActualTimes(
                 activeRoom!.bookingRoomId,
-                { actualCheckInAt: iso }
+                { actualCheckInAt: iso },
               );
               if (res.isSuccess) {
                 setSnackbar({
                   open: true,
                   message: info.isEarly
-                    ? `Check-in early ${info.days}d ${info.hours}h ${info.minutes}m`
+                    ? `Check-in sớm ${info.days}d ${info.hours}h ${info.minutes}m`
                     : info.isLate
-                    ? `Late check-in ${info.days}d ${info.hours}h ${info.minutes}m`
-                    : "Cập nhật Check-in thành công",
+                      ? `Check-in muộn ${info.days}d ${info.hours}h ${info.minutes}m`
+                      : "Cập nhật Check-in thành công",
                   severity: "success",
                 });
                 setEditActualInOpen(false);
@@ -977,7 +1042,7 @@ const RoomTypeBlock: React.FC<{
               const res = await bookingsApi.swapGuests(
                 movingFromRoomId!,
                 movingGuest!.guestId,
-                { targetBookingRoomId, targetGuestId } as any
+                { targetBookingRoomId, targetGuestId } as any,
               );
               if (res.isSuccess) {
                 setSnackbar({
@@ -1015,7 +1080,7 @@ const RoomTypeBlock: React.FC<{
             try {
               const res = await bookingsApi.updateRoomActualTimes(
                 activeRoom!.bookingRoomId,
-                { actualCheckOutAt: iso }
+                { actualCheckOutAt: iso },
               );
               if (res.isSuccess) {
                 setSnackbar({
@@ -1023,8 +1088,8 @@ const RoomTypeBlock: React.FC<{
                   message: info.isLate
                     ? `Late check-out ${info.days}d ${info.hours}h ${info.minutes}m`
                     : info.isEarly
-                    ? `Early check-out ${info.days}d ${info.hours}h ${info.minutes}m`
-                    : "Cập nhật Check-out thành công",
+                      ? `Early check-out ${info.days}d ${info.hours}h ${info.minutes}m`
+                      : "Cập nhật Check-out thành công",
                   severity: "success",
                 });
                 setEditActualOutOpen(false);

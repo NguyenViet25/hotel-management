@@ -153,7 +153,7 @@ export default function CheckInTimeDialog({
         <Button onClick={onClose}>Hủy</Button>
         <Button
           variant="contained"
-          // disabled={isEarly}
+          disabled={isEarly}
           onClick={() =>
             onConfirm(value.format("YYYY-MM-DDTHH:mm:ss"), {
               isEarly,

@@ -24,6 +24,7 @@ import roomsApi, {
 import HousekeepingTasksTable from "../../../../../components/housekeeping/HousekeepingTasksTable";
 import { useStore } from "../../../../../hooks/useStore";
 import AssignHousekeepingDialog from "../components/AssignHousekeepingDialog";
+import dayjs from "dayjs";
 
 const HK = {
   colors: {
@@ -47,7 +48,7 @@ export default function HousekeepingAssignPage() {
   const [assignOpen, setAssignOpen] = useState(false);
   const [assignRoom, setAssignRoom] = useState<RoomDto | null>(null);
   const [assignTaskId, setAssignTaskId] = useState<string | undefined>(
-    undefined
+    undefined,
   );
   const [assignInitialAssigneeId, setAssignInitialAssigneeId] = useState<
     string | undefined
@@ -60,9 +61,9 @@ export default function HousekeepingAssignPage() {
     try {
       const res = await roomsApi.getRooms({
         hotelId: hotelId || undefined,
-        status: String(RoomStatus.Dirty),
         page: 1,
         pageSize: 500,
+        date: dayjs().startOf("day").format("YYYY-MM-DDTHH:mm:ss"),
       });
       if (res.isSuccess) setRooms(res.data);
     } finally {
@@ -81,7 +82,7 @@ export default function HousekeepingAssignPage() {
       .sort(
         (a, b) =>
           (a.floor ?? 0) - (b.floor ?? 0) ||
-          (a.number || "").localeCompare(b.number || "")
+          (a.number || "").localeCompare(b.number || ""),
       );
   }, [rooms]);
 
@@ -164,10 +165,10 @@ export default function HousekeepingAssignPage() {
                           tasksLoading
                             ? "Đang tải nhiệm vụ…"
                             : taskByRoomId[r.id]?.assignedToName
-                            ? `Nhân viên phụ trách: ${
-                                taskByRoomId[r.id]?.assignedToName
-                              }`
-                            : "Chưa phân công"
+                              ? `Nhân viên phụ trách: ${
+                                  taskByRoomId[r.id]?.assignedToName
+                                }`
+                              : "Chưa phân công"
                         }
                         sx={{
                           bgcolor: HK.colors.chipGreyBg,
@@ -197,7 +198,7 @@ export default function HousekeepingAssignPage() {
                             setAssignRoom(r);
                             setAssignTaskId(t?.id);
                             setAssignInitialAssigneeId(
-                              t?.assignedToUserId || undefined
+                              t?.assignedToUserId || undefined,
                             );
                             setAssignOpen(true);
                           }}

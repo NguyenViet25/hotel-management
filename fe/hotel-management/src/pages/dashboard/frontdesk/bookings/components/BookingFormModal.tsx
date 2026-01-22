@@ -1157,20 +1157,7 @@ const BookingFormModal: React.FC<Props> = ({
             setPriceDialogOpen(false);
             setPriceDialogRt(null);
           }}
-          roomTypeId={
-            (priceDialogRt?.roomTypeId as string) || roomTypes[0]?.id || ""
-          }
-          value={Object.fromEntries(
-            (
-              roomTypes.find(
-                (t) =>
-                  t.id ===
-                  ((priceDialogRt?.roomTypeId as string) ||
-                    roomTypes[0]?.id ||
-                    ""),
-              )?.priceByDates || []
-            ).map((p) => [dayjs(p.date).format("YYYY-MM-DD"), p.price]),
-          )}
+          roomTypes={roomTypes}
         />
         <Popover
           open={!!pricePopoverAnchor}

@@ -1,58 +1,54 @@
+import type {
+  DateSelectArg,
+  DatesSetArg,
+  EventInput,
+} from "@fullcalendar/core/index.js";
 import viLocale from "@fullcalendar/core/locales/vi";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin, {
   type DateClickArg,
 } from "@fullcalendar/interaction";
 import FullCalendar from "@fullcalendar/react";
+import { Close, History } from "@mui/icons-material";
 import {
   Box,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  MenuItem,
   Popover,
+  Select,
   Stack,
   Typography,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Select,
-  MenuItem,
-  IconButton,
 } from "@mui/material";
 import dayjs from "dayjs";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import roomsApi, { isPeakUsageDay } from "../../../../../api/roomsApi";
-import { useStore } from "../../../../../hooks/useStore";
 import roomTypesApi, {
+  type RoomType,
   type RoomTypePriceHistoryItem,
 } from "../../../../../api/roomTypesApi";
-import type {
-  DateSelectArg,
-  DatesSetArg,
-  EventInput,
-} from "@fullcalendar/core/index.js";
-import { Close, History } from "@mui/icons-material";
+import { useStore } from "../../../../../hooks/useStore";
 
 type PriceMap = Record<string, number>;
 
 export interface CalendarPriceSetupProps {
-  value?: PriceMap;
-  roomTypeId?: string;
-  onChangePriceMap?: (map: PriceMap) => void;
+  roomTypes: RoomType[];
   open: boolean;
   onClose: () => void;
 }
 
 const PriceCalendarRoomTypeDialog: React.FC<CalendarPriceSetupProps> = ({
-  value,
-  roomTypeId,
-  onChangePriceMap,
+  roomTypes,
   open,
   onClose,
 }) => {
   const { hotelId } = useStore();
   const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
   const [priceMap, setPriceMap] = useState<PriceMap>({});
-  const [dialogOpen, setDialogOpen] = useState(false);
   const [hoverAnchorEl, setHoverAnchorEl] = useState<HTMLElement | null>(null);
   const [hoverDateStr, setHoverDateStr] = useState<string | null>(null);
   const [hoverLoading, setHoverLoading] = useState(false);
@@ -79,12 +75,15 @@ const PriceCalendarRoomTypeDialog: React.FC<CalendarPriceSetupProps> = ({
     priceTo: number;
   } | null>(null);
   const [eventsState, setEventsState] = useState<EventInput[]>([]);
-  const [roomTypes, setRoomTypes] = useState<{ id: string; name: string }[]>(
-    []
-  );
+
   const [selectedRoomTypeId, setSelectedRoomTypeId] = useState<string>(
-    roomTypeId || ""
+    roomTypes[0]?.id || "",
   );
+
+  useEffect(() => {
+    setSelectedRoomTypeId(roomTypes[0]?.id || "");
+  }, [roomTypes]);
+
   const basePriceForDate = (dateStr: string | null) => {
     if (!dateStr || !roomTypeBase) return 0;
     const dow = dayjs(dateStr).day();
@@ -97,7 +96,6 @@ const PriceCalendarRoomTypeDialog: React.FC<CalendarPriceSetupProps> = ({
       setEventsState([]);
       return;
     }
-    console.log("render");
     const start = dayjs(startDate);
     const end = dayjs(endDate);
     const evs: EventInput[] = [];
@@ -126,6 +124,16 @@ const PriceCalendarRoomTypeDialog: React.FC<CalendarPriceSetupProps> = ({
     setEventsState(evs);
   };
 
+  useEffect(() => {
+    const values = Object.fromEntries(
+      (
+        roomTypes.find((t) => t.id === selectedRoomTypeId)?.priceByDates || []
+      ).map((p) => [dayjs(p.date).format("YYYY-MM-DD"), p.price]),
+    );
+
+    setPriceMap(values);
+  }, [selectedRoomTypeId]);
+
   const handleSelectDate = (_arg: DateClickArg) => {};
 
   const handleSelectRange = (arg: DateSelectArg) => {
@@ -149,95 +157,6 @@ const PriceCalendarRoomTypeDialog: React.FC<CalendarPriceSetupProps> = ({
     });
   };
 
-  const handleOpenDialog = () => setDialogOpen(true);
-  const handleCloseDialog = () => setDialogOpen(false);
-
-  const handleConfirmPrice = (price: number) => {
-    let next: PriceMap = {};
-    setPriceMap((prev) => {
-      next = { ...prev };
-      Array.from(selectedDates).forEach((k) => {
-        if (!dayjs(k).isBefore(dayjs().startOf("day"))) {
-          next[k] = price;
-        }
-      });
-      return next;
-    });
-    setDialogOpen(false);
-    if (onChangePriceMap) onChangePriceMap(next);
-    setSelectedDates(new Set());
-    if (viewStart && viewEnd) {
-      setEventsState((prev) => {
-        const map = new Map(prev.map((e) => [e.id, e]));
-        Array.from(Object.keys(next)).forEach((k) => {
-          const ev = map.get(k);
-          const dow = dayjs(k).day();
-          const weekend = dow === 5 || dow === 6;
-          const p = next[k];
-          const updated = {
-            id: k,
-            start: k,
-            allDay: true,
-            title: `₫${Number(p).toLocaleString("vi-VN")}`,
-            className: `price-event ${weekend ? "weekend" : "weekday"} ${
-              roomTypeBase
-                ? Number(p) !==
-                  Number(
-                    weekend
-                      ? roomTypeBase.priceTo || 0
-                      : roomTypeBase.priceFrom || 0
-                  )
-                  ? "override"
-                  : ""
-                : ""
-            }`,
-          };
-          if (ev) map.set(k, updated);
-        });
-        return Array.from(map.values());
-      });
-    }
-  };
-
-  const handleClearPrices = () => {
-    let next: PriceMap = {};
-    setPriceMap((prev) => {
-      next = { ...prev };
-      selectedDates.forEach((k) => {
-        delete next[k];
-      });
-      return next;
-    });
-    if (onChangePriceMap) onChangePriceMap(next);
-    setSelectedDates(new Set());
-    if (viewStart && viewEnd && roomTypeBase) {
-      setEventsState((prev) => {
-        const map = new Map(prev.map((e) => [e.id, e]));
-        selectedDates.forEach((k) => {
-          const dow = dayjs(k).day();
-          const weekend = dow === 5 || dow === 6;
-          const p = weekend
-            ? roomTypeBase.priceTo || 0
-            : roomTypeBase.priceFrom || 0;
-          const updated = {
-            id: k,
-            start: k,
-            allDay: true,
-            title: `₫${Number(p).toLocaleString("vi-VN")}`,
-            className: `price-event ${weekend ? "weekend" : "weekday"}`,
-          };
-          if (map.has(k)) map.set(k, updated);
-        });
-        return Array.from(map.values());
-      });
-    }
-  };
-
-  React.useEffect(() => {
-    if (value) {
-      setPriceMap(value);
-    }
-  }, [value]);
   React.useEffect(() => {
     const loadRoomType = async () => {
       if (!selectedRoomTypeId) {
@@ -263,7 +182,7 @@ const PriceCalendarRoomTypeDialog: React.FC<CalendarPriceSetupProps> = ({
     if (viewStart && viewEnd && roomTypeBase && monthKey) {
       rebuildEventsForMonth(viewStart, viewEnd);
     }
-  }, [monthKey, roomTypeBase]);
+  }, [monthKey, roomTypeBase, viewStart, viewEnd]);
 
   React.useEffect(() => {
     const load = async () => {
@@ -274,7 +193,7 @@ const PriceCalendarRoomTypeDialog: React.FC<CalendarPriceSetupProps> = ({
       try {
         const res = await roomsApi.getRoomsUsageSummaryByMonth(
           Number(monthKey.split("-")[1]),
-          Number(monthKey.split("-")[0])
+          Number(monthKey.split("-")[0]),
         );
         const list =
           (
@@ -306,35 +225,11 @@ const PriceCalendarRoomTypeDialog: React.FC<CalendarPriceSetupProps> = ({
     load();
   }, [hotelId, monthKey]);
 
-  React.useEffect(() => {
-    const loadRoomTypes = async () => {
-      try {
-        const res = await roomTypesApi.getRoomTypes({
-          hotelId,
-          page: 1,
-          pageSize: 100,
-        });
-        const list = ((res as any).items || res.data || []).map((x: any) => ({
-          id: x.id,
-          name: x.name,
-        }));
-        setRoomTypes(list);
-        if (!selectedRoomTypeId && list[0]?.id) {
-          setSelectedRoomTypeId(list[0].id);
-        }
-      } catch {}
-    };
-    if (open) loadRoomTypes();
-  }, [open, hotelId, selectedRoomTypeId]);
-
-  const selectedCount = selectedDates.size;
-  const handleClearSelection = () => setSelectedDates(new Set());
-
   const openHoverHistory = async (date: Date, anchorEl: HTMLElement) => {
     const dateStr = dayjs(date).format("YYYY-MM-DD");
     setHoverAnchorEl(anchorEl);
     setHoverDateStr(dateStr);
-    if (!roomTypeId) {
+    if (!selectedRoomTypeId) {
       setHoverLastYearLatest(null);
       setHoverCurrentYearList([]);
       setHoverLoading(false);
@@ -352,7 +247,11 @@ const PriceCalendarRoomTypeDialog: React.FC<CalendarPriceSetupProps> = ({
       const lastYear = curYear - 1;
       const from = dayjs(`${lastYear}-01-01`).format("YYYY-MM-DD");
       const to = dayjs(`${curYear}-12-31`).format("YYYY-MM-DD");
-      const res = await roomTypesApi.getPriceHistory(roomTypeId, from, to);
+      const res = await roomTypesApi.getPriceHistory(
+        selectedRoomTypeId,
+        from,
+        to,
+      );
       const primary = (res as { data?: unknown }).data as
         | { data?: RoomTypePriceHistoryItem[] }
         | RoomTypePriceHistoryItem[]
@@ -362,24 +261,24 @@ const PriceCalendarRoomTypeDialog: React.FC<CalendarPriceSetupProps> = ({
       const lastYearDateStr = dayjs(date).year(lastYear).format("YYYY-MM-DD");
       const lastYearItems = all.filter(
         (it: RoomTypePriceHistoryItem) =>
-          dayjs(it.date).format("YYYY-MM-DD") === lastYearDateStr
+          dayjs(it.date).format("YYYY-MM-DD") === lastYearDateStr,
       );
       const latestLastYear =
         lastYearItems
           .slice()
           .sort(
             (a: RoomTypePriceHistoryItem, b: RoomTypePriceHistoryItem) =>
-              dayjs(b.updatedAt).valueOf() - dayjs(a.updatedAt).valueOf()
+              dayjs(b.updatedAt).valueOf() - dayjs(a.updatedAt).valueOf(),
           )[0] || null;
       const curYearItems = all
         .filter(
           (it: RoomTypePriceHistoryItem) =>
-            dayjs(it.date).format("YYYY-MM-DD") === dateStr
+            dayjs(it.date).format("YYYY-MM-DD") === dateStr,
         )
         .slice()
         .sort(
           (a: RoomTypePriceHistoryItem, b: RoomTypePriceHistoryItem) =>
-            dayjs(b.updatedAt).valueOf() - dayjs(a.updatedAt).valueOf()
+            dayjs(b.updatedAt).valueOf() - dayjs(a.updatedAt).valueOf(),
         );
       setHoverLastYearLatest(latestLastYear);
       setHoverCurrentYearList(curYearItems);
@@ -403,7 +302,7 @@ const PriceCalendarRoomTypeDialog: React.FC<CalendarPriceSetupProps> = ({
           justifyContent="space-between"
           alignItems="center"
         >
-          <Typography variant="h6">Cài đặt giá theo ngày</Typography>
+          <Typography variant="h6">Ciá theo ngày</Typography>
           <IconButton onClick={onClose}>
             <Close />
           </IconButton>
@@ -431,31 +330,7 @@ const PriceCalendarRoomTypeDialog: React.FC<CalendarPriceSetupProps> = ({
             alignItems="center"
             justifyContent="space-between"
             sx={{ mb: 2 }}
-          >
-            <Stack direction="row" spacing={1} alignItems="center">
-              {selectedCount > 0 && (
-                <>
-                  <Button
-                    variant="outlined"
-                    color="inherit"
-                    onClick={handleClearSelection}
-                  >
-                    Xóa chọn
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    color="warning"
-                    onClick={handleClearPrices}
-                  >
-                    Xóa giá
-                  </Button>
-                  <Button variant="contained" onClick={handleOpenDialog}>
-                    Cài đặt giá chung ({selectedCount})
-                  </Button>
-                </>
-              )}
-            </Stack>
-          </Stack>
+          ></Stack>
 
           <Box
             sx={{
@@ -534,7 +409,7 @@ const PriceCalendarRoomTypeDialog: React.FC<CalendarPriceSetupProps> = ({
               select={handleSelectRange}
               selectAllow={(info: { start: Date; end: Date }) => {
                 const startOk = !dayjs(info.start).isBefore(
-                  dayjs().startOf("day")
+                  dayjs().startOf("day"),
                 );
                 const endInclusive = dayjs(info.end).subtract(1, "day");
                 const endOk = !endInclusive.isBefore(dayjs().startOf("day"));
@@ -646,9 +521,9 @@ const PriceCalendarRoomTypeDialog: React.FC<CalendarPriceSetupProps> = ({
                       <Typography variant="body2" color="text.secondary">
                         {hoverLastYearLatest
                           ? `₫${(hoverLastYearLatest.price || 0).toLocaleString(
-                              "vi-VN"
+                              "vi-VN",
                             )} • ${dayjs(hoverLastYearLatest.updatedAt).format(
-                              "DD/MM/YYYY HH:mm"
+                              "DD/MM/YYYY HH:mm",
                             )}`
                           : "Không có dữ liệu"}
                       </Typography>
@@ -699,23 +574,6 @@ const PriceCalendarRoomTypeDialog: React.FC<CalendarPriceSetupProps> = ({
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Đóng</Button>
-        {selectedDates.size > 0 && (
-          <>
-            <Button color="inherit" onClick={() => setSelectedDates(new Set())}>
-              Xóa chọn
-            </Button>
-            <Button
-              variant="outlined"
-              color="warning"
-              onClick={handleClearPrices}
-            >
-              Xóa giá
-            </Button>
-            <Button variant="contained" onClick={handleOpenDialog}>
-              Cài đặt giá chung ({selectedDates.size})
-            </Button>
-          </>
-        )}
       </DialogActions>
     </Dialog>
   );

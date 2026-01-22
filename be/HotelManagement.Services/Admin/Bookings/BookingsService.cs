@@ -2,14 +2,10 @@ using HotelManagement.Domain;
 using HotelManagement.Domain.Repositories;
 using HotelManagement.Repository.Common;
 using HotelManagement.Services.Admin.Bookings.Dtos;
-using HotelManagement.Services.Admin.Rooms.Dtos;
 using HotelManagement.Services.Admin.RoomTypes.Dtos;
 using HotelManagement.Services.Common;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Client;
-using System.Linq;
 using System.Text.Json;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace HotelManagement.Services.Admin.Bookings;
@@ -1111,12 +1107,15 @@ public class BookingsService(
             {
                 var existBookingRoom = await _bookingRoomRepo.Query()
                     .Where(x => x.RoomId == d.Id)
-                    .Where(x => from >= x.StartDate.Date && from <= (x.ActualCheckOutAt ?? x.EndDate).Date ||  to >= x.StartDate.Date && to <= (x.ActualCheckOutAt ?? x.EndDate).Date)
+                    .Where(x => from >= x.StartDate.Date && from <= (x.ActualCheckOutAt ?? x.ExtendedDate ?? x.EndDate).Date ||  to >= x.StartDate.Date && to <= (x.ActualCheckOutAt ?? x.EndDate).Date)
                     .FirstOrDefaultAsync();
 
                 if (existBookingRoom != null)
                 {
-                    d.Status = RoomStatus.Occupied;
+                    if (from != DateTime.Now.Date)
+                    {
+                        d.Status = RoomStatus.Occupied;
+                    }
                 }
                 else
                 {
@@ -1497,6 +1496,85 @@ public class BookingsService(
         }
 
         return ApiResponse.Ok("Check in thành công");
+    }
+
+    public async Task<ApiResponse> AddGuestAsync(CheckInDto dto)
+    {
+        foreach (var guest in dto.Persons)
+        {
+            var exitsGuest = await _guestRepo.Query().Where(x => x.Phone == guest.Phone).FirstOrDefaultAsync();
+            if (exitsGuest != null)
+            {
+                exitsGuest.FullName = guest.Name;
+                exitsGuest.Phone = guest.Phone;
+                exitsGuest.IdCard = guest.IdCard;
+                exitsGuest.IdCardFrontImageUrl = guest.IdCardFrontImageUrl;
+                exitsGuest.IdCardBackImageUrl = guest.IdCardBackImageUrl;
+                await _guestRepo.UpdateAsync(exitsGuest);
+                await _guestRepo.SaveChangesAsync();
+
+                var bGuest = new BookingGuest()
+                {
+
+                    BookingRoomId = dto.RoomBookingId,
+                    GuestId = exitsGuest.Id,
+                };
+                await _bookingGuestRepo.AddAsync(bGuest);
+                await _bookingGuestRepo.SaveChangesAsync();
+                continue;
+            }
+
+            var newGuest = new Guest()
+            {
+                HotelId = dto.HotelId,
+                Id = Guid.NewGuid(),
+                FullName = guest.Name,
+                Phone = guest.Phone,
+                IdCard = guest.IdCard,
+                IdCardFrontImageUrl = guest.IdCardFrontImageUrl,
+                IdCardBackImageUrl = guest.IdCardBackImageUrl
+            };
+            await _guestRepo.AddAsync(newGuest);
+            await _guestRepo.SaveChangesAsync();
+
+            var bookingGuest = new BookingGuest()
+            {
+
+                BookingRoomId = dto.RoomBookingId,
+                GuestId = newGuest.Id,
+            };
+            await _bookingGuestRepo.AddAsync(bookingGuest);
+            await _bookingGuestRepo.SaveChangesAsync();
+        }
+
+        var bookingRoom = await _bookingRoomRepo.FindAsync(dto.RoomBookingId);
+        if (bookingRoom != null && bookingRoom.BookingStatus != BookingRoomStatus.CheckedIn)
+        {
+            bookingRoom.BookingStatus = BookingRoomStatus.CheckedIn;
+            bookingRoom.ActualCheckInAt = dto.ActualCheckInAt ?? DateTime.Now;
+            await _bookingRoomRepo.UpdateAsync(bookingRoom);
+            await _bookingRoomRepo.SaveChangesAsync();
+
+            var room = await _roomRepo.FindAsync(bookingRoom.RoomId);
+            if (room != null)
+            {
+                room.Status = RoomStatus.Occupied;
+                await _roomRepo.UpdateAsync(room);
+                await _roomRepo.SaveChangesAsync();
+
+                await _roomStatusLogRepo.AddAsync(new RoomStatusLog
+                {
+                    Id = Guid.NewGuid(),
+                    HotelId = room.HotelId,
+                    RoomId = room.Id,
+                    Status = RoomStatus.Occupied,
+                    Timestamp = DateTime.Now
+                });
+                await _roomStatusLogRepo.SaveChangesAsync();
+            }
+        }
+
+        return ApiResponse.Ok("Thêm khách thành công");
     }
 
     public async Task<ApiResponse> UpdateGuestInRoomAsync(Guid bookingRoomId, Guid guestId, UpdateGuestDto dto)

@@ -2,13 +2,28 @@ import {
   Alert,
   Box,
   Button,
+  Chip,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  IconButton,
+  MenuItem,
+  Paper,
   Snackbar,
+  Stack,
+  TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Hotel as HotelIcon,
+  Bed,
+  Circle,
+} from "@mui/icons-material";
+import { DatePicker } from "@mui/x-date-pickers";
 import React, { useEffect, useState } from "react";
 import roomsApi, {
   type CreateRoomRequest,
@@ -19,7 +34,9 @@ import roomTypesApi, { type RoomType } from "../../../../../api/roomTypesApi";
 import ChangeRoomStatusModal from "../components/ChangeRoomStatusModal";
 import RoomFormModal from "../components/RoomFormModal";
 import RoomTable from "../components/RoomTable";
+import { ROOM_STATUS_OPTIONS } from "../components/roomsConstants";
 import { useStore, type StoreState } from "../../../../../hooks/useStore";
+import dayjs from "dayjs";
 
 // Status options and chips have been moved into dedicated components
 
@@ -34,10 +51,11 @@ const RoomManagementPage: React.FC = () => {
   const { hotelId } = useStore<StoreState>((state) => state);
 
   // Filters
-  const [status, setStatus] = useState<string>("");
-  const [floor, setFloor] = useState<string>("");
-  const [typeId, setTypeId] = useState<string>("");
+  const [status, setFilterStatus] = useState<number>(-1);
+  const [floor, setFilterFloor] = useState<number>(0);
+  const [typeId, setTypeId] = useState<number>();
   const [searchNumber, setSearchNumber] = useState<string>(""); // use DataTable search
+  const [overviewDate, setOverviewDate] = useState(dayjs());
 
   // Room types for filter and form
   const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
@@ -57,8 +75,10 @@ const RoomManagementPage: React.FC = () => {
     severity: "success" | "error" | "warning" | "info";
   }>({ open: false, message: "", severity: "success" });
 
-  // Columns are now defined within the RoomTable component
-
+  useEffect(() => {
+    setFilterFloor(0);
+    setFilterStatus(-1);
+  }, [overviewDate]);
   // Fetch room types for filter and forms
   const fetchRoomTypes = async () => {
     try {
@@ -77,16 +97,12 @@ const RoomManagementPage: React.FC = () => {
   const fetchRooms = async (pageNum = 1) => {
     setLoading(true);
     try {
-      const qp = {
-        status: status || undefined,
-        floor: floor ? Number(floor) : undefined,
-        typeId: typeId || undefined,
-        number: searchNumber || undefined,
-        page: pageNum,
-        pageSize,
+      const res = await roomsApi.getRooms({
+        page: 1,
+        pageSize: 200,
         hotelId: hotelId ?? "",
-      };
-      const res = await roomsApi.getRooms(qp);
+        date: overviewDate.startOf("day").format("YYYY-MM-DDTHH:mm:ss"),
+      });
       if (res.isSuccess) {
         setRooms(res.data);
         setTotal(res.meta?.total ?? res.data.length);
@@ -118,8 +134,7 @@ const RoomManagementPage: React.FC = () => {
   // Refetch when filters change
   useEffect(() => {
     fetchRooms(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, floor, typeId, searchNumber]);
+  }, [status, floor, typeId, searchNumber, overviewDate]);
 
   // Handlers
   const handleAdd = () => {
@@ -193,20 +208,226 @@ const RoomManagementPage: React.FC = () => {
     fetchRooms(newPage);
   };
 
+  const uniqueFloors = React.useMemo(() => {
+    const s = new Set<number>();
+    for (const r of rooms) {
+      const f = r.floor ?? 0;
+      if (f > 0) s.add(f);
+    }
+    return Array.from(s).sort((a, b) => a - b);
+  }, [rooms]);
+
+  const displayRooms = React.useMemo(() => {
+    return rooms.filter((r) => {
+      const byFloor = floor === 0 ? true : Number(r.floor) === Number(floor);
+      const byStatus =
+        status === -1 ? true : Number(r.status) === Number(status);
+      return byFloor && byStatus;
+    });
+  }, [rooms, floor, status]);
+
   return (
     <Box>
+      <Stack
+        direction={{ xs: "column", lg: "row" }}
+        justifyContent={"space-between"}
+        sx={{ mb: 2 }}
+        spacing={2}
+      >
+        <Stack direction={{ xs: "column", lg: "row" }} spacing={2}>
+          <TextField
+            select
+            label="Lọc theo tầng"
+            size="small"
+            value={floor}
+            onChange={(e) => setFilterFloor(Number(e.target.value))}
+            SelectProps={{ native: false }}
+            sx={{ minWidth: 180 }}
+          >
+            <MenuItem value={0}>Tất cả tầng</MenuItem>
+            {uniqueFloors.map((f) => (
+              <MenuItem key={f} value={f}>{`Tầng ${f}`}</MenuItem>
+            ))}
+          </TextField>
+
+          <TextField
+            select
+            label="Lọc theo trạng thái"
+            size="small"
+            value={status}
+            onChange={(e) => setFilterStatus(Number(e.target.value))}
+            SelectProps={{ native: false }}
+            sx={{ minWidth: 180 }}
+          >
+            <MenuItem value={-1}>Tất cả trạng thái</MenuItem>
+            {ROOM_STATUS_OPTIONS.map((opt) => (
+              <MenuItem key={opt.value} value={opt.value}>
+                {overviewDate.isBefore(dayjs(), "day") &&
+                opt.label === "Đang sử dụng"
+                  ? "Đã sử dụng"
+                  : opt.label}
+              </MenuItem>
+            ))}
+          </TextField>
+
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Tooltip placement="top" title="Ngày trước">
+              <IconButton
+                aria-label="Ngày trước"
+                onClick={() =>
+                  setOverviewDate((prev) => prev.subtract(1, "day"))
+                }
+                size="small"
+              >
+                <ChevronLeft />
+              </IconButton>
+            </Tooltip>
+            <DatePicker
+              label="Ngày"
+              value={overviewDate}
+              onChange={(v) => v && setOverviewDate(v)}
+              slotProps={{ textField: { size: "small" } }}
+            />
+            <Tooltip title="Ngày sau" placement="top">
+              <IconButton
+                aria-label="Ngày sau"
+                onClick={() => setOverviewDate((prev) => prev.add(1, "day"))}
+                size="small"
+              >
+                <ChevronRight />
+              </IconButton>
+            </Tooltip>
+          </Stack>
+        </Stack>
+      </Stack>
+
+      <Paper
+        sx={{
+          p: 2,
+          mb: 2,
+          position: "relative",
+          borderRadius: 3,
+          border: "2px dashed",
+          borderColor: "primary.light",
+          background: "linear-gradient(135deg, #EFF6FF 0%, #FFFFFF 100%)",
+          boxShadow: "0 8px 24px rgba(31, 64, 104, 0.08)",
+        }}
+      >
+        <Box
+          sx={{
+            position: "absolute",
+            top: 8,
+            left: 16,
+            color: "primary.main",
+            opacity: 0.6,
+            pointerEvents: "none",
+            transform: "rotate(-60deg)",
+          }}
+        >
+          <Circle fontSize="small" sx={{ width: 16, height: 16 }} />
+        </Box>
+        <Box
+          sx={{
+            position: "absolute",
+            top: 8,
+            right: 16,
+            color: "primary.main",
+            opacity: 0.6,
+            pointerEvents: "none",
+            transform: "rotate(60deg)",
+          }}
+        >
+          <Circle fontSize="small" sx={{ width: 16, height: 16 }} />
+        </Box>
+        <Box
+          sx={{
+            position: "absolute",
+            bottom: 8,
+            left: 16,
+            color: "primary.main",
+            opacity: 0.6,
+            pointerEvents: "none",
+            transform: "rotate(-120deg)",
+          }}
+        >
+          <Circle fontSize="small" sx={{ width: 16, height: 16 }} />
+        </Box>
+        <Box
+          sx={{
+            position: "absolute",
+            bottom: 8,
+            right: 16,
+            color: "primary.main",
+            opacity: 0.6,
+            pointerEvents: "none",
+            transform: "rotate(120deg)",
+          }}
+        >
+          <Circle fontSize="small" sx={{ width: 16, height: 16 }} />
+        </Box>
+        <Stack spacing={1.5} alignItems="center">
+          <Stack
+            direction="row"
+            spacing={1}
+            alignItems="center"
+            justifyContent="center"
+          >
+            <HotelIcon color="primary" />
+            <Stack direction={"row"} alignItems={"center"} gap={1}>
+              <Typography variant="subtitle1" fontWeight={700}>
+                Tổng quan khách sạn
+              </Typography>
+              <Typography sx={{ fontWeight: "bold", color: "text.primary" }}>
+                ({overviewDate?.format("DD-MM-YYYY")})
+              </Typography>
+            </Stack>
+          </Stack>
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={1}
+            alignItems={{ xs: "stretch", sm: "center" }}
+            justifyContent="center"
+            sx={{ flexWrap: "wrap", rowGap: 1 }}
+          >
+            <Chip
+              icon={<Bed />}
+              color="primary"
+              variant="outlined"
+              label={`Tổng số phòng: ${rooms.length}`}
+              sx={{ fontWeight: 700 }}
+            />
+            {ROOM_STATUS_OPTIONS.map((opt) => {
+              const count = rooms.filter(
+                (r) => Number(r.status) === Number(opt.value),
+              ).length;
+              const isPast = overviewDate.isBefore(dayjs(), "day");
+              const label =
+                isPast && opt.label === "Đang sử dụng"
+                  ? "Đã sử dụng"
+                  : opt.label;
+              return (
+                <Chip
+                  key={opt.value}
+                  variant="outlined"
+                  label={`${label}: ${count}`}
+                  sx={{ fontWeight: 600 }}
+                />
+              );
+            })}
+          </Stack>
+        </Stack>
+      </Paper>
+
       {/* Rooms table */}
       <RoomTable
-        rooms={rooms}
+        rooms={displayRooms}
         loading={loading}
         page={page}
         pageSize={pageSize}
-        total={total}
+        total={displayRooms.length}
         onPageChange={onPageChange}
-        onAdd={handleAdd}
         onEdit={handleEdit}
         onChangeStatus={handleChangeStatus}
-        onSearch={(txt: string) => setSearchNumber(txt || "")}
       />
 
       {/* Create Room */}

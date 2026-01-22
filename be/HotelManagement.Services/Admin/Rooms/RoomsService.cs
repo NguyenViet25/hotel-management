@@ -92,14 +92,19 @@ public class RoomsService : IRoomsService
             {
                 var existBookingRoom = await _bookingRoom.Query()
                     .Where(x => x.RoomId == d.Id)
-                    .Where(x => date >= x.StartDate.Date && date <= (x.ActualCheckOutAt ?? x.EndDate).Date)
+                    .Where(x => date >= x.StartDate.Date && date <= (x.ActualCheckOutAt ?? x.ExtendedDate ?? x.EndDate).Date)
                     .FirstOrDefaultAsync();
 
                 if (existBookingRoom != null)
                 {
                     d.StartDate = existBookingRoom.StartDate;
-                    d.EndDate = (existBookingRoom.ActualCheckOutAt ?? existBookingRoom.EndDate);
+                    d.EndDate = (existBookingRoom.ActualCheckOutAt ?? existBookingRoom.ExtendedDate ?? existBookingRoom.EndDate);
                     d.Status = RoomStatus.Occupied;
+
+                    if (date != DateTime.Now.Date)
+                    {
+                        d.Status = RoomStatus.Occupied;
+                    }
                 }
                 else
                 {
@@ -118,7 +123,7 @@ public class RoomsService : IRoomsService
 
             var meta = new { total, page = query.Page, pageSize = query.PageSize };
 
-            return ApiResponse<List<RoomSummaryDto>>.Ok(dtos, meta: meta);
+            return ApiResponse<List<RoomSummaryDto>>.Ok(results, meta: meta);
         }
         catch (Exception ex)
         {

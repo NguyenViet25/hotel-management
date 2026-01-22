@@ -39,6 +39,22 @@ public class BookingsController(IBookingsService bookingsService, IWebHostEnviro
         return Ok(result);
     }
 
+    [HttpPost("{id}/add-guest")]
+    public async Task<ActionResult<ApiResponse>> AddGuest(Guid id, [FromBody] CheckInDto dto)
+    {
+        var hotelIdClaim = User.FindFirst("hotelId")?.Value;
+
+        if (hotelIdClaim == null)
+            return BadRequest("HotelId not found in user claims");
+
+        Guid hotelId = Guid.Parse(hotelIdClaim);
+
+        dto.HotelId = hotelId;
+
+        var result = await _bookingsService.CheckInAsync(dto);
+        return Ok(result);
+    }
+
     [HttpGet]
     public async Task<ActionResult<ApiResponse<List<BookingDetailsDto>>>> List([FromQuery] BookingsQueryDto query)
     {

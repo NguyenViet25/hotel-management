@@ -16,7 +16,7 @@ type RoomTableProps = {
   pageSize: number;
   total: number;
   onPageChange: (page: number) => void;
-  onAdd: () => void;
+  onAdd?: () => void;
   onEdit: (room: RoomDto) => void;
   onDelete: (room: RoomDto) => void;
   onChangeStatus: (room: RoomDto) => void;

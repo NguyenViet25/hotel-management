@@ -398,8 +398,8 @@ const BookingInvoiceDialog: React.FC<Props> = ({
       rows.push({
         label:
           additionalNotes && additionalNotes.trim().length
-            ? `Đền bù: ${additionalNotes.trim()}`
-            : "Đền bù",
+            ? `Đền bù (Không chịu thuế VAT): \n${additionalNotes.trim()}`
+            : "Đền bù (Không chịu thuế VAT)",
         quantity: "—",
         nights: undefined,
         unit: additionalAmount,
@@ -821,7 +821,7 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                       const num = raw ? Number(raw) : 0;
                       setAdditionalAmount(num);
                     }}
-                    label="Đền bù"
+                    label="Đền bù (Không chịu thuế VAT)"
                     slotProps={{
                       input: {
                         endAdornment: (

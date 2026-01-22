@@ -198,14 +198,6 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
     }
     return Array.from(s).sort((a, b) => a - b);
   }, [rooms]);
-  const uniqueRoomNumbers = useMemo(() => {
-    const s = new Set<string>();
-    for (const r of rooms) {
-      const num = r.number || "";
-      if (num) s.add(num);
-    }
-    return Array.from(s).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
-  }, [rooms]);
 
   const floors = useMemo(() => {
     const map: Record<number, RoomDto[]> = {};
@@ -1392,7 +1384,7 @@ const RoomMap: React.FC<IProps> = ({ allowAddNew = true }) => {
                     const items = (occupancyHistory || [])
                       .filter((h) => {
                         const s = dayjs(h.start);
-                        const e = dayjs(h.end);
+                        const e = dayjs(h.end).add(-1, "day");
                         return dayStart.isBefore(e) && dayEnd.isAfter(s);
                       })
                       .sort(
