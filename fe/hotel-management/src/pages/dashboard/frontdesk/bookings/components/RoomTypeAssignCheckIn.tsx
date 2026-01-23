@@ -639,6 +639,10 @@ const RoomTypeBlock: React.FC<{
                             br.bookingStatus != BookingRoomStatus.CheckedOut
                           }
                           isDisabled={isDisabled}
+                          isDisableAdd={
+                            br.actualCheckInAt !== undefined &&
+                            br.actualCheckInAt !== null
+                          }
                           onEdit={(idx, gi) =>
                             openEditGuest(br.bookingRoomId, idx, {
                               ...gi,
