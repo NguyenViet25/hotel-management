@@ -475,7 +475,7 @@ public class BookingsService(
                         Capacity = rt.Capacity,
                         Price = rt.Price,
                         PriceFrom = roomType?.BasePriceFrom ?? 0,
-                        PriceTo = roomType?.BasePriceTo ??0 ,
+                        PriceTo = roomType?.BasePriceTo ?? 0,
                         TotalRoom = rt.TotalRoom,
                         StartDate = rt.StartDate,
                         EndDate = rt.EndDate,
@@ -922,7 +922,7 @@ public class BookingsService(
             }
 
             booking.Status = BookingStatus.Completed;
-        
+
             await _bookingRepo.UpdateAsync(booking);
             await _bookingRepo.SaveChangesAsync();
             return ApiResponse.Ok("Booking Confirmed");
@@ -1043,7 +1043,7 @@ public class BookingsService(
             var roomIds = rooms.Select(r => r.Id).ToList();
             var bookings = await _bookingRoomRepo.Query()
                 .Where(br => roomIds.Contains(br.RoomId) && br.BookingStatus != BookingRoomStatus.Cancelled)
-                .Where(br => startDate <= br.EndDate.Date && startDate >= br.StartDate.Date || 
+                .Where(br => startDate <= br.EndDate.Date && startDate >= br.StartDate.Date ||
                     endDate >= br.StartDate.Date && endDate <= (br.EndDate).Date)
                 .Select(br => new { br.RoomId, br.StartDate, br.EndDate, br.BookingRoomId })
                 .ToListAsync();
@@ -1073,7 +1073,7 @@ public class BookingsService(
 
                 if (existBookingRoom != null)
                 {
-                    if (startDate != DateTime.Now.Date )
+                    if (startDate != DateTime.Now.Date)
                     {
                         d.Status = RoomStatus.Occupied;
                     }
@@ -1294,7 +1294,6 @@ public class BookingsService(
             }
 
             var baseItems = await baseQuery
-                .Select(br => new { br.BookingRoomId, br.BookingRoomTypeId, br.StartDate, br.EndDate })
                 .OrderBy(x => x.StartDate)
                 .ToListAsync();
 
@@ -1351,12 +1350,16 @@ public class BookingsService(
                      .FirstOrDefaultAsync();
                 }
 
+                var sameDate = it.ActualCheckOutAt?.Date == it.ActualCheckInAt?.Date;
+                if(sameDate)
+                    it.ActualCheckOutAt = it.ActualCheckOutAt?.AddDays(1);
+
                 results.Add(new RoomStayHistoryDto
                 {
                     BookingId = brt.BookingId,
                     BookingRoomId = it.BookingRoomId,
                     Start = it.StartDate,
-                    End = it.EndDate,
+                    End = it.ActualCheckOutAt ?? it.EndDate,
                     Status = booking.Status,
                     PrimaryGuestName = primaryName,
                     PrimaryGuestPhone = primaryPhone,
