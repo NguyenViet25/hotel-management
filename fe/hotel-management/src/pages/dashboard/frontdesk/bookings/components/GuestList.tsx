@@ -14,6 +14,7 @@ type Props = {
   onAddGuestClick?: () => void;
   onChangeRoom?: (guest: BookingGuestDto) => void;
   onExtendStay?: () => void;
+  isDisableAdd?: boolean;
 };
 
 const GuestList: React.FC<Props> = ({
@@ -26,6 +27,7 @@ const GuestList: React.FC<Props> = ({
   onChangeRoom,
   onExtendStay,
   isDisabled = false,
+  isDisableAdd = false,
 }) => {
   return (
     <Stack spacing={0.5}>
@@ -43,7 +45,7 @@ const GuestList: React.FC<Props> = ({
           variant="outlined"
           startIcon={<AddCircle />}
           size="small"
-          disabled={!editable || isDisabled}
+          disabled={!editable || isDisabled || isDisableAdd}
         >
           Thêm khách
         </Button>
