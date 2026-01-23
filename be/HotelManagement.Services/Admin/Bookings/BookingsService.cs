@@ -283,6 +283,7 @@ public class BookingsService(
                     .Where(x => x.BookingRoomTypeId == rt.BookingRoomTypeId)
                     .ToListAsync();
 
+                var roomType = await _roomTypeRepo.Query().Where(x => x.Id == rt.RoomTypeId).FirstOrDefaultAsync();
                 var rtDto = new BookingRoomTypeDto()
                 {
                     BookingRoomTypeId = rt.BookingRoomTypeId,
@@ -290,6 +291,8 @@ public class BookingsService(
                     RoomTypeName = rt.RoomTypeName,
                     Capacity = rt.Capacity,
                     Price = rt.Price,
+                    PriceFrom = roomType?.BasePriceFrom ?? 0,
+                    PriceTo = roomType?.BasePriceTo ?? 0,
                     TotalRoom = rt.TotalRoom,
                     StartDate = rt.StartDate,
                     EndDate = rt.EndDate,
@@ -463,6 +466,7 @@ public class BookingsService(
                         .Where(x => x.BookingRoomTypeId == rt.BookingRoomTypeId)
                         .ToListAsync();
 
+                    var roomType = await _roomTypeRepo.Query().Where(x => x.Id == rt.RoomTypeId).FirstOrDefaultAsync();
                     var rtDto = new BookingRoomTypeDto()
                     {
                         BookingRoomTypeId = rt.BookingRoomTypeId,
@@ -470,6 +474,8 @@ public class BookingsService(
                         RoomTypeName = rt.RoomTypeName,
                         Capacity = rt.Capacity,
                         Price = rt.Price,
+                        PriceFrom = roomType?.BasePriceFrom ?? 0,
+                        PriceTo = roomType?.BasePriceTo ??0 ,
                         TotalRoom = rt.TotalRoom,
                         StartDate = rt.StartDate,
                         EndDate = rt.EndDate,
@@ -916,8 +922,7 @@ public class BookingsService(
             }
 
             booking.Status = BookingStatus.Completed;
-            booking.TotalAmount = baseTotal;
-            booking.LeftAmount = Math.Max(0, booking.TotalAmount - booking.DepositAmount);
+        
             await _bookingRepo.UpdateAsync(booking);
             await _bookingRepo.SaveChangesAsync();
             return ApiResponse.Ok("Booking Confirmed");
@@ -1929,38 +1934,12 @@ public class BookingsService(
             }
             await _bookingRoomRepo.SaveChangesAsync();
 
-
-
-            decimal baseTotal = 0;
-
-            var bookingRoomTypes = await _bookingRoomTypeRepo.Query().Where(x => x.BookingId == booking.Id).ToListAsync();
-
-            foreach (var rt in bookingRoomTypes)
-            {
-                var bookingRooms = await _bookingRoomRepo.Query().Where(x => x.BookingRoomTypeId == rt.BookingRoomTypeId).ToListAsync();
-                var roomType = rt.RoomType ?? await _roomTypeRepo.FindAsync(rt.RoomTypeId);
-                var overrides = ParseOverrides(roomType?.Prices);
-                foreach (var br in bookingRooms)
-                {
-                    var start = (br.ActualCheckInAt?.Date ?? br.StartDate.Date);
-                    var endExclusive = (br.ActualCheckOutAt?.Date ?? br.EndDate.Date);
-                    if (endExclusive <= start) endExclusive = start.AddDays(1);
-                    for (var d = start; d < endExclusive; d = d.AddDays(1))
-                    {
-                        var match = overrides.FirstOrDefault(p => p.Date.Date == d);
-                        var price = match?.Price ?? (roomType?.BasePriceFrom ?? rt.Price);
-                        baseTotal += price;
-                    }
-                }
-            }
-
-
             //booking.Status = BookingStatus.Completed;
             booking.AdditionalNotes = dto.AdditionalNotes;
             booking.AdditionalAmount = dto.AdditionalAmount ?? 0;
             booking.AdditionalBookingNotes = dto.AdditionalBookingNotes;
             booking.AdditionalBookingAmount = dto.AdditionalBookingAmount ?? 0;
-            booking.TotalAmount = baseTotal + booking.AdditionalAmount;
+            booking.TotalAmount = dto.TotalAmount ?? 0;
             booking.LeftAmount = Math.Max(0, booking.TotalAmount - totalPaid);
 
             await _bookingRepo.UpdateAsync(booking);

@@ -86,6 +86,8 @@ export interface BookingRoomTypeDto {
   roomTypeName?: string;
   capacity: number;
   price: number;
+  priceTo?: number;
+  priceFrom?: number;
   totalRoom: number;
   startDate: string;
   endDate: string;

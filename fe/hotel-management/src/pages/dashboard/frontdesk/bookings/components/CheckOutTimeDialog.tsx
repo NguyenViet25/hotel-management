@@ -28,7 +28,7 @@ type Props = {
       days: number;
       hours: number;
       minutes: number;
-    },
+    }
   ) => void;
   reload?: number;
 };
@@ -118,7 +118,7 @@ export default function CheckOutTimeDialog({
               </Typography>
               <Chip
                 label={(displayScheduledStart || dayjs(scheduledStart)).format(
-                  "DD/MM/YYYY HH:mm",
+                  "DD/MM/YYYY HH:mm"
                 )}
               />
             </Stack>
@@ -132,7 +132,7 @@ export default function CheckOutTimeDialog({
           <DateTimePicker
             label="Thời gian check-out"
             value={value}
-            // disabled
+            disabled
             // minDateTime={dayjs()}
             // maxDateTime={
             //   dayjs().isAfter(dayjs(displayScheduledEnd).add(1, "minute"))
@@ -148,8 +148,8 @@ export default function CheckOutTimeDialog({
                 isLate
                   ? `Muộn ${days}d ${hours}h ${minutes}m`
                   : isEarly
-                    ? `Sớm ${days}d ${hours}h ${minutes}m`
-                    : `Đúng giờ`
+                  ? `Sớm ${days}d ${hours}h ${minutes}m`
+                  : `Đúng giờ`
               }
             />
           </Stack>

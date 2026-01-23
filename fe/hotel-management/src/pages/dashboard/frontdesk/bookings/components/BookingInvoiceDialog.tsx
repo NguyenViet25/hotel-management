@@ -33,6 +33,7 @@ import hotelService, { type Hotel } from "../../../../../api/hotelService";
 import invoicesApi, { type InvoiceDto } from "../../../../../api/invoicesApi";
 import ordersApi from "../../../../../api/ordersApi";
 import pricingApi, {
+  type PricingQuoteItemDto,
   type PricingQuoteResponse,
 } from "../../../../../api/pricingApi";
 import roomTypesApi from "../../../../../api/roomTypesApi";
@@ -236,7 +237,6 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                 dayjs(d.date).format("YYYY-MM-DD"),
               );
               const overrideSet = new Set(overrides);
-              const inputPrice = rt.price || rtDetails?.priceFrom || 0;
 
               const start = dayjs(br.actualCheckInAt || rt.startDate);
               const end = dayjs(
@@ -250,6 +250,13 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                 let cursor = start.clone();
                 while (cursor.isBefore(end)) {
                   const dateStr = cursor.format("YYYY-MM-DD");
+
+                  const weekend = cursor.day() === 5 || cursor.day() === 6;
+                  const inputPrice = weekend
+                    ? rt.priceTo || 0
+                    : rt.priceFrom || 0;
+                  console.log("inputPrice", inputPrice);
+
                   const overridePrice = rtDetails?.priceByDates?.find(
                     (p: any) => dayjs(p.date).format("YYYY-MM-DD") === dateStr,
                   )?.price;
@@ -261,7 +268,13 @@ const BookingInvoiceDialog: React.FC<Props> = ({
                 }
                 items = temp as any;
               } else {
-                items = items.map((it: any) => {
+                items = items.map((it: PricingQuoteItemDto) => {
+                  const weekend =
+                    dayjs(it.date).day() === 5 || dayjs(it.date).day() === 6;
+                  const inputPrice = weekend
+                    ? rt.priceTo || 0
+                    : rt.priceFrom || 0;
+
                   const d = dayjs(it.date).format("YYYY-MM-DD");
                   const isOverride = overrideSet.has(d);
                   return {
@@ -298,6 +311,8 @@ const BookingInvoiceDialog: React.FC<Props> = ({
       unit: number;
       total: number;
     }[] = [];
+
+    console.log("priceByDateMap", priceByDateMap);
     for (const rt of booking.bookingRoomTypes || []) {
       for (const br of rt.bookingRooms || []) {
         const daily = (priceByDateMap[br.bookingRoomId] || []).slice();
@@ -307,21 +322,28 @@ const BookingInvoiceDialog: React.FC<Props> = ({
             br.actualCheckOutAt || br.extendedDate || rt.endDate,
           );
           const nights = Math.max(1, end.diff(start, "day"));
-          rows.push({
-            label: `Phòng ${br.roomName || "—"} (${rt.roomTypeName})`,
-            dateRange:
-              nights > 1
-                ? `${start.add(1, "day").format("DD/MM/YYYY")} - ${start
-                    .add(nights - 1, "day")
-                    .format("DD/MM/YYYY")}`
-                : `${dayjs(start).format("DD/MM/YYYY")} - ${dayjs(end)
-                    .add(1, "day")
-                    .format("DD/MM/YYYY")}`,
-            quantity: 1,
-            nights: nights,
-            unit: rt.price,
-            total: rt.price * nights,
-          });
+
+          for (let i = 0; i < nights; i++) {
+            const d = start.add(i, "day");
+            const weekend = d.day() === 5 || d.day() === 6;
+            const base = weekend ? rt.priceTo || 0 : rt.priceFrom || 0;
+
+            rows.push({
+              label: `Phòng ${br.roomName || "—"} (${rt.roomTypeName})`,
+              dateRange:
+                nights > 1
+                  ? `${start.add(1, "day").format("DD/MM/YYYY")} - ${start
+                      .add(nights - 1, "day")
+                      .format("DD/MM/YYYY")}`
+                  : `${dayjs(start).format("DD/MM/YYYY")} - ${dayjs(end)
+                      .add(1, "day")
+                      .format("DD/MM/YYYY")}`,
+              quantity: 1,
+              nights: nights,
+              unit: base,
+              total: base * nights,
+            });
+          }
         } else {
           daily.sort((a, b) => a.date.localeCompare(b.date));
           let segStart = daily[0];

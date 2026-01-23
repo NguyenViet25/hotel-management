@@ -27,7 +27,7 @@ type Props = {
       days: number;
       hours: number;
       minutes: number;
-    },
+    }
   ) => void;
 };
 
@@ -41,6 +41,7 @@ export default function CheckInTimeDialog({
   onConfirm,
 }: Props) {
   const [value, setValue] = useState<Dayjs>(dayjs());
+  const [isAlwaysEnable] = useState(false);
 
   const scheduled = useMemo(() => dayjs(scheduledStart), [scheduledStart]);
 
@@ -79,8 +80,10 @@ export default function CheckInTimeDialog({
     const d = Math.floor(diff / 1440);
     const h = Math.floor((diff % 1440) / 60);
     const m = diff % 60;
-    return { isEarly: early, isLate: late, days: d, hours: h, minutes: m };
-  }, [value, scheduled, displayScheduledStart]);
+    return isAlwaysEnable
+      ? { isEarly: early, isLate: late, days: d, hours: h, minutes: m }
+      : { isEarly: false, isLate: late, days: d, hours: h, minutes: m };
+  }, [value, scheduled, displayScheduledStart, isAlwaysEnable]);
 
   useEffect(() => {
     if (open) setValue(dayjs());
@@ -104,7 +107,7 @@ export default function CheckInTimeDialog({
               </Typography>
               <Chip
                 label={(displayScheduledEnd || dayjs(scheduledEnd)).format(
-                  "DD/MM/YYYY HH:mm",
+                  "DD/MM/YYYY HH:mm"
                 )}
               />
             </Stack>
@@ -118,7 +121,7 @@ export default function CheckInTimeDialog({
               .minute(59)
               .second(0)
               .millisecond(0)}
-            // readOnly
+            readOnly={!isAlwaysEnable}
             slotProps={{
               textField: {
                 readOnly: true,
@@ -137,8 +140,8 @@ export default function CheckInTimeDialog({
                 isEarly
                   ? `Sớm ${days}d ${hours}h ${minutes}m`
                   : isLate
-                    ? `Muộn ${days}d ${hours}h ${minutes}m`
-                    : `Đúng giờ`
+                  ? `Muộn ${days}d ${hours}h ${minutes}m`
+                  : `Đúng giờ`
               }
             />
           </Stack>
@@ -153,7 +156,7 @@ export default function CheckInTimeDialog({
         <Button onClick={onClose}>Hủy</Button>
         <Button
           variant="contained"
-          // disabled={isEarly}
+          disabled={isEarly}
           onClick={() =>
             onConfirm(value.format("YYYY-MM-DDTHH:mm:ss"), {
               isEarly,

@@ -43,7 +43,7 @@ const LoginPage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // breakpoint for mobile
   const { setUser, user } = useStore<StoreState>((state) => state);
-  const isForDev = true;
+  const isForDev = false;
 
   useLayoutEffect(() => {
     const params = new URLSearchParams(window.location.search);

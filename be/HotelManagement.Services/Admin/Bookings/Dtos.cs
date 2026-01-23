@@ -121,7 +121,9 @@ public class BookingRoomTypeDto
     public Guid RoomTypeId { get; set; }
     public string? RoomTypeName { get; set; }
     public int Capacity { get; set; }
-    public decimal Price { get; set; }
+    public decimal? PriceFrom { get; set; }
+    public decimal? PriceTo { get; set; }
+    public decimal? Price { get; set; }
     public int TotalRoom { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
